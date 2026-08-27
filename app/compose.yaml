@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: traingo-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: traingo
+      MYSQL_USER: traingo
+      MYSQL_PASSWORD: traingo
+    ports:
+      - "3306:3306"
+    volumes:
+      - traingo-mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-utraingo", "-ptraingo"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  traingo-mysql-data:

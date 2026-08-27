@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<!--
+	Shared page shell. A page uses it like this:
+
+		<html th:replace="~{layout/base :: page(~{::title}, ~{::main})}">
+		<head><title>...</title></head>
+		<body><main> ... </main></body>
+		</html>
+
+	~{::title} and ~{::main} mean "the title and main element of the calling
+	page", so a page only writes its own title and body content.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, content)">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title th:replace="${title}">TrainGo</title>
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="d-flex flex-column min-vh-100 bg-body">
+
+<header th:replace="~{fragments/navbar :: navbar}"></header>
+
+<div class="flex-grow-1">
+	<main th:replace="${content}"></main>
+</div>
+
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+
+<script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

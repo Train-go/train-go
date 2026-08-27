@@ -1,0 +1,174 @@
+/*
+ * TrainGo design tokens and components.
+ *
+ * Bootstrap handles layout, grid and utilities. This file only adds the tokens
+ * every page reads, and the few components Bootstrap has no equivalent for.
+ * Pages must not hardcode colours — read the custom properties below.
+ *
+ * See docs/decisions/0003-he-thong-giao-dien.md.
+ */
+
+:root {
+	--traingo-primary: #0f6cbd;
+	--traingo-primary-dark: #0b558f;
+	--traingo-primary-soft: #eaf3fb;
+	--traingo-ink: #16232e;
+	--traingo-muted: #5b6b7a;
+	--traingo-surface: #ffffff;
+	--traingo-surface-alt: #f5f8fb;
+	--traingo-border: #dde5ec;
+	--traingo-radius: 0.75rem;
+	--traingo-shadow: 0 1px 2px rgba(22, 35, 46, 0.06), 0 8px 24px rgba(22, 35, 46, 0.06);
+
+	/* Feed the tokens back into Bootstrap so btn-primary and friends follow. */
+	--bs-primary: var(--traingo-primary);
+	--bs-primary-rgb: 15, 108, 189;
+	--bs-link-color: var(--traingo-primary);
+	--bs-link-color-rgb: 15, 108, 189;
+	--bs-link-hover-color: var(--traingo-primary-dark);
+	--bs-body-color: var(--traingo-ink);
+	--bs-border-color: var(--traingo-border);
+}
+
+body {
+	font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+	color: var(--traingo-ink);
+	line-height: 1.6;
+}
+
+/*
+ * Bootstrap sets headings to line-height 1.2. Vietnamese stacks a tone mark on
+ * top of a vowel mark — Ế, Ộ, ữ — and at 1.2 those marks get clipped or touch
+ * the line above. English never shows the defect, so upstream has no reason to
+ * change it. 1.28 is the smallest ratio that cleared every heading on the
+ * landing page.
+ */
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6,
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+	line-height: 1.28;
+}
+
+.btn-primary {
+	--bs-btn-bg: var(--traingo-primary);
+	--bs-btn-border-color: var(--traingo-primary);
+	--bs-btn-hover-bg: var(--traingo-primary-dark);
+	--bs-btn-hover-border-color: var(--traingo-primary-dark);
+	--bs-btn-active-bg: var(--traingo-primary-dark);
+	--bs-btn-active-border-color: var(--traingo-primary-dark);
+}
+
+.btn-outline-primary {
+	--bs-btn-color: var(--traingo-primary);
+	--bs-btn-border-color: var(--traingo-primary);
+	--bs-btn-hover-bg: var(--traingo-primary);
+	--bs-btn-hover-border-color: var(--traingo-primary);
+	--bs-btn-active-bg: var(--traingo-primary-dark);
+	--bs-btn-active-border-color: var(--traingo-primary-dark);
+}
+
+/* Square brand badge next to the wordmark in the navbar. */
+.tg-brand-mark {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: 0.5rem;
+	background: var(--traingo-primary);
+	color: #fff;
+	font-size: 0.8rem;
+	letter-spacing: 0.02em;
+}
+
+/* ---------- Landing ---------- */
+
+.tg-hero {
+	background: linear-gradient(135deg, var(--traingo-primary-soft) 0%, var(--traingo-surface) 100%);
+	padding: 3.5rem 0 4.5rem;
+}
+
+.tg-hero__lead {
+	color: var(--traingo-muted);
+	max-width: 34rem;
+}
+
+/* The search card overlaps the bottom of the hero on wide screens. */
+.tg-search-card {
+	background: var(--traingo-surface);
+	border: 1px solid var(--traingo-border);
+	border-radius: var(--traingo-radius);
+	box-shadow: var(--traingo-shadow);
+	padding: 1.25rem;
+}
+
+@media (min-width: 992px) {
+	.tg-search-card {
+		padding: 1.5rem;
+	}
+}
+
+/* Swaps origin and destination. Round on desktop, full width on mobile. */
+.tg-swap-btn {
+	border: 1px solid var(--traingo-border);
+	background: var(--traingo-surface-alt);
+	color: var(--traingo-primary);
+	border-radius: var(--traingo-radius);
+	width: 100%;
+	height: 2.5rem;
+	line-height: 1;
+}
+
+.tg-swap-btn:hover {
+	background: var(--traingo-primary-soft);
+}
+
+@media (min-width: 768px) {
+	.tg-swap-btn {
+		width: 2.5rem;
+		border-radius: 50%;
+	}
+}
+
+.tg-route-card {
+	border: 1px solid var(--traingo-border);
+	border-radius: var(--traingo-radius);
+	background: var(--traingo-surface);
+	transition: box-shadow 0.15s ease, border-color 0.15s ease;
+	width: 100%;
+	text-align: left;
+}
+
+.tg-route-card:hover,
+.tg-route-card:focus-visible {
+	border-color: var(--traingo-primary);
+	box-shadow: var(--traingo-shadow);
+}
+
+/*
+ * Station names wrap instead of stretching the card. "Ga Sài Gòn — Bến xe Miền
+ * Đông mới" is a realistic worst case and must not push the price out of view.
+ */
+.tg-route-card__name {
+	overflow-wrap: anywhere;
+}
+
+.tg-step-number {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	border-radius: 50%;
+	background: var(--traingo-primary-soft);
+	color: var(--traingo-primary);
+	font-weight: 700;
+}
+
+.tg-section-alt {
+	background: var(--traingo-surface-alt);
+}
+
+.tg-footer {
+	background: var(--traingo-surface-alt);
+}

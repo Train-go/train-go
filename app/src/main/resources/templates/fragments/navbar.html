@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+	The Login / Register pair becomes My Trips / Profile / Logout once
+	authentication exists. That switch needs sec:authorize from
+	thymeleaf-extras-springsecurity6, which is not a dependency yet.
+-->
+<header th:fragment="navbar" class="border-bottom bg-white sticky-top">
+	<nav class="navbar navbar-expand-lg container py-2" aria-label="Điều hướng chính">
+		<a class="navbar-brand fw-bold d-flex align-items-center gap-2" th:href="@{/}">
+			<span class="tg-brand-mark" aria-hidden="true">TG</span>
+			<span>TrainGo</span>
+		</a>
+
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+			data-bs-target="#tgNav" aria-controls="tgNav" aria-expanded="false"
+			aria-label="Mở menu">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+
+		<div class="collapse navbar-collapse" id="tgNav">
+			<ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+				<li class="nav-item">
+					<a class="nav-link" th:href="@{/}">Trang chủ</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="#how-it-works">Cách đặt vé</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" th:href="@{/my-trips}">Chuyến của tôi</a>
+				</li>
+				<li class="nav-item mt-2 mt-lg-0 ms-lg-2">
+					<a class="btn btn-outline-primary btn-sm px-3" th:href="@{/login}">Đăng nhập</a>
+				</li>
+				<li class="nav-item mt-2 mt-lg-0">
+					<a class="btn btn-primary btn-sm px-3" th:href="@{/register}">Đăng ký</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+</header>
+
+</body>
+</html>
