@@ -24,6 +24,11 @@ public class SecurityConfig {
 				// with the login page, and the browser drops it without a warning,
 				// so the page renders completely unstyled with nothing in the log.
 				.requestMatchers("/vendor/**", "/favicon.ico").permitAll()
+				// Redundant today, since anyRequest() already demands a session. It
+				// is here so the admin area has one obvious line to tighten to
+				// hasRole("ADMIN") when the auth feature lands, and so a test can
+				// pin the rule down before then.
+				.requestMatchers("/admin/**").authenticated()
 				.anyRequest().authenticated())
 			.formLogin(Customizer.withDefaults())
 			.logout(Customizer.withDefaults());

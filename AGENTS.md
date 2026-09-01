@@ -44,6 +44,26 @@ Phần dưới đây do nhóm sở hữu, không thuộc Harness core.
 - `docs/RUNBOOK.md` — cách chạy ứng dụng, database và bộ test ở máy local.
 - `app/` — ứng dụng Spring Boot, package gốc `com.voyagego.traingo`.
 
+### Hai khu vực giao diện
+
+Dự án có **hai hệ giao diện tách rời**, không được trộn:
+
+| | Landing / khách | Admin |
+| --- | --- | --- |
+| Template | `templates/layout/base.html`, `templates/fragments/` | `templates/admin/layout/base.html`, `templates/admin/fragments/` |
+| CSS | `/css/app.css` | `/css/admin/admin.css` |
+| JS | `/js/landing.js` | `/js/admin/admin.js` |
+
+**Không bao giờ nạp `app.css` và `admin.css` trên cùng một trang.** `admin.css`
+đến từ template dashboard bên ngoài và mang theo reset `*` cùng bảng màu
+`--color-*` riêng; nạp chung là landing vỡ, và triệu chứng chỉ thấy bằng mắt
+chứ không có lỗi biên dịch nào.
+
+Thư viện của admin nằm ở `static/vendor/`, tải về sẵn. Không thêm link CDN vào
+bất kỳ trang nào — kể cả trang admin.
+
+Chi tiết và lý do: `docs/decisions/0004-khu-vuc-quan-tri.md`.
+
 ### Quy trình plan
 
 - Việc đủ lớn để phải bàn trước khi làm thì viết bản nháp

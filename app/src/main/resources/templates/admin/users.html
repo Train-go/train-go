@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Người dùng · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="pagetitle">
+		<h1>Người dùng</h1>
+		<nav>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
+				<li class="breadcrumb-item active">Người dùng</li>
+			</ol>
+		</nav>
+	</div>
+
+	<section class="section">
+		<div class="card table-card">
+			<div class="card-body">
+				<div class="table-card-header flex-wrap">
+					<div>
+						<h4 class="card-title mb-2">Danh sách người dùng</h4>
+						<!--
+							Read-only on purpose. admin.md gives this screen no create,
+							edit or delete, and the admin account comes from seed data
+							rather than the registration form. Hence no toolbar and no
+							action column.
+						-->
+						<small class="text-muted">Chỉ xem. Tài khoản admin được tạo bằng seed data.</small>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-modern datatable align-middle mb-0">
+						<thead>
+							<tr>
+								<th scope="col">Tên</th>
+								<th scope="col">Email</th>
+								<th scope="col">Vai trò</th>
+								<th scope="col">Ngày tạo</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="user : ${users}">
+								<td th:text="${user.name}">Nguyễn Văn An</td>
+								<td th:text="${user.email}">an.nguyen@example.com</td>
+								<td>
+									<span class="badge" th:classappend="${user.role} == 'ADMIN' ? 'bg-primary' : 'bg-secondary'"
+										th:text="${user.role}">CUSTOMER</span>
+								</td>
+								<td th:text="${user.createdAt}">12/08/2026</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</section>
+
+</main>
+</body>
+</html>

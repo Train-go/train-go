@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Tổng quan · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="pagetitle">
+		<h1>Tổng quan</h1>
+		<nav>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
+				<li class="breadcrumb-item active">Tổng quan</li>
+			</ol>
+		</nav>
+	</div>
+
+	<section class="section dashboard">
+		<div class="row">
+
+			<!--
+				The four numbers docs/product/admin.md asks for. No trend
+				percentages: there is no history to compare against yet, and a
+				made-up "+12%" is worse than no number at all.
+			-->
+			<div class="col-xl-3 col-md-6">
+				<div class="card info-card sales-card accent-card">
+					<div class="card-body">
+						<div class="card-heading">
+							<h5 class="card-title">Booking</h5>
+						</div>
+						<div class="d-flex align-items-center">
+							<div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+								<i class="bi bi-ticket-perforated"></i>
+							</div>
+							<div class="ps-3">
+								<h6 th:text="${totalBookings}">0</h6>
+								<span class="trend-label">tổng số booking</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-xl-3 col-md-6">
+				<div class="card info-card customers-card accent-card">
+					<div class="card-body">
+						<div class="card-heading">
+							<h5 class="card-title">Chuyến</h5>
+						</div>
+						<div class="d-flex align-items-center">
+							<div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+								<i class="bi bi-calendar-week"></i>
+							</div>
+							<div class="ps-3">
+								<h6 th:text="${totalTrips}">0</h6>
+								<span class="trend-label">tổng số chuyến</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-xl-3 col-md-6">
+				<div class="card info-card users-card accent-card">
+					<div class="card-body">
+						<div class="card-heading">
+							<h5 class="card-title">Người dùng</h5>
+						</div>
+						<div class="d-flex align-items-center">
+							<div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+								<i class="bi bi-people"></i>
+							</div>
+							<div class="ps-3">
+								<h6 th:text="${totalUsers}">0</h6>
+								<span class="trend-label">tài khoản đã đăng ký</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-xl-3 col-md-6">
+				<div class="card info-card revenue-card accent-card">
+					<div class="card-body">
+						<div class="card-heading">
+							<h5 class="card-title">Doanh thu</h5>
+						</div>
+						<div class="d-flex align-items-center">
+							<div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
+								<i class="bi bi-cash-coin"></i>
+							</div>
+							<div class="ps-3">
+								<h6 th:text="${#numbers.formatInteger(totalRevenue, 0, 'POINT')} + ' đ'">0 đ</h6>
+								<span class="trend-label">đã thanh toán</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-7">
+				<div class="card">
+					<div class="card-body">
+						<h5 class="card-title">Doanh thu theo ngày</h5>
+						<div id="tgRevenueChart"></div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-5">
+				<div class="card table-card">
+					<div class="card-body">
+						<h5 class="card-title">Booking gần đây</h5>
+						<div class="table-responsive">
+							<table class="table table-modern align-middle mb-0">
+								<thead>
+									<tr>
+										<th scope="col">Mã</th>
+										<th scope="col">Khách hàng</th>
+										<th scope="col">Trạng thái</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr th:each="booking : ${recentBookings}">
+										<td><a th:href="@{/admin/bookings}" th:text="${booking.code}">TG26080001</a></td>
+										<td th:text="${booking.customer}">Nguyễn Văn An</td>
+										<td>
+											<span class="badge"
+												th:classappend="${booking.paymentStatus} == 'Đã thanh toán' ? 'bg-success'
+													: (${booking.paymentStatus} == 'Đã hủy' ? 'bg-danger' : 'bg-warning text-dark')"
+												th:text="${booking.paymentStatus}">Đã thanh toán</span>
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</section>
+
+	<script>
+		/*
+		 * Placeholder series until BookingRepository can report real daily
+		 * revenue. Kept in the page rather than admin.js because it is data,
+		 * not behaviour, and it disappears with the placeholder.
+		 */
+		document.addEventListener('DOMContentLoaded', function () {
+			var el = document.querySelector('#tgRevenueChart');
+			if (!el || typeof ApexCharts === 'undefined') {
+				return;
+			}
+			new ApexCharts(el, {
+				series: [{
+					name: 'Doanh thu (nghìn đồng)',
+					data: [1850, 2400, 1600, 3100, 2750, 3600, 4200]
+				}],
+				chart: { type: 'area', height: 320, toolbar: { show: false } },
+				colors: ['#0f6cbd'],
+				dataLabels: { enabled: false },
+				stroke: { curve: 'smooth', width: 2 },
+				fill: {
+					type: 'gradient',
+					gradient: { shadeIntensity: 1, opacityFrom: 0.35, opacityTo: 0.05, stops: [0, 90, 100] }
+				},
+				xaxis: {
+					categories: ['26/08', '27/08', '28/08', '29/08', '30/08', '31/08', '01/09']
+				}
+			}).render();
+		});
+	</script>
+
+</main>
+</body>
+</html>
