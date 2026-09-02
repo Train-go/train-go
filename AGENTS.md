@@ -40,9 +40,28 @@ Phần dưới đây do nhóm sở hữu, không thuộc Harness core.
   `docs/product/overview.md`.
 - `docs/decisions/` — quyết định kỹ thuật đã chốt, phải tuân theo.
 - `docs/plans/active/mvp-traingo.md` — kế hoạch MVP đang chạy.
+- `docs/WORKLOG.md` — nhật ký bắt buộc của mọi task làm thay đổi repository.
 - `docs/session/` — plan nháp và tài liệu của phiên làm việc.
 - `docs/RUNBOOK.md` — cách chạy ứng dụng, database và bộ test ở máy local.
 - `app/` — ứng dụng Spring Boot, package gốc `com.voyagego.traingo`.
+
+### Nhật ký thay đổi bắt buộc
+
+- Mọi task có tạo, sửa, đổi tên hoặc xóa file trong repository phải thêm một
+  bản ghi vào `docs/WORKLOG.md` trước khi được xem là hoàn thành.
+- Ghi **một dòng cho mỗi task**, không ghi từng lệnh terminal hay từng lần lưu
+  file. Bản ghi phải có ngày, loại thay đổi theo Conventional Commits, kết quả,
+  phạm vi chính và bằng chứng kiểm chứng.
+- Bản ghi trong `docs/WORKLOG.md` phải nằm trong cùng commit với thay đổi mà nó
+  mô tả. Không được commit code trước rồi để nhật ký cho một commit sau.
+- Yêu cầu chỉ đọc như hỏi đáp, giải thích, review, chẩn đoán hoặc báo cáo trạng
+  thái không làm thay đổi repository thì không cần ghi nhật ký.
+- `docs/WORKLOG.md` là chỉ mục kiểm toán, không thay thế tài liệu có thẩm quyền.
+  Khi hành vi, kiến trúc, cách vận hành hoặc quyết định thay đổi, vẫn phải cập
+  nhật tương ứng `docs/product/`, `docs/decisions/`, plan đang active hoặc
+  `docs/RUNBOOK.md`.
+- Không được tuyên bố hoàn thành một task thay đổi repository nếu thiếu bản ghi
+  hoặc thiếu bằng chứng kiểm chứng đã nêu trong bản ghi.
 
 ### Hai khu vực giao diện
 

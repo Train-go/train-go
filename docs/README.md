@@ -6,6 +6,7 @@ Start with the smallest authoritative surface.
 
 - `WORKFLOW.md`: request shape, planning, judgment, operation, validation, and
   completion.
+- `WORKLOG.md`: consumer-owned audit index for every repository-mutating task.
 - `ARCHITECTURE.md`: current product, code, state, update, and ownership
   boundaries.
 - `HARNESS.md`: product principles and installed-core model.
