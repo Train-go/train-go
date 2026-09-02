@@ -9,14 +9,92 @@
  */
 
 :root {
+	/* Brand */
 	--traingo-primary: #0f6cbd;
-	--traingo-primary-dark: #0b558f;
+	--traingo-primary-hover: #0b558f;
+	--traingo-primary-active: #084a7f;
+	--traingo-primary-dark: var(--traingo-primary-hover);
 	--traingo-primary-soft: #eaf3fb;
-	--traingo-ink: #16232e;
-	--traingo-muted: #5b6b7a;
-	--traingo-surface: #ffffff;
-	--traingo-surface-alt: #f5f8fb;
-	--traingo-border: #dde5ec;
+	--traingo-secondary: #d6f23d;
+	--traingo-accent: #8b5cf6;
+
+	/* Neutral scale */
+	--traingo-neutral-50: #f8fafc;
+	--traingo-neutral-100: #f5f8fb;
+	--traingo-neutral-200: #edf2f6;
+	--traingo-neutral-300: #dde5ec;
+	--traingo-neutral-400: #a6b3be;
+	--traingo-neutral-500: #7b8c9a;
+	--traingo-neutral-600: #5b6b7a;
+	--traingo-neutral-700: #415160;
+	--traingo-neutral-800: #2a3947;
+	--traingo-neutral-900: #16232e;
+
+	/* Semantic colours */
+	--traingo-success: #22c55e;
+	--traingo-success-ink: #15803d;
+	--traingo-success-soft: #dcfce7;
+	--traingo-success-border: #86efac;
+	--traingo-warning: #f59e0b;
+	--traingo-warning-ink: #b45309;
+	--traingo-warning-soft: #fef3c7;
+	--traingo-warning-border: #fcd34d;
+	--traingo-danger: #dc2626;
+	--traingo-danger-ink: #b91c1c;
+	--traingo-danger-soft: #fee2e2;
+	--traingo-danger-border: #fca5a5;
+	--traingo-info: #3b82f6;
+	--traingo-info-ink: #1d4ed8;
+	--traingo-info-soft: #dbeafe;
+	--traingo-info-border: #93c5fd;
+
+	/* Text roles */
+	--traingo-text-primary: var(--traingo-neutral-900);
+	--traingo-text-secondary: var(--traingo-neutral-600);
+	--traingo-text-tertiary: var(--traingo-neutral-500);
+	--traingo-text-disabled: var(--traingo-neutral-400);
+	--traingo-text-inverse: var(--traingo-neutral-50);
+	--traingo-text-link: var(--traingo-primary);
+
+	/* Surface roles */
+	--traingo-surface-default: #ffffff;
+	--traingo-surface-alt: var(--traingo-neutral-100);
+	--traingo-surface-elevated: #ffffff;
+	--traingo-surface-hover: #eef5fa;
+	--traingo-surface-selected: var(--traingo-primary-soft);
+	--traingo-surface-disabled: var(--traingo-neutral-200);
+
+	/* Border roles */
+	--traingo-border-default: var(--traingo-neutral-300);
+	--traingo-border-subtle: #e9eef3;
+	--traingo-border-strong: var(--traingo-neutral-400);
+	--traingo-border-focus: var(--traingo-primary);
+
+	/* Interactive states */
+	--traingo-state-hover: var(--traingo-primary-hover);
+	--traingo-state-active: var(--traingo-primary-active);
+	--traingo-state-focus-ring: rgb(15 108 189 / 32%);
+	--traingo-state-selected: var(--traingo-primary-soft);
+	--traingo-state-disabled: var(--traingo-neutral-400);
+
+	/* Data visualisation */
+	--traingo-chart-1: #0f6cbd;
+	--traingo-chart-2: #0d9488;
+	--traingo-chart-3: #f59e0b;
+	--traingo-chart-4: #7c3aed;
+	--traingo-chart-5: #dc2626;
+	--traingo-chart-6: #0891b2;
+
+	/* Overlays */
+	--traingo-overlay-modal: rgb(15 23 42 / 58%);
+	--traingo-overlay-drawer: rgb(15 23 42 / 44%);
+	--traingo-overlay-loading: rgb(255 255 255 / 78%);
+
+	/* Backward-compatible aliases used by existing pages. */
+	--traingo-ink: var(--traingo-text-primary);
+	--traingo-muted: var(--traingo-text-secondary);
+	--traingo-surface: var(--traingo-surface-default);
+	--traingo-border: var(--traingo-border-default);
 	--traingo-radius: 0.75rem;
 	--traingo-shadow: 0 1px 2px rgba(22, 35, 46, 0.06), 0 8px 24px rgba(22, 35, 46, 0.06);
 
@@ -25,9 +103,17 @@
 	--bs-primary-rgb: 15, 108, 189;
 	--bs-link-color: var(--traingo-primary);
 	--bs-link-color-rgb: 15, 108, 189;
-	--bs-link-hover-color: var(--traingo-primary-dark);
+	--bs-link-hover-color: var(--traingo-primary-hover);
 	--bs-body-color: var(--traingo-ink);
 	--bs-border-color: var(--traingo-border);
+	--bs-success: var(--traingo-success-ink);
+	--bs-success-rgb: 21, 128, 61;
+	--bs-warning: var(--traingo-warning-ink);
+	--bs-warning-rgb: 180, 83, 9;
+	--bs-danger: var(--traingo-danger-ink);
+	--bs-danger-rgb: 185, 28, 28;
+	--bs-info: var(--traingo-info-ink);
+	--bs-info-rgb: 29, 78, 216;
 }
 
 body {
@@ -54,8 +140,8 @@ h1, h2, h3, h4, h5, h6,
 	--bs-btn-border-color: var(--traingo-primary);
 	--bs-btn-hover-bg: var(--traingo-primary-dark);
 	--bs-btn-hover-border-color: var(--traingo-primary-dark);
-	--bs-btn-active-bg: var(--traingo-primary-dark);
-	--bs-btn-active-border-color: var(--traingo-primary-dark);
+	--bs-btn-active-bg: var(--traingo-primary-active);
+	--bs-btn-active-border-color: var(--traingo-primary-active);
 }
 
 .btn-outline-primary {
@@ -63,8 +149,8 @@ h1, h2, h3, h4, h5, h6,
 	--bs-btn-border-color: var(--traingo-primary);
 	--bs-btn-hover-bg: var(--traingo-primary);
 	--bs-btn-hover-border-color: var(--traingo-primary);
-	--bs-btn-active-bg: var(--traingo-primary-dark);
-	--bs-btn-active-border-color: var(--traingo-primary-dark);
+	--bs-btn-active-bg: var(--traingo-primary-active);
+	--bs-btn-active-border-color: var(--traingo-primary-active);
 }
 
 /* Square brand badge next to the wordmark in the navbar. */

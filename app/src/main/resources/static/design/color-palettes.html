@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="vi" data-mode="light" data-palette="railway-blue">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Hệ design token Railway Blue đầy đủ cho giao diện TrainGo.">
+	<title>TrainGo Color Lab</title>
+	<style>
+		:root {
+			--primary: #0f6cbd;
+			--primary-hover: #0b558f;
+			--primary-active: #084a7f;
+			--primary-soft: #eaf3fb;
+			--secondary: #d6f23d;
+			--accent: #8b5cf6;
+			--ink: #16232e;
+			--muted: #5b6b7a;
+			--surface: #ffffff;
+			--surface-alt: #f5f8fb;
+			--border: #dde5ec;
+			--canvas: #edf2f6;
+			--success: #22c55e;
+			--success-ink: #15803d;
+			--success-soft: #dcfce7;
+			--success-border: #86efac;
+			--warning: #f59e0b;
+			--warning-ink: #b45309;
+			--warning-soft: #fef3c7;
+			--warning-border: #fcd34d;
+			--danger: #dc2626;
+			--danger-ink: #b91c1c;
+			--danger-soft: #fee2e2;
+			--danger-border: #fca5a5;
+			--info: #3b82f6;
+			--info-ink: #1d4ed8;
+			--info-soft: #dbeafe;
+			--info-border: #93c5fd;
+			--radius: 14px;
+			--shadow: 0 18px 55px rgb(22 35 46 / 0.10);
+		}
+
+		[data-mode="dark"] {
+			--ink: #edf4f8;
+			--muted: #a6b3be;
+			--surface: #18212b;
+			--surface-alt: #1e2934;
+			--border: #344250;
+			--canvas: #10161d;
+			--primary-soft: color-mix(in srgb, var(--primary) 22%, var(--surface));
+			--shadow: 0 22px 65px rgb(0 0 0 / 0.30);
+		}
+
+		* { box-sizing: border-box; }
+
+		html { scroll-behavior: smooth; }
+
+		body {
+			margin: 0;
+			background: var(--canvas);
+			color: var(--ink);
+			font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+			line-height: 1.55;
+			transition: background-color 180ms ease, color 180ms ease;
+		}
+
+		button, input, select { font: inherit; }
+
+		button { color: inherit; }
+
+		button:focus-visible, input:focus-visible, select:focus-visible {
+			outline: 3px solid color-mix(in srgb, var(--primary) 40%, transparent);
+			outline-offset: 3px;
+		}
+
+		.lab-shell {
+			width: min(1180px, calc(100% - 32px));
+			margin: 0 auto;
+			padding: 40px 0 64px;
+		}
+
+		.lab-header {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 28px;
+			align-items: start;
+			margin-bottom: 30px;
+		}
+
+		.brand-lockup {
+			display: inline-flex;
+			align-items: center;
+			gap: 11px;
+			font-weight: 750;
+			letter-spacing: -0.02em;
+		}
+
+		.brand-mark {
+			display: inline-grid;
+			place-items: center;
+			width: 38px;
+			height: 38px;
+			border-radius: 10px;
+			background: var(--primary);
+			color: #fff;
+			font-size: 13px;
+			box-shadow: 0 8px 20px color-mix(in srgb, var(--primary) 25%, transparent);
+		}
+
+		.lab-kicker {
+			margin: 22px 0 8px;
+			color: var(--primary);
+			font-size: 12px;
+			font-weight: 750;
+			letter-spacing: 0.13em;
+			text-transform: uppercase;
+		}
+
+		h1 {
+			max-width: 760px;
+			margin: 0;
+			font-size: clamp(34px, 5vw, 58px);
+			line-height: 1.12;
+			letter-spacing: -0.045em;
+		}
+
+		.lab-intro {
+			max-width: 650px;
+			margin: 16px 0 0;
+			color: var(--muted);
+			font-size: 17px;
+		}
+
+		.mode-toggle {
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			background: var(--surface);
+			padding: 10px 14px;
+			font-weight: 700;
+			white-space: nowrap;
+			cursor: pointer;
+			box-shadow: 0 5px 18px rgb(22 35 46 / 0.05);
+		}
+
+		.mode-toggle:hover { border-color: var(--primary); }
+
+		.palette-grid {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			max-width: 760px;
+			margin-inline: auto;
+			gap: 14px;
+			margin-bottom: 26px;
+		}
+
+		.palette-option {
+			--option-primary: #0f6cbd;
+			--option-hover: #0b558f;
+			--option-soft: #eaf3fb;
+			--option-ink: #16232e;
+			position: relative;
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 20px;
+			align-items: center;
+			min-height: 156px;
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			background: var(--surface);
+			padding: 20px;
+			text-align: left;
+			cursor: pointer;
+			transition: transform 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
+		}
+
+		.palette-option:hover {
+			transform: translateY(-2px);
+			border-color: var(--option-primary);
+			box-shadow: 0 13px 35px color-mix(in srgb, var(--option-primary) 12%, transparent);
+		}
+
+		.palette-option:active { transform: translateY(0); }
+
+		.palette-option[aria-pressed="true"] {
+			border-color: var(--option-primary);
+			box-shadow: 0 0 0 3px color-mix(in srgb, var(--option-primary) 18%, transparent);
+		}
+
+		.option-title-row {
+			display: flex;
+			align-items: center;
+			gap: 9px;
+			flex-wrap: wrap;
+		}
+
+		.option-title {
+			font-size: 19px;
+			font-weight: 780;
+			letter-spacing: -0.02em;
+		}
+
+		.recommendation {
+			border-radius: 999px;
+			background: var(--secondary);
+			color: #16232e;
+			padding: 4px 8px;
+			font-size: 11px;
+			font-weight: 800;
+			letter-spacing: 0.04em;
+		}
+
+		.option-note {
+			margin: 7px 0 0;
+			color: var(--muted);
+			font-size: 14px;
+		}
+
+		.swatches {
+			display: grid;
+			grid-template-columns: repeat(3, 34px);
+			gap: 6px;
+		}
+
+		.swatch {
+			width: 34px;
+			height: 34px;
+			border: 1px solid rgb(0 0 0 / 0.08);
+			border-radius: 9px;
+		}
+
+		.swatch:nth-child(1) { background: var(--option-primary); }
+		.swatch:nth-child(2) { background: var(--option-hover); }
+		.swatch:nth-child(3) { background: var(--option-soft); }
+		.swatch:nth-child(4) { background: var(--option-ink); }
+		.swatch:nth-child(5) { background: var(--option-secondary); }
+		.swatch:nth-child(6) { background: var(--option-accent); }
+
+		.preview-section {
+			overflow: hidden;
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			background: var(--surface);
+			box-shadow: var(--shadow);
+		}
+
+		.preview-toolbar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 20px;
+			border-bottom: 1px solid var(--border);
+			padding: 14px 20px;
+		}
+
+		.preview-name {
+			font-size: 15px;
+			font-weight: 750;
+		}
+
+		.preview-hint {
+			color: var(--muted);
+			font-size: 13px;
+		}
+
+		.preview-nav {
+			display: flex;
+			align-items: center;
+			gap: 28px;
+			min-height: 68px;
+			padding: 0 28px;
+			background: var(--surface);
+		}
+
+		.preview-nav .brand-lockup { margin-right: auto; }
+
+		.nav-link {
+			color: var(--muted);
+			font-size: 14px;
+			font-weight: 650;
+			text-decoration: none;
+		}
+
+		.nav-link.active { color: var(--primary); }
+
+		.btn {
+			min-height: 42px;
+			border-radius: 10px;
+			padding: 9px 16px;
+			font-weight: 750;
+			white-space: nowrap;
+			cursor: pointer;
+			transition: background-color 140ms ease, transform 100ms ease;
+		}
+
+		.btn:active { transform: translateY(1px); }
+
+		.btn-primary {
+			border: 1px solid var(--primary);
+			background: var(--primary);
+			color: #fff;
+		}
+
+		.btn-primary:hover {
+			border-color: var(--primary-hover);
+			background: var(--primary-hover);
+		}
+
+		.btn-secondary {
+			border: 1px solid var(--border);
+			background: var(--surface);
+			color: var(--ink);
+		}
+
+		.preview-content {
+			display: grid;
+			grid-template-columns: minmax(0, 1.25fr) minmax(300px, 0.75fr);
+			gap: 22px;
+			padding: 28px;
+			background: var(--surface-alt);
+		}
+
+		.booking-panel, .trip-card {
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			background: var(--surface);
+		}
+
+		.booking-panel { padding: 24px; }
+
+		.booking-panel h2 {
+			margin: 0;
+			font-size: clamp(26px, 3vw, 38px);
+			line-height: 1.18;
+			letter-spacing: -0.035em;
+		}
+
+		.booking-panel > p {
+			margin: 8px 0 22px;
+			color: var(--muted);
+		}
+
+		.search-grid {
+			display: grid;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 14px;
+		}
+
+		.field { display: grid; gap: 6px; }
+
+		.field label {
+			font-size: 13px;
+			font-weight: 720;
+		}
+
+		.field select, .field input {
+			width: 100%;
+			min-height: 44px;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			background: var(--surface);
+			color: var(--ink);
+			padding: 9px 11px;
+		}
+
+		.field select:focus, .field input:focus { border-color: var(--primary); }
+
+		.search-action {
+			display: flex;
+			align-items: end;
+		}
+
+		.search-action .btn { width: 100%; }
+
+		.trip-card {
+			align-self: stretch;
+			padding: 22px;
+		}
+
+		.sample-label {
+			margin: 0 0 14px;
+			color: var(--muted);
+			font-size: 12px;
+			font-weight: 750;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+		}
+
+		.trip-code {
+			display: flex;
+			align-items: baseline;
+			justify-content: space-between;
+			gap: 16px;
+		}
+
+		.trip-code strong {
+			font-size: 26px;
+			letter-spacing: -0.03em;
+		}
+
+		.price {
+			color: var(--primary);
+			font-weight: 800;
+		}
+
+		.route-line {
+			display: grid;
+			grid-template-columns: auto 1fr auto;
+			gap: 12px;
+			align-items: center;
+			margin: 25px 0;
+		}
+
+		.route-stop strong { display: block; font-size: 18px; }
+		.route-stop span { color: var(--muted); font-size: 12px; }
+
+		.rail-line {
+			position: relative;
+			height: 2px;
+			background: var(--border);
+		}
+
+		.rail-line::before, .rail-line::after {
+			content: "";
+			position: absolute;
+			top: 50%;
+			width: 9px;
+			height: 9px;
+			border: 2px solid var(--primary);
+			border-radius: 50%;
+			background: var(--surface);
+			transform: translateY(-50%);
+		}
+
+		.rail-line::before { left: 0; }
+		.rail-line::after { right: 0; }
+
+		.seat-block {
+			border-top: 1px solid var(--border);
+			padding-top: 18px;
+		}
+
+		.seat-legend {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			margin-top: 10px;
+		}
+
+		.seat {
+			display: inline-flex;
+			align-items: center;
+			gap: 7px;
+			border-radius: 8px;
+			padding: 6px 9px;
+			font-size: 12px;
+			font-weight: 700;
+		}
+
+		.seat.available { border: 1px solid var(--border); background: var(--surface-alt); }
+		.seat.selected { background: var(--primary); color: #fff; }
+		.seat.booked { background: var(--danger-soft); color: var(--danger-ink); }
+
+		.tokens-section {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 22px;
+			align-items: end;
+			border-top: 1px solid var(--border);
+			padding: 24px 28px 28px;
+			background: var(--surface);
+		}
+
+		.tokens-section h2 {
+			margin: 0 0 6px;
+			font-size: 22px;
+			letter-spacing: -0.02em;
+		}
+
+		.tokens-section p { margin: 0; color: var(--muted); font-size: 14px; }
+
+		.token-catalog {
+			display: grid;
+			gap: 28px;
+			grid-column: 1 / -1;
+			margin-top: 4px;
+		}
+
+		.token-group {
+			border-top: 1px solid var(--border);
+			padding-top: 22px;
+		}
+
+		.token-group-header {
+			display: flex;
+			justify-content: space-between;
+			gap: 18px;
+			align-items: baseline;
+			margin-bottom: 12px;
+		}
+
+		.token-group-header h3 {
+			margin: 0;
+			font-size: 17px;
+			letter-spacing: -0.02em;
+		}
+
+		.token-group-header p {
+			max-width: 610px;
+			font-size: 12px;
+			text-align: right;
+		}
+
+		.token-grid {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 10px;
+		}
+
+		.token-group.is-neutral .token-grid {
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+		}
+
+		.token-card {
+			overflow: hidden;
+			min-width: 0;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			background: var(--surface-alt);
+		}
+
+		.token-swatch {
+			display: block;
+			height: 54px;
+			background-color: #eef2f6;
+			background-image: linear-gradient(45deg, #dce3e9 25%, transparent 25%), linear-gradient(-45deg, #dce3e9 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #dce3e9 75%), linear-gradient(-45deg, transparent 75%, #dce3e9 75%);
+			background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+			background-size: 12px 12px;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.token-swatch-fill {
+			display: block;
+			width: 100%;
+			height: 100%;
+			background: var(--swatch);
+		}
+
+		.token-card.is-elevated { box-shadow: 0 10px 26px rgb(22 35 46 / 0.12); }
+
+		.token-card-body { padding: 10px 11px 11px; }
+
+		.token-label {
+			display: flex;
+			justify-content: space-between;
+			gap: 8px;
+			align-items: baseline;
+			font-size: 12px;
+			font-weight: 750;
+		}
+
+		.token-value {
+			color: var(--muted);
+			font-family: Consolas, "Courier New", monospace;
+			font-size: 11px;
+			font-weight: 700;
+			white-space: nowrap;
+		}
+
+		.token-variable {
+			display: block;
+			overflow: hidden;
+			margin-top: 4px;
+			color: var(--muted);
+			font-family: Consolas, "Courier New", monospace;
+			font-size: 10px;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		.semantic-grid {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 10px;
+		}
+
+		.semantic-family {
+			overflow: hidden;
+			border: 1px solid var(--status-border);
+			border-radius: 10px;
+			background: var(--status-soft);
+		}
+
+		.semantic-family-header {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 12px;
+			color: var(--status-ink);
+			font-size: 13px;
+			font-weight: 800;
+		}
+
+		.semantic-dot {
+			width: 9px;
+			height: 9px;
+			flex: 0 0 auto;
+			border-radius: 50%;
+			background: var(--status-base);
+			box-shadow: 0 0 0 4px color-mix(in srgb, var(--status-base) 16%, transparent);
+		}
+
+		.semantic-base {
+			height: 50px;
+			background: var(--status-base);
+		}
+
+		.semantic-values {
+			display: grid;
+			gap: 7px;
+			padding: 11px 12px 12px;
+			background: color-mix(in srgb, var(--surface) 72%, transparent);
+		}
+
+		.semantic-value {
+			display: grid;
+			grid-template-columns: 12px minmax(0, 1fr) auto;
+			gap: 6px;
+			align-items: center;
+			font-size: 10px;
+		}
+
+		.semantic-mini-swatch { width: 12px; height: 12px; border: 1px solid rgb(0 0 0 / 0.08); border-radius: 3px; background: var(--mini-swatch); }
+		.semantic-value code { color: var(--muted); font-size: 9px; }
+		[data-mode="dark"] .semantic-family-header { color: var(--status-base); }
+		[data-mode="dark"] .semantic-values { background: color-mix(in srgb, var(--surface) 82%, transparent); }
+		[data-mode="dark"] .seat.booked { background: color-mix(in srgb, var(--danger) 22%, var(--surface)); color: var(--danger); }
+
+		.copy-status {
+			min-height: 22px;
+			margin: 12px 0 0;
+			color: var(--success);
+			font-size: 13px;
+			font-weight: 700;
+		}
+
+		@media (max-width: 860px) {
+			.preview-content { grid-template-columns: 1fr; }
+			.token-grid, .token-group.is-neutral .token-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+			.semantic-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+			.preview-nav .nav-link { display: none; }
+		}
+
+		@media (max-width: 680px) {
+			.lab-shell { width: min(100% - 20px, 1180px); padding-top: 22px; }
+			.lab-header { grid-template-columns: 1fr; gap: 18px; }
+			.mode-toggle { justify-self: start; }
+			.palette-grid { grid-template-columns: 1fr; }
+			.palette-option { min-height: 140px; }
+			.preview-nav { padding: 0 18px; }
+			.preview-content { padding: 16px; }
+			.booking-panel, .trip-card { padding: 18px; }
+			.search-grid { grid-template-columns: 1fr; }
+			.tokens-section { grid-template-columns: 1fr; padding: 20px; }
+			.tokens-section .btn { width: 100%; }
+			.token-group-header { display: block; }
+			.token-group-header p { margin-top: 4px; text-align: left; }
+			.token-grid, .token-group.is-neutral .token-grid, .semantic-grid { grid-template-columns: 1fr; }
+			.route-line { grid-template-columns: 1fr; }
+			.rail-line { width: 100%; }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after {
+				scroll-behavior: auto !important;
+				transition-duration: 0.01ms !important;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="lab-shell">
+		<header class="lab-header">
+			<div>
+				<div class="brand-lockup"><span class="brand-mark">TG</span><span>TrainGo Color Lab</span></div>
+				<p class="lab-kicker">Design system đã chốt</p>
+				<h1>Railway Blue, đầy đủ từ thương hiệu đến trạng thái.</h1>
+				<p class="lab-intro">Một nguồn màu thống nhất cho đặt vé, quản trị, form, trạng thái hệ thống và dashboard.</p>
+			</div>
+			<button class="mode-toggle" id="modeToggle" type="button" aria-pressed="false">Xem nền tối</button>
+		</header>
+
+		<section class="palette-grid" aria-label="Bộ màu thương hiệu">
+			<button class="palette-option" type="button" data-palette="railway-blue" aria-pressed="true"
+				style="--option-primary:#0f6cbd;--option-hover:#0b558f;--option-soft:#eaf3fb;--option-ink:#16232e;--option-secondary:#d6f23d;--option-accent:#8b5cf6">
+				<span>
+					<span class="option-title-row"><span class="option-title">Railway Blue</span><span class="recommendation">Đề xuất</span></span>
+					<span class="option-note">Tin cậy, rõ ràng, ít xung đột với màu trạng thái.</span>
+				</span>
+				<span class="swatches" aria-label="Mẫu màu Railway Blue"><span class="swatch"></span><span class="swatch"></span><span class="swatch"></span><span class="swatch"></span><span class="swatch"></span><span class="swatch"></span></span>
+			</button>
+		</section>
+
+		<section class="preview-section" aria-labelledby="previewTitle">
+			<div class="preview-toolbar">
+				<div><div class="preview-name" id="previewTitle">Railway Blue</div><div class="preview-hint">Dữ liệu minh họa</div></div>
+				<div class="preview-hint">Tương tác với form và nút để cảm nhận màu</div>
+			</div>
+
+			<nav class="preview-nav" aria-label="Điều hướng mẫu">
+				<div class="brand-lockup"><span class="brand-mark">TG</span><span>TrainGo</span></div>
+				<a class="nav-link active" href="#previewTitle">Trang chủ</a>
+				<a class="nav-link" href="#previewTitle">Chuyến của tôi</a>
+				<button class="btn btn-secondary" type="button">Đăng nhập</button>
+			</nav>
+
+			<div class="preview-content">
+				<section class="booking-panel">
+					<h2>Đi tàu, chọn chỗ theo ý bạn.</h2>
+					<p>Tìm hành trình phù hợp và đặt vé trong vài phút.</p>
+					<form class="search-grid" id="sampleForm">
+						<div class="field"><label for="fromStation">Ga đi</label><select id="fromStation"><option>Ga Sài Gòn</option><option>Ga Hà Nội</option></select></div>
+						<div class="field"><label for="toStation">Ga đến</label><select id="toStation"><option>Ga Nha Trang</option><option>Ga Đà Nẵng</option></select></div>
+						<div class="field"><label for="travelDate">Ngày đi</label><input id="travelDate" type="date" value="2026-09-12"></div>
+						<div class="search-action"><button class="btn btn-primary" type="submit">Tìm chuyến</button></div>
+					</form>
+				</section>
+
+				<article class="trip-card">
+					<p class="sample-label">Chuyến phù hợp</p>
+					<div class="trip-code"><strong>SNT1</strong><span class="price">420.000 đ</span></div>
+					<div class="route-line">
+						<div class="route-stop"><strong>21:15</strong><span>Sài Gòn</span></div>
+						<div class="rail-line" aria-hidden="true"></div>
+						<div class="route-stop"><strong>05:00</strong><span>Nha Trang</span></div>
+					</div>
+					<div class="seat-block">
+						<strong>Trạng thái ghế</strong>
+						<div class="seat-legend"><span class="seat available">A01 Trống</span><span class="seat selected">A02 Đang chọn</span><span class="seat booked">A03 Đã đặt</span></div>
+					</div>
+				</article>
+			</div>
+
+			<div class="tokens-section">
+				<div><h2>Hệ token <span id="tokenPaletteName">Railway Blue</span></h2><p>Đầy đủ vai trò màu dùng chung cho giao diện khách hàng, quản trị và dashboard.</p><p class="copy-status" id="copyStatus" role="status" aria-live="polite"></p></div>
+				<button class="btn btn-primary" id="copyTokens" type="button">Sao chép CSS</button>
+				<div class="token-catalog" id="tokenCatalog"></div>
+			</div>
+		</section>
+	</main>
+
+	<script>
+		(function () {
+			"use strict";
+
+			const palettes = {
+				"railway-blue": { name: "Railway Blue", primary: "#0F6CBD", hover: "#0B558F", active: "#084A7F", soft: "#EAF3FB", ink: "#16232E", muted: "#5B6B7A", surface: "#FFFFFF", alt: "#F5F8FB", border: "#DDE5EC" }
+			};
+
+			const root = document.documentElement;
+			const tokenGroups = [
+				{
+					title: "Brand",
+					description: "Màu nhận diện và các cấp độ tương tác chính.",
+					tokens: [
+						{ label: "Primary", variable: "--traingo-primary", value: "#0F6CBD" },
+						{ label: "Primary Hover", variable: "--traingo-primary-hover", value: "#0B558F" },
+						{ label: "Primary Active", variable: "--traingo-primary-active", value: "#084A7F" },
+						{ label: "Primary Soft", variable: "--traingo-primary-soft", value: "#EAF3FB" },
+						{ label: "Secondary", variable: "--traingo-secondary", value: "#D6F23D" },
+						{ label: "Accent", variable: "--traingo-accent", value: "#8B5CF6" }
+					]
+				},
+				{
+					title: "Neutral",
+					description: "Thang xám lạnh 50 đến 900 cho chữ, nền, viền và trạng thái vô hiệu.",
+					className: "is-neutral",
+					tokens: [
+						{ label: "Neutral 50", variable: "--traingo-neutral-50", value: "#F8FAFC" },
+						{ label: "Neutral 100", variable: "--traingo-neutral-100", value: "#F5F8FB" },
+						{ label: "Neutral 200", variable: "--traingo-neutral-200", value: "#EDF2F6" },
+						{ label: "Neutral 300", variable: "--traingo-neutral-300", value: "#DDE5EC" },
+						{ label: "Neutral 400", variable: "--traingo-neutral-400", value: "#A6B3BE" },
+						{ label: "Neutral 500", variable: "--traingo-neutral-500", value: "#7B8C9A" },
+						{ label: "Neutral 600", variable: "--traingo-neutral-600", value: "#5B6B7A" },
+						{ label: "Neutral 700", variable: "--traingo-neutral-700", value: "#415160" },
+						{ label: "Neutral 800", variable: "--traingo-neutral-800", value: "#2A3947" },
+						{ label: "Neutral 900", variable: "--traingo-neutral-900", value: "#16232E" }
+					]
+				},
+				{
+					title: "Semantic / Status",
+					description: "Mỗi trạng thái có màu nền tươi, chữ đậm, nền soft và viền riêng.",
+					families: [
+						{ label: "Success", base: { label: "Base", variable: "--traingo-success", value: "#22C55E" }, ink: { label: "Ink", variable: "--traingo-success-ink", value: "#15803D" }, soft: { label: "Soft", variable: "--traingo-success-soft", value: "#DCFCE7" }, border: { label: "Border", variable: "--traingo-success-border", value: "#86EFAC" } },
+						{ label: "Warning", base: { label: "Base", variable: "--traingo-warning", value: "#F59E0B" }, ink: { label: "Ink", variable: "--traingo-warning-ink", value: "#B45309" }, soft: { label: "Soft", variable: "--traingo-warning-soft", value: "#FEF3C7" }, border: { label: "Border", variable: "--traingo-warning-border", value: "#FCD34D" } },
+						{ label: "Danger", base: { label: "Base", variable: "--traingo-danger", value: "#DC2626" }, ink: { label: "Ink", variable: "--traingo-danger-ink", value: "#B91C1C" }, soft: { label: "Soft", variable: "--traingo-danger-soft", value: "#FEE2E2" }, border: { label: "Border", variable: "--traingo-danger-border", value: "#FCA5A5" } },
+						{ label: "Info", base: { label: "Base", variable: "--traingo-info", value: "#3B82F6" }, ink: { label: "Ink", variable: "--traingo-info-ink", value: "#1D4ED8" }, soft: { label: "Soft", variable: "--traingo-info-soft", value: "#DBEAFE" }, border: { label: "Border", variable: "--traingo-info-border", value: "#93C5FD" } }
+					]
+				},
+				{
+					title: "Text",
+					description: "Vai trò chữ dùng xuyên suốt client và admin.",
+					tokens: [
+						{ label: "Text Primary", variable: "--traingo-text-primary", value: "#16232E" },
+						{ label: "Text Secondary", variable: "--traingo-text-secondary", value: "#5B6B7A" },
+						{ label: "Text Tertiary", variable: "--traingo-text-tertiary", value: "#7B8C9A" },
+						{ label: "Text Disabled", variable: "--traingo-text-disabled", value: "#A6B3BE" },
+						{ label: "Text Inverse", variable: "--traingo-text-inverse", value: "#F8FAFC" },
+						{ label: "Text Link", variable: "--traingo-text-link", value: "#0F6CBD" }
+					]
+				},
+				{
+					title: "Surface",
+					description: "Nền mặc định, lớp nổi và phản hồi khi người dùng tương tác.",
+					tokens: [
+						{ label: "Surface Default", variable: "--traingo-surface-default", value: "#FFFFFF" },
+						{ label: "Surface Alt", variable: "--traingo-surface-alt", value: "#F5F8FB" },
+						{ label: "Surface Elevated", variable: "--traingo-surface-elevated", value: "#FFFFFF", className: "is-elevated" },
+						{ label: "Surface Hover", variable: "--traingo-surface-hover", value: "#EEF5FA" },
+						{ label: "Surface Selected", variable: "--traingo-surface-selected", value: "#EAF3FB" },
+						{ label: "Surface Disabled", variable: "--traingo-surface-disabled", value: "#EDF2F6" }
+					]
+				},
+				{
+					title: "Border",
+					description: "Cấp độ phân tách, focus và phản hồi semantic.",
+					tokens: [
+						{ label: "Border Default", variable: "--traingo-border-default", value: "#DDE5EC" },
+						{ label: "Border Subtle", variable: "--traingo-border-subtle", value: "#E9EEF3" },
+						{ label: "Border Strong", variable: "--traingo-border-strong", value: "#A6B3BE" },
+						{ label: "Border Focus", variable: "--traingo-border-focus", value: "#0F6CBD" },
+						{ label: "Border Success", variable: "--traingo-success-border", value: "#86EFAC" },
+						{ label: "Border Warning", variable: "--traingo-warning-border", value: "#FCD34D" },
+						{ label: "Border Danger", variable: "--traingo-danger-border", value: "#FCA5A5" },
+						{ label: "Border Info", variable: "--traingo-info-border", value: "#93C5FD" }
+					]
+				},
+				{
+					title: "Interactive / State",
+					description: "Các trạng thái nhất quán cho nút, ô chọn, menu và form.",
+					tokens: [
+						{ label: "Hover", variable: "--traingo-state-hover", value: "#0B558F" },
+						{ label: "Active / Pressed", variable: "--traingo-state-active", value: "#084A7F" },
+						{ label: "Focus Ring", variable: "--traingo-state-focus-ring", value: "rgb(15 108 189 / 32%)" },
+						{ label: "Selected", variable: "--traingo-state-selected", value: "#EAF3FB" },
+						{ label: "Disabled", variable: "--traingo-state-disabled", value: "#A6B3BE" }
+					]
+				},
+				{
+					title: "Data Visualization",
+					description: "Sáu màu phân biệt tốt cho dashboard, biểu đồ và analytics.",
+					tokens: [
+						{ label: "Chart 1", variable: "--traingo-chart-1", value: "#0F6CBD" },
+						{ label: "Chart 2", variable: "--traingo-chart-2", value: "#0D9488" },
+						{ label: "Chart 3", variable: "--traingo-chart-3", value: "#F59E0B" },
+						{ label: "Chart 4", variable: "--traingo-chart-4", value: "#7C3AED" },
+						{ label: "Chart 5", variable: "--traingo-chart-5", value: "#DC2626" },
+						{ label: "Chart 6", variable: "--traingo-chart-6", value: "#0891B2" }
+					]
+				},
+				{
+					title: "Overlay",
+					description: "Lớp phủ giữ đủ tương phản cho modal, drawer và trạng thái tải.",
+					tokens: [
+						{ label: "Modal Backdrop", variable: "--traingo-overlay-modal", value: "rgb(15 23 42 / 58%)" },
+						{ label: "Drawer Backdrop", variable: "--traingo-overlay-drawer", value: "rgb(15 23 42 / 44%)" },
+						{ label: "Loading Overlay", variable: "--traingo-overlay-loading", value: "rgb(255 255 255 / 78%)" }
+					]
+				}
+			];
+
+			function renderTokenCard(token) {
+				const className = token.className ? " " + token.className : "";
+				return '<article class="token-card' + className + '"><span class="token-swatch"><span class="token-swatch-fill" style="--swatch:' + token.value + '"></span></span><div class="token-card-body"><div class="token-label"><span>' + token.label + '</span><code class="token-value">' + token.value + '</code></div><code class="token-variable">' + token.variable + '</code></div></article>';
+			}
+
+			function renderSemanticFamily(family) {
+				const values = [family.base, family.soft, family.border, family.ink];
+				return '<article class="semantic-family" style="--status-base:' + family.base.value + ';--status-soft:' + family.soft.value + ';--status-border:' + family.border.value + ';--status-ink:' + family.ink.value + '"><div class="semantic-family-header"><span class="semantic-dot" aria-hidden="true"></span>' + family.label + '</div><div class="semantic-base" aria-hidden="true"></div><div class="semantic-values">' + values.map(function (token) {
+					return '<div class="semantic-value"><span class="semantic-mini-swatch" style="--mini-swatch:' + token.value + '"></span><span>' + token.label + '</span><code>' + token.value + '</code></div>';
+				}).join("") + '</div></article>';
+			}
+
+			function renderTokenCatalog() {
+				document.getElementById("tokenCatalog").innerHTML = tokenGroups.map(function (group) {
+					const body = group.families
+						? '<div class="semantic-grid">' + group.families.map(renderSemanticFamily).join("") + '</div>'
+						: '<div class="token-grid">' + group.tokens.map(renderTokenCard).join("") + '</div>';
+					return '<section class="token-group ' + (group.className || "") + '"><div class="token-group-header"><h3>' + group.title + '</h3><p>' + group.description + '</p></div>' + body + '</section>';
+				}).join("");
+			}
+
+			function applyPalette(id) {
+				const palette = palettes[id];
+				root.dataset.palette = id;
+				root.style.setProperty("--primary", palette.primary);
+				root.style.setProperty("--primary-hover", palette.hover);
+				root.style.setProperty("--primary-active", palette.active);
+				root.style.setProperty("--primary-soft", palette.soft);
+				if (root.dataset.mode !== "dark") {
+					root.style.setProperty("--ink", palette.ink);
+					root.style.setProperty("--muted", palette.muted);
+					root.style.setProperty("--surface", palette.surface);
+					root.style.setProperty("--surface-alt", palette.alt);
+					root.style.setProperty("--border", palette.border);
+				} else {
+					root.style.setProperty("--primary-soft", "color-mix(in srgb, var(--primary) 22%, var(--surface))");
+				}
+				document.querySelectorAll("[data-palette]").forEach(function (button) {
+					if (button.classList.contains("palette-option")) button.setAttribute("aria-pressed", String(button.dataset.palette === id));
+				});
+				document.getElementById("previewTitle").textContent = palette.name;
+				document.getElementById("tokenPaletteName").textContent = palette.name;
+				document.getElementById("copyStatus").textContent = "";
+				renderTokenCatalog();
+			}
+
+			function setMode(mode) {
+				root.dataset.mode = mode;
+				const dark = mode === "dark";
+				const button = document.getElementById("modeToggle");
+				button.setAttribute("aria-pressed", String(dark));
+				button.textContent = dark ? "Xem nền sáng" : "Xem nền tối";
+				if (dark) {
+					root.style.setProperty("--ink", "#EDF4F8");
+					root.style.setProperty("--muted", "#A6B3BE");
+					root.style.setProperty("--surface", "#18212B");
+					root.style.setProperty("--surface-alt", "#1E2934");
+					root.style.setProperty("--border", "#344250");
+					root.style.setProperty("--primary-soft", "color-mix(in srgb, var(--primary) 22%, var(--surface))");
+				} else {
+					applyPalette(root.dataset.palette);
+				}
+			}
+
+			document.querySelectorAll(".palette-option").forEach(function (button) {
+				button.addEventListener("click", function () { applyPalette(button.dataset.palette); });
+			});
+
+			document.getElementById("modeToggle").addEventListener("click", function () {
+				setMode(root.dataset.mode === "dark" ? "light" : "dark");
+			});
+
+			document.getElementById("sampleForm").addEventListener("submit", function (event) {
+				event.preventDefault();
+			});
+
+			document.getElementById("copyTokens").addEventListener("click", async function () {
+				const uniqueTokens = new Map();
+				tokenGroups.forEach(function (group) {
+					if (group.tokens) group.tokens.forEach(function (token) { uniqueTokens.set(token.variable, token.value); });
+					if (group.families) group.families.forEach(function (family) {
+						[family.base, family.ink, family.soft, family.border].forEach(function (token) { uniqueTokens.set(token.variable, token.value); });
+					});
+				});
+				const tokenLines = Array.from(uniqueTokens, function (entry) { return "  " + entry[0] + ": " + entry[1] + ";"; });
+				const aliasLines = [
+					"  --traingo-primary-dark: var(--traingo-primary-hover);",
+					"  --traingo-ink: var(--traingo-text-primary);",
+					"  --traingo-muted: var(--traingo-text-secondary);",
+					"  --traingo-surface: var(--traingo-surface-default);",
+					"  --traingo-border: var(--traingo-border-default);"
+				];
+				const css = ":root {\n" + tokenLines.concat(aliasLines).join("\n") + "\n}";
+				try {
+					await navigator.clipboard.writeText(css);
+					document.getElementById("copyStatus").textContent = "Đã sao chép bộ token CSS.";
+				} catch (error) {
+					document.getElementById("copyStatus").textContent = "Trình duyệt chưa cho phép sao chép. Hãy mở trang qua localhost.";
+				}
+			});
+
+			applyPalette("railway-blue");
+		}());
+	</script>
+</body>
+</html>

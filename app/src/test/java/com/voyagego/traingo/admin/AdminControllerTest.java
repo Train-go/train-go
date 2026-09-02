@@ -112,6 +112,18 @@ class AdminControllerTest {
 		mockMvc.perform(get("/css/admin/admin.css")).andExpect(status().isOk());
 		mockMvc.perform(get("/js/admin/admin.js")).andExpect(status().isOk());
 		mockMvc.perform(get("/vendor/bootstrap-icons/bootstrap-icons.css")).andExpect(status().isOk());
+		mockMvc.perform(get("/design/color-palettes.html")).andExpect(status().isOk());
+	}
+
+	@Test
+	void designPalette_exposesTheCompleteRailwayBlueTokenCatalog() throws Exception {
+		mockMvc.perform(get("/design/color-palettes.html"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("Primary Active")))
+			.andExpect(content().string(containsString("--traingo-neutral-900")))
+			.andExpect(content().string(containsString("--traingo-success-border")))
+			.andExpect(content().string(containsString("--traingo-chart-6")))
+			.andExpect(content().string(containsString("--traingo-overlay-loading")));
 	}
 
 	@Test

@@ -15,8 +15,26 @@
 :root {
     --color-primary: #7367f0;
     --color-primary-rgb: 115, 103, 240;
-    --color-danger: #ea5455;
-    --color-success: #28c76f;
+    --color-danger: #dc2626;
+    --color-danger-rgb: 220, 38, 38;
+    --color-danger-ink: #b91c1c;
+    --color-success: #22c55e;
+    --color-success-rgb: 34, 197, 94;
+    --color-success-ink: #15803d;
+    --color-warning: #f59e0b;
+    --color-warning-rgb: 245, 158, 11;
+    --color-warning-ink: #b45309;
+    --color-info: #3b82f6;
+    --color-info-rgb: 59, 130, 246;
+    --color-info-ink: #1d4ed8;
+    --bs-success: var(--color-success-ink);
+    --bs-success-rgb: 21, 128, 61;
+    --bs-warning: var(--color-warning-ink);
+    --bs-warning-rgb: 180, 83, 9;
+    --bs-danger: var(--color-danger-ink);
+    --bs-danger-rgb: 185, 28, 28;
+    --bs-info: var(--color-info-ink);
+    --bs-info-rgb: 29, 78, 216;
     --color-white: #fff;
     --color-dark: #4b4b4b;
     --color-light: rgba(0, 0, 0, 0.05);
@@ -1145,11 +1163,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .trend.trend-up {
-    color: var(--color-success);
+    color: var(--color-success-ink);
 }
 
 .trend.trend-down {
-    color: var(--color-danger);
+    color: var(--color-danger-ink);
 }
 
 .recent-sales .table-wrapper {
@@ -1402,8 +1420,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .badge-soft-success {
-    background: rgba(40, 199, 111, 0.12);
-    color: var(--color-success);
+    background: rgba(var(--color-success-rgb), 0.14);
+    color: var(--color-success-ink);
 }
 
 .chart-card #trafficChart,
@@ -1519,13 +1537,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .status-online {
-    color: #28c76f;
-    background: rgba(40, 199, 111, 0.12);
+    color: var(--color-success-ink);
+    background: rgba(var(--color-success-rgb), 0.14);
 }
 
 .status-away {
-    color: #ff9f43;
-    background: rgba(255, 159, 67, 0.15);
+    color: var(--color-warning-ink);
+    background: rgba(var(--color-warning-rgb), 0.18);
 }
 
 .status-offline {
@@ -1562,18 +1580,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .badge-soft-warning {
-    background: rgba(255, 193, 7, 0.2);
-    color: #e2a000;
+    background: rgba(var(--color-warning-rgb), 0.18);
+    color: var(--color-warning-ink);
 }
 
 .badge-soft-danger {
-    background: rgba(234, 84, 85, 0.16);
-    color: #d63a3b;
+    background: rgba(var(--color-danger-rgb), 0.16);
+    color: var(--color-danger-ink);
 }
 
 .badge-soft-info {
-    background: rgba(13, 202, 240, 0.2);
-    color: #0aa2c0;
+    background: rgba(var(--color-info-rgb), 0.16);
+    color: var(--color-info-ink);
 }
 
 [data-bs-theme="dark"] .table-showcase .table-card {
@@ -1610,8 +1628,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .badge-soft-success {
-    background: rgba(40, 199, 111, 0.16);
-    color: var(--color-success);
+    background: rgba(var(--color-success-rgb), 0.18);
+    color: var(--color-success-ink);
 }
 
 [data-bs-theme="dark"] .badge-soft-primary,
@@ -2020,11 +2038,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .bg-soft-success {
-    background: rgba(40, 199, 111, 0.15) !important;
+    background: rgba(var(--color-success-rgb), 0.16) !important;
 }
 
 .bg-soft-warning {
-    background: rgba(255, 193, 7, 0.2) !important;
+    background: rgba(var(--color-warning-rgb), 0.18) !important;
 }
 
 .nav-pills-soft .nav-link {
@@ -2483,7 +2501,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .metric-card__trend.positive {
-    color: #28c76f;
+    color: var(--color-success-ink);
 }
 
 .metric-card__trend.neutral {
@@ -2491,7 +2509,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .metric-card__trend.negative {
-    color: #ea5455;
+    color: var(--color-danger-ink);
 }
 
 .performance-pod {
@@ -2536,7 +2554,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .performance-pod__delta.positive {
-    color: #28c76f;
+    color: var(--color-success-ink);
 }
 
 .performance-pod__delta.neutral {
@@ -2544,7 +2562,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .performance-pod__delta.negative {
-    color: #ea5455;
+    color: var(--color-danger-ink);
 }
 
 .status-board {
@@ -2606,27 +2624,27 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .status-indicator--ok {
-    background: #28c76f;
+    background: var(--color-success);
 }
 
 .status-indicator--ok::after {
-    background: #28c76f;
+    background: var(--color-success);
 }
 
 .status-indicator--warning {
-    background: #ff9f43;
+    background: var(--color-warning);
 }
 
 .status-indicator--warning::after {
-    background: #ff9f43;
+    background: var(--color-warning);
 }
 
 .status-indicator--scheduled {
-    background: #00cfe8;
+    background: var(--color-info);
 }
 
 .status-indicator--scheduled::after {
-    background: #00cfe8;
+    background: var(--color-info);
 }
 
 .status-board__meta {
@@ -2836,8 +2854,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .health-score.positive {
-    color: #28c76f;
-    background: rgba(40, 199, 111, 0.12);
+    color: var(--color-success-ink);
+    background: rgba(var(--color-success-rgb), 0.14);
 }
 
 .health-score.neutral {
@@ -2846,8 +2864,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .health-score.caution {
-    color: #ff9f43;
-    background: rgba(255, 159, 67, 0.14);
+    color: var(--color-warning-ink);
+    background: rgba(var(--color-warning-rgb), 0.16);
 }
 
 .feedback-grid {
@@ -3227,7 +3245,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .wellbeing-score.positive {
-    color: #28c76f;
+    color: var(--color-success-ink);
 }
 
 .wellbeing-score.neutral {
