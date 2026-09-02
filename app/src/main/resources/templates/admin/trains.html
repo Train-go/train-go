@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Quản lý tàu · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="pagetitle">
+		<h1>Quản lý tàu</h1>
+		<nav>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
+				<li class="breadcrumb-item active">Tàu</li>
+			</ol>
+		</nav>
+	</div>
+
+	<section class="section">
+		<div class="card table-card">
+			<div class="card-body">
+				<div class="table-card-header flex-wrap">
+					<div>
+						<h4 class="card-title mb-2">Danh sách tàu</h4>
+						<!--
+							Coaches have no menu entry of their own: admin.md puts
+							them inside the train detail page, where adding a coach
+							generates its seats automatically.
+						-->
+						<small class="text-muted">Toa được quản lý trong trang chi tiết của từng tàu.</small>
+					</div>
+					<div class="table-toolbar">
+						<button type="button" class="btn btn-primary btn-sm" disabled>
+							<i class="bi bi-plus-lg me-1"></i>Thêm tàu
+						</button>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-modern datatable align-middle mb-0">
+						<thead>
+							<tr>
+								<th scope="col">Mã tàu</th>
+								<th scope="col">Tên tàu</th>
+								<th scope="col">Số toa</th>
+								<th scope="col">Số ghế</th>
+								<th scope="col">Thao tác</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="train : ${trains}">
+								<td th:text="${train.code}">SE1</td>
+								<td th:text="${train.name}">Thống Nhất</td>
+								<td th:text="${train.coaches}">12</td>
+								<td th:text="${train.seats}">560</td>
+								<td>
+									<div class="table-actions">
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Xem chi tiết">
+											<i class="bi bi-eye"></i>
+										</button>
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Sửa">
+											<i class="bi bi-pencil"></i>
+										</button>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</section>
+
+</main>
+</body>
+</html>

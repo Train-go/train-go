@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--
+	Shared shell for the admin area. An admin page uses it like this:
+
+		<html th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+		<head><title>...</title></head>
+		<body><main> ... </main></body>
+		</html>
+
+	Same parameterised-fragment idiom as layout/base.html for the customer
+	pages, so the repository has one way of building a page instead of two.
+
+	This shell links css/admin/admin.css, which carries its own reset and its
+	own colour palette. Never link it and css/app.css from the same page.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	data-theme="light" data-bs-theme="light" th:fragment="page(title, content)">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title th:replace="${title}">Quản trị TrainGo</title>
+
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}">
+	<link rel="stylesheet" th:href="@{/vendor/simple-datatables/style.css}">
+	<link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+</head>
+
+<!--
+	menu-left is fixed here. Upstream set it from localStorage in an inline
+	script so the user could move the sidebar; that control went away with the
+	theme customizer, but admin.css still needs the class to lay the shell out.
+-->
+<body class="app-body menu-left">
+
+<div th:replace="~{admin/fragments/header :: header}"></div>
+<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+
+<!--
+	A div, not a <main>, so pages can keep writing plain <main> like the
+	customer pages do without nesting one <main> inside another. admin.css
+	targets #main, so the id is what matters, not the tag.
+-->
+<div id="main" class="main">
+	<main th:replace="${content}"></main>
+</div>
+
+<div th:replace="~{admin/fragments/footer :: footer}"></div>
+
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"
+	aria-label="Lên đầu trang"><i class="bi bi-arrow-up-short"></i></a>
+
+<script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/vendor/apexcharts/apexcharts.min.js}"></script>
+<script th:src="@{/vendor/simple-datatables/simple-datatables.js}"></script>
+<script th:src="@{/js/admin/admin.js}"></script>
+</body>
+</html>

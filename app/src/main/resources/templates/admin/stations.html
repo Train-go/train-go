@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Quản lý ga · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="pagetitle">
+		<h1>Quản lý ga</h1>
+		<nav>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
+				<li class="breadcrumb-item active">Ga</li>
+			</ol>
+		</nav>
+	</div>
+
+	<section class="section">
+		<div class="card table-card">
+			<div class="card-body">
+				<div class="table-card-header flex-wrap">
+					<div>
+						<h4 class="card-title mb-2">Danh sách ga</h4>
+						<small class="text-muted">Chỉ xóa được ga chưa được tuyến hay chuyến nào dùng.</small>
+					</div>
+					<div class="table-toolbar">
+						<!-- Buttons are markup only until the Station entity exists. -->
+						<button type="button" class="btn btn-primary btn-sm" disabled>
+							<i class="bi bi-plus-lg me-1"></i>Thêm ga
+						</button>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-modern datatable align-middle mb-0">
+						<thead>
+							<tr>
+								<th scope="col">Mã ga</th>
+								<th scope="col">Tên ga</th>
+								<th scope="col">Tỉnh / Thành phố</th>
+								<th scope="col">Trạng thái</th>
+								<th scope="col">Thao tác</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="station : ${stations}">
+								<td th:text="${station.code}">SGN</td>
+								<td th:text="${station.name}">Ga Sài Gòn</td>
+								<td th:text="${station.city}">TP. Hồ Chí Minh</td>
+								<td>
+									<span class="badge" th:classappend="${station.active} ? 'bg-success' : 'bg-secondary'"
+										th:text="${station.active} ? 'Đang dùng' : 'Tạm ngưng'">Đang dùng</span>
+								</td>
+								<td>
+									<div class="table-actions">
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Sửa">
+											<i class="bi bi-pencil"></i>
+										</button>
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Xóa">
+											<i class="bi bi-trash"></i>
+										</button>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</section>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+	Admin navigation. One entry per screen in docs/product/admin.md; the menu
+	is flat because there is nothing to group yet. Coaches deliberately have no
+	entry: they are managed inside a train's detail page, not on their own
+	route.
+
+	Active state comes from the activeNav model attribute set by
+	AdminController, not from the request path, so a nested route such as
+	/admin/trains/7 still highlights "Tàu".
+-->
+<aside th:fragment="sidebar" class="sidebar">
+	<ul class="sidebar-nav" id="sidebar-nav">
+
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin}"
+				th:classappend="${activeNav} == 'dashboard' ? 'active' : 'collapsed'">
+				<i class="bi bi-grid"></i>
+				<span>Tổng quan</span>
+			</a>
+		</li>
+
+		<li class="nav-heading">Dữ liệu vận hành</li>
+
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/stations}"
+				th:classappend="${activeNav} == 'stations' ? 'active' : 'collapsed'">
+				<i class="bi bi-geo-alt"></i>
+				<span>Quản lý ga</span>
+			</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/routes}"
+				th:classappend="${activeNav} == 'routes' ? 'active' : 'collapsed'">
+				<i class="bi bi-signpost-split"></i>
+				<span>Quản lý tuyến</span>
+			</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/trains}"
+				th:classappend="${activeNav} == 'trains' ? 'active' : 'collapsed'">
+				<i class="bi bi-train-front"></i>
+				<span>Quản lý tàu</span>
+			</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/trips}"
+				th:classappend="${activeNav} == 'trips' ? 'active' : 'collapsed'">
+				<i class="bi bi-calendar-week"></i>
+				<span>Quản lý chuyến</span>
+			</a>
+		</li>
+
+		<li class="nav-heading">Kinh doanh</li>
+
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/bookings}"
+				th:classappend="${activeNav} == 'bookings' ? 'active' : 'collapsed'">
+				<i class="bi bi-ticket-perforated"></i>
+				<span>Quản lý booking</span>
+			</a>
+		</li>
+
+		<li class="nav-item">
+			<a class="nav-link" th:href="@{/admin/users}"
+				th:classappend="${activeNav} == 'users' ? 'active' : 'collapsed'">
+				<i class="bi bi-people"></i>
+				<span>Người dùng</span>
+			</a>
+		</li>
+
+		<li class="nav-heading">Khác</li>
+
+		<li class="nav-item">
+			<a class="nav-link collapsed" th:href="@{/}">
+				<i class="bi bi-box-arrow-up-right"></i>
+				<span>Về trang khách</span>
+			</a>
+		</li>
+
+	</ul>
+</aside>
+
+</body>
+</html>

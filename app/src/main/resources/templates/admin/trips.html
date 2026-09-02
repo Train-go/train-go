@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Quản lý chuyến · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="pagetitle">
+		<h1>Quản lý chuyến</h1>
+		<nav>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
+				<li class="breadcrumb-item active">Chuyến</li>
+			</ol>
+		</nav>
+	</div>
+
+	<section class="section">
+		<div class="card table-card">
+			<div class="card-body">
+				<div class="table-card-header flex-wrap">
+					<div>
+						<h4 class="card-title mb-2">Danh sách chuyến</h4>
+						<small class="text-muted">Tạo chuyến sẽ sinh chỗ cho toàn bộ ghế của tàu ở trạng thái còn trống.</small>
+					</div>
+					<div class="table-toolbar">
+						<button type="button" class="btn btn-primary btn-sm" disabled>
+							<i class="bi bi-plus-lg me-1"></i>Thêm chuyến
+						</button>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-modern datatable align-middle mb-0">
+						<thead>
+							<tr>
+								<th scope="col">Tàu</th>
+								<th scope="col">Tuyến</th>
+								<th scope="col">Ngày đi</th>
+								<th scope="col">Giờ đi</th>
+								<th scope="col">Giờ đến</th>
+								<th scope="col">Giá cơ bản</th>
+								<th scope="col">Trạng thái</th>
+								<th scope="col">Thao tác</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="trip : ${trips}">
+								<td th:text="${trip.trainCode}">SE1</td>
+								<td th:text="${trip.route}">Ga Hà Nội — Ga Sài Gòn</td>
+								<td th:text="${trip.departureDate}">01/09/2026</td>
+								<td th:text="${trip.departureTime}">19:30</td>
+								<td th:text="${trip.arrivalTime}">05:10</td>
+								<td th:text="${#numbers.formatInteger(trip.basePrice, 0, 'POINT')} + ' đ'">1.150.000 đ</td>
+								<td>
+									<span class="badge"
+										th:classappend="${trip.status} == 'Mở bán' ? 'bg-success' : 'bg-secondary'"
+										th:text="${trip.status}">Mở bán</span>
+								</td>
+								<td>
+									<div class="table-actions">
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Sửa">
+											<i class="bi bi-pencil"></i>
+										</button>
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Xóa">
+											<i class="bi bi-trash"></i>
+										</button>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</section>
+
+</main>
+</body>
+</html>

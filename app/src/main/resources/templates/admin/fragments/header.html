@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+	Top bar of the admin shell. The notification and message dropdowns are
+	still empty-state markup: nothing produces those events yet, and filling
+	them with invented rows would put numbers on screen no one can trace.
+-->
+<header th:fragment="header" class="header d-flex align-items-center">
+
+	<div class="d-flex align-items-center justify-content-between">
+		<a th:href="@{/admin}" class="logo d-flex align-items-center gap-2">
+			<span class="tg-brand-mark" aria-hidden="true">TG</span>
+			<span class="d-none d-lg-block">TrainGo</span>
+		</a>
+		<i class="bi bi-list toggle-sidebar-btn" role="button" tabindex="0"
+			aria-label="Thu gọn menu"></i>
+	</div><!-- End Logo -->
+
+	<div class="header-search d-none d-md-flex">
+		<form class="search-form d-flex align-items-center" th:action="@{/admin/bookings}" method="get">
+			<i class="bi bi-search"></i>
+			<input type="text" name="q" class="form-control"
+				placeholder="Tìm ga, chuyến, mã booking..." aria-label="Tìm kiếm">
+			<button type="submit" class="search-submit" aria-label="Tìm">
+				<i class="bi bi-arrow-return-left"></i>
+			</button>
+		</form>
+	</div>
+
+	<nav class="header-nav ms-auto">
+		<ul class="d-flex align-items-center">
+
+			<li class="nav-item dropdown nav-icon-item d-none d-sm-inline-block">
+				<a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown" role="button"
+					aria-expanded="false" aria-haspopup="true" aria-label="Thông báo">
+					<i class="bi bi-bell"></i>
+				</a>
+				<ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+					<li class="dropdown-header">Thông báo</li>
+					<li><hr class="dropdown-divider"></li>
+					<li class="notification-item">
+						<i class="bi bi-info-circle text-secondary"></i>
+						<div>
+							<h6>Chưa có thông báo</h6>
+							<p>Thông báo hệ thống sẽ hiện ở đây.</p>
+						</div>
+					</li>
+				</ul>
+			</li>
+
+			<li class="nav-item dropdown nav-icon-item d-none d-sm-inline-block">
+				<a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown" role="button"
+					aria-expanded="false" aria-haspopup="true" aria-label="Tin nhắn">
+					<i class="bi bi-envelope"></i>
+				</a>
+				<ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
+					<li class="dropdown-header">Tin nhắn</li>
+					<li><hr class="dropdown-divider"></li>
+					<li class="message-item">
+						<span class="message-avatar message-avatar-initials bg-secondary text-white">--</span>
+						<div>
+							<h6>Chưa có tin nhắn</h6>
+							<p>Hộp thư hỗ trợ khách hàng chưa được nối.</p>
+						</div>
+					</li>
+				</ul>
+			</li>
+
+			<li class="nav-item dropdown nav-profile-item pe-3">
+				<a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+					<span class="message-avatar message-avatar-initials bg-primary text-white">QT</span>
+					<span class="d-none d-md-block dropdown-toggle ps-2 header-username"
+						th:text="${adminName}">Quản trị viên</span>
+				</a>
+
+				<ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+					<li class="dropdown-header">
+						<div class="dropdown-profile d-flex align-items-center">
+							<span class="message-avatar message-avatar-initials bg-primary text-white me-3">QT</span>
+							<div class="dropdown-profile-info">
+								<h6 class="mb-0" th:text="${adminName}">Quản trị viên</h6>
+								<span>Quản trị hệ thống</span>
+							</div>
+						</div>
+					</li>
+					<li><hr class="dropdown-divider"></li>
+					<li>
+						<a class="dropdown-item d-flex align-items-center" th:href="@{/}">
+							<i class="bi bi-house"></i>
+							<span>Về trang khách</span>
+						</a>
+					</li>
+					<li><hr class="dropdown-divider"></li>
+					<li>
+						<!--
+							Spring Security's default logout only accepts POST, so this
+							is a form and not a link.
+						-->
+						<form th:action="@{/logout}" method="post" class="px-0">
+							<button type="submit" class="dropdown-item d-flex align-items-center">
+								<i class="bi bi-box-arrow-right"></i>
+								<span>Đăng xuất</span>
+							</button>
+						</form>
+					</li>
+				</ul>
+			</li>
+
+		</ul>
+	</nav><!-- End Icons Navigation -->
+
+</header>
+
+</body>
+</html>

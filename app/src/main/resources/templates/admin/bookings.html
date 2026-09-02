@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Quản lý booking · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="pagetitle">
+		<h1>Quản lý booking</h1>
+		<nav>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
+				<li class="breadcrumb-item active">Booking</li>
+			</ol>
+		</nav>
+	</div>
+
+	<section class="section">
+		<div class="card table-card">
+			<div class="card-body">
+				<div class="table-card-header flex-wrap">
+					<div>
+						<h4 class="card-title mb-2">Danh sách booking</h4>
+						<!--
+							admin.md is explicit about the limits: an admin may cancel
+							a booking, but may not move seats, edit passengers, change
+							the payment status by hand or issue refunds. No button
+							here offers any of that.
+						-->
+						<small class="text-muted">Admin chỉ xem chi tiết và hủy booking.</small>
+					</div>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-modern datatable align-middle mb-0">
+						<thead>
+							<tr>
+								<th scope="col">Mã booking</th>
+								<th scope="col">Khách hàng</th>
+								<th scope="col">Chuyến</th>
+								<th scope="col">Số khách</th>
+								<th scope="col">Tổng tiền</th>
+								<th scope="col">Thanh toán</th>
+								<th scope="col">Thao tác</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr th:each="booking : ${bookings}">
+								<td th:text="${booking.code}">TG26080001</td>
+								<td th:text="${booking.customer}">Nguyễn Văn An</td>
+								<td th:text="${booking.trip}">SE1 · 01/09/2026</td>
+								<td th:text="${booking.passengers}">2</td>
+								<td th:text="${#numbers.formatInteger(booking.total, 0, 'POINT')} + ' đ'">2.300.000 đ</td>
+								<td>
+									<span class="badge"
+										th:classappend="${booking.paymentStatus} == 'Đã thanh toán' ? 'bg-success'
+											: (${booking.paymentStatus} == 'Đã hủy' ? 'bg-danger' : 'bg-warning text-dark')"
+										th:text="${booking.paymentStatus}">Đã thanh toán</span>
+								</td>
+								<td>
+									<div class="table-actions">
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Xem chi tiết">
+											<i class="bi bi-eye"></i>
+										</button>
+										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Hủy booking">
+											<i class="bi bi-x-circle"></i>
+										</button>
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</section>
+
+</main>
+</body>
+</html>
