@@ -127,6 +127,19 @@ class AdminControllerTest {
 	}
 
 	@Test
+	void fontLab_loadsLicensedCandidatesFromLocalAssets() throws Exception {
+		mockMvc.perform(get("/design/font-families.html"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(containsString("Be Vietnam Pro")))
+			.andExpect(content().string(containsString("Inter")))
+			.andExpect(content().string(containsString("Onest")))
+			.andExpect(content().string(containsString("IBM Plex Sans")))
+			.andExpect(content().string(not(containsString("fonts.googleapis.com"))));
+		mockMvc.perform(get("/css/font-candidates.css")).andExpect(status().isOk());
+		mockMvc.perform(get("/fonts/be-vietnam-pro/be-vietnam-pro-400-vietnamese.woff2")).andExpect(status().isOk());
+	}
+
+	@Test
 	void adminArea_isClosed_toAnonymousVisitors() throws Exception {
 		mockMvc.perform(get("/admin"))
 			.andExpect(status().is3xxRedirection())

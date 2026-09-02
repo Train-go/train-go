@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="So sánh bốn font family local cho giao diện TrainGo.">
+	<title>TrainGo Font Lab</title>
+	<link rel="stylesheet" href="/css/font-candidates.css">
+	<style>
+		:root {
+			--primary: #0f6cbd;
+			--primary-hover: #0b558f;
+			--secondary: #d6f23d;
+			--accent: #8b5cf6;
+			--ink: #16232e;
+			--muted: #5b6b7a;
+			--surface: #ffffff;
+			--surface-alt: #f5f8fb;
+			--canvas: #edf2f6;
+			--border: #dde5ec;
+			--radius: 14px;
+			--shadow: 0 18px 55px rgb(22 35 46 / 10%);
+		}
+
+		[data-theme="dark"] {
+			--ink: #edf4f8;
+			--muted: #a6b3be;
+			--surface: #18212b;
+			--surface-alt: #1e2934;
+			--canvas: #10161d;
+			--border: #344250;
+			--shadow: 0 22px 65px rgb(0 0 0 / 30%);
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			background: var(--canvas);
+			color: var(--ink);
+			font-family: system-ui, "Segoe UI", sans-serif;
+			line-height: 1.55;
+		}
+
+		button, input { font: inherit; }
+
+		button:focus-visible, input:focus-visible, a:focus-visible {
+			outline: 3px solid rgb(15 108 189 / 35%);
+			outline-offset: 3px;
+		}
+
+		.lab-shell {
+			width: min(1180px, calc(100% - 32px));
+			margin: 0 auto;
+			padding: 38px 0 64px;
+		}
+
+		.lab-header {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 28px;
+			align-items: start;
+			margin-bottom: 28px;
+		}
+
+		.brand-lockup {
+			display: inline-flex;
+			align-items: center;
+			gap: 11px;
+			font-weight: 750;
+		}
+
+		.brand-mark {
+			display: inline-grid;
+			place-items: center;
+			width: 38px;
+			height: 38px;
+			border-radius: 10px;
+			background: var(--primary);
+			color: #fff;
+			font-size: 13px;
+		}
+
+		.kicker {
+			margin: 22px 0 8px;
+			color: var(--primary);
+			font-size: 12px;
+			font-weight: 800;
+			letter-spacing: 0.13em;
+			text-transform: uppercase;
+		}
+
+		h1 {
+			max-width: 760px;
+			margin: 0;
+			font-size: clamp(34px, 5vw, 58px);
+			line-height: 1.12;
+			letter-spacing: -0.045em;
+		}
+
+		.intro { max-width: 690px; margin: 14px 0 0; color: var(--muted); font-size: 17px; }
+
+		.header-actions { display: flex; gap: 8px; align-items: center; }
+
+		.button {
+			min-height: 42px;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			background: var(--surface);
+			color: var(--ink);
+			padding: 9px 14px;
+			font-weight: 750;
+			text-decoration: none;
+			white-space: nowrap;
+			cursor: pointer;
+		}
+
+		.button:hover { border-color: var(--primary); }
+
+		.control-panel {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 18px;
+			align-items: end;
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			background: var(--surface);
+			padding: 20px;
+			box-shadow: var(--shadow);
+			margin-bottom: 22px;
+		}
+
+		.control-field { display: grid; gap: 7px; }
+		.control-field label { font-size: 12px; font-weight: 800; }
+		.control-field input {
+			width: 100%;
+			min-height: 46px;
+			border: 1px solid var(--border);
+			border-radius: 9px;
+			background: var(--surface-alt);
+			color: var(--ink);
+			padding: 10px 12px;
+		}
+
+		.local-note {
+			border-left: 4px solid var(--secondary);
+			background: color-mix(in srgb, var(--secondary) 14%, var(--surface));
+			padding: 11px 14px;
+			font-size: 13px;
+		}
+
+		.font-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+
+		.font-card {
+			min-width: 0;
+			overflow: hidden;
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			background: var(--surface);
+		}
+
+		.font-card.recommended { border-color: var(--primary); box-shadow: 0 0 0 3px rgb(15 108 189 / 14%); }
+
+		.card-header {
+			display: flex;
+			justify-content: space-between;
+			gap: 16px;
+			align-items: center;
+			border-bottom: 1px solid var(--border);
+			padding: 16px 18px;
+		}
+
+		.font-name { margin: 0; font-family: var(--candidate-font); font-size: 19px; }
+		.font-meta { margin: 2px 0 0; color: var(--muted); font-size: 11px; }
+		.badge { background: var(--secondary); color: #16232e; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 850; }
+
+		.specimen { font-family: var(--candidate-font); padding: 22px 18px 18px; }
+		.specimen-title { margin: 0; font-size: clamp(28px, 4vw, 43px); line-height: 1.18; letter-spacing: -0.035em; font-weight: 700; }
+		.specimen-copy { margin: 10px 0 18px; color: var(--muted); font-size: 15px; }
+
+		.ticket-sample {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 16px;
+			align-items: center;
+			border: 1px solid var(--border);
+			background: var(--surface-alt);
+			padding: 14px;
+		}
+
+		.ticket-route { display: grid; gap: 2px; }
+		.ticket-route strong { font-size: 15px; font-weight: 650; }
+		.ticket-route span { color: var(--muted); font-size: 12px; }
+		.ticket-price { color: var(--primary); font-size: 18px; font-weight: 700; white-space: nowrap; }
+
+		.weight-list { display: grid; gap: 7px; border-top: 1px solid var(--border); padding: 14px 18px 18px; font-family: var(--candidate-font); }
+		.weight-row { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+		.weight-row code { color: var(--muted); font-family: Consolas, monospace; font-size: 10px; }
+		.weight-400 { font-weight: 400; }
+		.weight-500 { font-weight: 500; }
+		.weight-600 { font-weight: 600; }
+		.weight-700 { font-weight: 700; }
+
+		.glyphs { overflow-wrap: anywhere; border-top: 1px solid var(--border); padding: 12px 18px 15px; color: var(--muted); font-family: var(--candidate-font); font-size: 12px; letter-spacing: 0.06em; }
+
+		.font-be { --candidate-font: var(--font-be-vietnam-pro); }
+		.font-inter { --candidate-font: var(--font-inter); }
+		.font-onest { --candidate-font: var(--font-onest); }
+		.font-plex { --candidate-font: var(--font-ibm-plex-sans); }
+
+		@media (max-width: 820px) {
+			.font-grid { grid-template-columns: 1fr; }
+		}
+
+		@media (max-width: 640px) {
+			.lab-shell { width: min(100% - 20px, 1180px); padding-top: 22px; }
+			.lab-header, .control-panel { grid-template-columns: 1fr; }
+			.header-actions { flex-wrap: wrap; }
+			.header-actions .button { flex: 1 1 auto; text-align: center; }
+			.ticket-sample { grid-template-columns: 1fr; }
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			*, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+		}
+	</style>
+</head>
+<body>
+	<main class="lab-shell">
+		<header class="lab-header">
+			<div>
+				<div class="brand-lockup"><span class="brand-mark">TG</span><span>TrainGo Font Lab</span></div>
+				<p class="kicker">Typography candidates</p>
+				<h1>Chọn font bằng nội dung thật của TrainGo.</h1>
+				<p class="intro">Bốn font được tải local, có tiếng Việt và giấy phép OFL. So sánh tiêu đề, đoạn văn, giá vé, số hiệu tàu và bốn cấp độ đậm.</p>
+			</div>
+			<div class="header-actions">
+				<a class="button" href="/design/color-palettes.html">Color Lab</a>
+				<button class="button" id="themeToggle" type="button" aria-pressed="false">Xem nền tối</button>
+			</div>
+		</header>
+
+		<section class="control-panel" aria-label="Điều khiển nội dung mẫu">
+			<div class="control-field">
+				<label for="sampleInput">Nội dung muốn thử</label>
+				<input id="sampleInput" type="text" value="Đi tàu, chọn chỗ theo ý bạn." maxlength="90">
+			</div>
+			<div class="local-note"><strong>100% local</strong><br>Không gọi Google Fonts hoặc CDN.</div>
+		</section>
+
+		<section class="font-grid" aria-label="Bốn font family đề xuất">
+			<article class="font-card font-be recommended">
+				<header class="card-header"><div><h2 class="font-name">Be Vietnam Pro</h2><p class="font-meta">Ấm áp, rõ dấu tiếng Việt, cân bằng client và admin</p></div><span class="badge">Đề xuất</span></header>
+				<div class="specimen"><h3 class="specimen-title editable-sample">Đi tàu, chọn chỗ theo ý bạn.</h3><p class="specimen-copy">Tìm hành trình phù hợp, chọn toa và đặt vé chỉ trong vài phút. Chuyến tàu khởi hành đúng giờ tại ga Sài Gòn.</p><div class="ticket-sample"><div class="ticket-route"><strong>SNT1 · Sài Gòn đến Nha Trang</strong><span>21:15 · Toa 3 · Ghế A02</span></div><span class="ticket-price">420.000 đ</span></div></div>
+				<div class="weight-list"><div class="weight-row weight-400"><code>400</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-500"><code>500</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-600"><code>600</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-700"><code>700</code><span>Hành trình thuận tiện và an toàn</span></div></div>
+				<div class="glyphs">Ă Â Đ Ê Ô Ơ Ư · ă â đ ê ô ơ ư · 0123456789</div>
+			</article>
+
+			<article class="font-card font-inter">
+				<header class="card-header"><div><h2 class="font-name">Inter</h2><p class="font-meta">Trung tính, rõ ở cỡ nhỏ, mạnh cho dashboard</p></div></header>
+				<div class="specimen"><h3 class="specimen-title editable-sample">Đi tàu, chọn chỗ theo ý bạn.</h3><p class="specimen-copy">Tìm hành trình phù hợp, chọn toa và đặt vé chỉ trong vài phút. Chuyến tàu khởi hành đúng giờ tại ga Sài Gòn.</p><div class="ticket-sample"><div class="ticket-route"><strong>SNT1 · Sài Gòn đến Nha Trang</strong><span>21:15 · Toa 3 · Ghế A02</span></div><span class="ticket-price">420.000 đ</span></div></div>
+				<div class="weight-list"><div class="weight-row weight-400"><code>400</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-500"><code>500</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-600"><code>600</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-700"><code>700</code><span>Hành trình thuận tiện và an toàn</span></div></div>
+				<div class="glyphs">Ă Â Đ Ê Ô Ơ Ư · ă â đ ê ô ơ ư · 0123456789</div>
+			</article>
+
+			<article class="font-card font-onest">
+				<header class="card-header"><div><h2 class="font-name">Onest</h2><p class="font-meta">Mềm, thân thiện và hiện đại hơn Inter</p></div></header>
+				<div class="specimen"><h3 class="specimen-title editable-sample">Đi tàu, chọn chỗ theo ý bạn.</h3><p class="specimen-copy">Tìm hành trình phù hợp, chọn toa và đặt vé chỉ trong vài phút. Chuyến tàu khởi hành đúng giờ tại ga Sài Gòn.</p><div class="ticket-sample"><div class="ticket-route"><strong>SNT1 · Sài Gòn đến Nha Trang</strong><span>21:15 · Toa 3 · Ghế A02</span></div><span class="ticket-price">420.000 đ</span></div></div>
+				<div class="weight-list"><div class="weight-row weight-400"><code>400</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-500"><code>500</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-600"><code>600</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-700"><code>700</code><span>Hành trình thuận tiện và an toàn</span></div></div>
+				<div class="glyphs">Ă Â Đ Ê Ô Ơ Ư · ă â đ ê ô ơ ư · 0123456789</div>
+			</article>
+
+			<article class="font-card font-plex">
+				<header class="card-header"><div><h2 class="font-name">IBM Plex Sans</h2><p class="font-meta">Kỹ thuật, vận hành và có cá tính đường sắt</p></div></header>
+				<div class="specimen"><h3 class="specimen-title editable-sample">Đi tàu, chọn chỗ theo ý bạn.</h3><p class="specimen-copy">Tìm hành trình phù hợp, chọn toa và đặt vé chỉ trong vài phút. Chuyến tàu khởi hành đúng giờ tại ga Sài Gòn.</p><div class="ticket-sample"><div class="ticket-route"><strong>SNT1 · Sài Gòn đến Nha Trang</strong><span>21:15 · Toa 3 · Ghế A02</span></div><span class="ticket-price">420.000 đ</span></div></div>
+				<div class="weight-list"><div class="weight-row weight-400"><code>400</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-500"><code>500</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-600"><code>600</code><span>Hành trình thuận tiện và an toàn</span></div><div class="weight-row weight-700"><code>700</code><span>Hành trình thuận tiện và an toàn</span></div></div>
+				<div class="glyphs">Ă Â Đ Ê Ô Ơ Ư · ă â đ ê ô ơ ư · 0123456789</div>
+			</article>
+		</section>
+	</main>
+
+	<script>
+		(function () {
+			"use strict";
+			const root = document.documentElement;
+			const input = document.getElementById("sampleInput");
+			const toggle = document.getElementById("themeToggle");
+
+			input.addEventListener("input", function () {
+				const value = input.value.trim() || "Đi tàu, chọn chỗ theo ý bạn.";
+				document.querySelectorAll(".editable-sample").forEach(function (sample) { sample.textContent = value; });
+			});
+
+			toggle.addEventListener("click", function () {
+				const dark = root.dataset.theme !== "dark";
+				root.dataset.theme = dark ? "dark" : "light";
+				toggle.setAttribute("aria-pressed", String(dark));
+				toggle.textContent = dark ? "Xem nền sáng" : "Xem nền tối";
+			});
+		}());
+	</script>
+</body>
+</html>

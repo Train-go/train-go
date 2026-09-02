@@ -18,7 +18,7 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 			.authorizeHttpRequests(requests -> requests
-				.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/design/**").permitAll()
+				.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/fonts/**", "/design/**").permitAll()
 				// Bootstrap is served from the application itself. Leaving /vendor/**
 				// out of this list makes Spring Security answer stylesheet requests
 				// with the login page, and the browser drops it without a warning,

@@ -23,5 +23,6 @@ Quy tắc bắt buộc áp dụng từ commit đưa file này vào dự án. Nh�
 
 | Ngày | Loại | Kết quả và phạm vi | Bằng chứng |
 | --- | --- | --- | --- |
+| 2026-09-02 | `feat(design)` | Tải local bốn font OFL gồm Be Vietnam Pro, Inter, Onest và IBM Plex Sans; thêm stylesheet `@font-face` cùng Font Lab để so sánh mà chưa đổi font sản phẩm. | Kiểm tra magic bytes WOFF2 và bốn file OFL; JavaScript syntax; Maven: 15 test vượt qua; kiểm tra giao diện desktop và mobile. |
 | 2026-09-02 | `docs(harness)` | Bổ sung quy định bắt buộc ghi lại mọi task thay đổi repository, tạo `docs/WORKLOG.md` và cập nhật bản đồ tài liệu. | Đối chiếu `AGENTS.md`, `docs/WORKFLOW.md` và bản đồ tài liệu hiện có; `git diff --check`. |
 | 2026-09-02 | `feat(design)` | Thêm Color Lab và hệ token Railway Blue đầy đủ cho client, admin và semantic status. | Commit `52949fa`; Maven: 14 test vượt qua; route `/design/color-palettes.html` trả HTTP 200. |
