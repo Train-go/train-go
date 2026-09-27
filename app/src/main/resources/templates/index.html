@@ -90,13 +90,13 @@
 				<div class="col-12 col-sm-6 col-lg-3" th:each="route : ${popularRoutes}">
 					<button type="button"
 						class="tg-route-card p-3 h-100 d-flex flex-column"
-						th:attr="data-from=${route.origin()}, data-to=${route.destination()}">
+						th:attr="data-from=${route.origin}, data-to=${route.destination}">
 						<span class="fw-semibold tg-route-card__name"
-							th:text="${route.origin()}">Ga đi</span>
+							th:text="${route.origin}">Ga đi</span>
 						<span class="text-primary my-1" aria-hidden="true">&#8595;</span>
 						<span class="fw-semibold tg-route-card__name"
-							th:text="${route.destination()}">Ga đến</span>
-						<span class="text-secondary small mt-2" th:text="${route.note()}">Mô tả</span>
+							th:text="${route.destination}">Ga đến</span>
+						<span class="text-secondary small mt-2" th:text="${route.note}">Mô tả</span>
 					</button>
 				</div>
 			</div>

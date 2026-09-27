@@ -42,6 +42,16 @@ com.voyagego.traingo
 └── common/     config, exception, tiện ích dùng chung
 ```
 
+Bên trong mỗi feature package ở trên (trừ `common`), khi feature đó bắt đầu có
+code thì chia tiếp 3 subpackage `controller/`, `model/`, `service/` — ví dụ
+`admin/controller/AdminController.java`, `admin/model/Station.java`,
+`admin/service/AdminService.java`. Đây **không phải** việc tái áp dụng phương
+án "chia theo tầng" đã bị bác bỏ ở mục Alternatives: phạm vi mỗi subpackage
+vẫn nằm trong một feature duy nhất (`station/controller/` khác thư mục với
+`booking/controller/`), nên hai người làm hai feature khác nhau vẫn không đụng
+file của nhau. Không bắt buộc tạo sẵn 3 thư mục rỗng cho feature chưa có code;
+áp dụng dần khi feature đó bắt đầu triển khai.
+
 **Mức tách client.** Thymeleaf render server-side cho phần lớn màn hình. Riêng
 phần cần tương tác — sơ đồ ghế, giữ chỗ, đếm ngược 5 phút — dùng JavaScript
 thuần trong `src/main/resources/static/js/` gọi các endpoint `@RestController`

@@ -1,4 +1,4 @@
-package com.voyagego.traingo.admin;
+package com.voyagego.traingo.admin.controller;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -17,10 +17,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.voyagego.traingo.admin.service.AdminService;
 import com.voyagego.traingo.common.config.SecurityConfig;
 
 @WebMvcTest(AdminController.class)
-@Import(SecurityConfig.class)
+@Import({ SecurityConfig.class, AdminService.class })
 class AdminControllerTest {
 
 	@Autowired
