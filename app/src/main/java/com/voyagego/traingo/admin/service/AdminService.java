@@ -6,25 +6,18 @@ import org.springframework.stereotype.Service;
 
 import com.voyagego.traingo.admin.model.Booking;
 import com.voyagego.traingo.admin.model.Route;
-import com.voyagego.traingo.admin.model.Station;
 import com.voyagego.traingo.admin.model.Train;
 import com.voyagego.traingo.admin.model.Trip;
 import com.voyagego.traingo.admin.model.User;
 
 /**
- * Placeholder data for the seven admin screens, standing in for the
- * repositories that arrive in stage 2 of docs/plans/active/mvp-traingo.md.
- * Coaches have no route on purpose — they are managed inside a train's detail
- * page.
+ * Placeholder data for the admin screens that do not read the database yet.
+ * Each list goes away when its screen moves into its feature package and reads
+ * the real repository, as stations already have. Coaches have no screen of
+ * their own on purpose: they are managed inside a train's detail page.
  */
 @Service
 public class AdminService {
-
-	private static final List<Station> STATIONS = List.of(new Station("SGN", "Ga Sài Gòn", "TP. Hồ Chí Minh", true),
-			new Station("NTR", "Ga Nha Trang", "Khánh Hòa", true), new Station("QNH", "Ga Quy Nhơn", "Gia Lai", true),
-			new Station("DNG", "Ga Đà Nẵng", "Đà Nẵng", true), new Station("HUE", "Ga Huế", "Huế", true),
-			new Station("VIN", "Ga Vinh", "Nghệ An", true), new Station("HNI", "Ga Hà Nội", "Hà Nội", true),
-			new Station("LCI", "Ga Lào Cai", "Lào Cai", false));
 
 	private static final List<Route> ROUTES = List.of(new Route("SGN-NTR", "Ga Sài Gòn", "Ga Nha Trang", 411),
 			new Route("SGN-DNG", "Ga Sài Gòn", "Ga Đà Nẵng", 935), new Route("HNI-DNG", "Ga Hà Nội", "Ga Đà Nẵng", 791),
@@ -58,10 +51,6 @@ public class AdminService {
 			new User("Phạm Thu Dung", "dung.pham@example.com", "CUSTOMER", "20/08/2026"));
 
 	private static final long TOTAL_REVENUE = 9_650_000L;
-
-	public List<Station> stations() {
-		return STATIONS;
-	}
 
 	public List<Route> routes() {
 		return ROUTES;

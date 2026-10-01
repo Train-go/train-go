@@ -17,19 +17,29 @@
 		</nav>
 	</div>
 
+	<div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+		<i class="bi bi-check-circle me-1"></i>
+		<span th:text="${successMessage}">Đã thêm Ga Sài Gòn (SGN).</span>
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+	</div>
+	<div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+		<i class="bi bi-exclamation-triangle me-1"></i>
+		<span th:text="${errorMessage}">Không xóa được ga.</span>
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
+	</div>
+
 	<section class="section">
 		<div class="card table-card">
 			<div class="card-body">
 				<div class="table-card-header flex-wrap">
 					<div>
 						<h4 class="card-title mb-2">Danh sách ga</h4>
-						<small class="text-muted">Chỉ xóa được ga chưa được tuyến hay chuyến nào dùng.</small>
+						<small class="text-muted">Chỉ xóa được ga chưa là điểm đi hay điểm đến của tuyến nào.</small>
 					</div>
 					<div class="table-toolbar">
-						<!-- Buttons are markup only until the Station entity exists. -->
-						<button type="button" class="btn btn-primary btn-sm" disabled>
+						<a class="btn btn-primary btn-sm" th:href="@{/admin/stations/new}">
 							<i class="bi bi-plus-lg me-1"></i>Thêm ga
-						</button>
+						</a>
 					</div>
 				</div>
 				<div class="table-responsive">
@@ -39,27 +49,36 @@
 								<th scope="col">Mã ga</th>
 								<th scope="col">Tên ga</th>
 								<th scope="col">Tỉnh / Thành phố</th>
-								<th scope="col">Trạng thái</th>
+								<th scope="col">Địa chỉ</th>
 								<th scope="col">Thao tác</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr th:each="station : ${stations}">
-								<td th:text="${station.code}">SGN</td>
+								<td class="fw-semibold" th:text="${station.code}">SGN</td>
 								<td th:text="${station.name}">Ga Sài Gòn</td>
 								<td th:text="${station.city}">TP. Hồ Chí Minh</td>
-								<td>
-									<span class="badge" th:classappend="${station.active} ? 'bg-success' : 'bg-secondary'"
-										th:text="${station.active} ? 'Đang dùng' : 'Tạm ngưng'">Đang dùng</span>
-								</td>
+								<td th:text="${station.address}">1 Nguyễn Thông</td>
 								<td>
 									<div class="table-actions">
-										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Sửa">
+										<a class="btn btn-light btn-sm"
+											th:href="@{/admin/stations/{id}/edit(id=${station.id})}"
+											th:title="|Sửa ${station.name}|" th:aria-label="|Sửa ${station.name}|">
 											<i class="bi bi-pencil"></i>
-										</button>
-										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Xóa">
-											<i class="bi bi-trash"></i>
-										</button>
+										</a>
+										<!--
+											A form rather than a link: deleting must be a POST, and a
+											form carries the CSRF token Spring Security checks.
+											admin.js asks data-confirm before it submits.
+										-->
+										<form method="post" class="d-inline"
+											th:action="@{/admin/stations/{id}/delete(id=${station.id})}"
+											th:data-confirm="|Xóa ${station.name} (${station.code})? Thao tác này không hoàn tác được.|">
+											<button type="submit" class="btn btn-light btn-sm"
+												th:title="|Xóa ${station.name}|" th:aria-label="|Xóa ${station.name}|">
+												<i class="bi bi-trash"></i>
+											</button>
+										</form>
 									</div>
 								</td>
 							</tr>

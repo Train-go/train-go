@@ -4963,3 +4963,24 @@ h1, h2, h3, h4, h5, h6,
 .revenue-card h6 {
     font-size: 22px;
 }
+
+/*
+ * Narrow screens: keep every cell on one line and let .table-responsive scroll
+ * the table sideways. Otherwise a 375px phone wraps each word onto its own line
+ * ("Ga / Đà / Nẵng") and header text runs under the datatable sort arrows.
+ */
+@media (max-width: 767.98px) {
+    .table-modern th,
+    .table-modern td {
+        white-space: nowrap;
+    }
+}
+
+/*
+ * simple-datatables draws its 8px sort arrows 4px from the right edge of the
+ * header button but leaves no room for them. When a column is only as wide as
+ * its header ("MÃ GA" on a phone) the arrows sit on the last letter.
+ */
+.datatable-sorter {
+    padding-right: 1rem;
+}

@@ -43,14 +43,35 @@ com.voyagego.traingo
 ```
 
 Bên trong mỗi feature package ở trên (trừ `common`), khi feature đó bắt đầu có
-code thì chia tiếp 3 subpackage `controller/`, `model/`, `service/` — ví dụ
-`admin/controller/AdminController.java`, `admin/model/Station.java`,
-`admin/service/AdminService.java`. Đây **không phải** việc tái áp dụng phương
-án "chia theo tầng" đã bị bác bỏ ở mục Alternatives: phạm vi mỗi subpackage
-vẫn nằm trong một feature duy nhất (`station/controller/` khác thư mục với
-`booking/controller/`), nên hai người làm hai feature khác nhau vẫn không đụng
-file của nhau. Không bắt buộc tạo sẵn 3 thư mục rỗng cho feature chưa có code;
-áp dụng dần khi feature đó bắt đầu triển khai.
+code thì chia tiếp thành các subpackage `controller/`, `model/`,
+`repository/`, `service/`. Ví dụ đầy đủ đầu tiên là `station/`:
+
+```
+station/
+├── controller/StationAdminController.java
+├── model/Station.java, StationForm.java
+├── repository/StationRepository.java
+└── service/StationService.java, các exception của nghiệp vụ ga
+```
+
+`model/` chứa entity, enum và form object của feature. Exception nghiệp vụ nằm
+cạnh service ném ra nó.
+
+Đây **không phải** việc tái áp dụng phương án "chia theo tầng" đã bị bác bỏ ở
+mục Alternatives: phạm vi mỗi subpackage vẫn nằm trong một feature duy nhất
+(`station/controller/` khác thư mục với `booking/controller/`), nên hai người
+làm hai feature khác nhau vẫn không đụng file của nhau. Không bắt buộc tạo sẵn
+thư mục rỗng cho feature chưa có code; áp dụng dần khi feature đó bắt đầu
+triển khai.
+
+**Màn hình admin của một feature nằm trong package của feature đó**, không nằm
+trong `admin/`. Ví dụ `/admin/stations` là
+`station/controller/StationAdminController`, gọi thẳng `StationService`. Package
+`admin/` chỉ giữ dashboard, `AdminShellModelAdvice` (dữ liệu header dùng chung)
+và những màn hình còn dùng dữ liệu giả. Màn hình nào nối database thật thì
+chuyển ra package của feature, cùng lúc xóa phần dữ liệu giả tương ứng trong
+`AdminService` và `admin/model/`. Nhờ vậy hai người làm hai màn hình admin khác
+nhau không cùng sửa một controller. Mốc quyết định: 01/10/2026.
 
 **Mức tách client.** Thymeleaf render server-side cho phần lớn màn hình. Riêng
 phần cần tương tác — sơ đồ ghế, giữ chỗ, đếm ngược 5 phút — dùng JavaScript
@@ -103,6 +124,7 @@ Tradeoffs:
 
 - ~~Chốt tên hiển thị sản phẩm.~~ Đã chốt là **TrainGo** ngày 24/08/2026 —
   `docs/decisions/0003-he-thong-giao-dien.md`.
-- Quyết định cách quản lý schema về lâu dài: giữ `ddl-auto=update` hay chuyển
-  sang Flyway trước khi có seed data thật.
+- ~~Quyết định cách quản lý schema về lâu dài: giữ `ddl-auto=update` hay chuyển
+  sang Flyway trước khi có seed data thật.~~ Đã chốt Flyway ngày 01/10/2026,
+  xem `docs/decisions/0005-quan-ly-schema-bang-flyway.md`.
 - Cài JDK độc lập và trỏ `JAVA_HOME` vào đó thay vì JBR của Android Studio.

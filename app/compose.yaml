@@ -2,6 +2,10 @@ services:
   mysql:
     image: mysql:8.4
     container_name: traingo-mysql
+    # Vietnam time, matching serverTimezone in the JDBC URL. Without it the
+    # server runs in UTC, and CURRENT_DATE in the seed migration is a day behind
+    # between midnight and 7 am.
+    command: ["--default-time-zone=+07:00"]
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: traingo

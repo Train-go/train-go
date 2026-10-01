@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<!--
+	One template for adding and editing a station. stationId is only in the
+	model when editing, so it decides the heading and where the form posts.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title th:text="${stationId == null} ? 'Thêm ga · Quản trị TrainGo' : 'Sửa ga · Quản trị TrainGo'">Thêm ga · Quản trị TrainGo</title>
+</head>
+<body>
+<main th:with="editing=${stationId != null}">
+
+	<div class="pagetitle">
+		<h1 th:text="${editing} ? 'Sửa ga' : 'Thêm ga'">Thêm ga</h1>
+		<nav>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
+				<li class="breadcrumb-item"><a th:href="@{/admin/stations}">Ga</a></li>
+				<li class="breadcrumb-item active" th:text="${editing} ? 'Sửa ga' : 'Thêm ga'">Thêm ga</li>
+			</ol>
+		</nav>
+	</div>
+
+	<section class="section">
+		<div class="card">
+			<div class="card-body">
+				<h4 class="card-title mb-1">Thông tin ga</h4>
+				<p class="text-muted small mb-4">Trường có dấu <span class="text-danger">*</span> là bắt buộc.</p>
+
+				<!--
+					novalidate: every rule is checked on the server, which shows its
+					messages in Vietnamese next to the field. The browser's own
+					bubbles would come in the browser's language instead.
+				-->
+				<form method="post" novalidate th:object="${stationForm}"
+					th:action="${editing} ? @{/admin/stations/{id}(id=${stationId})} : @{/admin/stations}">
+					<div class="row g-3">
+						<div class="col-md-4">
+							<label for="code" class="form-label">Mã ga <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" th:field="*{code}" th:errorclass="is-invalid"
+								maxlength="10" autocomplete="off" required aria-describedby="codeHelp">
+							<div class="invalid-feedback" th:errors="*{code}">Vui lòng nhập mã ga.</div>
+							<div id="codeHelp" class="form-text">Chữ cái không dấu và chữ số, tối đa 10 ký tự. Hệ thống tự viết hoa, ví dụ SGN.</div>
+						</div>
+						<div class="col-md-8">
+							<label for="name" class="form-label">Tên ga <span class="text-danger">*</span></label>
+							<input type="text" class="form-control" th:field="*{name}" th:errorclass="is-invalid"
+								maxlength="100" required>
+							<div class="invalid-feedback" th:errors="*{name}">Vui lòng nhập tên ga.</div>
+						</div>
+						<div class="col-md-4">
+							<label for="city" class="form-label">Tỉnh / Thành phố</label>
+							<input type="text" class="form-control" th:field="*{city}" th:errorclass="is-invalid"
+								maxlength="100">
+							<div class="invalid-feedback" th:errors="*{city}">Tỉnh / thành phố quá dài.</div>
+						</div>
+						<div class="col-md-8">
+							<label for="address" class="form-label">Địa chỉ</label>
+							<input type="text" class="form-control" th:field="*{address}" th:errorclass="is-invalid"
+								maxlength="255">
+							<div class="invalid-feedback" th:errors="*{address}">Địa chỉ quá dài.</div>
+						</div>
+					</div>
+
+					<div class="d-flex flex-wrap gap-2 mt-4">
+						<button type="submit" class="btn btn-primary">
+							<i class="bi bi-check-lg me-1"></i><span th:text="${editing} ? 'Lưu thay đổi' : 'Thêm ga'">Thêm ga</span>
+						</button>
+						<a class="btn btn-light" th:href="@{/admin/stations}">Hủy</a>
+					</div>
+				</form>
+			</div>
+		</div>
+	</section>
+
+</main>
+</body>
+</html>

@@ -40,6 +40,19 @@ kiểm tra ownership khi truy cập theo id. Cả hai đều phải có test.
 là bản nền: cho phép truy cập `/` cùng tài nguyên tĩnh, mọi đường dẫn khác yêu cầu
 đăng nhập, dùng trang login mặc định của Spring Security.
 
-Chưa có `User` entity, chưa có `UserDetailsService`, chưa có mã hóa mật khẩu, chưa
-có trang đăng ký và đăng nhập riêng. Những phần này thuộc bước Auth trong kế hoạch
-`docs/plans/active/`.
+Từ 01/10/2026 đã có bảng `users` và entity `auth/model/User` (email không trùng,
+`passwordHash`, `role`). Seed data tạo sẵn tài khoản, mật khẩu lưu dạng BCrypt:
+
+| Email | Mật khẩu | Role |
+| --- | --- | --- |
+| `admin@traingo.vn` | `Admin@123` | `ADMIN` |
+| `an.nguyen@example.com`, `binh.tran@example.com`, `cuong.le@example.com` | `Customer@123` | `CUSTOMER` |
+
+Chưa có `UserDetailsService`, chưa có trang đăng ký và đăng nhập riêng. Trang
+login mặc định vẫn dùng tài khoản tạm `admin` / `admin` khai trong
+`application.properties`, chưa đọc bảng `users`. Những phần này thuộc bước Auth
+trong kế hoạch `docs/plans/active/`.
+
+Khi làm Auth: đăng nhập bằng email, dùng `BCryptPasswordEncoder` (hash trong
+seed là BCrypt thuần, không có tiền tố `{bcrypt}`), rồi xóa ba dòng
+`spring.security.user.*` trong `application.properties`.

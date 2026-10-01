@@ -93,8 +93,10 @@ theo feature nên ba nhánh ít đụng nhau.
 - **Lệch phiên bản Spring Boot 4 so với tài liệu 3.x** làm mất thời gian gỡ lỗi
   giả. Khi gặp lỗi không tìm thấy class hoặc annotation, kiểm tra jar thật trong
   `~/.m2/repository` trước khi tin bài viết trên mạng.
-- **`ddl-auto=update` làm hỏng schema** khi entity đổi nhiều. Phục hồi bằng
-  `docker compose down -v` rồi chạy lại; chấp nhận mất dữ liệu dev.
+- **Sửa một migration Flyway đã chạy** làm ứng dụng không khởi động trên máy
+  người khác (từ 01/10/2026 schema do Flyway quản lý, ADR 0005). Phòng bằng quy
+  tắc chỉ thêm migration mới. Phục hồi máy dev bằng `docker compose down -v` rồi
+  chạy lại; chấp nhận mất dữ liệu dev.
 - **Tính năng optional lấn tiến độ.** Không bắt đầu QR, bản đồ hay PDF trước khi
   giai đoạn 7 xong.
 
@@ -114,7 +116,11 @@ theo feature nên ba nhánh ít đụng nhau.
       khối theo `SPEC.md` mục 5. Chi tiết và bằng chứng:
       `docs/plans/active/nen-tang-giao-dien-va-landing.md`.
 - [ ] Giai đoạn 1: Auth.
-- [ ] Giai đoạn 2: Station, Route, Train, Coach, Seat, Trip, TripSeat.
+- [ ] Giai đoạn 2: Station, Route, Train, Coach, Seat, Trip, TripSeat. Đã có
+      (01/10/2026): schema Flyway cho cả 11 bảng của dự án, entity, repository,
+      seed demo, quản lý ga trên database thật. Còn: quản lý tuyến, tàu, toa,
+      chuyến. Chi tiết và chia việc:
+      `docs/plans/active/giai-doan-2-du-lieu-va-man-hinh-admin.md`.
 - [ ] Giai đoạn 3: Tìm chuyến và danh sách chuyến.
 - [ ] Giai đoạn 4: Chọn chỗ và giữ chỗ.
 - [ ] Giai đoạn 5: Hành khách và review.
@@ -134,8 +140,13 @@ theo feature nên ba nhánh ít đụng nhau.
   `docs/decisions/0003-he-thong-giao-dien.md`.
 - 2026-08-24: Ứng dụng chạy ở port 8081 thay vì 8080 vì Apache của XAMPP đang giữ
   8080 trên máy dev. Khai trong `app/src/main/resources/application.properties`.
+- 2026-10-01: Schema do Flyway quản lý, Hibernate chỉ `validate`; tạo đủ 11 bảng
+  và seed demo một lần. Xem `docs/decisions/0005-quan-ly-schema-bang-flyway.md`.
+- 2026-10-01: Màn hình admin của một feature nằm trong package của feature đó.
+  Xem `docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`.
 - Chưa quyết: cách thu hồi TripSeat hết hạn giữ chỗ.
-- Chưa quyết: nội dung seed data và quy tắc xóa dữ liệu đã bị tham chiếu.
+- Chưa quyết: quy tắc xóa dữ liệu đã bị tham chiếu, với các entity ngoài ga.
+- Chưa quyết: thêm toa vào tàu đã có chuyến thì có sinh thêm TripSeat không.
 
 ## Validation
 

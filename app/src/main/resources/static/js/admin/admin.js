@@ -93,6 +93,19 @@
 })();
 
 /*
+ * A form marked data-confirm asks before it submits; delete buttons use it.
+ * Listening on document rather than on each form matters: simple-datatables
+ * re-renders table rows when it sorts or pages, which drops listeners attached
+ * to the rows themselves.
+ */
+document.addEventListener('submit', function (event) {
+    const message = event.target.dataset ? event.target.dataset.confirm : undefined;
+    if (message && !window.confirm(message)) {
+        event.preventDefault();
+    }
+});
+
+/*
  * Turns every table marked .datatable into a searchable, sortable, paginated
  * one. Lives here rather than in each page so the Vietnamese labels are
  * written once. Guarded on both sides: pages without a .datatable and pages

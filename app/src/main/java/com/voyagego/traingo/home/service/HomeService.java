@@ -7,10 +7,11 @@ import org.springframework.stereotype.Service;
 import com.voyagego.traingo.home.model.PopularRoute;
 
 /**
- * Placeholder data until the Station entity exists (stage 2 of
- * docs/plans/active/mvp-traingo.md). The landing page only needs labels to
- * fill the search form and the popular route cards, so nothing here reaches
- * the database. Replace both lists with StationRepository lookups then.
+ * Labels for the landing page's search form and popular route cards. Stations
+ * and routes are in the database now, but the search form keeps these static
+ * labels until trip search (stage 3 of docs/plans/active/mvp-traingo.md)
+ * decides what the form submits, a station id or a code. Replace both lists
+ * with repository lookups then.
  */
 @Service
 public class HomeService {

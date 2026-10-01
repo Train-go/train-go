@@ -154,4 +154,5 @@ Tên hiển thị đã chốt là **TrainGo** ngày 24/08/2026; `voyage-go` ch�
 repository. Xem `docs/decisions/0003-he-thong-giao-dien.md`.
 
 Các điểm còn mở nằm ở `docs/plans/active/mvp-traingo.md`: cách thu hồi TripSeat
-hết hạn giữ chỗ, nội dung seed data, và quy tắc xóa dữ liệu đã bị tham chiếu.
+hết hạn giữ chỗ, và quy tắc xóa dữ liệu đã bị tham chiếu với các entity ngoài
+ga. Seed data đã chốt ngày 01/10/2026, xem `docs/product/admin.md`.

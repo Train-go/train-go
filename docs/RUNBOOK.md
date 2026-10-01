@@ -40,9 +40,14 @@ Compose khai báo trong `app/compose.yaml`:
 | Database | `traingo` |
 | User / password ứng dụng | `traingo` / `traingo` |
 | Volume | `traingo-mysql-data` |
+| Múi giờ | `--default-time-zone=+07:00`, khớp `serverTimezone` trong JDBC URL |
 
 **Đã kiểm chứng ngày 24/08/2026.** Container `traingo-mysql` lên và giữ trạng thái
 `healthy`, cổng `0.0.0.0:3306->3306/tcp`.
+
+**Đã kiểm chứng ngày 01/10/2026** sau khi thêm múi giờ: `docker compose up -d`
+tạo lại container, volume giữ nguyên, `SELECT @@global.time_zone` trả `+07:00`.
+Máy nào đang có container cũ chỉ cần chạy lại `docker compose up -d`.
 
 Phải mở Docker Desktop trước. Nếu quên, lệnh thất bại với thông báo:
 
@@ -108,10 +113,34 @@ netstat -ano | findstr :8080
 Get-Process -Id <PID>
 ```
 
+### Flyway tạo bảng và seed data lúc khởi động
+
+Schema và dữ liệu demo nằm trong `app/src/main/resources/db/migration/`. Lần đầu
+chạy trên database trống, Flyway tạo 11 bảng rồi nạp seed. Những lần sau nó chỉ
+chạy migration mới chưa từng chạy. Sau đó Hibernate kiểm tra entity khớp schema
+(`ddl-auto=validate`). Lý do và quy ước: `docs/decisions/0005-quan-ly-schema-bang-flyway.md`.
+
+**Đã kiểm chứng ngày 01/10/2026** trên database trống:
+
+```
+Migrating schema `traingo` to version "1 - create schema"
+Migrating schema `traingo` to version "2 - seed demo data"
+Successfully applied 2 migrations to schema `traingo`, now at version v2 (execution time 00:00.564s)
+Started TrainGoApplication in 5.534 seconds
+```
+
+Hai lỗi dễ gặp (chưa gặp thật trong dự án, nên chưa trích được nguyên văn
+thông báo):
+
+- Flyway báo checksum của một migration không khớp: ai đó đã sửa một migration
+  đã chạy. Trả file về như cũ và viết migration mới. Nếu chỉ là máy dev, có thể
+  reset database như mục "Làm mới dữ liệu demo".
+- Hibernate báo schema validation thiếu cột hoặc sai kiểu cột: entity và
+  migration lệch nhau. Sửa cho khớp, không bật lại `ddl-auto=update`.
+
 ### Ứng dụng cần MySQL đang chạy
 
-`spring.jpa.hibernate.ddl-auto=update` mở kết nối ngay lúc khởi động. Không có
-MySQL thì ứng dụng chết với:
+Flyway mở kết nối ngay lúc khởi động. Không có MySQL thì ứng dụng chết với:
 
 ```
 org.hibernate.HibernateException: Unable to determine Dialect without JDBC metadata
@@ -150,9 +179,58 @@ toàn bộ dependency về `~/.m2/repository`.
 
 ## Dữ liệu thử
 
-Chưa có seed data. Chưa có tài khoản admin. Chưa có ga, tuyến, tàu hay chuyến mẫu.
-Đây là việc thuộc kế hoạch trong `docs/plans/active/`, không phải thứ có thể suy ra
-từ code hiện tại.
+Seed data nằm trong `V2__seed_demo_data.sql`:
+
+| Bảng | Số dòng | Nội dung |
+| --- | --- | --- |
+| `users` | 4 | 1 admin, 3 khách |
+| `stations` | 8 | Sài Gòn, Nha Trang, Quy Nhơn, Đà Nẵng, Huế, Vinh, Hà Nội, Lào Cai |
+| `routes` | 8 | SGN-NTR, SGN-DNG, HNI-DNG, HNI-LCI, mỗi cặp hai chiều |
+| `trains` | 8 | Mỗi chiều một tàu: SNT1/SNT2, SE22/SE21, SE19/SE20, SP1/SP2 |
+| `coaches`, `seats` | 32, 768 | Mỗi tàu: toa 1-2 ghế 32 chỗ, toa 3-4 giường 16 chỗ (+200.000đ) |
+| `trips` | 114 | Mỗi tàu một chuyến mỗi ngày trong 14 ngày tới; 2 chuyến đã chạy; SP1 ngày thứ 5 bị hủy |
+| `trip_seats` | 10.944 | Đủ chỗ cho mọi chuyến |
+| `bookings` | 4 | 2 sắp đi, 1 đã đi, 1 đã hủy, đều đã thanh toán |
+
+Tài khoản:
+
+| Email | Mật khẩu | Role |
+| --- | --- | --- |
+| `admin@traingo.vn` | `Admin@123` | `ADMIN` |
+| `an.nguyen@example.com`, `binh.tran@example.com`, `cuong.le@example.com` | `Customer@123` | `CUSTOMER` |
+
+Cho tới khi làm xong Auth, trang login vẫn dùng tài khoản tạm `admin` / `admin`
+trong `application.properties`. Các tài khoản trên chỉ mới nằm trong bảng
+`users`.
+
+Ga Quy Nhơn, Huế và Vinh không có tuyến nào, nên xóa được. Các ga còn lại đang
+được tuyến dùng nên màn hình sẽ từ chối xóa.
+
+### Làm mới dữ liệu demo
+
+Ngày của chuyến tính từ lúc seed chạy, nên sau 14 ngày danh sách chuyến sắp tới
+sẽ cạn. Reset database rồi chạy lại ứng dụng. **Lệnh đầu xóa toàn bộ dữ liệu
+trong database dev**, kể cả dữ liệu bạn tự thêm:
+
+```powershell
+cd app
+docker compose down -v
+docker compose up -d
+.\mvnw.cmd spring-boot:run
+```
+
+Flyway thấy database trống nên chạy lại V1 và V2 với ngày mới.
+
+### Xem dữ liệu trong database
+
+Máy dev không có MySQL client, nên dùng client có sẵn trong container:
+
+```powershell
+docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=utf8mb4 traingo
+```
+
+Ví dụ `SHOW TABLES;` hoặc `SELECT * FROM flyway_schema_history;`. Phải có
+`--default-character-set=utf8mb4`, nếu không chữ tiếng Việt sẽ hiện sai.
 
 ## Bằng chứng khi có sự cố
 
@@ -163,10 +241,7 @@ từ code hiện tại.
 
 ## Điều chưa biết
 
-- Chưa có quy trình seed dữ liệu. Chưa có tài khoản admin, ga, tuyến, tàu hay
-  chuyến mẫu.
-- Chưa quyết định cách quản lý schema khi dự án lớn hơn: tiếp tục dùng
-  `ddl-auto=update` hay chuyển sang Flyway.
+- Migration mới chỉ được chạy trên MySQL 8.4, chưa chạy trên H2 của bộ test.
 - Chưa kiểm chứng trên máy của hai thành viên còn lại. Cổng 8081 là để né XAMPP
   trên máy này; máy khác có thể không cần, nhưng để nguyên thì cả nhóm dùng chung
   một cổng.

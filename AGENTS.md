@@ -44,6 +44,8 @@ Phần dưới đây do nhóm sở hữu, không thuộc Harness core.
 - `docs/session/` — plan nháp và tài liệu của phiên làm việc.
 - `docs/RUNBOOK.md` — cách chạy ứng dụng, database và bộ test ở máy local.
 - `app/` — ứng dụng Spring Boot, package gốc `com.voyagego.traingo`.
+- `app/src/main/resources/db/migration/`: schema và seed data, do Flyway chạy
+  lúc khởi động (`docs/decisions/0005-quan-ly-schema-bang-flyway.md`).
 
 ### Nhật ký thay đổi bắt buộc
 
@@ -123,6 +125,8 @@ Chi tiết và lý do: `docs/decisions/0002-chien-luoc-test.md`.
   dùng JavaScript thuần trong `static/js/` gọi endpoint `@RestController` dưới
   `/api/...`. Không dựng dự án frontend riêng.
 - Dùng constructor injection, không dùng `@Autowired` trên field.
+- Schema chỉ đổi bằng một migration Flyway mới. Không sửa migration đã chạy,
+  không bật lại `ddl-auto=update`.
 
 Chi tiết và lý do: `docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`.
 
