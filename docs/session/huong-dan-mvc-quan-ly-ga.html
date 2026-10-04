@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hướng dẫn MVC qua module Quản lý ga</title>
+<style>
+:root {
+	--ink: #16232e;
+	--muted: #5b6b7a;
+	--primary: #0f6cbd;
+	--primary-soft: #eaf3fb;
+	--surface: #ffffff;
+	--surface-alt: #f5f8fb;
+	--border: #dde5ec;
+	--code-bg: #f2f5f8;
+	--sidebar: 17rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+	/* 1.7 keeps Vietnamese tone marks clear of the line above. */
+	line-height: 1.7;
+	color: var(--ink);
+	background: var(--surface);
+}
+
+.layout { display: flex; align-items: flex-start; }
+
+/* ---------- Table of contents ---------- */
+
+.toc {
+	position: sticky;
+	top: 0;
+	flex: 0 0 var(--sidebar);
+	width: var(--sidebar);
+	height: 100vh;
+	overflow-y: auto;
+	padding: 1.5rem 1rem;
+	background: var(--surface-alt);
+	border-right: 1px solid var(--border);
+	font-size: 0.86rem;
+}
+
+.toc__title {
+	font-weight: 700;
+	margin: 0 0 0.75rem;
+	font-size: 0.78rem;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.toc a {
+	display: block;
+	padding: 0.24rem 0.5rem;
+	color: var(--ink);
+	text-decoration: none;
+	border-radius: 0.35rem;
+	line-height: 1.4;
+}
+
+.toc a:hover { background: var(--primary-soft); color: var(--primary); }
+.toc a.lvl-3 { padding-left: 1.35rem; color: var(--muted); font-size: 0.82rem; }
+
+/* ---------- Content ---------- */
+
+main {
+	flex: 1 1 auto;
+	min-width: 0;
+	max-width: 60rem;
+	padding: 2.5rem 2rem 5rem;
+}
+
+h1, h2, h3, h4 { line-height: 1.3; }
+
+h1 {
+	font-size: 2rem;
+	margin: 0 0 1.5rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 3px solid var(--primary);
+}
+
+h2 {
+	font-size: 1.4rem;
+	margin: 2.75rem 0 1rem;
+	padding-bottom: 0.4rem;
+	border-bottom: 1px solid var(--border);
+}
+
+h3 { font-size: 1.1rem; margin: 2rem 0 0.6rem; }
+h4 { font-size: 0.98rem; margin: 1.5rem 0 0.5rem; color: var(--primary); }
+
+p, ul, ol { margin: 0 0 1rem; }
+li { margin-bottom: 0.3rem; }
+
+a { color: var(--primary); }
+
+hr {
+	border: none;
+	border-top: 1px solid var(--border);
+	margin: 2.5rem 0;
+}
+
+code {
+	font-family: "Cascadia Mono", Consolas, "SF Mono", monospace;
+	font-size: 0.88em;
+	background: var(--code-bg);
+	padding: 0.12em 0.36em;
+	border-radius: 0.25rem;
+	/*
+	 * Identifiers like confirmBooking_shouldFail_whenSeatAlreadyBooked have no
+	 * space to break at and are wider than a phone screen, so without this the
+	 * whole page scrolls sideways.
+	 */
+	overflow-wrap: anywhere;
+	word-break: break-word;
+}
+
+pre {
+	background: var(--code-bg);
+	border: 1px solid var(--border);
+	border-radius: 0.5rem;
+	padding: 1rem;
+	overflow-x: auto;
+	line-height: 1.45;
+	font-size: 0.84rem;
+}
+
+/* Wireframes must keep their exact columns, so no breaking inside pre. */
+pre code {
+	background: none;
+	padding: 0;
+	font-size: inherit;
+	overflow-wrap: normal;
+	word-break: normal;
+}
+
+blockquote {
+	margin: 1rem 0;
+	padding: 0.75rem 1rem;
+	border-left: 4px solid var(--primary);
+	background: var(--primary-soft);
+	border-radius: 0 0.4rem 0.4rem 0;
+}
+
+blockquote p:last-child { margin-bottom: 0; }
+
+.table-wrap { overflow-x: auto; margin: 0 0 1.25rem; }
+
+table {
+	border-collapse: collapse;
+	width: 100%;
+	font-size: 0.9rem;
+}
+
+th, td {
+	border: 1px solid var(--border);
+	padding: 0.5rem 0.7rem;
+	text-align: left;
+	vertical-align: top;
+}
+
+th { background: var(--surface-alt); font-weight: 600; }
+tbody tr:nth-child(even) { background: #fbfcfd; }
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 900px) {
+	.layout { display: block; }
+	.toc {
+		position: static;
+		width: auto;
+		height: auto;
+		border-right: none;
+		border-bottom: 1px solid var(--border);
+		max-height: 16rem;
+	}
+	main { padding: 1.5rem 1rem 3rem; }
+}
+
+/* ---------- Print (Ctrl+P to PDF) ---------- */
+
+@media print {
+	.toc { display: none; }
+	main { max-width: none; padding: 0; }
+	body { font-size: 11pt; line-height: 1.5; }
+	h2 { break-before: page; }
+	h1 + h2, h2:first-of-type { break-before: auto; }
+	h2, h3, h4 { break-after: avoid; }
+	pre, table, blockquote { break-inside: avoid; }
+	a { color: inherit; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc"><p class="toc__title">Mục lục</p><a class="lvl-2" href="#1-mvc-là-gì-trong-dự-án-này">1. MVC là gì trong dự án này</a><a class="lvl-3" href="#ý-chính">Ý chính</a><a class="lvl-3" href="#đường-đi-của-một-request">Đường đi của một request</a><a class="lvl-3" href="#các-file-của-module">Các file của module</a><a class="lvl-2" href="#2-cách-sử-dụng-màn-hình-quản-lý-ga">2. Cách sử dụng màn hình Quản lý ga</a><a class="lvl-3" href="#chạy-ứng-dụng">Chạy ứng dụng</a><a class="lvl-3" href="#các-thao-tác">Các thao tác</a><a class="lvl-3" href="#quy-tắc-dữ-liệu">Quy tắc dữ liệu</a><a class="lvl-3" href="#xem-dữ-liệu-trong-database">Xem dữ liệu trong database</a><a class="lvl-2" href="#3-đi-qua-code-từng-tầng">3. Đi qua code từng tầng</a><a class="lvl-3" href="#31-bảng-stations-trong-migration">3.1 Bảng stations trong migration</a><a class="lvl-3" href="#32-entity-station">3.2 Entity Station</a><a class="lvl-3" href="#33-form-stationform">3.3 Form StationForm</a><a class="lvl-3" href="#34-repository-stationrepository">3.4 Repository StationRepository</a><a class="lvl-3" href="#35-service-stationservice">3.5 Service StationService</a><a class="lvl-3" href="#36-controller-stationadmincontroller">3.6 Controller StationAdminController</a><a class="lvl-3" href="#37-view-stationshtml">3.7 View stations.html</a><a class="lvl-3" href="#38-view-station-formhtml">3.8 View station-form.html</a><a class="lvl-3" href="#39-hộp-xác-nhận-trong-adminjs">3.9 Hộp xác nhận trong admin.js</a><a class="lvl-3" href="#310-adminshellmodeladvice">3.10 AdminShellModelAdvice</a><a class="lvl-2" href="#4-một-request-chạy-như-thế-nào">4. Một request chạy như thế nào</a><a class="lvl-3" href="#41-thêm-ga-thành-công">4.1 Thêm ga thành công</a><a class="lvl-3" href="#42-form-không-hợp-lệ">4.2 Form không hợp lệ</a><a class="lvl-3" href="#43-mã-trùng">4.3 Mã trùng</a><a class="lvl-3" href="#44-xóa-ga-đang-có-tuyến-dùng">4.4 Xóa ga đang có tuyến dùng</a><a class="lvl-3" href="#45-ga-không-tồn-tại">4.5 Ga không tồn tại</a><a class="lvl-2" href="#5-lỗi-thường-gặp">5. Lỗi thường gặp</a><a class="lvl-2" href="#6-làm-màn-hình-mới-theo-mẫu-này">6. Làm màn hình mới theo mẫu này</a><a class="lvl-2" href="#7-bài-tập">7. Bài tập</a></nav>
+<main>
+<h1 id="hướng-dẫn-mvc-qua-module-quản-lý-ga">Hướng dẫn MVC qua module Quản lý ga</h1>
+<p>Phiên bản ngày 01/10/2026, ứng với commit <code>9748dcd</code> trên nhánh <code>feat/database-and-station-admin</code>.</p>
+<p>Tài liệu dành cho thành viên nhóm TrainGo sắp làm các màn hình quản trị tiếp theo, như Quản lý tàu (T03) và Sơ đồ toa (T06) trong <code>docs/plans/active/chia-viec-mvp.md</code>. Đọc xong, bạn sẽ:</p>
+<ul><li>hiểu MVC trong Spring Boot qua một module thật đang chạy;</li><li>dùng được màn hình <code>/admin/stations</code>;</li><li>đọc được từng file code của module và biết vì sao nó được viết như vậy;</li><li>tự dựng một màn hình mới theo cùng mẫu.</li></ul>
+<p>Nội dung:</p>
+<ol><li>MVC là gì trong dự án này</li><li>Cách sử dụng màn hình Quản lý ga</li><li>Đi qua code từng tầng</li><li>Một request chạy như thế nào</li><li>Lỗi thường gặp</li><li>Làm màn hình mới theo mẫu này</li><li>Bài tập</li></ol>
+<p>Đây là tài liệu của phiên làm việc, không phải bản gốc. Khi có mâu thuẫn, code và <code>docs/product/</code>, <code>docs/decisions/</code> mới là bản đúng.</p>
+<h2 id="1-mvc-là-gì-trong-dự-án-này">1. MVC là gì trong dự án này</h2>
+<h3 id="ý-chính">Ý chính</h3>
+<p>MVC chia việc xử lý một trang web thành ba vai:</p>
+<div class="table-wrap"><table><thead><tr><th>Vai</th><th>Trong Spring Boot của TrainGo</th><th>Ở module ga</th></tr></thead><tbody><tr><td>Controller</td><td>Class có <code>@Controller</code>, mỗi method gắn với một URL</td><td><code>StationAdminController</code></td></tr><tr><td>Model</td><td>Dữ liệu controller đưa sang view qua đối tượng <code>Model</code></td><td><code>stations</code>, <code>stationForm</code>, <code>activeNav</code>, <code>successMessage</code></td></tr><tr><td>View</td><td>Template Thymeleaf trong <code>src/main/resources/templates/</code></td><td><code>admin/stations.html</code>, <code>admin/station-form.html</code></td></tr></tbody></table></div>
+<p>Để controller luôn mỏng (<code>AGENTS.md</code> yêu cầu), dự án tách thêm các tầng sau:</p>
+<div class="table-wrap"><table><thead><tr><th>Tầng</th><th>Trách nhiệm</th><th>Ở module ga</th></tr></thead><tbody><tr><td>Service</td><td>Nghiệp vụ và transaction</td><td><code>StationService</code></td></tr><tr><td>Repository</td><td>Đọc và ghi database</td><td><code>StationRepository</code></td></tr><tr><td>Entity</td><td>Một dòng trong bảng database</td><td><code>Station</code></td></tr><tr><td>Form</td><td>Dữ liệu người dùng gửi lên từ form</td><td><code>StationForm</code></td></tr></tbody></table></div>
+<p>Ba câu cần nhớ:</p>
+<ul><li>Controller không chứa nghiệp vụ, chỉ nhận request, gọi service và chọn view.</li><li>View không gọi database, chỉ hiển thị những gì có trong Model.</li><li>Service không biết HTML, chỉ làm việc với dữ liệu và luật.</li></ul>
+<h3 id="đường-đi-của-một-request">Đường đi của một request</h3>
+<p>Khi bạn mở <code>/admin/stations</code>:</p>
+<pre><code>Trình duyệt
+    | GET /admin/stations
+    v
+StationAdminController.list()        Controller: nhận request
+    | stationService.findAll()
+    v
+StationService.findAll()             Service: transaction chỉ đọc
+    | stationRepository.findAllByOrderByNameAsc()
+    v
+StationRepository -&gt; MySQL           Repository: SELECT bảng stations
+    | List&lt;Station&gt;
+    v
+model.addAttribute(&quot;stations&quot;, ...)  Model: dữ liệu cho view
+    | return &quot;admin/stations&quot;
+    v
+templates/admin/stations.html        View: dựng HTML gửi trình duyệt</code></pre>
+<h3 id="các-file-của-module">Các file của module</h3>
+<pre><code>app/src/main/
+├── java/com/voyagego/traingo/
+│   ├── station/
+│   │   ├── controller/StationAdminController.java
+│   │   ├── model/Station.java
+│   │   ├── model/StationForm.java
+│   │   ├── repository/StationRepository.java
+│   │   └── service/StationService.java, DuplicateStationCodeException,
+│   │       StationInUseException, StationNotFoundException
+│   ├── route/repository/RouteRepository.java  (dùng để chặn xóa)
+│   └── admin/controller/AdminShellModelAdvice.java
+└── resources/
+    ├── db/migration/V1__create_schema.sql     (bảng stations)
+    ├── db/migration/V2__seed_demo_data.sql    (8 ga mẫu)
+    ├── templates/admin/stations.html
+    ├── templates/admin/station-form.html
+    └── static/js/admin/admin.js               (hộp xác nhận xóa)</code></pre>
+<p>Mỗi feature có một package riêng (<code>station</code>, <code>train</code>, <code>route</code>...). Bên trong chia tiếp <code>controller</code>, <code>model</code>, <code>repository</code>, <code>service</code>. Nhờ vậy hai người làm hai feature khác nhau hầu như không sửa chung file nào (<code>docs/decisions/0001-cau-truc-du-an-va-tech-stack.md</code>).</p>
+<h2 id="2-cách-sử-dụng-màn-hình-quản-lý-ga">2. Cách sử dụng màn hình Quản lý ga</h2>
+<h3 id="chạy-ứng-dụng">Chạy ứng dụng</h3>
+<p>Mở Docker Desktop trước, rồi trong PowerShell:</p>
+<pre><code>cd app
+docker compose up -d          # MySQL; chạy lại sau mỗi lần khởi động máy
+.\mvnw.cmd spring-boot:run    # lần đầu, Flyway tạo bảng và nạp seed</code></pre>
+<p>Mở <code>http://localhost:8081/admin/stations</code> và đăng nhập bằng <code>admin</code> / <code>admin</code>. Đây là tài khoản tạm khai trong <code>application.properties</code>, dùng cho tới khi làm xong Auth. Các tài khoản trong bảng <code>users</code> (như <code>admin@traingo.vn</code>) chưa đăng nhập được.</p>
+<p>Sau khi đăng nhập, địa chỉ có thể kèm đuôi <code>?continue</code>. Đó là cách Spring Security 6 đưa bạn về trang đang mở dở, không phải lỗi.</p>
+<h3 id="các-thao-tác">Các thao tác</h3>
+<div class="table-wrap"><table><thead><tr><th>Thao tác</th><th>Cách làm</th><th>Kết quả</th></tr></thead><tbody><tr><td>Xem</td><td>Mở <code>/admin/stations</code></td><td>Bảng ga sắp theo tên, có ô tìm kiếm, sắp xếp cột, phân trang</td></tr><tr><td>Thêm</td><td>Nút &quot;Thêm ga&quot;, điền form, bấm &quot;Thêm ga&quot;</td><td>Về danh sách, thông báo xanh &quot;Đã thêm Ga Buôn Ma Thuột (BMT).&quot;</td></tr><tr><td>Sửa</td><td>Biểu tượng bút chì ở cuối dòng</td><td>Form điền sẵn; lưu xong có thông báo &quot;Đã cập nhật ...&quot;</td></tr><tr><td>Xóa</td><td>Biểu tượng thùng rác, chọn OK ở hộp xác nhận</td><td>&quot;Đã xóa ...&quot;, hoặc thông báo đỏ nếu ga đang được dùng</td></tr></tbody></table></div>
+<h3 id="quy-tắc-dữ-liệu">Quy tắc dữ liệu</h3>
+<div class="table-wrap"><table><thead><tr><th>Trường</th><th>Bắt buộc</th><th>Quy tắc</th></tr></thead><tbody><tr><td>Mã ga</td><td>Có</td><td>Chữ cái không dấu và chữ số, tối đa 10 ký tự, tự viết hoa, không trùng</td></tr><tr><td>Tên ga</td><td>Có</td><td>Tối đa 100 ký tự</td></tr><tr><td>Tỉnh / Thành phố</td><td>Không</td><td>Tối đa 100 ký tự</td></tr><tr><td>Địa chỉ</td><td>Không</td><td>Tối đa 255 ký tự</td></tr></tbody></table></div>
+<p>Khoảng trắng ở đầu và cuối mỗi ô được tự bỏ. Ô để trống được lưu là không có giá trị (<code>NULL</code>). Vì mã luôn được viết hoa, gõ <code>sgn</code> khi đã có <code>SGN</code> sẽ bị báo trùng.</p>
+<p>Ga đang là điểm đi hoặc điểm đến của một tuyến thì không xóa được. Trong dữ liệu mẫu, chỉ Quy Nhơn (<code>QNH</code>), Huế (<code>HUE</code>) và Vinh (<code>VIN</code>) xóa được; năm ga còn lại đều có tuyến.</p>
+<h3 id="xem-dữ-liệu-trong-database">Xem dữ liệu trong database</h3>
+<p>Máy dev không có MySQL client, nên dùng client có sẵn trong container:</p>
+<pre><code>docker exec -it traingo-mysql mysql -utraingo -ptraingo `
+    --default-character-set=utf8mb4 traingo</code></pre>
+<p>Rồi gõ <code>SELECT * FROM stations;</code>. Thiếu <code>--default-character-set=utf8mb4</code> thì chữ tiếng Việt hiện sai.</p>
+<h2 id="3-đi-qua-code-từng-tầng">3. Đi qua code từng tầng</h2>
+<p>Các đoạn code dưới đây chép từ code thật. Một số dòng được ngắt lại cho vừa khổ giấy, và phần lặp lại như getter được rút gọn bằng chú thích.</p>
+<h3 id="31-bảng-stations-trong-migration">3.1 Bảng <code>stations</code> trong migration</h3>
+<pre><code>CREATE TABLE stations (
+    id      BIGINT       NOT NULL AUTO_INCREMENT,
+    code    VARCHAR(10)  NOT NULL,
+    name    VARCHAR(100) NOT NULL,
+    city    VARCHAR(100),
+    address VARCHAR(255),
+    CONSTRAINT pk_stations PRIMARY KEY (id),
+    CONSTRAINT uk_stations_code UNIQUE (code)
+);</code></pre>
+<ul><li>Bảng nằm trong <code>V1__create_schema.sql</code>. Flyway chạy file này khi ứng dụng khởi động lần đầu trên database trống (<code>docs/decisions/0005-quan-ly-schema-bang-flyway.md</code>).</li><li><code>uk_stations_code</code> là lớp chặn cuối cùng: kể cả khi code quên kiểm tra, MySQL vẫn từ chối mã trùng.</li><li>Bảng <code>routes</code> có khóa ngoại trỏ về <code>stations</code> và không có <code>ON DELETE</code>. Nên MySQL cũng từ chối xóa một ga đang có tuyến dùng.</li><li>Muốn đổi bảng thì viết migration mới (<code>V3__...</code>), không sửa file đã chạy.</li></ul>
+<h3 id="32-entity-station">3.2 Entity <code>Station</code></h3>
+<pre><code>@Entity
+@Table(name = &quot;stations&quot;, uniqueConstraints = @UniqueConstraint(
+        name = &quot;uk_stations_code&quot;, columnNames = &quot;code&quot;))
+public class Station {
+
+    public static final int CODE_MAX_LENGTH = 10;
+    public static final int NAME_MAX_LENGTH = 100;
+    public static final int CITY_MAX_LENGTH = 100;
+    public static final int ADDRESS_MAX_LENGTH = 255;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(nullable = false, length = CODE_MAX_LENGTH)
+    private String code;
+    @Column(nullable = false, length = NAME_MAX_LENGTH)
+    private String name;
+    @Column(length = CITY_MAX_LENGTH)
+    private String city;
+    @Column(length = ADDRESS_MAX_LENGTH)
+    private String address;
+
+    protected Station() {
+    }
+
+    public Station(String code, String name, String city,
+            String address) {
+        update(code, name, city, address);
+    }
+
+    public void update(String code, String name, String city,
+            String address) {
+        this.code = normalizeCode(code);
+        this.name = name;
+        this.city = city;
+        this.address = address;
+    }
+
+    public static String normalizeCode(String code) {
+        return code.trim().toUpperCase(Locale.ROOT);
+    }
+
+    // getId(), getCode(), getName(), getCity(), getAddress()
+}</code></pre>
+<ul><li><code>@Entity</code> và <code>@Table</code> nối class này với bảng <code>stations</code>. Mỗi object <code>Station</code> là một dòng trong bảng.</li><li>Tên field theo kiểu <code>camelCase</code>; Spring Boot tự đổi thành tên cột <code>snake_case</code> khi cần. Bốn field ở đây trùng tên cột nên không cần đổi gì.</li><li><code>@Id</code> và <code>@GeneratedValue(strategy = GenerationType.IDENTITY)</code>: id do MySQL tự sinh (<code>AUTO_INCREMENT</code>), code không bao giờ tự đặt id.</li><li>Class không có setter. Muốn đổi dữ liệu thì phải đi qua <code>update(...)</code>, và <code>update</code> luôn gọi <code>normalizeCode</code>. Nhờ vậy luật &quot;mã luôn viết hoa&quot; chỉ nằm ở một chỗ và không thể bị bỏ qua.</li><li><code>Locale.ROOT</code> giúp việc viết hoa không phụ thuộc ngôn ngữ cài trên máy chạy.</li><li><code>protected Station()</code> là constructor rỗng mà Hibernate cần khi đọc một dòng từ database ra object. Để <code>protected</code> thì code khác không tạo được ga rỗng.</li><li>Bốn hằng số độ dài được <code>StationForm</code> dùng lại, nên giới hạn ở form luôn khớp với độ dài cột.</li><li><code>spring.jpa.hibernate.ddl-auto=validate</code>: lúc khởi động, Hibernate kiểm tra class này khớp bảng. Lệch là ứng dụng dừng ngay, không đợi tới lúc một trang bị lỗi.</li></ul>
+<h3 id="33-form-stationform">3.3 Form <code>StationForm</code></h3>
+<pre><code>public class StationForm {
+
+    @NotBlank(message = &quot;Vui lòng nhập mã ga.&quot;)
+    @Size(max = Station.CODE_MAX_LENGTH,
+            message = &quot;Mã ga tối đa {max} ký tự.&quot;)
+    @Pattern(regexp = &quot;[A-Za-z0-9]+&quot;,
+            message = &quot;Mã ga chỉ gồm chữ cái không dấu và chữ số.&quot;)
+    private String code;
+
+    @NotBlank(message = &quot;Vui lòng nhập tên ga.&quot;)
+    @Size(max = Station.NAME_MAX_LENGTH,
+            message = &quot;Tên ga tối đa {max} ký tự.&quot;)
+    private String name;
+
+    @Size(max = Station.CITY_MAX_LENGTH,
+            message = &quot;Tỉnh / thành phố tối đa {max} ký tự.&quot;)
+    private String city;
+
+    @Size(max = Station.ADDRESS_MAX_LENGTH,
+            message = &quot;Địa chỉ tối đa {max} ký tự.&quot;)
+    private String address;
+
+    public static StationForm from(Station station) {
+        StationForm form = new StationForm();
+        form.code = station.getCode();
+        form.name = station.getName();
+        form.city = station.getCity();
+        form.address = station.getAddress();
+        return form;
+    }
+
+    // getter và setter cho cả bốn field
+}</code></pre>
+<ul><li>Form tách khỏi entity vì lý do an toàn: request chỉ đặt được đúng bốn field này. Nếu bind thẳng vào <code>Station</code>, kẻ xấu có thể gửi thêm <code>id</code> để ghi đè lên một ga khác.</li><li>Annotation validation đến từ Jakarta Validation. <code>{max}</code> trong thông báo được thay bằng số thật, ví dụ &quot;Mã ga tối đa 10 ký tự.&quot;</li><li><code>@Pattern</code> khớp với toàn bộ chuỗi, nên <code>SG N</code> (có khoảng trắng) hay <code>Sài</code> (có dấu) đều không hợp lệ.</li><li>Giá trị <code>null</code> được <code>@Size</code> và <code>@Pattern</code> coi là hợp lệ. Bắt buộc nhập là việc của <code>@NotBlank</code>, nên mã trống chỉ hiện một thông báo &quot;Vui lòng nhập mã ga.&quot;</li><li>Setter là bắt buộc: Spring gọi <code>setCode(...)</code>, <code>setName(...)</code> để đổ dữ liệu từ request vào form.</li><li><code>from(...)</code> dùng khi mở form sửa, để điền sẵn dữ liệu của ga đang sửa.</li></ul>
+<h3 id="34-repository-stationrepository">3.4 Repository <code>StationRepository</code></h3>
+<pre><code>public interface StationRepository
+        extends JpaRepository&lt;Station, Long&gt; {
+
+    List&lt;Station&gt; findAllByOrderByNameAsc();
+
+    boolean existsByCode(String code);
+
+    boolean existsByCodeAndIdNot(String code, Long id);
+}</code></pre>
+<p>Không có dòng SQL nào: Spring Data đọc tên method rồi tự sinh câu truy vấn.</p>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>Câu truy vấn tương ứng</th><th>Dùng khi</th></tr></thead><tbody><tr><td><code>findAllByOrderByNameAsc()</code></td><td><code>SELECT ... ORDER BY name ASC</code></td><td>Hiển thị danh sách</td></tr><tr><td><code>existsByCode(code)</code></td><td><code>SELECT ... WHERE code = ?</code></td><td>Thêm ga: mã đã có chưa</td></tr><tr><td><code>existsByCodeAndIdNot(code, id)</code></td><td><code>... WHERE code = ? AND id &lt;&gt; ?</code></td><td>Sửa ga: mã có thuộc ga khác không</td></tr></tbody></table></div>
+<p><code>existsByCodeAndIdNot</code> bỏ qua chính ga đang sửa. Nếu dùng <code>existsByCode</code> khi sửa, việc lưu lại ga mà giữ nguyên mã sẽ bị báo trùng với chính nó.</p>
+<p><code>JpaRepository</code> cho sẵn <code>findById</code>, <code>save</code>, <code>delete</code>, <code>flush</code>... nên không phải viết lại.</p>
+<p>Ở package <code>route</code>, <code>RouteRepository</code> có thêm một method mà module ga dùng:</p>
+<pre><code>boolean existsByOriginStationIdOrDestinationStationId(
+        Long originStationId, Long destinationStationId);</code></pre>
+<p><code>OriginStationId</code> được Spring Data hiểu là <code>originStation.id</code>, tức cột <code>origin_station_id</code>. Method trả <code>true</code> nếu có tuyến bắt đầu hoặc kết thúc ở ga đó.</p>
+<h3 id="35-service-stationservice">3.5 Service <code>StationService</code></h3>
+<pre><code>@Service
+public class StationService {
+
+    private final StationRepository stationRepository;
+    private final RouteRepository routeRepository;
+
+    public StationService(StationRepository stationRepository,
+            RouteRepository routeRepository) {
+        this.stationRepository = stationRepository;
+        this.routeRepository = routeRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;Station&gt; findAll() {
+        return stationRepository.findAllByOrderByNameAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public Station findById(long id) {
+        return stationRepository.findById(id)
+                .orElseThrow(() -&gt; new StationNotFoundException(id));
+    }
+
+    @Transactional
+    public Station create(StationForm form) {
+        String code = Station.normalizeCode(form.getCode());
+        if (stationRepository.existsByCode(code)) {
+            throw new DuplicateStationCodeException(code);
+        }
+        return stationRepository.save(new Station(code,
+                form.getName(), form.getCity(), form.getAddress()));
+    }</code></pre>
+<ul><li><code>@Service</code> cho Spring biết đây là một bean để tiêm (inject) vào controller.</li><li>Các dependency được nhận qua constructor, không dùng <code>@Autowired</code> trên field (quy tắc trong <code>AGENTS.md</code>). Field <code>final</code> nên không thể vô tình bị đổi.</li><li><code>@Transactional</code> gom mọi thao tác database trong method thành một transaction: cùng thành công hoặc cùng bị hủy. <code>readOnly = true</code> báo cho Hibernate biết method chỉ đọc, để bỏ qua bước theo dõi thay đổi.</li><li><code>findById</code> ném <code>StationNotFoundException</code> khi không có ga. Exception này mang <code>@ResponseStatus(HttpStatus.NOT_FOUND)</code>, nên người dùng nhận trang 404.</li><li><code>create</code> kiểm tra mã trùng trước khi lưu, để báo lỗi dễ hiểu. Nếu hai người bấm lưu cùng một lúc thì cả hai đều qua được bước kiểm tra; khi đó khóa unique <code>uk_stations_code</code> chặn người thứ hai.</li></ul>
+<pre><code>    @Transactional
+    public Station update(long id, StationForm form) {
+        Station station = findById(id);
+        String code = Station.normalizeCode(form.getCode());
+        if (stationRepository.existsByCodeAndIdNot(code, id)) {
+            throw new DuplicateStationCodeException(code);
+        }
+        station.update(code, form.getName(), form.getCity(),
+                form.getAddress());
+        stationRepository.flush();
+        return station;
+    }
+
+    @Transactional
+    public Station delete(long id) {
+        Station station = findById(id);
+        if (routeRepository
+                .existsByOriginStationIdOrDestinationStationId(id, id)) {
+            throw new StationInUseException(station);
+        }
+        stationRepository.delete(station);
+        return station;
+    }
+}</code></pre>
+<ul><li><code>update</code> không gọi <code>save()</code> mà dữ liệu vẫn được lưu. Đây là cơ chế dirty checking của Hibernate: object <code>station</code> lấy ra trong transaction được Hibernate theo dõi. Đổi field rồi kết thúc method là Hibernate tự sinh câu <code>UPDATE</code>.</li><li><code>flush()</code> ép câu <code>UPDATE</code> chạy ngay trong method. Nếu mã vừa bị ai đó chiếm, lỗi xuất hiện tại đây với cùng loại exception mà <code>create</code> gặp, thay vì nổ ra lúc commit dưới một dạng khác.</li><li><code>delete</code> kiểm tra tuyến trước rồi mới xóa. Cách &quot;cứ xóa rồi bắt lỗi khóa ngoại&quot; không dùng được: exception từ repository đánh dấu transaction là phải rollback, nên dù có bắt được exception, lúc commit Spring vẫn ném <code>UnexpectedRollbackException</code>.</li><li>Ba exception của module đều nằm cạnh service: <code>DuplicateStationCodeException</code> (mã trùng), <code>StationInUseException</code> (ga đang được dùng, mang theo ga để controller in tên) và <code>StationNotFoundException</code> (404).</li></ul>
+<h3 id="36-controller-stationadmincontroller">3.6 Controller <code>StationAdminController</code></h3>
+<pre><code>@Controller
+@RequestMapping(&quot;/admin/stations&quot;)
+public class StationAdminController {
+
+    private static final String LIST_VIEW = &quot;admin/stations&quot;;
+    private static final String FORM_VIEW = &quot;admin/station-form&quot;;
+    private static final String REDIRECT_TO_LIST =
+            &quot;redirect:/admin/stations&quot;;
+
+    private final StationService stationService;
+
+    public StationAdminController(StationService stationService) {
+        this.stationService = stationService;
+    }
+
+    @InitBinder
+    void trimSubmittedText(WebDataBinder binder) {
+        binder.registerCustomEditor(String.class,
+                new StringTrimmerEditor(true));
+    }
+
+    @ModelAttribute(&quot;activeNav&quot;)
+    String activeNav() {
+        return &quot;stations&quot;;
+    }
+
+    @GetMapping
+    public String list(Model model) {
+        model.addAttribute(&quot;stations&quot;, stationService.findAll());
+        return LIST_VIEW;
+    }
+
+    @GetMapping(&quot;/new&quot;)
+    public String createForm(Model model) {
+        model.addAttribute(&quot;stationForm&quot;, new StationForm());
+        return FORM_VIEW;
+    }</code></pre>
+<ul><li><code>@Controller</code> trả về tên view, rồi Thymeleaf dựng HTML từ view đó. Khác với <code>@RestController</code>, loại trả thẳng JSON (T06 sẽ dùng loại này cho API).</li><li><code>@RequestMapping(&quot;/admin/stations&quot;)</code> là tiền tố chung, nên <code>@GetMapping(&quot;/new&quot;)</code> ứng với <code>/admin/stations/new</code>.</li><li>Chuỗi trả về như <code>&quot;admin/stations&quot;</code> là đường dẫn template, tính từ <code>templates/</code> và bỏ đuôi <code>.html</code>.</li><li><code>@InitBinder</code> chạy trước khi dữ liệu form được đổ vào <code>StationForm</code>. <code>StringTrimmerEditor(true)</code> cắt khoảng trắng hai đầu và đổi chuỗi rỗng thành <code>null</code>. Vì vậy <code>&quot;  SGN &quot;</code> được kiểm tra như <code>&quot;SGN&quot;</code>, và ô Tỉnh để trống được lưu thành <code>NULL</code>.</li><li>Method gắn <code>@ModelAttribute(&quot;activeNav&quot;)</code> chạy trước mọi handler trong class và đặt <code>activeNav = &quot;stations&quot;</code> vào Model. Sidebar đọc giá trị này để làm sáng mục &quot;Quản lý ga&quot;.</li></ul>
+<pre><code>    @PostMapping
+    public String create(
+            @Valid @ModelAttribute(&quot;stationForm&quot;) StationForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            return FORM_VIEW;
+        }
+        Station station;
+        try {
+            station = stationService.create(form);
+        } catch (DuplicateStationCodeException
+                | DataIntegrityViolationException ex) {
+            rejectDuplicateCode(bindingResult);
+            return FORM_VIEW;
+        }
+        redirectAttributes.addFlashAttribute(&quot;successMessage&quot;,
+                &quot;Đã thêm &quot; + describe(station) + &quot;.&quot;);
+        return REDIRECT_TO_LIST;
+    }</code></pre>
+<ul><li><code>@ModelAttribute(&quot;stationForm&quot;)</code> gom các field của request thành một <code>StationForm</code>, đồng thời đặt nó vào Model với tên <code>stationForm</code>. Nhờ vậy khi form hiện lại, những gì người dùng đã gõ vẫn còn.</li><li><code>@Valid</code> chạy các luật trong <code>StationForm</code>. Kết quả nằm trong <code>BindingResult</code>. Tham số <code>BindingResult</code> phải đứng ngay sau tham số có <code>@Valid</code>; đặt sai chỗ thì Spring trả lỗi 400 thay vì cho bạn hiện lại form.</li><li>Có lỗi thì <code>return FORM_VIEW</code>: hiện lại form, không redirect, và service không hề được gọi.</li><li>Mã trùng không phải lỗi về hình dạng dữ liệu, nên chỉ service mới phát hiện được. Controller bắt exception rồi gắn lỗi vào đúng ô &quot;Mã ga&quot; bằng <code>bindingResult.rejectValue(&quot;code&quot;, ...)</code>.</li><li>Bắt <code>DataIntegrityViolationException</code> ở đây là an toàn, vì transaction của service đã kết thúc và đã rollback xong.</li><li>Thành công thì <code>addFlashAttribute</code> lưu thông báo, rồi <code>redirect:</code> khiến trình duyệt gửi một request <code>GET</code> mới. Mẫu này gọi là Post/Redirect/Get: bấm F5 ở danh sách chỉ tải lại trang, không thêm ga lần nữa. Flash attribute chỉ sống qua đúng một lần redirect.</li></ul>
+<pre><code>    @GetMapping(&quot;/{id}/edit&quot;)
+    public String editForm(@PathVariable long id, Model model) {
+        model.addAttribute(&quot;stationId&quot;, id);
+        model.addAttribute(&quot;stationForm&quot;,
+                StationForm.from(stationService.findById(id)));
+        return FORM_VIEW;
+    }
+
+    @PostMapping(&quot;/{id}/delete&quot;)
+    public String delete(@PathVariable long id,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Station station = stationService.delete(id);
+            redirectAttributes.addFlashAttribute(&quot;successMessage&quot;,
+                    &quot;Đã xóa &quot; + describe(station) + &quot;.&quot;);
+        } catch (StationInUseException ex) {
+            redirectAttributes.addFlashAttribute(&quot;errorMessage&quot;,
+                    &quot;Không xóa được &quot; + describe(ex.getStation())
+                    + &quot; vì ga đang là điểm đi hoặc điểm đến&quot;
+                    + &quot; của một tuyến.&quot;);
+        }
+        return REDIRECT_TO_LIST;
+    }</code></pre>
+<ul><li><code>@PathVariable long id</code> lấy số trong URL, ví dụ <code>7</code> trong <code>/admin/stations/7/edit</code>.</li><li>Hai thao tác thêm và sửa dùng chung <code>station-form.html</code>. Chỉ khi sửa mới có <code>stationId</code> trong Model, và template dựa vào đó để biết form gửi về đâu.</li><li><code>update(...)</code> (không chép ở đây) giống <code>create(...)</code>, chỉ khác là đặt <code>stationId</code> vào Model trước. Nhờ vậy khi form có lỗi, nó vẫn gửi về đúng URL của ga đang sửa.</li><li>Xóa dùng <code>POST</code> chứ không dùng link <code>GET</code>, vì thao tác làm thay đổi dữ liệu không được nằm sau một đường link mà trình duyệt hay công cụ có thể tự mở.</li></ul>
+<p>Tổng hợp các route:</p>
+<div class="table-wrap"><table><thead><tr><th>Method</th><th>URL</th><th>Handler</th><th>Kết quả</th></tr></thead><tbody><tr><td>GET</td><td><code>/admin/stations</code></td><td><code>list</code></td><td>Trang danh sách</td></tr><tr><td>GET</td><td><code>/admin/stations/new</code></td><td><code>createForm</code></td><td>Form trống</td></tr><tr><td>POST</td><td><code>/admin/stations</code></td><td><code>create</code></td><td>Redirect, hoặc form kèm lỗi</td></tr><tr><td>GET</td><td><code>/admin/stations/{id}/edit</code></td><td><code>editForm</code></td><td>Form điền sẵn, hoặc 404</td></tr><tr><td>POST</td><td><code>/admin/stations/{id}</code></td><td><code>update</code></td><td>Redirect, hoặc form kèm lỗi</td></tr><tr><td>POST</td><td><code>/admin/stations/{id}/delete</code></td><td><code>delete</code></td><td>Redirect kèm thông báo xanh hoặc đỏ</td></tr></tbody></table></div>
+<h3 id="37-view-stationshtml">3.7 View <code>stations.html</code></h3>
+<pre><code>&lt;html lang=&quot;vi&quot; xmlns:th=&quot;http://www.thymeleaf.org&quot;
+    th:replace=&quot;~{admin/layout/base :: page(~{::title}, ~{::main})}&quot;&gt;
+...
+&lt;div th:if=&quot;${successMessage}&quot; class=&quot;alert alert-success ...&quot;&gt;
+    &lt;span th:text=&quot;${successMessage}&quot;&gt;Đã thêm Ga Sài Gòn (SGN).&lt;/span&gt;
+&lt;/div&gt;
+...
+&lt;tr th:each=&quot;station : ${stations}&quot;&gt;
+    &lt;td class=&quot;fw-semibold&quot; th:text=&quot;${station.code}&quot;&gt;SGN&lt;/td&gt;
+    &lt;td th:text=&quot;${station.name}&quot;&gt;Ga Sài Gòn&lt;/td&gt;
+    ...
+    &lt;a class=&quot;btn btn-light btn-sm&quot; ...
+        th:href=&quot;@{/admin/stations/{id}/edit(id=${station.id})}&quot;&gt;
+        &lt;i class=&quot;bi bi-pencil&quot;&gt;&lt;/i&gt;
+    &lt;/a&gt;
+    &lt;form method=&quot;post&quot; class=&quot;d-inline&quot;
+        th:action=&quot;@{/admin/stations/{id}/delete(id=${station.id})}&quot;
+        th:data-confirm=&quot;|Xóa ${station.name} (${station.code})? ...|&quot;&gt;
+        &lt;button type=&quot;submit&quot; class=&quot;btn btn-light btn-sm&quot; ...&gt;
+            &lt;i class=&quot;bi bi-trash&quot;&gt;&lt;/i&gt;
+        &lt;/button&gt;
+    &lt;/form&gt;
+&lt;/tr&gt;</code></pre>
+<ul><li><code>th:replace</code> lồng <code>&lt;title&gt;</code> và <code>&lt;main&gt;</code> của trang vào khung admin chung (<code>admin/layout/base.html</code>), nên trang không phải tự khai header và sidebar.</li><li><code>${...}</code> đọc dữ liệu trong Model. <code>th:if</code> chỉ hiện khối khi giá trị khác <code>null</code>; <code>th:each</code> lặp qua danh sách.</li><li>Chữ mẫu như <code>SGN</code> hay <code>Ga Sài Gòn</code> trong template bị thay khi render. Nó chỉ để mở file HTML trực tiếp vẫn đọc được.</li><li><code>@{...}</code> dựng URL. <code>{id}</code> được thay bằng <code>station.id</code>, nên ra <code>/admin/stations/7/edit</code>.</li><li>Form xóa phải dùng <code>th:action</code>, không dùng <code>action</code>. Spring Security bật bảo vệ CSRF: mọi <code>POST</code> phải mang theo một token bí mật. <code>th:action</code> tự chèn token đó vào form; thiếu token thì server trả 403.</li><li><code>|...|</code> là chuỗi có biến bên trong. <code>th:data-confirm</code> tạo attribute <code>data-confirm</code>, và <code>admin.js</code> đọc nó để hỏi lại trước khi xóa. Câu hỏi đầy đủ là &quot;Xóa Ga Sài Gòn (SGN)? Thao tác này không hoàn tác được.&quot;</li><li>Dấu <code>...</code> trong đoạn trích là chỗ được lược bớt, ví dụ các attribute <code>th:title</code>, <code>th:aria-label</code> giúp trình đọc màn hình đọc được nút.</li><li>Bảng có class <code>datatable</code>, nên <code>admin.js</code> gắn thêm tìm kiếm, sắp xếp và phân trang mà trang không phải viết thêm dòng nào.</li></ul>
+<h3 id="38-view-station-formhtml">3.8 View <code>station-form.html</code></h3>
+<pre><code>&lt;main th:with=&quot;editing=${stationId != null}&quot;&gt;
+  ...
+  &lt;form method=&quot;post&quot; novalidate th:object=&quot;${stationForm}&quot;
+      th:action=&quot;${editing}
+          ? @{/admin/stations/{id}(id=${stationId})}
+          : @{/admin/stations}&quot;&gt;
+    &lt;label for=&quot;code&quot; class=&quot;form-label&quot;&gt;
+        Mã ga &lt;span class=&quot;text-danger&quot;&gt;*&lt;/span&gt;&lt;/label&gt;
+    &lt;input type=&quot;text&quot; class=&quot;form-control&quot; th:field=&quot;*{code}&quot;
+        th:errorclass=&quot;is-invalid&quot; maxlength=&quot;10&quot; autocomplete=&quot;off&quot;
+        required aria-describedby=&quot;codeHelp&quot;&gt;
+    &lt;div class=&quot;invalid-feedback&quot; th:errors=&quot;*{code}&quot;&gt;
+        Vui lòng nhập mã ga.&lt;/div&gt;
+    ...
+    &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary&quot;&gt;
+        &lt;i class=&quot;bi bi-check-lg me-1&quot;&gt;&lt;/i&gt;&lt;span
+            th:text=&quot;${editing} ? &#x27;Lưu thay đổi&#x27; : &#x27;Thêm ga&#x27;&quot;&gt;Thêm ga&lt;/span&gt;
+    &lt;/button&gt;
+  &lt;/form&gt;
+&lt;/main&gt;</code></pre>
+<ul><li><code>th:with</code> tạo biến <code>editing</code> dùng trong cả trang: <code>true</code> khi có <code>stationId</code>, tức là đang sửa.</li><li><code>th:object=&quot;${stationForm}&quot;</code> chọn object gốc. Bên trong, <code>*{code}</code> nghĩa là <code>stationForm.code</code>.</li><li><code>th:field=&quot;*{code}&quot;</code> đặt luôn ba attribute <code>id=&quot;code&quot;</code>, <code>name=&quot;code&quot;</code> và <code>value</code> bằng giá trị hiện tại. Khi form hiện lại vì lỗi, <code>value</code> chính là những gì người dùng vừa gõ.</li><li><code>th:errorclass=&quot;is-invalid&quot;</code> chỉ thêm class khi field có lỗi. <code>th:errors</code> in thông báo lỗi, và Bootstrap chỉ hiện <code>invalid-feedback</code> khi ô đứng trước nó có class <code>is-invalid</code>.</li><li><code>novalidate</code> tắt kiểm tra sẵn có của trình duyệt. Mọi luật được server kiểm tra và báo bằng tiếng Việt ngay dưới ô, thay vì bong bóng theo ngôn ngữ trình duyệt. <code>maxlength</code> vẫn chặn người dùng gõ quá dài.</li></ul>
+<h3 id="39-hộp-xác-nhận-trong-adminjs">3.9 Hộp xác nhận trong <code>admin.js</code></h3>
+<pre><code>document.addEventListener(&#x27;submit&#x27;, function (event) {
+    const message = event.target.dataset
+        ? event.target.dataset.confirm : undefined;
+    if (message &amp;&amp; !window.confirm(message)) {
+        event.preventDefault();
+    }
+});</code></pre>
+<ul><li>Lắng nghe sự kiện <code>submit</code> trên <code>document</code> chứ không gắn vào từng form (kỹ thuật event delegation). Datatable vẽ lại các dòng mỗi khi sắp xếp hay chuyển trang, nên listener gắn trên từng dòng sẽ mất.</li><li><code>dataset.confirm</code> đọc attribute <code>data-confirm</code>. Form nào có attribute này đều được hỏi lại; bấm Hủy thì <code>preventDefault()</code> chặn việc gửi form.</li><li>Màn hình mới chỉ cần thêm <code>th:data-confirm</code> vào form là có hộp xác nhận, không phải viết JavaScript.</li></ul>
+<h3 id="310-adminshellmodeladvice">3.10 <code>AdminShellModelAdvice</code></h3>
+<pre><code>@ControllerAdvice
+public class AdminShellModelAdvice {
+
+    @ModelAttribute(&quot;adminName&quot;)
+    String adminName() {
+        return &quot;Quản trị viên&quot;;
+    }
+}</code></pre>
+<ul><li>Header admin hiển thị <code>${adminName}</code> trên mọi trang. <code>@ControllerAdvice</code> kèm <code>@ModelAttribute</code> đưa giá trị này vào Model của mọi controller. Vì vậy controller ở package <code>station</code> hay <code>train</code> không phải tự khai.</li><li>Đây là giá trị tạm. Khi làm Auth, header sẽ đọc tên người đang đăng nhập và class này bị xóa.</li></ul>
+<h2 id="4-một-request-chạy-như-thế-nào">4. Một request chạy như thế nào</h2>
+<h3 id="41-thêm-ga-thành-công">4.1 Thêm ga thành công</h3>
+<p>Ví dụ người dùng gõ mã <code>bmt</code> kèm khoảng trắng ở hai đầu, tên <code>Ga Buôn Ma Thuột</code>, tỉnh <code>Đắk Lắk</code>, và để trống địa chỉ.</p>
+<pre><code>Trình duyệt                          Server
+GET /admin/stations/new   -------&gt;   createForm(): StationForm rỗng
+                          &lt;-------   200, HTML form
+POST /admin/stations      -------&gt;   create(): kiểm tra, INSERT, flash
+  (code, name, city, address, _csrf)
+                          &lt;-------   302, Location: /admin/stations
+GET /admin/stations       -------&gt;   list(): SELECT
+                          &lt;-------   200, HTML + &quot;Đã thêm ...&quot;</code></pre>
+<ol><li>Spring Security kiểm tra phiên đăng nhập và token <code>_csrf</code> của <code>POST</code>.</li><li><code>@InitBinder</code> cắt khoảng trắng: mã thành <code>bmt</code>, địa chỉ rỗng thành <code>null</code>.</li><li><code>@Valid</code> kiểm tra <code>StationForm</code>: mọi luật đều đạt.</li><li><code>StationService.create</code> chuẩn hóa mã thành <code>BMT</code>, <code>existsByCode(&quot;BMT&quot;)</code> trả <code>false</code>, rồi <code>save</code> chạy câu <code>INSERT</code>.</li><li>Transaction commit, dòng mới nằm trong MySQL.</li><li>Controller đặt flash <code>Đã thêm Ga Buôn Ma Thuột (BMT).</code> và trả <code>redirect:</code>, trình duyệt nhận mã 302.</li><li>Trình duyệt tự gửi <code>GET /admin/stations</code>. Trang danh sách hiện ga mới cùng thông báo xanh. Bấm F5 lúc này chỉ gửi lại <code>GET</code>, không tạo ga thứ hai.</li></ol>
+<h3 id="42-form-không-hợp-lệ">4.2 Form không hợp lệ</h3>
+<p>Người dùng bấm &quot;Thêm ga&quot; mà để trống mã và tên.</p>
+<ol><li><code>@Valid</code> phát hiện hai lỗi <code>@NotBlank</code> và ghi chúng vào <code>BindingResult</code>.</li><li><code>bindingResult.hasErrors()</code> là <code>true</code>, nên controller trả <code>FORM_VIEW</code> với status 200. Không có redirect, và service không được gọi.</li><li>Template thấy lỗi: thêm viền đỏ (<code>is-invalid</code>) và in &quot;Vui lòng nhập mã ga.&quot;, &quot;Vui lòng nhập tên ga.&quot; dưới hai ô.</li></ol>
+<h3 id="43-mã-trùng">4.3 Mã trùng</h3>
+<p>Người dùng gõ mã <code>sgn</code> trong khi <code>SGN</code> đã có.</p>
+<ol><li>Luật trong form đều đạt: <code>sgn</code> là chữ cái không dấu.</li><li>Service chuẩn hóa thành <code>SGN</code>, <code>existsByCode</code> trả <code>true</code>, nên ném <code>DuplicateStationCodeException</code>. Transaction rollback, không có gì được ghi.</li><li>Controller bắt exception, gọi <code>rejectValue(&quot;code&quot;, ...)</code> và hiện lại form với thông báo &quot;Mã ga này đã được dùng cho một ga khác.&quot; dưới ô Mã ga.</li></ol>
+<h3 id="44-xóa-ga-đang-có-tuyến-dùng">4.4 Xóa ga đang có tuyến dùng</h3>
+<ol><li>Người dùng bấm thùng rác ở dòng <code>SGN</code>. <code>admin.js</code> hỏi lại, người dùng chọn OK.</li><li>Form gửi <code>POST /admin/stations/{id}/delete</code> kèm token CSRF.</li><li>Service tìm thấy ga, <code>routeRepository</code> báo có tuyến dùng, nên ném <code>StationInUseException</code>. Lệnh <code>DELETE</code> không bao giờ chạy.</li><li>Controller bắt exception, đặt flash <code>errorMessage</code> và redirect. Danh sách hiện thông báo đỏ &quot;Không xóa được Ga Sài Gòn (SGN) vì ...&quot;, ga vẫn còn nguyên.</li></ol>
+<h3 id="45-ga-không-tồn-tại">4.5 Ga không tồn tại</h3>
+<p>Mở <code>/admin/stations/999999/edit</code>: <code>findById</code> ném <code>StationNotFoundException</code>. Exception này có <code>@ResponseStatus(HttpStatus.NOT_FOUND)</code>, nên Spring trả trang lỗi 404 thay vì lỗi 500.</p>
+<h2 id="5-lỗi-thường-gặp">5. Lỗi thường gặp</h2>
+<p>Mỗi mục gồm cách viết sai, hậu quả, và cách đúng.</p>
+<ol><li><strong>Bind thẳng entity</strong>, như <code>@ModelAttribute Station station</code>. Hậu quả: request gửi thêm <code>id</code> là ghi đè được một ga khác. Cách đúng: dùng form object riêng như <code>StationForm</code>.</li><li><strong>Trả view sau khi <code>POST</code> thành công.</strong> Hậu quả: bấm F5 là gửi lại form, dữ liệu bị thêm hai lần. Cách đúng: <code>redirect:</code> kèm flash attribute.</li><li><strong><code>BindingResult</code> không đứng ngay sau tham số <code>@Valid</code>.</strong> Hậu quả: Spring trả lỗi 400 thay vì hiện lại form. Cách đúng: đặt <code>BindingResult</code> ngay sau tham số được validate.</li><li><strong>Bắt <code>DataIntegrityViolationException</code> bên trong method <code>@Transactional</code>.</strong> Hậu quả: lúc commit, Spring ném <code>UnexpectedRollbackException</code>. Cách đúng: kiểm tra trước trong service, hoặc bắt exception ở controller.</li><li><strong>Form <code>POST</code> dùng <code>action=</code> thay vì <code>th:action=</code>.</strong> Hậu quả: form thiếu token CSRF, server trả 403. Cách đúng: luôn dùng <code>th:action</code>.</li><li><strong>Quên method <code>activeNav()</code>.</strong> Hậu quả: sidebar không sáng mục nào. Cách đúng: khai <code>@ModelAttribute(&quot;activeNav&quot;)</code> trong controller như module ga.</li><li><strong>Đọc relation <code>LAZY</code> trong template</strong>, như <code>route.originStation.name</code>. Hậu quả: <code>LazyInitializationException</code>, vì dự án tắt <code>open-in-view</code>. Cách đúng: nạp đủ dữ liệu view cần ngay trong service rồi mới trả về.</li><li><strong>Sửa <code>V1__create_schema.sql</code> sau khi đã chạy.</strong> Hậu quả: Flyway từ chối khởi động trên máy người khác. Cách đúng: viết migration mới <code>V3__...</code>.</li><li><strong>Nạp <code>app.css</code> trong trang admin.</strong> Hậu quả: giao diện admin vỡ mà log không báo gì. Cách đúng: trang admin chỉ dùng khung <code>admin/layout/base.html</code>.</li><li><strong>Sửa template hay CSS mà trình duyệt chưa thấy thay đổi.</strong> Ứng dụng đọc file từ <code>app/target/classes</code>, không đọc trực tiếp từ <code>src</code>. Cách làm: build lại project trong IDE, hoặc chạy <code>.\mvnw.cmd resources:resources</code> trong thư mục <code>app</code>, rồi tải lại trang.</li></ol>
+<h2 id="6-làm-màn-hình-mới-theo-mẫu-này">6. Làm màn hình mới theo mẫu này</h2>
+<p>Ví dụ T03, Quản lý tàu. Entity <code>Train</code> và <code>TrainRepository</code> đã có sẵn, nên chỉ còn controller, form, service và view:</p>
+<ol><li><code>train/model/TrainForm.java</code>: chép <code>StationForm</code>, giữ <code>code</code> và <code>name</code>, đổi thông báo cho hợp với tàu.</li><li><code>train/service/TrainService.java</code>: <code>findAll</code>, <code>findById</code> (ném exception 404), <code>create</code>, <code>update</code> có kiểm tra mã trùng. Không có <code>delete</code>, vì tàu không có chức năng xóa. Nếu cần query mới thì thêm vào <code>TrainRepository</code>.</li><li><code>train/controller/TrainAdminController.java</code> với <code>@RequestMapping(&quot;/admin/trains&quot;)</code>, <code>@InitBinder</code>, <code>activeNav()</code> trả <code>&quot;trains&quot;</code>, và các handler <code>list</code>, <code>createForm</code>, <code>create</code>, <code>editForm</code>, <code>update</code>.</li><li><code>templates/admin/train-form.html</code>: chép <code>station-form.html</code> rồi đổi tên field và nhãn.</li><li><code>templates/admin/trains.html</code>: bỏ <code>disabled</code> ở các nút, cho <code>th:each</code> đọc <code>Train</code> thật.</li><li>Gỡ phần dữ liệu giả của tàu khỏi <code>AdminController</code> và <code>AdminService</code>, rồi xóa <code>admin/model/Train.java</code>.</li><li>Chạy ứng dụng và thử lại năm tình huống của mục 4 trên màn hình tàu.</li><li>Thêm một dòng vào <code>docs/WORKLOG.md</code>, nằm trong cùng commit với code.</li></ol>
+<p>Không sửa entity, migration, <code>SecurityConfig</code> hay <code>admin/layout/base.html</code>. Cần đổi những file đó thì báo nhóm trước.</p>
+<h2 id="7-bài-tập">7. Bài tập</h2>
+<ol><li><strong>Hai cách gõ cùng bị báo trùng.</strong> Thêm một ga với mã <code>sgn</code> (chữ thường), rồi với mã <code>  SGN  </code> (có khoảng trắng). Hãy giải thích vì sao cả hai đều bị báo trùng, và mỗi trường hợp bị chặn ở dòng code nào. Gợi ý: một trường hợp đi qua <code>@InitBinder</code>, trường hợp kia qua <code>normalizeCode</code>.</li><li><strong>Dirty checking.</strong> <code>StationService.update</code> không gọi <code>save()</code>. Hãy giải thích vì sao dữ liệu vẫn được lưu, và chuyện gì xảy ra nếu bỏ <code>@Transactional</code> khỏi method đó.</li><li><strong>Thêm cột &quot;Số tuyến&quot;.</strong> Thêm vào danh sách ga một cột cho biết ga là điểm đi hoặc điểm đến của bao nhiêu tuyến. Với seed hiện tại, kết quả đúng là: <code>SGN</code>, <code>DNG</code>, <code>HNI</code> có 4 tuyến; <code>NTR</code>, <code>LCI</code> có 2; <code>QNH</code>, <code>HUE</code>, <code>VIN</code> có 0. Gợi ý: dùng một query <code>@Query</code> gom nhóm trong <code>RouteRepository</code> để lấy số tuyến của mọi ga trong một lần, không query riêng từng ga.</li><li><strong>Viết unit test.</strong> Viết test bằng Mockito cho <code>StationService.delete</code>: khi <code>routeRepository</code> trả <code>true</code> thì method ném <code>StationInUseException</code> và không gọi <code>stationRepository.delete</code>. Gợi ý: <code>verify(stationRepository, never()).delete(any())</code>. Class test phải có tên kết thúc bằng <code>Test</code>, nếu không Surefire sẽ bỏ qua mà không báo lỗi.</li></ol>
+</main>
+</div>
+</body>
+</html>

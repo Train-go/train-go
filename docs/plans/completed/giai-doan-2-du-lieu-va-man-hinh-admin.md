@@ -4,7 +4,8 @@ Date: 2026-10-01
 
 ## Status
 
-Active
+Completed (04/10/2026). Phần S xong; phần A, B chuyển sang
+`docs/plans/active/chia-viec-mvp.md`.
 
 ## Outcome
 
@@ -216,5 +217,13 @@ cả hai dòng khi merge. Không ai sửa entity, migration, `SecurityConfig` ha
 
 ## Result
 
-Chưa hoàn thành. S đã xong và được kiểm chứng như mục Validation; A và B chưa
-bắt đầu.
+Đóng ngày 04/10/2026.
+
+- S hoàn thành ngày 01/10/2026, commit `9748dcd`, bằng chứng ở mục Validation: Flyway áp
+  V1 và V2 trên MySQL 8.4, `validate` không lỗi, bảy lệnh ghi sai bị database chặn,
+  28/28 bước luồng quản lý ga đạt trên Chromium.
+- A và B chưa bắt đầu ở plan này. Chúng chuyển sang
+  `docs/plans/active/chia-viec-mvp.md` thành T03 (Quản lý tàu) và T06 (Chi tiết tàu và
+  sơ đồ toa), cùng hướng dẫn chi tiết trong `docs/plans/active/huong-dan-task/`.
+- Giới hạn còn lại khi đóng: `.\mvnw.cmd test` chạy 0 test vì `app/src/test` bị xóa
+  trong working tree; migration chưa chạy trên H2. Cả hai thuộc T01.

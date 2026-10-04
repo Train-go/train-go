@@ -119,8 +119,9 @@ theo feature nên ba nhánh ít đụng nhau.
 - [ ] Giai đoạn 2: Station, Route, Train, Coach, Seat, Trip, TripSeat. Đã có
       (01/10/2026): schema Flyway cho cả 11 bảng của dự án, entity, repository,
       seed demo, quản lý ga trên database thật. Còn: quản lý tuyến, tàu, toa,
-      chuyến. Chi tiết và chia việc:
-      `docs/plans/active/giai-doan-2-du-lieu-va-man-hinh-admin.md`.
+      chuyến. Phần đã làm: `docs/plans/completed/giai-doan-2-du-lieu-va-man-hinh-admin.md`.
+      Từ 04/10/2026, toàn bộ phần còn lại của MVP (giai đoạn 1-9) được chia thành 14
+      task trong `docs/plans/active/chia-viec-mvp.md`.
 - [ ] Giai đoạn 3: Tìm chuyến và danh sách chuyến.
 - [ ] Giai đoạn 4: Chọn chỗ và giữ chỗ.
 - [ ] Giai đoạn 5: Hành khách và review.

@@ -63,6 +63,12 @@ theo chương.
 python docs/session/render-doc.py
 ```
 
+`huong-dan-mvc-quan-ly-ga.md`, `.html`, `.pdf`: hướng dẫn MVC qua module Quản
+lý ga, gồm cách dùng màn hình, giải thích từng file code, đường đi của request,
+lỗi thường gặp và bài tập. Viết cho thành viên sắp làm màn hình quản trị tiếp
+theo. Sửa bản Markdown, rồi sinh lại HTML bằng `render-doc.py` và PDF bằng cách
+in HTML ra PDF.
+
 `render-doc.py` — bộ chuyển Markdown sang HTML viết riêng cho thư mục này. Không
 dùng thư viện ngoài và không gọi mạng, vì trang phải mở được khi không có wifi.
 Nó chỉ xử lý tập cú pháp Markdown mà các tài liệu ở đây dùng, không phải một bộ
