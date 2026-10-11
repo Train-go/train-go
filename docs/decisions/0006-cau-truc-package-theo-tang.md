@@ -57,8 +57,8 @@ Quy ước:
 - Enum đi cùng entity dùng nó, trong `entity/`.
 - Exception nghiệp vụ nằm ở `common/exception/`, không còn cạnh service ném ra
   nó.
-- `model/dto/` chưa có class nào; tạo khi có DTO đầu tiên (Git không lưu thư mục
-  rỗng).
+- `model/dto/` giữ kết quả truy vấn gom nhóm (`IdCount`, `TrainCapacity`): interface
+  projection do Spring Data điền từ alias của câu JPQL.
 - Việc tách `admin/` và `home/` thành hai khu vực giao diện (ADR 0004) là chuyện
   của template, CSS, JS và URL, không liên quan package Java.
 
@@ -97,7 +97,6 @@ Tradeoffs:
 
 ## Follow-Up
 
-- Khi có DTO đầu tiên, tạo `model/dto/` và dùng nó cho dữ liệu trung gian (ví
-  dụ `BookingDraft` của T09).
+- Dữ liệu trung gian khác, ví dụ `BookingDraft` của T09, cũng vào `model/dto/`.
 - Cân nhắc kiểm tra cấu trúc bằng ArchUnit nếu nhóm thấy tầng bị vi phạm (ví
   dụ controller gọi thẳng repository).

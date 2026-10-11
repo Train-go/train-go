@@ -9,9 +9,9 @@ import com.voyagego.traingo.service.AdminService;
 
 /**
  * The admin dashboard, plus the admin screens of docs/product/admin.md that
- * still show placeholder data. A screen moves out of here into its own
- * controller once it reads real data, as /admin/stations did
- * (StationAdminController).
+ * are still read-only lists without create, edit or delete. A screen moves out
+ * of here into its own controller once it gets those actions, as
+ * /admin/stations did (StationAdminController).
  */
 @Controller
 @RequestMapping("/admin")
@@ -26,11 +26,11 @@ public class AdminController {
 	@GetMapping
 	public String dashboard(Model model) {
 		model.addAttribute("activeNav", "dashboard");
-		model.addAttribute("totalBookings", adminService.bookings().size());
-		model.addAttribute("totalTrips", adminService.trips().size());
-		model.addAttribute("totalUsers", adminService.users().size());
+		model.addAttribute("totalBookings", adminService.totalBookings());
+		model.addAttribute("totalTrips", adminService.totalTrips());
+		model.addAttribute("totalUsers", adminService.totalUsers());
 		model.addAttribute("totalRevenue", adminService.totalRevenue());
-		model.addAttribute("recentBookings", adminService.bookings());
+		model.addAttribute("recentBookings", adminService.recentBookings());
 		return "admin/dashboard";
 	}
 

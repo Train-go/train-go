@@ -193,10 +193,11 @@ Tradeoffs:
   `controller/AdminShellModelAdvice` bằng tên người đang đăng nhập.
   (Ngày 01/10/2026 tên này chuyển từ `AdminController` sang advice đó, để
   controller admin nằm ở package khác vẫn có tên trên header.)
-- Khi có entity thật: thay từng danh sách placeholder bằng repository, và nối
-  các nút Thêm/Sửa/Xóa hiện đang `disabled`. Theo ADR 0001 và 0006, màn hình đó chuyển
-  sang controller riêng của nghiệp vụ. `/admin/stations` đã làm xong ngày 01/10/2026; còn
-  tuyến, tàu, chuyến, booking và người dùng.
+- Danh sách tuyến, tàu, chuyến, booking và người dùng đã đọc từ database qua
+  `AdminService` (ngày 11/10/2026). Còn nối các nút Thêm/Sửa/Xóa hiện đang
+  `disabled`; theo ADR 0001 và 0006, màn hình đó chuyển sang controller riêng của
+  nghiệp vụ. `/admin/stations` đã làm xong ngày 01/10/2026; còn tuyến, tàu,
+  chuyến, booking và người dùng.
 - Thêm `/admin/trains/{id}` để quản lý toa, theo `docs/product/admin.md`.
 - Nếu tới cuối dự án CKEditor, Quill, EditorJS và boxicons vẫn không trang nào
   dùng, xóa khỏi `static/vendor/`.

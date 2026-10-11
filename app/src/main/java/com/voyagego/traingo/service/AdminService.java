@@ -1,79 +1,164 @@
 package com.voyagego.traingo.service;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.voyagego.traingo.entity.Booking;
+import com.voyagego.traingo.entity.BookingStatus;
+import com.voyagego.traingo.entity.PaymentStatus;
+import com.voyagego.traingo.entity.Trip;
+import com.voyagego.traingo.model.dto.IdCount;
+import com.voyagego.traingo.model.dto.TrainCapacity;
 import com.voyagego.traingo.model.response.AdminBooking;
 import com.voyagego.traingo.model.response.AdminRoute;
 import com.voyagego.traingo.model.response.AdminTrain;
 import com.voyagego.traingo.model.response.AdminTrip;
 import com.voyagego.traingo.model.response.AdminUser;
+import com.voyagego.traingo.repository.BookingPassengerRepository;
+import com.voyagego.traingo.repository.BookingRepository;
+import com.voyagego.traingo.repository.CoachRepository;
+import com.voyagego.traingo.repository.RouteRepository;
+import com.voyagego.traingo.repository.TrainRepository;
+import com.voyagego.traingo.repository.TripRepository;
+import com.voyagego.traingo.repository.UserRepository;
 
 /**
- * Placeholder data for the admin screens that do not read the database yet.
- * Each list goes away when its screen moves into its own controller and reads
- * the real repository, as stations already have. Coaches have no screen of
- * their own on purpose: they are managed inside a train's detail page.
+ * Read-only data for the admin screens that have no controller of their own
+ * yet. Everything comes from the database and is turned into the display rows
+ * of {@code model/response} here, inside the transaction, because
+ * {@code spring.jpa.open-in-view=false} leaves lazy relations unreadable in a
+ * template. A screen leaves this class when it gets its own service, as
+ * stations did. Coaches have no screen of their own on purpose: they are
+ * managed inside a train's detail page.
  */
 @Service
+@Transactional(readOnly = true)
 public class AdminService {
 
-	private static final List<AdminRoute> ROUTES = List.of(new AdminRoute("SGN-NTR", "Ga Sài Gòn", "Ga Nha Trang", 411),
-			new AdminRoute("SGN-DNG", "Ga Sài Gòn", "Ga Đà Nẵng", 935), new AdminRoute("HNI-DNG", "Ga Hà Nội", "Ga Đà Nẵng", 791),
-			new AdminRoute("HNI-LCI", "Ga Hà Nội", "Ga Lào Cai", 296),
-			new AdminRoute("HNI-SGN", "Ga Hà Nội", "Ga Sài Gòn", 1726));
+	private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 
-	private static final List<AdminTrain> TRAINS = List.of(new AdminTrain("SE1", "Thống Nhất", 12, 560),
-			new AdminTrain("SE2", "Thống Nhất", 12, 560), new AdminTrain("SE7", "Thống Nhất", 10, 448),
-			new AdminTrain("SNT1", "Sài Gòn - Nha Trang", 8, 336), new AdminTrain("SP3", "Hà Nội - Lào Cai", 9, 372));
+	private final RouteRepository routeRepository;
+	private final TrainRepository trainRepository;
+	private final CoachRepository coachRepository;
+	private final TripRepository tripRepository;
+	private final BookingRepository bookingRepository;
+	private final BookingPassengerRepository bookingPassengerRepository;
+	private final UserRepository userRepository;
 
-	private static final List<AdminTrip> TRIPS = List.of(
-			new AdminTrip("SE1", "Ga Hà Nội — Ga Sài Gòn", "01/09/2026", "19:30", "05:10", 1_150_000, "Mở bán"),
-			new AdminTrip("SE2", "Ga Sài Gòn — Ga Hà Nội", "01/09/2026", "20:00", "05:45", 1_150_000, "Mở bán"),
-			new AdminTrip("SNT1", "Ga Sài Gòn — Ga Nha Trang", "02/09/2026", "21:15", "05:00", 420_000, "Mở bán"),
-			new AdminTrip("SP3", "Ga Hà Nội — Ga Lào Cai", "02/09/2026", "22:00", "06:05", 380_000, "Đã khởi hành"),
-			new AdminTrip("SE7", "Ga Hà Nội — Ga Đà Nẵng", "03/09/2026", "06:00", "21:40", 780_000, "Mở bán"));
-
-	private static final List<AdminBooking> BOOKINGS = List.of(
-			new AdminBooking("TG26080001", "Nguyễn Văn An", "SE1 · 01/09/2026", 2, 2_300_000, "Đã thanh toán"),
-			new AdminBooking("TG26080002", "Trần Thị Bình", "SNT1 · 02/09/2026", 1, 420_000, "Chờ thanh toán"),
-			new AdminBooking("TG26080003", "Lê Hoàng Cường", "SE2 · 01/09/2026", 4, 4_600_000, "Đã thanh toán"),
-			new AdminBooking("TG26080004", "Phạm Thu Dung", "SE7 · 03/09/2026", 2, 1_560_000, "Đã hủy"),
-			new AdminBooking("TG26080005", "Vũ Minh Đức", "SP3 · 02/09/2026", 3, 1_140_000, "Đã thanh toán"));
-
-	// Read-only screen: admin.md gives this list no create, edit or delete.
-	private static final List<AdminUser> USERS = List.of(
-			new AdminUser("Quản trị viên", "admin@traingo.vn", "ADMIN", "01/08/2026"),
-			new AdminUser("Nguyễn Văn An", "an.nguyen@example.com", "CUSTOMER", "12/08/2026"),
-			new AdminUser("Trần Thị Bình", "binh.tran@example.com", "CUSTOMER", "15/08/2026"),
-			new AdminUser("Lê Hoàng Cường", "cuong.le@example.com", "CUSTOMER", "18/08/2026"),
-			new AdminUser("Phạm Thu Dung", "dung.pham@example.com", "CUSTOMER", "20/08/2026"));
-
-	private static final long TOTAL_REVENUE = 9_650_000L;
+	public AdminService(RouteRepository routeRepository, TrainRepository trainRepository,
+			CoachRepository coachRepository, TripRepository tripRepository, BookingRepository bookingRepository,
+			BookingPassengerRepository bookingPassengerRepository, UserRepository userRepository) {
+		this.routeRepository = routeRepository;
+		this.trainRepository = trainRepository;
+		this.coachRepository = coachRepository;
+		this.tripRepository = tripRepository;
+		this.bookingRepository = bookingRepository;
+		this.bookingPassengerRepository = bookingPassengerRepository;
+		this.userRepository = userRepository;
+	}
 
 	public List<AdminRoute> routes() {
-		return ROUTES;
+		return routeRepository.findAllWithStations().stream()
+				.map(route -> new AdminRoute(
+						route.getOriginStation().getCode() + "-" + route.getDestinationStation().getCode(),
+						route.getOriginStation().getName(), route.getDestinationStation().getName(),
+						route.getDistanceKm()))
+				.toList();
 	}
 
 	public List<AdminTrain> trains() {
-		return TRAINS;
+		Map<Long, TrainCapacity> capacityByTrain = coachRepository.summarizeByTrain().stream()
+				.collect(Collectors.toMap(TrainCapacity::getTrainId, Function.identity()));
+		return trainRepository.findAllByOrderByCodeAsc().stream().map(train -> {
+			TrainCapacity capacity = capacityByTrain.get(train.getId());
+			// A train with no coach yet is listed with zero, not left out.
+			int coaches = capacity == null ? 0 : (int) capacity.getCoachCount();
+			int seats = capacity == null ? 0 : (int) capacity.getSeatCount();
+			return new AdminTrain(train.getCode(), train.getName(), coaches, seats);
+		}).toList();
 	}
 
 	public List<AdminTrip> trips() {
-		return TRIPS;
+		return tripRepository.findAllByOrderByDepartureDateAscDepartureTimeAsc().stream()
+				.map(trip -> new AdminTrip(trip.getTrain().getCode(),
+						trip.getRoute().getOriginStation().getName() + " — "
+								+ trip.getRoute().getDestinationStation().getName(),
+						trip.getDepartureDate().format(DATE), trip.getDepartureTime().format(TIME),
+						trip.getArrivalTime().format(TIME), trip.getBasePrice(), tripStatusLabel(trip)))
+				.toList();
 	}
 
 	public List<AdminBooking> bookings() {
-		return BOOKINGS;
+		return toRows(bookingRepository.findAllByOrderByCreatedAtDesc());
+	}
+
+	/** The five newest bookings, for the dashboard. */
+	public List<AdminBooking> recentBookings() {
+		return toRows(bookingRepository.findTop5ByOrderByCreatedAtDesc());
 	}
 
 	public List<AdminUser> users() {
-		return USERS;
+		return userRepository.findAllByOrderByCreatedAtAsc().stream()
+				.map(user -> new AdminUser(user.getFullName(), user.getEmail(), user.getRole().name(),
+						user.getCreatedAt().format(DATE)))
+				.toList();
 	}
 
+	public long totalBookings() {
+		return bookingRepository.count();
+	}
+
+	public long totalTrips() {
+		return tripRepository.count();
+	}
+
+	public long totalUsers() {
+		return userRepository.count();
+	}
+
+	/**
+	 * Money from confirmed bookings only. A cancelled booking stays PAID in the
+	 * database, but the project has no refund flow and does not count it.
+	 */
 	public long totalRevenue() {
-		return TOTAL_REVENUE;
+		return bookingRepository.sumTotalPriceByBookingStatus(BookingStatus.CONFIRMED);
+	}
+
+	private List<AdminBooking> toRows(List<Booking> bookings) {
+		Map<Long, Long> passengersByBooking = bookingPassengerRepository.countByBooking().stream()
+				.collect(Collectors.toMap(IdCount::getId, IdCount::getTotal));
+		return bookings.stream()
+				.map(booking -> new AdminBooking(booking.getBookingCode(), booking.getCustomer().getFullName(),
+						booking.getTrip().getTrain().getCode() + " · " + booking.getTrip().getDepartureDate().format(DATE),
+						passengersByBooking.getOrDefault(booking.getId(), 0L).intValue(), booking.getTotalPrice(),
+						bookingLabel(booking)))
+				.toList();
+	}
+
+	/**
+	 * The admin tables show one status column per booking. A cancelled booking
+	 * reads as cancelled whatever its payment status says.
+	 */
+	private static String bookingLabel(Booking booking) {
+		if (booking.getBookingStatus() == BookingStatus.CANCELLED) {
+			return "Đã hủy";
+		}
+		return booking.getPaymentStatus() == PaymentStatus.PAID ? "Đã thanh toán" : "Chờ thanh toán";
+	}
+
+	private static String tripStatusLabel(Trip trip) {
+		return switch (trip.getStatus()) {
+			case SCHEDULED -> "Mở bán";
+			case COMPLETED -> "Đã khởi hành";
+			case CANCELLED -> "Đã hủy";
+		};
 	}
 
 }

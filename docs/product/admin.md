@@ -68,10 +68,12 @@ Tài khoản Admin được tạo bằng seed data, không đăng ký qua giao d
 ## Seed data
 
 Đã chốt ngày 01/10/2026, nằm trong
-`app/src/main/resources/db/migration/V2__seed_demo_data.sql`: 8 ga, 8 tuyến
-(bốn cặp hai chiều), 8 tàu mỗi tàu 2 toa ghế 32 chỗ và 2 toa giường 16 chỗ,
-chuyến hằng ngày trong 14 ngày tới, 1 admin, 3 khách và 4 booking mẫu. Tài
-khoản và cách làm mới dữ liệu: `docs/RUNBOOK.md`.
+`app/src/main/resources/db/migration/V2__seed_demo_data.sql` và
+`V3__seed_more_demo_data.sql`: 8 ga, 8 tuyến (bốn cặp hai chiều), 8 tàu mỗi
+tàu 2 toa ghế 32 chỗ và 2 toa giường 16 chỗ, chuyến hằng ngày trong 14 ngày
+tới, 1 admin, 11 khách và 20 booking mẫu. Các màn hình admin còn lại và trang
+chủ đọc thẳng từ các bảng này, không còn danh sách viết cứng trong service.
+Tài khoản và cách làm mới dữ liệu: `docs/RUNBOOK.md`.
 
 ## Điểm chưa chốt
 

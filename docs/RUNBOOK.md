@@ -179,18 +179,20 @@ toàn bộ dependency về `~/.m2/repository`.
 
 ## Dữ liệu thử
 
-Seed data nằm trong `V2__seed_demo_data.sql`:
+Seed data nằm trong `V2__seed_demo_data.sql` (dữ liệu nền) và
+`V3__seed_more_demo_data.sql` (thêm khách và booking):
 
 | Bảng | Số dòng | Nội dung |
 | --- | --- | --- |
-| `users` | 4 | 1 admin, 3 khách |
+| `users` | 12 | 1 admin, 11 khách (3 ở V2, 8 ở V3) |
 | `stations` | 8 | Sài Gòn, Nha Trang, Quy Nhơn, Đà Nẵng, Huế, Vinh, Hà Nội, Lào Cai |
 | `routes` | 8 | SGN-NTR, SGN-DNG, HNI-DNG, HNI-LCI, mỗi cặp hai chiều |
 | `trains` | 8 | Mỗi chiều một tàu: SNT1/SNT2, SE22/SE21, SE19/SE20, SP1/SP2 |
 | `coaches`, `seats` | 32, 768 | Mỗi tàu: toa 1-2 ghế 32 chỗ, toa 3-4 giường 16 chỗ (+200.000đ) |
 | `trips` | 114 | Mỗi tàu một chuyến mỗi ngày trong 14 ngày tới; 2 chuyến đã chạy; SP1 ngày thứ 5 bị hủy |
 | `trip_seats` | 10.944 | Đủ chỗ cho mọi chuyến |
-| `bookings` | 4 | 2 sắp đi, 1 đã đi, 1 đã hủy, đều đã thanh toán |
+| `bookings` | 20 | 13 sắp đi, 3 trên chuyến đã chạy (cả 16 đã xác nhận), 4 đã hủy; đều đã thanh toán, không có booking `PENDING` |
+| `booking_passengers`, `tickets` | 35, 35 | Mỗi hành khách một chỗ và một vé |
 
 Tài khoản:
 
@@ -198,6 +200,7 @@ Tài khoản:
 | --- | --- | --- |
 | `admin@traingo.vn` | `Admin@123` | `ADMIN` |
 | `an.nguyen@example.com`, `binh.tran@example.com`, `cuong.le@example.com` | `Customer@123` | `CUSTOMER` |
+| `dung.pham@example.com`, `duc.vu@example.com`, `lan.hoang@example.com`, `huy.dang@example.com`, `ha.bui@example.com`, `son.ngo@example.com`, `linh.do@example.com`, `bao.ly@example.com` | `Customer@123` | `CUSTOMER` |
 
 Cho tới khi làm xong Auth, trang login vẫn dùng tài khoản tạm `admin` / `admin`
 trong `application.properties`. Các tài khoản trên chỉ mới nằm trong bảng

@@ -30,6 +30,7 @@ Phi đã chọn:
 | --- | --- |
 | `V1__create_schema.sql` | 11 bảng, khóa chính, khóa ngoại, unique, `CHECK` |
 | `V2__seed_demo_data.sql` | Dữ liệu demo |
+| `V3__seed_more_demo_data.sql` | Thêm 8 khách và 16 booking; chọn chuyến theo thứ tự trong tàu chứ không theo "hôm nay cộng N ngày" |
 
 **Hibernate chỉ kiểm tra, không sửa:** `spring.jpa.hibernate.ddl-auto=validate`.
 Entity lệch schema thì ứng dụng dừng ngay lúc khởi động, không đợi tới khi một
