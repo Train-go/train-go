@@ -18,7 +18,7 @@ chữ cái không dấu và chữ số, tối đa 10 ký tự, và được tự
 trùng với `SGN`.
 
 Đã làm xong ngày 01/10/2026, chạy trên database thật:
-`station/controller/StationAdminController`.
+`controller/StationAdminController`.
 
 ## Quản lý tuyến `/admin/routes`
 

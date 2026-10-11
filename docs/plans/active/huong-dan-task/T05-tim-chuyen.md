@@ -47,9 +47,9 @@ Một chuyến **đặt được** khi `status = SCHEDULED` và thời điểm k
 Thêm vào entity `Trip` method `departureAt()` (ngày + giờ khởi hành), như mô tả ở T07.
 T05 làm trước T07 nên thêm ở đây; T07, T09, T10 dùng lại.
 
-Viết mới trong `trip/model/`:
+Viết mới trong `model/request/`:
 
-`TripSearchForm`, khớp tên các ô đang có trong form landing:
+`TripSearchRequest`, khớp tên các ô đang có trong form landing:
 
 | Field | Kiểu | Validation |
 | --- | --- | --- |
@@ -130,11 +130,11 @@ Hibernate đọc tên enum.
 
 ## Service
 
-`trip/service/TripSearchService`, nhận `Clock` qua constructor (T01):
+`service/TripSearchService`, nhận `Clock` qua constructor (T01):
 
 | Method | Việc |
 | --- | --- |
-| `List<TripSummary> search(TripSearchForm form)` | Kiểm tra hai luật còn lại, ném `InvalidSearchException` kèm tên field. Tìm tuyến theo hai mã ga; không có tuyến thì trả danh sách rỗng. Lấy chuyến `SCHEDULED` trong ngày, bỏ chuyến đã khởi hành, ghép số chỗ trống và giá |
+| `List<TripSummary> search(TripSearchRequest form)` | Kiểm tra hai luật còn lại, ném `InvalidSearchException` kèm tên field. Tìm tuyến theo hai mã ga; không có tuyến thì trả danh sách rỗng. Lấy chuyến `SCHEDULED` trong ngày, bỏ chuyến đã khởi hành, ghép số chỗ trống và giá |
 | `TripDetail findDetail(long tripId)` | Không thấy: `TripNotFoundException` (404). Chuyến hủy hoặc đã khởi hành vẫn xem được, nhưng `bookable = false` |
 
 Cách tính:
@@ -146,18 +146,18 @@ Cách tính:
 - `enoughSeats = availableSeats >= passengers`. Chuyến không đủ chỗ vẫn hiện, nhưng
   không có nút chọn.
 
-`home/service/HomeService`: thay danh sách ga viết cứng bằng ga thật từ
+`service/HomeService`: thay danh sách ga viết cứng bằng ga thật từ
 `StationRepository.findAllByOrderByNameAsc()`. Giữ bốn tuyến phổ biến dưới dạng cặp
 mã ga (`SGN-NTR`, `SGN-DNG`, `HNI-DNG`, `HNI-LCI`), đổi sang tên ga khi hiển thị, và
 bỏ cặp nào có ga không còn trong database.
 
 ## Controller
 
-`trip/controller/TripController` (`@Controller`, trang cho khách):
+`controller/TripController` (`@Controller`, trang cho khách):
 
 | Method | URL | Handler | Kết quả |
 | --- | --- | --- | --- |
-| GET | `/trips?from&to&date&passengers` | `search(@Valid @ModelAttribute("search") TripSearchForm, BindingResult, Model)` | View `trips/list`; lỗi thì hiện form kèm thông báo, không có danh sách |
+| GET | `/trips?from&to&date&passengers` | `search(@Valid @ModelAttribute("search") TripSearchRequest, BindingResult, Model)` | View `trips/list`; lỗi thì hiện form kèm thông báo, không có danh sách |
 | GET | `/trips/{id}?passengers=` | `detail(@PathVariable long id, @RequestParam(defaultValue = "1") int passengers, Model)` | View `trips/detail` |
 
 Nút "Chọn chỗ" ở trang chi tiết trỏ tới `/booking/{tripId}/seats?passengers=N`. Đây

@@ -31,7 +31,7 @@ bookings:   trip_id, booking_status   (để biết chuyến đã có booking ch
 
 ## Model
 
-Có sẵn: `trip/model/Trip`, `TripSeat`. Thêm vào `Trip`:
+Có sẵn: `entity/Trip`, `TripSeat`. Thêm vào `Trip`:
 
 ```java
 /** Departure date and time together. */
@@ -50,7 +50,7 @@ public void cancel() {
 `departureAt()` cũng được T05, T09, T10 dùng. Ai làm trước thì thêm; người sau dùng
 lại, không viết thêm bản thứ hai.
 
-Viết mới `trip/model/TripForm`:
+Viết mới `model/request/TripRequest`:
 
 | Field | Kiểu | Validation |
 | --- | --- | --- |
@@ -82,12 +82,12 @@ boolean existsByTripIdAndBookingStatus(Long tripId, BookingStatus status);
 
 ## Service
 
-`trip/service/TripAdminService`, nhận `Clock`:
+`service/TripAdminService`, nhận `Clock`:
 
 | Method | Việc |
 | --- | --- |
 | `List<Trip> findAll()` | Danh sách, mới nhất trước |
-| `@Transactional Trip create(TripForm form)` | Xem các luật bên dưới; lưu `Trip`; sinh `TripSeat` cho mọi ghế của tàu; trả chuyến |
+| `@Transactional Trip create(TripRequest form)` | Xem các luật bên dưới; lưu `Trip`; sinh `TripSeat` cho mọi ghế của tàu; trả chuyến |
 | `@Transactional Trip cancel(long tripId)` | Theo D2: chỉ hủy chuyến `SCHEDULED`, chưa khởi hành, chưa có booking `CONFIRMED`. Vi phạm thì ném `TripCannotBeCancelledException` kèm lý do |
 
 Luật khi tạo chuyến:
@@ -119,7 +119,7 @@ config. Chỉ làm khi Phi chốt D8 có job.
 
 ## Controller
 
-`trip/controller/TripAdminController`, `@RequestMapping("/admin/trips")`,
+`controller/TripAdminController`, `@RequestMapping("/admin/trips")`,
 `activeNav = "trips"`:
 
 | Method | URL | Kết quả |
@@ -139,7 +139,7 @@ config. Chỉ làm khi Phi chốt D8 có job.
 
 ## Gỡ dữ liệu giả
 
-`AdminController` xóa handler `trips`; xóa `admin/model/Trip.java`.
+`AdminController` xóa handler `trips`; xóa `model/response/AdminTrip.java`.
 
 **Giữ** `AdminService.trips()` cho tới khi T13 làm lại dashboard, vì dashboard đang
 dùng `adminService.trips().size()`. T13 sẽ xóa nốt.

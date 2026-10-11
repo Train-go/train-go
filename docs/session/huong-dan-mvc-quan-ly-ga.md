@@ -44,7 +44,7 @@ MVC chia việc xử lý một trang web thành ba vai:
 | Service | Nghiệp vụ và transaction | `StationService` |
 | Repository | Đọc và ghi database | `StationRepository` |
 | Entity | Một dòng trong bảng database | `Station` |
-| Form | Dữ liệu người dùng gửi lên từ form | `StationForm` |
+| Form | Dữ liệu người dùng gửi lên từ form | `StationRequest` |
 
 Ba câu cần nhớ:
 
@@ -80,15 +80,15 @@ templates/admin/stations.html        View: dựng HTML gửi trình duyệt
 ```
 app/src/main/
 ├── java/com/voyagego/traingo/
-│   ├── station/
-│   │   ├── controller/StationAdminController.java
-│   │   ├── model/Station.java
-│   │   ├── model/StationForm.java
-│   │   ├── repository/StationRepository.java
-│   │   └── service/StationService.java, DuplicateStationCodeException,
-│   │       StationInUseException, StationNotFoundException
-│   ├── route/repository/RouteRepository.java  (dùng để chặn xóa)
-│   └── admin/controller/AdminShellModelAdvice.java
+│   ├── controller/StationAdminController.java
+│   ├── entity/Station.java
+│   ├── model/request/StationRequest.java
+│   ├── repository/StationRepository.java
+│   ├── repository/RouteRepository.java  (dùng để chặn xóa)
+│   ├── service/StationService.java
+│   ├── common/exception/DuplicateStationCodeException.java,
+│   │   StationInUseException.java, StationNotFoundException.java
+│   └── controller/AdminShellModelAdvice.java
 └── resources/
     ├── db/migration/V1__create_schema.sql     (bảng stations)
     ├── db/migration/V2__seed_demo_data.sql    (8 ga mẫu)
@@ -97,10 +97,10 @@ app/src/main/
     └── static/js/admin/admin.js               (hộp xác nhận xóa)
 ```
 
-Mỗi feature có một package riêng (`station`, `train`, `route`...). Bên trong
-chia tiếp `controller`, `model`, `repository`, `service`. Nhờ vậy hai người làm
-hai feature khác nhau hầu như không sửa chung file nào
-(`docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`).
+Package chia theo tầng: `controller`, `entity`, `model` (`request`, `response`,
+`dto`), `repository`, `service`; mỗi nghiệp vụ là một file trong tầng đó, ví dụ
+`StationService`, `TrainService`
+(`docs/decisions/0006-cau-truc-package-theo-tang.md`).
 
 ## 2. Cách sử dụng màn hình Quản lý ga
 
@@ -248,16 +248,16 @@ public class Station {
 - `Locale.ROOT` giúp việc viết hoa không phụ thuộc ngôn ngữ cài trên máy chạy.
 - `protected Station()` là constructor rỗng mà Hibernate cần khi đọc một dòng từ
   database ra object. Để `protected` thì code khác không tạo được ga rỗng.
-- Bốn hằng số độ dài được `StationForm` dùng lại, nên giới hạn ở form luôn khớp
+- Bốn hằng số độ dài được `StationRequest` dùng lại, nên giới hạn ở form luôn khớp
   với độ dài cột.
 - `spring.jpa.hibernate.ddl-auto=validate`: lúc khởi động, Hibernate kiểm tra
   class này khớp bảng. Lệch là ứng dụng dừng ngay, không đợi tới lúc một trang
   bị lỗi.
 
-### 3.3 Form `StationForm`
+### 3.3 Form `StationRequest`
 
 ```java
-public class StationForm {
+public class StationRequest {
 
     @NotBlank(message = "Vui lòng nhập mã ga.")
     @Size(max = Station.CODE_MAX_LENGTH,
@@ -279,8 +279,8 @@ public class StationForm {
             message = "Địa chỉ tối đa {max} ký tự.")
     private String address;
 
-    public static StationForm from(Station station) {
-        StationForm form = new StationForm();
+    public static StationRequest from(Station station) {
+        StationRequest form = new StationRequest();
         form.code = station.getCode();
         form.name = station.getName();
         form.city = station.getCity();
@@ -370,7 +370,7 @@ public class StationService {
     }
 
     @Transactional
-    public Station create(StationForm form) {
+    public Station create(StationRequest form) {
         String code = Station.normalizeCode(form.getCode());
         if (stationRepository.existsByCode(code)) {
             throw new DuplicateStationCodeException(code);
@@ -394,7 +394,7 @@ public class StationService {
 
 ```java
     @Transactional
-    public Station update(long id, StationForm form) {
+    public Station update(long id, StationRequest form) {
         Station station = findById(id);
         String code = Station.normalizeCode(form.getCode());
         if (stationRepository.existsByCodeAndIdNot(code, id)) {
@@ -470,7 +470,7 @@ public class StationAdminController {
 
     @GetMapping("/new")
     public String createForm(Model model) {
-        model.addAttribute("stationForm", new StationForm());
+        model.addAttribute("stationForm", new StationRequest());
         return FORM_VIEW;
     }
 ```
@@ -481,7 +481,7 @@ public class StationAdminController {
   ứng với `/admin/stations/new`.
 - Chuỗi trả về như `"admin/stations"` là đường dẫn template, tính từ
   `templates/` và bỏ đuôi `.html`.
-- `@InitBinder` chạy trước khi dữ liệu form được đổ vào `StationForm`.
+- `@InitBinder` chạy trước khi dữ liệu form được đổ vào `StationRequest`.
   `StringTrimmerEditor(true)` cắt khoảng trắng hai đầu và đổi chuỗi rỗng thành
   `null`. Vì vậy `"  SGN "` được kiểm tra như `"SGN"`, và ô Tỉnh để trống được lưu
   thành `NULL`.
@@ -492,7 +492,7 @@ public class StationAdminController {
 ```java
     @PostMapping
     public String create(
-            @Valid @ModelAttribute("stationForm") StationForm form,
+            @Valid @ModelAttribute("stationForm") StationRequest form,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -513,9 +513,9 @@ public class StationAdminController {
 ```
 
 - `@ModelAttribute("stationForm")` gom các field của request thành một
-  `StationForm`, đồng thời đặt nó vào Model với tên `stationForm`. Nhờ vậy khi
+  `StationRequest`, đồng thời đặt nó vào Model với tên `stationForm`. Nhờ vậy khi
   form hiện lại, những gì người dùng đã gõ vẫn còn.
-- `@Valid` chạy các luật trong `StationForm`. Kết quả nằm trong `BindingResult`.
+- `@Valid` chạy các luật trong `StationRequest`. Kết quả nằm trong `BindingResult`.
   Tham số `BindingResult` phải đứng ngay sau tham số có `@Valid`; đặt sai chỗ thì
   Spring trả lỗi 400 thay vì cho bạn hiện lại form.
 - Có lỗi thì `return FORM_VIEW`: hiện lại form, không redirect, và service không
@@ -535,7 +535,7 @@ public class StationAdminController {
     public String editForm(@PathVariable long id, Model model) {
         model.addAttribute("stationId", id);
         model.addAttribute("stationForm",
-                StationForm.from(stationService.findById(id)));
+                StationRequest.from(stationService.findById(id)));
         return FORM_VIEW;
     }
 
@@ -711,7 +711,7 @@ tỉnh `Đắk Lắk`, và để trống địa chỉ.
 
 ```
 Trình duyệt                          Server
-GET /admin/stations/new   ------->   createForm(): StationForm rỗng
+GET /admin/stations/new   ------->   createForm(): StationRequest rỗng
                           <-------   200, HTML form
 POST /admin/stations      ------->   create(): kiểm tra, INSERT, flash
   (code, name, city, address, _csrf)
@@ -722,7 +722,7 @@ GET /admin/stations       ------->   list(): SELECT
 
 1. Spring Security kiểm tra phiên đăng nhập và token `_csrf` của `POST`.
 2. `@InitBinder` cắt khoảng trắng: mã thành `bmt`, địa chỉ rỗng thành `null`.
-3. `@Valid` kiểm tra `StationForm`: mọi luật đều đạt.
+3. `@Valid` kiểm tra `StationRequest`: mọi luật đều đạt.
 4. `StationService.create` chuẩn hóa mã thành `BMT`, `existsByCode("BMT")` trả
    `false`, rồi `save` chạy câu `INSERT`.
 5. Transaction commit, dòng mới nằm trong MySQL.
@@ -772,7 +772,7 @@ Mỗi mục gồm cách viết sai, hậu quả, và cách đúng.
 
 1. **Bind thẳng entity**, như `@ModelAttribute Station station`. Hậu quả:
    request gửi thêm `id` là ghi đè được một ga khác. Cách đúng: dùng form object
-   riêng như `StationForm`.
+   riêng như `StationRequest`.
 2. **Trả view sau khi `POST` thành công.** Hậu quả: bấm F5 là gửi lại form, dữ
    liệu bị thêm hai lần. Cách đúng: `redirect:` kèm flash attribute.
 3. **`BindingResult` không đứng ngay sau tham số `@Valid`.** Hậu quả: Spring trả
@@ -802,12 +802,12 @@ Mỗi mục gồm cách viết sai, hậu quả, và cách đúng.
 Ví dụ T03, Quản lý tàu. Entity `Train` và `TrainRepository` đã có sẵn, nên chỉ
 còn controller, form, service và view:
 
-1. `train/model/TrainForm.java`: chép `StationForm`, giữ `code` và `name`, đổi
+1. `model/request/TrainRequest.java`: chép `StationRequest`, giữ `code` và `name`, đổi
    thông báo cho hợp với tàu.
-2. `train/service/TrainService.java`: `findAll`, `findById` (ném exception 404),
+2. `service/TrainService.java`: `findAll`, `findById` (ném exception 404),
    `create`, `update` có kiểm tra mã trùng. Không có `delete`, vì tàu không có
    chức năng xóa. Nếu cần query mới thì thêm vào `TrainRepository`.
-3. `train/controller/TrainAdminController.java` với
+3. `controller/TrainAdminController.java` với
    `@RequestMapping("/admin/trains")`, `@InitBinder`, `activeNav()` trả
    `"trains"`, và các handler `list`, `createForm`, `create`, `editForm`, `update`.
 4. `templates/admin/train-form.html`: chép `station-form.html` rồi đổi tên field
@@ -815,7 +815,7 @@ còn controller, form, service và view:
 5. `templates/admin/trains.html`: bỏ `disabled` ở các nút, cho `th:each` đọc
    `Train` thật.
 6. Gỡ phần dữ liệu giả của tàu khỏi `AdminController` và `AdminService`, rồi xóa
-   `admin/model/Train.java`.
+   `model/response/AdminTrain.java`.
 7. Chạy ứng dụng và thử lại năm tình huống của mục 4 trên màn hình tàu.
 8. Thêm một dòng vào `docs/WORKLOG.md`, nằm trong cùng commit với code.
 

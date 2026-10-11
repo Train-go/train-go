@@ -44,9 +44,9 @@ Seed có sẵn `admin@traingo.vn` / `Admin@123` và ba khách `Customer@123`
 
 ## Model
 
-Có sẵn, không sửa field: `auth/model/User`, `auth/model/UserRole`.
+Có sẵn, không sửa field: `entity/User`, `entity/UserRole`.
 
-Viết mới `auth/model/RegisterForm`:
+Viết mới `model/request/RegisterRequest`:
 
 | Field | Validation |
 | --- | --- |
@@ -60,7 +60,7 @@ Việc so `password` với `confirmPassword` làm ở controller, rồi gắn l�
 
 ## Repository
 
-Thêm vào `auth/repository/UserRepository`:
+Thêm vào `repository/UserRepository`:
 
 ```java
 Optional<User> findByEmail(String email);
@@ -69,7 +69,7 @@ boolean existsByEmail(String email);
 
 ## Service
 
-`auth/service/TrainGoUserDetails`: class implement `UserDetails`, là thứ Spring
+`service/TrainGoUserDetails`: class implement `UserDetails`, là thứ Spring
 Security giữ trong session. Đây là **hợp đồng chung** cho các task sau:
 
 ```java
@@ -92,27 +92,27 @@ Controller của task khác lấy người đang đăng nhập bằng
 `@AuthenticationPrincipal TrainGoUserDetails me`, rồi dùng `me.getId()` để kiểm tra
 quyền sở hữu. Không truyền id người dùng qua form hay URL.
 
-`auth/service/TrainGoUserDetailsService implements UserDetailsService`:
+`service/TrainGoUserDetailsService implements UserDetailsService`:
 
 - `loadUserByUsername(String email)`: chuẩn hóa `trim().toLowerCase(Locale.ROOT)`,
   `findByEmail`, không thấy thì ném `UsernameNotFoundException`.
 
-`auth/service/RegistrationService`:
+`service/RegistrationService`:
 
-- `@Transactional User register(RegisterForm form)`: chuẩn hóa email; nếu
+- `@Transactional User register(RegisterRequest form)`: chuẩn hóa email; nếu
   `existsByEmail` thì ném `DuplicateEmailException`; mã hóa mật khẩu bằng
   `PasswordEncoder`; lưu `new User(fullName, email, hash, UserRole.CUSTOMER)`.
 - Không bao giờ log hay trả mật khẩu gốc.
 
 ## Controller
 
-`auth/controller/AuthController`:
+`controller/AuthController`:
 
 | Method | URL | Handler | Kết quả |
 | --- | --- | --- | --- |
 | GET | `/login` | `loginPage()` | View `auth/login` |
-| GET | `/register` | `registerForm(Model)` | View `auth/register` với `RegisterForm` rỗng |
-| POST | `/register` | `register(@Valid RegisterForm, BindingResult, RedirectAttributes)` | Lỗi: hiện lại form. Xong: `redirect:/login?registered` |
+| GET | `/register` | `registerForm(Model)` | View `auth/register` với `RegisterRequest` rỗng |
+| POST | `/register` | `register(@Valid RegisterRequest, BindingResult, RedirectAttributes)` | Lỗi: hiện lại form. Xong: `redirect:/login?registered` |
 
 `POST /login` và `POST /logout` do Spring Security xử lý, không viết handler.
 
@@ -160,7 +160,7 @@ Cấu hình thêm:
   - `sec:authorize="hasRole('ADMIN')"`: thêm link Quản trị tới `/admin`.
 - `templates/admin/fragments/header.html`: thay `${adminName}` bằng
   `sec:authentication="principal.fullName"`, rồi xóa
-  `admin/controller/AdminShellModelAdvice.java`.
+  `controller/AdminShellModelAdvice.java`.
 
 ## Quy tắc và lỗi phải xử lý
 

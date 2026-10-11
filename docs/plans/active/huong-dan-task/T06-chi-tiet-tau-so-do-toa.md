@@ -37,7 +37,7 @@ cabin = (số thứ tự - 1) / 4 + 1 (`docs/product/domain-model.md`).
 
 ## Model
 
-DTO trả ra JSON, viết bằng `record` trong `train/model/`:
+DTO trả ra JSON, viết bằng `record` trong `model/response/`:
 
 ```java
 record SeatView(Long id, String code, SeatType type, Integer cabinNumber) { }
@@ -68,13 +68,13 @@ List<Seat> findByCoachTrainIdOrderByCoachCoachNumberAscCodeAsc(Long trainId);
 
 ## Service
 
-`train/service/TrainLayoutService`:
+`service/TrainLayoutService`:
 
 - `@Transactional(readOnly = true) TrainLayout getLayout(long trainId)`: tìm tàu (không
   thấy thì `TrainNotFoundException`, 404), lấy toa và ghế bằng hai query trên, gom ghế
   theo `seat.getCoach().getId()`, dựng DTO **bên trong** transaction.
 
-`TrainNotFoundException` thuộc T03 (`train/service/`). T03 và T06 chạy song song: nếu T03
+`TrainNotFoundException` thuộc T03 (`common/exception/`). T03 và T06 chạy song song: nếu T03
 chưa merge, tạo class đó đúng tên, đúng package, có `@ResponseStatus(NOT_FOUND)`; khi
 merge chỉ giữ một bản.
 
@@ -82,8 +82,8 @@ merge chỉ giữ một bản.
 
 | Class | Method | URL | Trả về |
 | --- | --- | --- | --- |
-| `train/controller/TrainDetailController` (`@Controller`) | GET | `/admin/trains/{id}` | View `admin/train-detail` với `train` (mã, tên) và `activeNav = "trains"` |
-| `train/controller/TrainLayoutApiController` (`@RestController`) | GET | `/api/admin/trains/{id}/layout` | JSON `TrainLayout` |
+| `controller/TrainDetailController` (`@Controller`) | GET | `/admin/trains/{id}` | View `admin/train-detail` với `train` (mã, tên) và `activeNav = "trains"` |
+| `controller/TrainLayoutApiController` (`@RestController`) | GET | `/api/admin/trains/{id}/layout` | JSON `TrainLayout` |
 
 Ví dụ JSON:
 

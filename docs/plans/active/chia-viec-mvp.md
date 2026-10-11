@@ -128,7 +128,7 @@ chốt. Chốt xong thì ghi vào mục Decisions bên dưới và, nếu là lu
 - **Branch**: `feat/t03-train-admin`, `feat/t09-seat-holding`... Tiếng Anh, không dấu.
   Một task một branch, merge vào `main` qua pull request.
 - **Mẫu code**: làm theo module ga (`docs/session/huong-dan-mvc-quan-ly-ga.pdf`).
-  Màn hình admin của feature nào nằm trong package feature đó (ADR 0001).
+  Màn hình admin của nghiệp vụ nào có controller riêng của nghiệp vụ đó (ADR 0001, 0006).
 - **Entity**: được thêm method nghiệp vụ (ví dụ `Trip.cancel()`), không được thêm
   hay sửa field ánh xạ cột. Đổi schema phải bàn với nhóm và viết migration mới
   `V3__...`; không sửa `V1`, `V2`.
@@ -141,14 +141,14 @@ chốt. Chốt xong thì ghi vào mục Decisions bên dưới và, nếu là lu
 | `common/config/TimeConfig.java` (bean `Clock`) | T01 |
 | `common/config/SecurityConfig.java` | T02 (khai sẵn luật cho mọi URL tương lai) |
 | `templates/fragments/navbar.html`, `templates/admin/fragments/header.html` | T02 |
-| `auth/service/TrainGoUserDetails.java` (người đang đăng nhập) | T02 |
-| `train/service/TrainNotFoundException.java` | T03; T06 dùng lại |
+| `service/TrainGoUserDetails.java` (người đang đăng nhập) | T02 |
+| `common/exception/TrainNotFoundException.java` | T03; T06 dùng lại |
 | `static/js/seat-map.js` (hàm vẽ sơ đồ toa) | T06, T09 mở rộng |
-| `booking/model/BookingDraft.java`, `booking/service/BookingDraftStore.java`, `static/js/hold-countdown.js` | T09, T11 mở rộng |
-| `booking/controller/BookingFlowController.java` | T11, T12 thêm handler |
-| `booking/service/BookingCancellationService.java` | T10, T13 dùng lại |
+| `model/dto/BookingDraft.java`, `service/BookingDraftStore.java`, `static/js/hold-countdown.js` | T09, T11 mở rộng |
+| `controller/BookingFlowController.java` | T11, T12 thêm handler |
+| `service/BookingCancellationService.java` | T10, T13 dùng lại |
 | Method `Trip.departureAt()` | Task nào làm trước thì thêm (T05 hoặc T07) |
-| `admin/controller/AdminController.java`, `admin/service/AdminService.java` | Ai chuyển màn hình nào ra package riêng thì gỡ đúng phần của màn hình đó |
+| `controller/AdminController.java`, `service/AdminService.java` | Ai chuyển màn hình nào sang controller riêng thì gỡ đúng phần của màn hình đó |
 | `docs/WORKLOG.md` | Mọi task thêm một dòng; conflict thì giữ cả hai dòng |
 
 - **Xong một task** khi: chạy thật trên trình duyệt với MySQL và seed, `.\mvnw.cmd test`

@@ -78,8 +78,8 @@ booking, hủy booking trả chỗ về `AVAILABLE`, kiểm tra quyền sở h�
 rà lại toàn bộ luồng.
 
 Gợi ý chia việc cho ba thành viên sau giai đoạn 1: một người làm giai đoạn 2 và
-8, một người làm giai đoạn 3 và 4, một người làm giai đoạn 5, 6 và 7. Package chia
-theo feature nên ba nhánh ít đụng nhau.
+8, một người làm giai đoạn 3 và 4, một người làm giai đoạn 5, 6 và 7. Mỗi nghiệp vụ
+là một file riêng trong từng tầng package nên ba nhánh ít đụng nhau.
 
 ## Risks And Recovery
 
@@ -143,8 +143,11 @@ theo feature nên ba nhánh ít đụng nhau.
   8080 trên máy dev. Khai trong `app/src/main/resources/application.properties`.
 - 2026-10-01: Schema do Flyway quản lý, Hibernate chỉ `validate`; tạo đủ 11 bảng
   và seed demo một lần. Xem `docs/decisions/0005-quan-ly-schema-bang-flyway.md`.
-- 2026-10-01: Màn hình admin của một feature nằm trong package của feature đó.
-  Xem `docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`.
+- 2026-10-01: Màn hình admin của một nghiệp vụ có controller riêng, không dồn vào
+  `AdminController`. Xem `docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`.
+- 2026-10-11: Package chia theo tầng (`controller`, `entity`, `model`,
+  `repository`, `service`) thay cho theo feature. Xem
+  `docs/decisions/0006-cau-truc-package-theo-tang.md`.
 - Chưa quyết: cách thu hồi TripSeat hết hạn giữ chỗ.
 - Chưa quyết: quy tắc xóa dữ liệu đã bị tham chiếu, với các entity ngoài ga.
 - Chưa quyết: thêm toa vào tàu đã có chuyến thì có sinh thêm TripSeat không.

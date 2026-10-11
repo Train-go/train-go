@@ -39,7 +39,7 @@ Admin sửa giá chuyến sau đó không được làm đổi booking cũ (`SPE
 
 Có sẵn: `Booking` (constructor tạo sẵn `PENDING` / `UNPAID`), `BookingPassenger`.
 
-Mở rộng `booking/model/BookingDraft` của T09:
+Mở rộng `model/dto/BookingDraft` của T09:
 
 ```java
 private List<PassengerDraft> passengers;   // null cho tới khi nhập xong
@@ -60,12 +60,12 @@ public class PassengerDraft implements Serializable {
 Form, dùng `@Valid` cho cả danh sách:
 
 ```java
-public class PassengersForm {
+public class PassengersRequest {
     @Valid
-    private List<PassengerForm> passengers = new ArrayList<>();
+    private List<PassengerRequest> passengers = new ArrayList<>();
 }
 
-public class PassengerForm {
+public class PassengerRequest {
     @NotNull private Long tripSeatId;
     @NotBlank @Size(max = 100) private String fullName;
     @NotNull @Past @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -104,16 +104,16 @@ Optional<Booking> findTopByBookingCodeStartingWithOrderByBookingCodeDesc(String 
 
 ## Service
 
-`booking/service/BookingCodeGenerator` (D5), nhận `Clock`:
+`service/BookingCodeGenerator` (D5), nhận `Clock`:
 
 - `String next()`: tiền tố `"BK" + yyyyMM` của tháng hiện tại; lấy mã lớn nhất có tiền tố
   đó; số thứ tự tiếp theo, đệm 3 chữ số. Ví dụ đã có `BK202610004` thì trả `BK202610005`.
 
-`booking/service/BookingDraftService`, nhận `Clock`:
+`service/BookingDraftService`, nhận `Clock`:
 
 | Method | Việc |
 | --- | --- |
-| `void savePassengers(BookingDraft draft, PassengersForm form)` | Số hành khách bằng số chỗ; mỗi `tripSeatId` trong draft xuất hiện đúng một lần; còn hạn giữ chỗ. Sai thì ném `InvalidPassengersException` |
+| `void savePassengers(BookingDraft draft, PassengersRequest form)` | Số hành khách bằng số chỗ; mỗi `tripSeatId` trong draft xuất hiện đúng một lần; còn hạn giữ chỗ. Sai thì ném `InvalidPassengersException` |
 | `BookingReview review(BookingDraft draft)` | Tính giá từng chỗ từ database, không lấy từ form |
 | `@Transactional Booking createPending(BookingDraft draft, long userId)` | Xem bên dưới |
 
@@ -132,7 +132,7 @@ chặn người thứ hai. Controller bắt `DataIntegrityViolationException` v�
 
 ## Controller
 
-`booking/controller/BookingFlowController`, `@RequestMapping("/booking")`:
+`controller/BookingFlowController`, `@RequestMapping("/booking")`:
 
 | Method | URL | Kết quả |
 | --- | --- | --- |

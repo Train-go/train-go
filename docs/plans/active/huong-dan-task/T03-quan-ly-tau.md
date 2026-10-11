@@ -33,7 +33,7 @@ Seed có 8 tàu, mỗi tàu 4 toa, 96 chỗ.
 
 ## Model
 
-Có sẵn, không sửa field: `train/model/Train`. Thêm vào entity:
+Có sẵn, không sửa field: `entity/Train`. Thêm vào entity:
 
 ```java
 public void update(String code, String name) {
@@ -48,18 +48,18 @@ public static String normalizeCode(String code) {
 
 và cho constructor gọi `update(...)`, giống `Station`.
 
-Viết mới `train/model/TrainForm`:
+Viết mới `model/request/TrainRequest`:
 
 | Field | Validation |
 | --- | --- |
 | `code` | `@NotBlank`, `@Size(max = 10)`, `@Pattern(regexp = "[A-Za-z0-9]+")` |
 | `name` | `@NotBlank`, `@Size(max = 100)` |
 
-Kèm `static TrainForm from(Train train)` để điền form sửa.
+Kèm `static TrainRequest from(Train train)` để điền form sửa.
 
 ## Repository
 
-Thêm vào `train/repository/TrainRepository`:
+Thêm vào `repository/TrainRepository`:
 
 ```java
 List<Train> findAllByOrderByCodeAsc();
@@ -86,18 +86,18 @@ List<TrainCapacity> summarizeByTrain();
 
 ## Service
 
-`train/service/TrainService`, cùng khuôn với `StationService`:
+`service/TrainService`, cùng khuôn với `StationService`:
 
 | Method | Transaction | Việc |
 | --- | --- | --- |
 | `List<Train> findAll()` | `readOnly` | Danh sách theo mã |
 | `Train findById(long id)` | `readOnly` | Không thấy thì ném `TrainNotFoundException` (`@ResponseStatus(NOT_FOUND)`) |
-| `Train create(TrainForm form)` | ghi | Chuẩn hóa mã, trùng thì ném `DuplicateTrainCodeException`, rồi `save` |
-| `Train update(long id, TrainForm form)` | ghi | `existsByCodeAndIdNot`, `train.update(...)`, `flush()` |
+| `Train create(TrainRequest form)` | ghi | Chuẩn hóa mã, trùng thì ném `DuplicateTrainCodeException`, rồi `save` |
+| `Train update(long id, TrainRequest form)` | ghi | `existsByCodeAndIdNot`, `train.update(...)`, `flush()` |
 
 ## Controller
 
-`train/controller/TrainAdminController`, `@RequestMapping("/admin/trains")`:
+`controller/TrainAdminController`, `@RequestMapping("/admin/trains")`:
 
 | Method | URL | Handler | Kết quả |
 | --- | --- | --- | --- |
@@ -124,7 +124,7 @@ List<TrainCapacity> summarizeByTrain();
 
 - `AdminController`: xóa handler `trains`.
 - `AdminService`: xóa `TRAINS` và `trains()`.
-- Xóa `admin/model/Train.java`.
+- Xóa `model/response/AdminTrain.java`.
 
 Dashboard không dùng danh sách tàu, nên gỡ không ảnh hưởng gì.
 

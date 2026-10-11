@@ -4,7 +4,9 @@ Date: 2026-08-23
 
 ## Status
 
-Accepted
+Accepted. Mục "Chia package theo feature" đã bị thay thế bởi
+`docs/decisions/0006-cau-truc-package-theo-tang.md` ngày 11/10/2026; phần còn
+lại vẫn có hiệu lực. Nội dung bên dưới giữ nguyên làm lịch sử lý luận.
 
 ## Context
 
