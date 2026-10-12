@@ -3,8 +3,10 @@
 TrainGo là website đặt vé tàu: tìm chuyến, chọn ghế hoặc giường trên sơ đồ toa,
 thanh toán mô phỏng và nhận vé điện tử.
 
-`voyage-go` là tên repository trên GitHub; tên sản phẩm hiển thị ở mọi nơi là
-**TrainGo** — xem `docs/decisions/0003-he-thong-giao-dien.md`.
+Repository trên GitHub là `Train-go/train-go` (trước đây là `Voyage-GO/voyage-go`); tên
+sản phẩm hiển thị ở mọi nơi là **TrainGo**, xem `docs/decisions/0003-he-thong-giao-dien.md`.
+Tiến độ và phân công: project https://github.com/orgs/Train-go/projects/1 và
+`docs/plans/active/chia-viec-mvp.md`.
 
 ## Bắt đầu từ đâu
 
@@ -14,7 +16,7 @@ thanh toán mô phỏng và nhận vé điện tử.
 | Hiểu sản phẩm phải làm gì | `docs/product/overview.md` |
 | Hiểu dữ liệu và quan hệ giữa các entity | `docs/product/domain-model.md` |
 | Hiểu luồng đặt vé, giữ chỗ, thanh toán | `docs/product/booking-flow.md` |
-| Chạy ứng dụng, database và test ở máy mình | `docs/RUNBOOK.md` |
+| Chạy ứng dụng và database ở máy mình | `docs/RUNBOOK.md` |
 | Biết đang làm tới đâu và tiếp theo làm gì | `docs/plans/active/mvp-traingo.md` |
 | Biết vì sao dự án được cấu trúc như hiện tại | `docs/decisions/` |
 | Yêu cầu gốc của môn học | `SPEC.md` |
@@ -28,7 +30,6 @@ Mã nguồn ứng dụng nằm trong `app/`.
 cd app
 docker compose up -d      # MySQL cho môi trường dev
 .\mvnw.cmd spring-boot:run
-.\mvnw.cmd test
 ```
 
 Ứng dụng chạy ở `http://localhost:8081`.

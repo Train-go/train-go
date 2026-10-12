@@ -4,7 +4,8 @@ Date: 2026-08-23
 
 ## Status
 
-Accepted
+Superseded ngày 12/10/2026 bởi `docs/decisions/0007-bo-test-tu-dong.md`: dự án bỏ
+test tự động. Nội dung dưới đây giữ lại làm lịch sử.
 
 ## Context
 

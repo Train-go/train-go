@@ -115,7 +115,9 @@ trọn khối đó, chỉ giữ toggle sidebar, đồng bộ theo breakpoint và
 
 Một `@WebMvcTest` khẳng định HTML của `/admin` không chứa `Nazareth`,
 `MIT License`, `opensource.org`, `linkedin.com` hay `github.com`, để branding
-không lẻn về ở lần sửa sau.
+không lẻn về ở lần sửa sau. Test này đã bị gỡ ngày 11/10/2026 và dự án bỏ test tự
+động từ 12/10/2026 (`docs/decisions/0007-bo-test-tu-dong.md`); người đọc PR sửa
+`templates/admin/` tự kiểm tra lại năm chuỗi trên bằng tìm kiếm trong source.
 
 Ghi nhận cho rõ: template gốc phát hành theo MIT, và MIT yêu cầu giữ dòng
 copyright. Đây là đồ án môn học nộp nội bộ nên nhóm chấp nhận đánh đổi này. Nếu

@@ -15,6 +15,16 @@ role.
 Không làm: quên mật khẩu, đặt lại mật khẩu, xác thực email, đăng nhập Google,
 OAuth.
 
+## Đăng ký
+
+Chốt ngày 12/10/2026 (D4). Form đăng ký gồm họ tên, email, mật khẩu và nhập lại
+mật khẩu:
+
+- Mật khẩu ít nhất 8 ký tự. Hai ô mật khẩu phải giống nhau.
+- Email không được trùng, không phân biệt chữ hoa chữ thường: đã có
+  `an.nguyen@example.com` thì `An.Nguyen@Example.com` bị từ chối.
+- Tài khoản tạo qua form luôn có role `CUSTOMER`.
+
 ## Quyền truy cập
 
 | Nhóm | Được dùng |
@@ -32,7 +42,8 @@ OAuth.
   chính mình; gõ tay `/my-trips/<id của người khác>` phải bị chặn.
 
 Hai lỗi phân quyền hay gặp nhất trong đồ án là chỉ ẩn nút trên giao diện, và quên
-kiểm tra ownership khi truy cập theo id. Cả hai đều phải có test.
+kiểm tra ownership khi truy cập theo id. Cả hai đều phải được thử bằng tay: gõ thẳng
+đường dẫn, không chỉ bấm theo menu (ADR 0007).
 
 ## Trạng thái hiện tại của code
 

@@ -13,17 +13,16 @@ tàu → toa và ghế → chuyến; Customer tìm chuyến → chọn toa → c
 nhập hành khách → review → thanh toán mô phỏng → nhận vé điện tử → thấy booking
 trong My Trips và hủy được nó.
 
-Bằng chứng chấp nhận: chạy trọn luồng trên trình duyệt với MySQL thật, cộng với
-bộ test tự động xanh cho các nghiệp vụ bắt buộc liệt kê trong
-`docs/decisions/0002-chien-luoc-test.md`.
+Bằng chứng chấp nhận: chạy trọn luồng trên trình duyệt với MySQL thật, theo kịch
+bản thử bằng tay của từng task. Dự án không có test tự động
+(`docs/decisions/0007-bo-test-tu-dong.md`).
 
 ## Context
 
 - Yêu cầu gốc: `SPEC.md`.
 - Bản chắt lọc: `docs/product/overview.md`, `domain-model.md`, `booking-flow.md`,
   `admin.md`, `auth.md`.
-- Quyết định đã chốt: `docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`,
-  `docs/decisions/0002-chien-luoc-test.md`.
+- Quyết định đã chốt: `docs/decisions/` (0001, 0003-0007; 0002 đã bị 0007 thay).
 - Cách chạy: `docs/RUNBOOK.md`.
 - Code: `app/`, package gốc `com.voyagego.traingo`.
 
@@ -85,11 +84,14 @@ là một file riêng trong từng tầng package nên ba nhánh ít đụng nha
 
 - **Giữ chỗ và xác nhận booking sai dẫn tới hai người cùng một ghế.** Đây là rủi
   ro lớn nhất. Phòng bằng ràng buộc unique `tripId + seatId` ở database, kiểm tra
-  lại trạng thái ngay trước khi commit, và test cho từng nhánh thất bại.
+  lại trạng thái ngay trước khi commit, và thử tay từng nhánh thất bại.
 - **Transaction không bao trọn bốn thay đổi trạng thái**, để lại dữ liệu nửa vời.
-  Phòng bằng `@Transactional` ở tầng service và test khẳng định rollback.
-- **Chưa quyết cách thu hồi chỗ hết hạn** (kiểm tra lười hay job định kỳ). Phải
-  chốt trước khi bắt đầu giai đoạn 4, và ghi vào mục Decisions bên dưới.
+  Phòng bằng `@Transactional` ở tầng service, kiểm tra hết điều kiện trước khi đổi
+  dữ liệu, và thử tay trường hợp lỗi giữa chừng.
+- **Quên so hạn giữ chỗ ở một nơi đọc trạng thái ghế.** Chỗ hết hạn chỉ được trả
+  lại bằng phép so `heldUntil` lúc đọc, không có job dọn dẹp (D1), nên một truy
+  vấn thiếu phép so là ghế bị khóa mãi. Phòng bằng bước thử tay lùi `held_until`
+  về quá khứ rồi kiểm tra cả trang tìm chuyến, sơ đồ ghế và thao tác giữ chỗ.
 - **Lệch phiên bản Spring Boot 4 so với tài liệu 3.x** làm mất thời gian gỡ lỗi
   giả. Khi gặp lỗi không tìm thấy class hoặc annotation, kiểm tra jar thật trong
   `~/.m2/repository` trước khi tin bài viết trên mạng.
@@ -148,18 +150,20 @@ là một file riêng trong từng tầng package nên ba nhánh ít đụng nha
 - 2026-10-11: Package chia theo tầng (`controller`, `entity`, `model`,
   `repository`, `service`) thay cho theo feature. Xem
   `docs/decisions/0006-cau-truc-package-theo-tang.md`.
-- Chưa quyết: cách thu hồi TripSeat hết hạn giữ chỗ.
-- Chưa quyết: quy tắc xóa dữ liệu đã bị tham chiếu, với các entity ngoài ga.
-- Chưa quyết: thêm toa vào tàu đã có chuyến thì có sinh thêm TripSeat không.
+- 2026-10-12: Bỏ test tự động; mỗi task có kịch bản thử bằng tay. Xem
+  `docs/decisions/0007-bo-test-tu-dong.md` (thay cho ADR 0002).
+- 2026-10-12: Chốt tám quyết định nghiệp vụ D1-D8, gồm cách thu hồi TripSeat hết
+  hạn giữ chỗ (D1, so giờ lúc đọc, không có job), quy tắc xóa dữ liệu đã bị tham
+  chiếu (D2, chặn xóa, chuyến chỉ hủy), và sinh thêm TripSeat khi thêm toa vào tàu
+  đã có chuyến (D3). Xem bảng "Quyết định nghiệp vụ" trong
+  `docs/plans/active/chia-viec-mvp.md`.
 
 ## Validation
 
-- Focused proof: unit test cho service nghiệp vụ, `@DataJpaTest` cho ràng buộc
-  `tripId + seatId`, `@WebMvcTest` cho phân quyền và validation.
-- Integration hoặc end-to-end proof: một `@SpringBootTest` chạy trọn luồng đặt
-  vé, cộng với một lần chạy tay trên trình duyệt với MySQL thật.
-- Repository-required checks: `.\mvnw.cmd test` phải xanh trước mọi báo cáo hoàn
-  thành.
+- Mỗi task: đi hết mục "Kịch bản thử bằng tay" trong file hướng dẫn của task.
+- Toàn MVP: chạy tay trọn luồng đặt vé trên trình duyệt với MySQL thật (T14).
+- Trước mọi báo cáo hoàn thành: `.\mvnw.cmd compile` không lỗi và ứng dụng khởi
+  động được (`docs/decisions/0007-bo-test-tu-dong.md`).
 
 ## Result
 

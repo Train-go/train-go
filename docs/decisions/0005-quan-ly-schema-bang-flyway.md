@@ -55,7 +55,8 @@ schema thì thêm file mới `V3__...`, `V4__...`.
 - Khóa ngoại không có `ON DELETE`. Hàng đang được tham chiếu không xóa được;
   service phải kiểm tra trước và báo lý do bằng lời, như `StationService.delete`.
 - Chỉ dùng cú pháp mà cả MySQL 8 lẫn H2 chế độ MySQL đều chấp nhận, để test sau
-  này chạy được migration trên H2 (ADR 0002).
+  này chạy được migration trên H2 (ADR 0002). Từ 12/10/2026 dự án bỏ test tự động
+  (ADR 0007), nên luật này không còn bắt buộc.
 
 **Relation trong entity là `@ManyToOne(fetch = FetchType.LAZY)` một chiều.**
 Không khai collection `@OneToMany`. Muốn lấy danh sách con thì query qua
@@ -106,7 +107,8 @@ Tradeoffs:
 
 ## Follow-Up
 
-- Khi viết `@DataJpaTest` đầu tiên, kiểm tra migration có chạy được trên H2 hay
-  không. Đến ngày 01/10/2026, migration mới chỉ được chạy trên MySQL 8.4.
+- ~~Khi viết `@DataJpaTest` đầu tiên, kiểm tra migration có chạy được trên H2 hay
+  không.~~ Bỏ ngày 12/10/2026 cùng toàn bộ test (ADR 0007). Migration chỉ chạy trên
+  MySQL 8.4, lúc ứng dụng khởi động.
 - Auth phải dùng `BCryptPasswordEncoder`: hash trong seed là BCrypt thuần
   (`$2a$10$...`), không có tiền tố `{bcrypt}` mà `DelegatingPasswordEncoder` cần.
