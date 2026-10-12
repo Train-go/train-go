@@ -40,7 +40,7 @@ kiểm tra ownership khi truy cập theo id. Cả hai đều phải có test.
 là bản nền: cho phép truy cập `/` cùng tài nguyên tĩnh, mọi đường dẫn khác yêu cầu
 đăng nhập, dùng trang login mặc định của Spring Security.
 
-Từ 01/10/2026 đã có bảng `users` và entity `auth/model/User` (email không trùng,
+Từ 01/10/2026 đã có bảng `users` và entity `entity/User` (email không trùng,
 `passwordHash`, `role`). Seed data tạo sẵn tài khoản, mật khẩu lưu dạng BCrypt:
 
 | Email | Mật khẩu | Role |

@@ -44,7 +44,7 @@ trước khi làm.
 
 ## Model
 
-DTO, `record` trong `booking/model/` và `admin/model/`:
+DTO, `record` trong `model/response/`:
 
 ```java
 record AdminBookingRow(Long id, String bookingCode, String customerName,
@@ -105,14 +105,14 @@ long countByRole(UserRole role);
 
 | Class | Method | Việc |
 | --- | --- | --- |
-| `booking/service/AdminBookingService` | `List<AdminBookingRow> search(String q)` | `q` rỗng: mọi booking; có `q`: lọc theo mã |
+| `service/AdminBookingService` | `List<AdminBookingRow> search(String q)` | `q` rỗng: mọi booking; có `q`: lọc theo mã |
 | | `AdminBookingDetail findDetail(long id)` | Không thấy thì 404 |
 | | `Booking cancel(long id)` | Gọi `BookingCancellationService.cancelByAdmin(id)` của T10; cùng luật với khách |
-| `admin/service/DashboardService` | `DashboardStats load()` | Bốn con số, 5 booking mới nhất, doanh thu 7 ngày gần nhất (gom theo `paidAt.toLocalDate()` trong Java) |
+| `service/DashboardService` | `DashboardStats load()` | Bốn con số, 5 booking mới nhất, doanh thu 7 ngày gần nhất (gom theo `paidAt.toLocalDate()` trong Java) |
 
 ## Controller
 
-`booking/controller/BookingAdminController`, `@RequestMapping("/admin/bookings")`,
+`controller/BookingAdminController`, `@RequestMapping("/admin/bookings")`,
 `activeNav = "bookings"`:
 
 | Method | URL | Kết quả |
@@ -121,9 +121,9 @@ long countByRole(UserRole role);
 | GET | `/admin/bookings/{id}` | Chi tiết |
 | POST | `/admin/bookings/{id}/cancel` | Redirect về chi tiết kèm thông báo xanh hoặc đỏ |
 
-`auth/controller/UserAdminController`: `GET /admin/users`, `activeNav = "users"`.
+`controller/UserAdminController`: `GET /admin/users`, `activeNav = "users"`.
 
-`admin/controller/AdminController`: chỉ còn `GET /admin`, đọc `DashboardService`.
+`controller/AdminController`: chỉ còn `GET /admin`, đọc `DashboardService`.
 
 ## View
 
@@ -143,8 +143,8 @@ long countByRole(UserRole role);
 
 ## Gỡ dữ liệu giả
 
-Xóa `admin/service/AdminService.java` và cả thư mục `admin/model/` (`Booking`, `Trip`,
-`User` và những file còn lại). Sau task này, `grep -r "AdminService" app/src` không còn
+Xóa `service/AdminService.java` và các class giả `Admin*` trong `model/response/` (`AdminBooking`, `AdminTrip`,
+`AdminUser` và những file còn lại). Sau task này, `grep -r "AdminService" app/src` không còn
 kết quả nào.
 
 ## Test

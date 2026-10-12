@@ -59,7 +59,7 @@ HELD --người đó chọn lại--> AVAILABLE
 Có sẵn: `TripSeat`, `TripSeatStatus`, `Trip` (`departureAt()` của T07; ai làm trước thì
 thêm).
 
-Viết mới `booking/model/BookingDraft`, lưu trong session (implement `Serializable`):
+Viết mới `model/dto/BookingDraft`, lưu trong session (implement `Serializable`):
 
 ```java
 public class BookingDraft implements Serializable {
@@ -72,7 +72,7 @@ public class BookingDraft implements Serializable {
 }
 ```
 
-Viết mới `booking/service/BookingDraftStore` (`@Component`), gói việc đọc ghi session
+Viết mới `service/BookingDraftStore` (`@Component`), gói việc đọc ghi session
 để T11, T12 dùng chung:
 
 ```java
@@ -81,7 +81,7 @@ void save(HttpSession session, BookingDraft draft);
 void clear(HttpSession session);
 ```
 
-DTO cho API, `record` trong `booking/model/`:
+DTO cho API, `record` trong `model/response/`:
 
 ```java
 record SeatMapSeat(Long id, String code, SeatType type, Integer cabinNumber,
@@ -133,7 +133,7 @@ nhỏ hơn số chỗ yêu cầu là biết có chỗ đã bị lấy mất.
 
 ## Service
 
-`booking/service/SeatHoldService`, nhận `Clock`:
+`service/SeatHoldService`, nhận `Clock`:
 
 ```java
 @Transactional
@@ -155,7 +155,7 @@ public HoldResult hold(long tripId, List<Long> tripSeatIds, int passengers,
 Tham số `User` của `holdIfFree` lấy bằng `userRepository.getReferenceById(userId)`,
 không cần `SELECT`.
 
-`booking/service/SeatMapService`:
+`service/SeatMapService`:
 
 - `@Transactional(readOnly = true) SeatMap getSeatMap(long tripId, long userId)`: lấy
   `TripSeat` bằng query có `@EntityGraph`, tính `status` cho từng chỗ:
@@ -171,14 +171,14 @@ về `AVAILABLE` cho gọn dữ liệu. Luật vẫn đúng khi không có job n
 
 ## Controller
 
-`booking/controller/SeatSelectionController` (`@Controller`):
+`controller/SeatSelectionController` (`@Controller`):
 
 | Method | URL | Việc |
 | --- | --- | --- |
 | GET | `/booking/{tripId}/seats?passengers=N` | View `booking/seats`: thông tin chuyến, số khách, ô chứa sơ đồ |
 | POST | `/booking/{tripId}/seats` | Nhận `passengers` và danh sách `tripSeatIds`, gọi `hold(...)` với `me.getId()`, lưu `BookingDraft`, `redirect:/booking/passengers`. Lỗi thì redirect về trang chọn chỗ kèm flash `errorMessage` |
 
-`booking/controller/SeatMapApiController` (`@RestController`):
+`controller/SeatMapApiController` (`@RestController`):
 
 | Method | URL | Trả về |
 | --- | --- | --- |

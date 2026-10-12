@@ -118,7 +118,7 @@ List<Ticket> findByBookingPassengerBookingIdOrderByIdAsc(Long bookingId);
 
 ## Service
 
-`booking/service/PaymentService`, nhận `Clock`:
+`service/PaymentService`, nhận `Clock`:
 
 ```java
 @Transactional
@@ -145,14 +145,14 @@ chính người này giữ** bằng `TripSeatRepository.releaseHeldBy(...)` củ
 người khác giữ đè thì không đụng tới. Đây là transaction riêng, chạy sau khi transaction
 thanh toán đã rollback.
 
-`ticket/service/TicketService`:
+`service/TicketService`:
 
 - `@Transactional(readOnly = true) TicketView findForCustomer(long ticketId, long customerId)`:
   vé của booking người khác thì ném `TicketNotFoundException` (404).
 
 ## Controller
 
-Thêm vào `booking/controller/BookingFlowController` (của T11):
+Thêm vào `controller/BookingFlowController` (của T11):
 
 | Method | URL | Kết quả |
 | --- | --- | --- |
@@ -160,7 +160,7 @@ Thêm vào `booking/controller/BookingFlowController` (của T11):
 | POST | `/booking/payment` | Thành công: xóa draft, `redirect:/booking/success?code=BK...`. Hết hạn: `expire(...)`, redirect về chi tiết chuyến kèm thông báo |
 | GET | `/booking/success?code=` | View `booking/success`: chỉ hiện booking của chính người đó, kèm link từng vé |
 
-`ticket/controller/TicketController`:
+`controller/TicketController`:
 
 | Method | URL | Kết quả |
 | --- | --- | --- |

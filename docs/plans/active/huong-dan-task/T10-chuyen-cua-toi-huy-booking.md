@@ -80,7 +80,7 @@ public void releaseBooked() {
 }
 ```
 
-DTO, `record` trong `booking/model/`:
+DTO, `record` trong `model/response/`:
 
 ```java
 record PassengerLine(String fullName, int coachNumber, String seatCode,
@@ -125,14 +125,14 @@ List<Ticket> findByBookingPassengerIdIn(Collection<Long> passengerIds);
 
 ## Service
 
-`booking/service/MyTripsService`, nhận `Clock`:
+`service/MyTripsService`, nhận `Clock`:
 
 - `@Transactional(readOnly = true) MyTrips findFor(long customerId)`: ba query trên, gom
   hành khách và vé theo booking, chia nhóm, dựng DTO bên trong transaction.
 - `@Transactional(readOnly = true) MyBooking findOne(long bookingId, long customerId)`:
   `findByIdAndCustomerId`; không thấy thì ném `BookingNotFoundException` (404).
 
-`booking/service/BookingCancellationService` (dùng chung với T13), nhận `Clock`:
+`service/BookingCancellationService` (dùng chung với T13), nhận `Clock`:
 
 ```java
 @Transactional
@@ -150,7 +150,7 @@ Cả hai cùng đi qua một method riêng: kiểm tra booking `CONFIRMED`, chuy
 
 ## Controller
 
-`booking/controller/MyTripsController`, `@RequestMapping("/my-trips")`:
+`controller/MyTripsController`, `@RequestMapping("/my-trips")`:
 
 | Method | URL | Kết quả |
 | --- | --- | --- |

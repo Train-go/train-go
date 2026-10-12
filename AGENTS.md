@@ -115,9 +115,12 @@ Chi tiết và lý do: `docs/decisions/0002-chien-luoc-test.md`.
 
 ### Quy tắc về cấu trúc code
 
-- Chia package theo feature: `auth`, `station`, `route`, `train`, `trip`,
-  `booking`, `ticket`, `admin`, `home`, `common`. Mỗi package chứa đủ
-  controller, service, repository và entity của nghiệp vụ đó.
+- Chia package theo tầng, dưới `com.voyagego.traingo`: `controller`, `entity`,
+  `model` (`dto`, `request`, `response`), `repository`, `service`, cùng
+  `common` (`config`, `exception`). Mỗi nghiệp vụ là một file trong tầng đó
+  (`StationService`, `StationRepository`...), không tạo package riêng cho
+  từng nghiệp vụ. Enum nằm cùng entity; exception nghiệp vụ nằm ở
+  `common/exception`; object nhận từ form hoặc JSON đặt hậu tố `Request`.
 - Controller chỉ nhận request, validate cơ bản, gọi service và trả view hoặc
   JSON. Không đặt nghiệp vụ phức tạp trong controller.
 - Service giữ nghiệp vụ và transaction. Repository chỉ truy cập dữ liệu.
@@ -128,7 +131,9 @@ Chi tiết và lý do: `docs/decisions/0002-chien-luoc-test.md`.
 - Schema chỉ đổi bằng một migration Flyway mới. Không sửa migration đã chạy,
   không bật lại `ddl-auto=update`.
 
-Chi tiết và lý do: `docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`.
+Chi tiết và lý do: `docs/decisions/0006-cau-truc-package-theo-tang.md`; các
+phần còn lại của cấu trúc dự án ở
+`docs/decisions/0001-cau-truc-du-an-va-tech-stack.md`.
 
 ### Bẫy của Spring Boot 4 so với tài liệu 3.x
 

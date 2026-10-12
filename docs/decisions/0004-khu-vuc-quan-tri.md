@@ -38,7 +38,7 @@ landing:
 | Template | `templates/layout/base.html`, `templates/fragments/` | `templates/admin/layout/base.html`, `templates/admin/fragments/`, `templates/admin/*.html` |
 | CSS | `/css/app.css` | `/css/admin/admin.css` |
 | JS | `/js/landing.js` | `/js/admin/admin.js` |
-| Java | `com.voyagego.traingo.home` | `com.voyagego.traingo.admin`, và từ 01/10/2026 `<feature>/controller/` cho màn hình đã nối database (ADR 0001) |
+| Java | `com.voyagego.traingo.home` | `com.voyagego.traingo.admin`, và từ 01/10/2026 `controller/` (cùng tầng với mọi controller khác) cho màn hình đã nối database (ADR 0006) |
 | URL | `/`, `/login` | `/admin`, `/admin/…` |
 
 **Static của admin nằm dưới `static/css/admin/` và `static/js/admin/`, không
@@ -190,13 +190,14 @@ Tradeoffs:
 
 - Khi tính năng auth xong: đổi `.requestMatchers("/admin/**").authenticated()`
   thành `hasRole("ADMIN")`, và thay tên tĩnh trong
-  `admin/controller/AdminShellModelAdvice` bằng tên người đang đăng nhập.
+  `controller/AdminShellModelAdvice` bằng tên người đang đăng nhập.
   (Ngày 01/10/2026 tên này chuyển từ `AdminController` sang advice đó, để
   controller admin nằm ở package khác vẫn có tên trên header.)
-- Khi có entity thật: thay từng danh sách placeholder bằng repository, và nối
-  các nút Thêm/Sửa/Xóa hiện đang `disabled`. Theo ADR 0001, màn hình đó chuyển
-  ra package của feature. `/admin/stations` đã làm xong ngày 01/10/2026; còn
-  tuyến, tàu, chuyến, booking và người dùng.
+- Danh sách tuyến, tàu, chuyến, booking và người dùng đã đọc từ database qua
+  `AdminService` (ngày 11/10/2026). Còn nối các nút Thêm/Sửa/Xóa hiện đang
+  `disabled`; theo ADR 0001 và 0006, màn hình đó chuyển sang controller riêng của
+  nghiệp vụ. `/admin/stations` đã làm xong ngày 01/10/2026; còn tuyến, tàu,
+  chuyến, booking và người dùng.
 - Thêm `/admin/trains/{id}` để quản lý toa, theo `docs/product/admin.md`.
 - Nếu tới cuối dự án CKEditor, Quill, EditorJS và boxicons vẫn không trang nào
   dùng, xóa khỏi `static/vendor/`.

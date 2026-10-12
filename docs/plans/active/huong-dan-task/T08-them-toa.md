@@ -41,7 +41,7 @@ Số toa mới = số toa lớn nhất hiện có của tàu + 1.
 
 Có sẵn: `Coach`, `Seat`, `CoachType`, `SeatType`.
 
-Viết mới `train/model/CoachForm`:
+Viết mới `model/request/CoachRequest`:
 
 | Field | Kiểu | Validation |
 | --- | --- | --- |
@@ -51,7 +51,7 @@ Viết mới `train/model/CoachForm`:
 
 Luật phụ thuộc loại toa (giường 4-40, chia hết cho 4) kiểm tra trong service.
 
-Viết mới `train/service/SeatCodeGenerator`, một class Java thuần, không phụ thuộc
+Viết mới `service/SeatCodeGenerator`, một class Java thuần, không phụ thuộc
 Spring, để test được bằng unit test:
 
 ```java
@@ -80,9 +80,9 @@ Lọc thêm trong Java những chuyến có `departureAt()` sau hiện tại (T0
 
 ## Service
 
-`train/service/CoachService`, nhận `Clock`:
+`service/CoachService`, nhận `Clock`:
 
-- `@Transactional Coach addCoach(long trainId, CoachForm form)`:
+- `@Transactional Coach addCoach(long trainId, CoachRequest form)`:
   1. Tìm tàu, không thấy thì 404.
   2. Kiểm tra sức chứa theo loại toa, sai thì ném `InvalidCapacityException`.
   3. `coachNumber = findMaxCoachNumber(trainId) + 1`.
@@ -98,7 +98,7 @@ Hai admin thêm toa cùng lúc có thể cùng tính ra một số toa; khóa un
 
 ## Controller
 
-`train/controller/CoachAdminController`, `@RequestMapping("/admin/trains/{trainId}/coaches")`.
+`controller/CoachAdminController`, `@RequestMapping("/admin/trains/{trainId}/coaches")`.
 Đây là controller riêng, để không sửa controller của T06:
 
 | Method | URL | Kết quả |

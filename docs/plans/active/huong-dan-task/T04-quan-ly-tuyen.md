@@ -37,7 +37,7 @@ Task này kiểm tra trước trong service để báo lỗi bằng lời.
 
 ## Model
 
-Có sẵn: `route/model/Route` (`originStation`, `destinationStation` đều
+Có sẵn: `entity/Route` (`originStation`, `destinationStation` đều
 `@ManyToOne(fetch = LAZY)`, `distanceKm`). Thêm vào entity:
 
 ```java
@@ -49,7 +49,7 @@ public String getCode() {
 }
 ```
 
-Viết mới `route/model/RouteForm`:
+Viết mới `model/request/RouteRequest`:
 
 | Field | Kiểu | Validation |
 | --- | --- | --- |
@@ -59,7 +59,7 @@ Viết mới `route/model/RouteForm`:
 
 ## Repository
 
-Thêm vào `route/repository/RouteRepository`:
+Thêm vào `repository/RouteRepository`:
 
 ```java
 @EntityGraph(attributePaths = {"originStation", "destinationStation"})
@@ -73,7 +73,7 @@ boolean existsByOriginStationIdAndDestinationStationIdAndIdNot(
         Long originId, Long destinationId, Long id);
 ```
 
-Thêm vào `trip/repository/TripRepository`:
+Thêm vào `repository/TripRepository`:
 
 ```java
 boolean existsByRouteId(Long routeId);
@@ -85,14 +85,14 @@ boolean existsByRouteId(Long routeId);
 
 ## Service
 
-`route/service/RouteService`:
+`service/RouteService`:
 
 | Method | Việc |
 | --- | --- |
 | `List<Route> findAll()` | `findAllByOrderByIdAsc()` |
 | `Route findById(long id)` | `findWithStationsById`, không thấy thì `RouteNotFoundException` (404) |
-| `Route create(RouteForm form)` | Ga đi trùng ga đến: ném `SameStationException`. Cặp đã có: `DuplicateRouteException`. Nạp hai `Station` bằng `StationRepository.findById`, ga không tồn tại cũng là lỗi form. Rồi `save` |
-| `Route update(long id, RouteForm form)` | Như trên, dùng `...AndIdNot`. Theo D2: tuyến đã có chuyến thì chỉ được đổi `distanceKm`, đổi ga thì ném `RouteInUseException` |
+| `Route create(RouteRequest form)` | Ga đi trùng ga đến: ném `SameStationException`. Cặp đã có: `DuplicateRouteException`. Nạp hai `Station` bằng `StationRepository.findById`, ga không tồn tại cũng là lỗi form. Rồi `save` |
+| `Route update(long id, RouteRequest form)` | Như trên, dùng `...AndIdNot`. Theo D2: tuyến đã có chuyến thì chỉ được đổi `distanceKm`, đổi ga thì ném `RouteInUseException` |
 | `Route delete(long id)` | Có chuyến dùng (`existsByRouteId`) thì ném `RouteInUseException`; không thì xóa |
 
 Như `StationService.delete`: kiểm tra trước rồi mới xóa, không bắt lỗi khóa ngoại
@@ -100,7 +100,7 @@ bên trong transaction.
 
 ## Controller
 
-`route/controller/RouteAdminController`, `@RequestMapping("/admin/routes")`, giống
+`controller/RouteAdminController`, `@RequestMapping("/admin/routes")`, giống
 `StationAdminController`: `list`, `createForm`, `create`, `editForm`, `update`,
 `delete`. Thêm một method `@ModelAttribute("stations")` trả
 `stationService.findAll()`, để cả form thêm lẫn sửa có danh sách ga cho hai ô chọn.
@@ -139,7 +139,7 @@ vì lỗi.
 ## Gỡ dữ liệu giả
 
 `AdminController` xóa handler `routes`; `AdminService` xóa `ROUTES`, `routes()`;
-xóa `admin/model/Route.java`.
+xóa `model/response/AdminRoute.java`.
 
 ## Test
 
