@@ -42,15 +42,40 @@ thái mà trình duyệt gửi lên.
 Phiên bản đầu không bắt buộc dùng WebSocket. Giao diện chỉ cần hỏi lại trạng thái
 ghế khi cần.
 
-Điểm cần quyết khi làm: chỗ hết hạn `HELD` được trả về `AVAILABLE` bằng cách nào —
-kiểm tra lười khi có người đọc lại sơ đồ ghế, hay một job chạy định kỳ. Chưa có
-quyết định, đừng tự chọn ngầm trong code mà không ghi lại.
+Chỗ hết hạn giữ được trả lại bằng cách so giờ khi đọc, không có job chạy định kỳ
+(D1, chốt 12/10/2026). Database có thể vẫn ghi `HELD`, nhưng chỗ `HELD` mà
+`heldUntil` đã qua được coi là `AVAILABLE` ở mọi nơi: khi đếm chỗ trống, khi vẽ
+sơ đồ ghế, và khi người khác muốn giữ. Người khác giữ chỗ đó thì ghi đè `heldBy`
+và `heldUntil`. Người giữ cũ quay lại sau khi hết hạn sẽ nhận lỗi "hết thời gian
+giữ chỗ".
+
+## Bản nháp booking giữa các bước
+
+Dữ liệu giữa các bước đặt vé được lưu như sau (D7, chốt 12/10/2026):
+
+```
+Trang chọn chỗ, bấm "Tiếp tục"
+  -> giữ mọi chỗ đã chọn trong một transaction, lưu bản nháp booking trong session
+Trang hành khách, trang review
+  -> chỉ sửa bản nháp trong session, chưa ghi database
+Trang review, bấm "Tiếp tục thanh toán"
+  -> tạo Booking PENDING / UNPAID trong database, giá chốt tại lúc này
+Trang thanh toán, bấm "Thanh toán"
+  -> xác nhận booking (mục Thanh toán mô phỏng)
+```
+
+Booking `PENDING` không hiện ở My Trips.
 
 ## Thông tin hành khách
 
 Mỗi hành khách gồm họ tên, ngày sinh, CCCD hoặc passport, và chỗ được gán.
 
 Số hành khách phải bằng số chỗ đã chọn. Mỗi hành khách gán đúng một chỗ.
+
+Mỗi booking có từ 1 đến 10 hành khách (D6, chốt 12/10/2026), khớp ô "Hành khách"
+ở trang chủ. Backend kiểm tra giới hạn này ở form tìm chuyến và khi giữ chỗ,
+không chỉ dựa vào ô nhập trên trình duyệt. Giới hạn trên ngăn một người giữ cả
+toa trong 5 phút.
 
 Phiên bản đầu không có giá theo người lớn / trẻ em, người cao tuổi, sinh viên,
 không có chính sách giảm giá.
@@ -94,6 +119,13 @@ Sau khi booking thành công, mỗi hành khách có một vé riêng gồm mã 
 tên hành khách, tuyến, tàu, ngày giờ khởi hành, toa và chỗ. Vé xem trực tiếp trên
 web.
 
+Cách tạo mã (D5, chốt 12/10/2026), giống dữ liệu mẫu:
+
+- Mã booking: `BK` + năm tháng + số thứ tự 3 chữ số trong tháng, lấy số tiếp
+  theo số lớn nhất đã có, ví dụ `BK202610005`.
+- Mã vé: mã booking đổi `BK` thành `TK`, thêm `-` và thứ tự hành khách 2 chữ số,
+  ví dụ `TK202610005-01`.
+
 QR code và xuất PDF là tính năng optional, làm sau khi MVP ổn định, theo thứ tự
 ưu tiên: vé trên web → QR code → PDF. Nếu làm QR, mã chỉ chứa `ticketCode` hoặc
 `ticketId`, tuyệt đối không chứa CCCD, passport, thông tin thanh toán hay toàn bộ
@@ -110,6 +142,11 @@ Không cần filter hay tìm kiếm nâng cao.
 ## Hủy booking
 
 Customer hủy được khi booking đang `CONFIRMED` và chuyến chưa khởi hành.
+
+"Chưa khởi hành" nghĩa là ngày giờ khởi hành (`departureDate` cộng
+`departureTime`) còn ở sau hiện tại (D8, chốt 12/10/2026). Luật đặt, giữ chỗ và
+hủy đều so như vậy, không dựa vào `Trip.status = COMPLETED`; trạng thái đó chỉ để
+hiển thị. Nhóm Upcoming và Completed ở My Trips cũng chia theo cùng phép so này.
 
 ```
 Booking   CONFIRMED -> CANCELLED

@@ -5,8 +5,10 @@ Date: 2026-08-23
 ## Status
 
 Accepted. Mục "Chia package theo feature" đã bị thay thế bởi
-`docs/decisions/0006-cau-truc-package-theo-tang.md` ngày 11/10/2026; phần còn
-lại vẫn có hiệu lực. Nội dung bên dưới giữ nguyên làm lịch sử lý luận.
+`docs/decisions/0006-cau-truc-package-theo-tang.md` ngày 11/10/2026. Các câu về
+bộ test, H2 và test slice của Spring Boot 4 hết hiệu lực từ 12/10/2026 khi dự án bỏ
+test tự động (`docs/decisions/0007-bo-test-tu-dong.md`). Phần còn lại vẫn có hiệu
+lực. Nội dung bên dưới giữ nguyên làm lịch sử lý luận.
 
 ## Context
 

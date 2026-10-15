@@ -24,6 +24,11 @@ trùng với `SGN`.
 
 Xem, tạo, sửa, xóa. Điều kiện: ga đi khác ga đến. Không quản lý ga trung gian.
 
+Tuyến đã có chuyến thì không xóa được, và khi sửa chỉ được đổi khoảng cách, không
+đổi ga đi hay ga đến (D2, chốt 12/10/2026). Nếu cho đổi ga, vé đã bán "Sài Gòn -
+Hà Nội" sẽ bỗng thành vé của một tuyến khác. Vi phạm thì màn hình báo lý do và giữ
+nguyên tuyến.
+
 ## Quản lý tàu `/admin/trains` và `/admin/trains/:id`
 
 Danh sách tàu, thêm, sửa, và trang chi tiết. Toa được quản lý **bên trong** trang
@@ -41,7 +46,12 @@ Hệ thống tự sinh các ghế tương ứng. Ví dụ toa `SEAT` capacity 16
 `docs/product/domain-model.md`.
 
 Chốt ngày 01/10/2026: phiên bản đầu không có xóa tàu (`SPEC.md` mục 36 không
-liệt kê), và toa chỉ thêm được, chưa sửa hay xóa.
+liệt kê), và toa chỉ thêm được, chưa sửa hay xóa. D2 ngày 12/10/2026 giữ nguyên
+luật không xóa tàu.
+
+Thêm toa vào tàu đã có chuyến thì các chuyến `SCHEDULED` chưa khởi hành của tàu
+được sinh thêm chỗ cho toa mới, để khách đặt được ngay (D3, chốt 12/10/2026, chi
+tiết ở `docs/product/domain-model.md`).
 
 ## Quản lý chuyến `/admin/trips`
 
@@ -50,6 +60,11 @@ bản.
 
 Khi chuyến được tạo, hệ thống sinh TripSeat cho toàn bộ ghế của tàu, tất cả ở
 trạng thái `AVAILABLE`.
+
+Chuyến không xóa được, chỉ hủy được (`CANCELLED`). Chỉ hủy được chuyến
+`SCHEDULED`, chưa khởi hành, và chưa có booking `CONFIRMED` nào (D2, chốt
+12/10/2026): hủy chuyến khách đã trả tiền thì phải hoàn tiền, mà hoàn tiền nằm
+ngoài phạm vi.
 
 ## Quản lý booking `/admin/bookings` và `/admin/bookings/:id`
 
@@ -75,9 +90,10 @@ tới, 1 admin, 11 khách và 20 booking mẫu. Các màn hình admin còn lại
 chủ đọc thẳng từ các bảng này, không còn danh sách viết cứng trong service.
 Tài khoản và cách làm mới dữ liệu: `docs/RUNBOOK.md`.
 
-## Điểm chưa chốt
+## Xóa dữ liệu đang được dùng
 
-- Quy tắc xóa khi dữ liệu đã được tham chiếu, với các entity ngoài ga: chặn
-  xóa, hay xóa mềm. Ga đã chốt là chặn xóa theo `SPEC.md`. Database không có
-  `ON DELETE` nào, nên hiện tại mọi lệnh xóa hàng đang bị tham chiếu đều bị
-  chặn; service phải kiểm tra trước để báo lý do.
+Chốt ngày 12/10/2026 (D2): chặn xóa, không có xóa mềm. Ga và tuyến đang được dùng
+thì không xóa được; tàu không có chức năng xóa; chuyến chỉ hủy, không xóa.
+Database không có `ON DELETE` nào, nên lệnh xóa hàng đang bị tham chiếu vẫn bị
+database chặn; service phải kiểm tra trước để báo lý do dễ hiểu thay vì để lộ lỗi
+khóa ngoại.

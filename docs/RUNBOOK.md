@@ -6,7 +6,7 @@ chạy thật hay chưa, để không ai tin nhầm một câu lệnh chưa đư
 ## Phạm vi
 
 Ứng dụng Spring Boot nằm trong thư mục `app/`. Runbook này phục vụ việc chạy ứng
-dụng và bộ test ở máy cá nhân, không nói về triển khai production.
+dụng ở máy cá nhân, không nói về triển khai production.
 
 ## Yêu cầu môi trường
 
@@ -36,7 +36,7 @@ Compose khai báo trong `app/compose.yaml`:
 | --- | --- |
 | Image | `mysql:8.4` |
 | Tên container | `traingo-mysql` |
-| Cổng | host `3306` → container `3306` |
+| Cổng | host `3007` → container `3306` (đổi từ 3306 ngày 12/10/2026, xem bên dưới) |
 | Database | `traingo` |
 | User / password ứng dụng | `traingo` / `traingo` |
 | Volume | `traingo-mysql-data` |
@@ -48,6 +48,19 @@ Compose khai báo trong `app/compose.yaml`:
 **Đã kiểm chứng ngày 01/10/2026** sau khi thêm múi giờ: `docker compose up -d`
 tạo lại container, volume giữ nguyên, `SELECT @@global.time_zone` trả `+07:00`.
 Máy nào đang có container cũ chỉ cần chạy lại `docker compose up -d`.
+
+**Đổi cổng phía máy sang 3007 ngày 12/10/2026.** Máy dev có MySQL cài sẵn chạy dạng
+service của Windows, giữ cổng 3306, nên container không mở được cổng và báo:
+
+```
+ports are not available: exposing port TCP 0.0.0.0:3306 -> 127.0.0.1:0: listen tcp 0.0.0.0:3306: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
+```
+
+Cổng 3007 tránh xung đột mà không phải tắt MySQL của máy. Bên trong container MySQL vẫn
+nghe 3306; chỉ cổng phía máy trong `compose.yaml` và JDBC URL trong
+`application.properties` đổi sang 3007. Sau khi pull, chạy lại `docker compose up -d` để
+container được tạo lại với cổng mới; volume và dữ liệu giữ nguyên. Lệnh `docker exec`
+ở mục "Xem dữ liệu trong database" chạy bên trong container nên không đổi.
 
 Phải mở Docker Desktop trước. Nếu quên, lệnh thất bại với thông báo:
 
@@ -153,26 +166,19 @@ Vì `spring-boot-devtools` có trong dependency, ứng dụng tự khởi độn
 class trong `target/classes` thay đổi. Trong IntelliJ hoặc VS Code, việc này xảy
 ra khi bạn build lại project.
 
-## Chạy test
+## Kiểm tra trước khi báo xong
+
+Dự án không có test tự động (`docs/decisions/0007-bo-test-tu-dong.md`). Trước khi
+mở pull request:
 
 ```powershell
 cd app
-.\mvnw.cmd test
+.\mvnw.cmd compile          # code biên dịch được
+.\mvnw.cmd spring-boot:run  # ứng dụng khởi động được trên MySQL
 ```
 
-**Đã kiểm chứng ngày 24/08/2026**: `BUILD SUCCESS`, `Tests run: 6, Failures: 0,
-Errors: 0, Skipped: 0`.
-
-Bộ test dùng H2 in-memory khai báo trong `app/src/test/resources/application.properties`,
-nên **không cần Docker và không cần MySQL** để chạy test.
-
-Các biến thể hay dùng:
-
-```powershell
-.\mvnw.cmd test -Dtest=BookingServiceTest
-.\mvnw.cmd test "-Dtest=BookingServiceTest#confirmBooking_shouldFail_whenSeatAlreadyBooked"
-.\mvnw.cmd clean test
-```
+Sau đó đi hết mục "Kịch bản thử bằng tay" trong file hướng dẫn của task, trên trình
+duyệt với dữ liệu mẫu.
 
 Lần chạy đầu tiên trên một máy mới sẽ lâu vì Maven Wrapper tải Maven 3.9.16 và
 toàn bộ dependency về `~/.m2/repository`.
@@ -222,7 +228,14 @@ docker compose up -d
 .\mvnw.cmd spring-boot:run
 ```
 
-Flyway thấy database trống nên chạy lại V1 và V2 với ngày mới.
+Flyway thấy database trống nên chạy lại V1, V2 và V3 với ngày mới.
+
+Máy đã chạy V2 từ trước thì lần chạy ứng dụng đầu tiên sau khi pull chỉ áp V3. V3 gắn
+booking vào chuyến thứ N còn sắp chạy của từng tàu, nên nếu V2 đã chạy nhiều ngày trước,
+những booking cần chuyến ở xa sẽ không được tạo. **Đã gặp ngày 12/10/2026** trên database
+seed ngày 02/10: mỗi tàu chỉ còn 4 chuyến sắp chạy, V3 tạo 8 trong 16 booking, nên
+`bookings` có 12 dòng thay vì 20. Muốn đủ số liệu như bảng trên thì làm mới dữ liệu như
+các lệnh ở đầu mục này.
 
 ### Xem dữ liệu trong database
 
@@ -239,12 +252,8 @@ Ví dụ `SHOW TABLES;` hoặc `SELECT * FROM flyway_schema_history;`. Phải c�
 
 - Log ứng dụng in ra console nơi chạy `spring-boot:run`.
 - Log database: `docker compose logs mysql`.
-- Báo cáo test: `app/target/surefire-reports/`, mỗi class test một file `.txt`
-  và một file `.xml`.
-
 ## Điều chưa biết
 
-- Migration mới chỉ được chạy trên MySQL 8.4, chưa chạy trên H2 của bộ test.
 - Chưa kiểm chứng trên máy của hai thành viên còn lại. Cổng 8081 là để né XAMPP
   trên máy này; máy khác có thể không cần, nhưng để nguyên thì cả nhóm dùng chung
   một cổng.

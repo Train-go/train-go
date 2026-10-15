@@ -141,6 +141,11 @@ giá phức tạp.
 
 MVP không có trạng thái `BOARDING`, `DEPARTED`, `DELAYED`.
 
+Chuyến được coi là đã khởi hành khi `departureDate` cộng `departureTime` đã qua
+(D8, chốt 12/10/2026). Mọi luật đặt, giữ và hủy so thời điểm này với hiện tại;
+`COMPLETED` chỉ để hiển thị và không bắt buộc phải được gán. Chuyến không bị xóa,
+chỉ bị hủy (`CANCELLED`), và không hủy được khi đã có booking `CONFIRMED` (D2).
+
 SPEC chỉ cho Trip một ngày khởi hành và hai giờ, không có ngày đến. Vì vậy
 `arrivalTime` nhỏ hơn `departureTime` nghĩa là đến vào ngày hôm sau, và mô hình
 này không biểu diễn được chuyến kéo dài từ 24 giờ trở lên. Seed data chỉ dùng
@@ -148,6 +153,11 @@ tuyến dưới 24 giờ vì lý do đó.
 
 Khi tạo Trip, hệ thống sinh `TripSeat` cho toàn bộ `Seat` của Train đó, tất cả ở
 trạng thái `AVAILABLE`. Train có 40 ghế thì Trip mới có 40 TripSeat.
+
+Thêm toa vào một tàu đã có chuyến thì mọi chuyến `SCHEDULED` chưa khởi hành của
+tàu đó được sinh thêm `TripSeat` `AVAILABLE` cho các chỗ mới, trong cùng
+transaction với việc thêm toa (D3, chốt 12/10/2026). Chuyến đã khởi hành hoặc đã
+hủy giữ nguyên.
 
 ## TripSeat
 
@@ -184,12 +194,12 @@ Không có bảng `Payment` riêng; trạng thái thanh toán lưu ngay trong Bo
 Database chặn booking `CONFIRMED` mà chưa `PAID`, và booking `PAID` mà thiếu
 `paidAt`.
 
-Mã booking trong seed data có dạng `BK` + năm tháng + số thứ tự, ví dụ
-`BK202610001`. Khi viết phần sinh mã ở Giai đoạn 6, phải lấy số thứ tự tiếp
-theo từ những mã đã có, không đếm lại từ `001`.
+Mã booking có dạng `BK` + năm tháng + số thứ tự 3 chữ số, ví dụ `BK202610001`.
+Mã mới lấy số thứ tự tiếp theo từ những mã đã có trong tháng, không đếm lại từ
+`001` (D5, chốt 12/10/2026, chi tiết ở `booking-flow.md`).
 
-Không có trạng thái `COMPLETED`. Nếu booking `CONFIRMED` và trip `COMPLETED` thì
-giao diện tự xếp vào nhóm đã hoàn thành.
+Không có trạng thái `COMPLETED`. Booking `CONFIRMED` mà chuyến đã khởi hành thì
+giao diện tự xếp vào nhóm đã hoàn thành (D8).
 
 ## BookingPassenger
 

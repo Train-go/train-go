@@ -42,7 +42,7 @@ Phần dưới đây do nhóm sở hữu, không thuộc Harness core.
 - `docs/plans/active/mvp-traingo.md` — kế hoạch MVP đang chạy.
 - `docs/WORKLOG.md` — nhật ký bắt buộc của mọi task làm thay đổi repository.
 - `docs/session/` — plan nháp và tài liệu của phiên làm việc.
-- `docs/RUNBOOK.md` — cách chạy ứng dụng, database và bộ test ở máy local.
+- `docs/RUNBOOK.md` — cách chạy ứng dụng và database ở máy local.
 - `app/` — ứng dụng Spring Boot, package gốc `com.voyagego.traingo`.
 - `app/src/main/resources/db/migration/`: schema và seed data, do Flyway chạy
   lúc khởi động (`docs/decisions/0005-quan-ly-schema-bang-flyway.md`).
@@ -96,22 +96,23 @@ Chi tiết và lý do: `docs/decisions/0004-khu-vuc-quan-tri.md`.
 
 Chi tiết: `docs/session/README.md`.
 
-### Quy tắc về test
+### Quy tắc kiểm tra
 
-- Không được nói "đã xong", "đã fix" hay "chạy được" nếu chưa chạy
-  `.\mvnw.cmd test` và dẫn kết quả thật. Phân biệt rõ: đã sửa code, đã biên
-  dịch, đã chạy test, test đã xanh.
-- Chọn tầng test thấp nhất chứng minh được hành vi: unit test với Mockito cho
-  nghiệp vụ, `@DataJpaTest` cho query và ràng buộc dữ liệu, `@WebMvcTest` cho
-  routing, validation và phân quyền, `@SpringBootTest` chỉ cho luồng xuyên suốt.
-- Nghiệp vụ bắt buộc có test: giữ chỗ, xác nhận booking trong transaction, hủy
-  booking, số hành khách bằng số chỗ, công thức giá, phân quyền theo role và
-  theo quyền sở hữu.
-- Bộ test chạy trên H2 in-memory, không được phụ thuộc Docker hay MySQL.
-- Class test phải kết thúc bằng `Test`, nếu không Surefire bỏ qua mà không báo
-  lỗi. Tên method mô tả hành vi mong đợi.
+Dự án không có test tự động (quyết định ngày 12/10/2026). Không tạo thư mục
+`app/src/test` và không thêm dependency test.
 
-Chi tiết và lý do: `docs/decisions/0002-chien-luoc-test.md`.
+- Không được nói "đã xong", "đã fix" hay "chạy được" nếu chưa làm đủ ba việc và
+  dẫn kết quả thật: `.\mvnw.cmd compile` chạy không lỗi; ứng dụng khởi động được
+  bằng `.\mvnw.cmd spring-boot:run`; đã thử thật trên trình duyệt với MySQL và dữ
+  liệu mẫu. Phân biệt rõ: đã sửa code, đã biên dịch, đã chạy ứng dụng, đã thử tay.
+- Mỗi task có mục "Kịch bản thử bằng tay" trong file hướng dẫn. Phải đi hết kịch
+  bản đó trước khi mở pull request.
+- Nghiệp vụ rủi ro phải thử kỹ, kể cả trường hợp lỗi: giữ chỗ (hai người cùng giữ
+  một ghế, hết hạn giữ chỗ), xác nhận booking, hủy booking, số hành khách bằng số
+  chỗ, công thức giá, phân quyền theo role và theo quyền sở hữu. Tình huống khó tạo
+  bằng tay thì dùng SQL, ví dụ lùi `held_until` về quá khứ.
+
+Chi tiết và lý do: `docs/decisions/0007-bo-test-tu-dong.md` (thay cho ADR 0002).
 
 ### Quy tắc về cấu trúc code
 
@@ -141,12 +142,10 @@ Tài liệu và ví dụ trên mạng phần lớn viết cho Spring Boot 3.x. K
 tìm thấy class hoặc annotation, kiểm tra jar thật trong `~/.m2/repository` trước
 khi tin bài viết trên mạng. Đã gặp:
 
-- `@WebMvcTest` chuyển sang `org.springframework.boot.webmvc.test.autoconfigure`
-  và cần dependency `spring-boot-starter-webmvc-test`.
-- `@DataJpaTest` chuyển sang `org.springframework.boot.data.jpa.test.autoconfigure`
-  và cần dependency `spring-boot-starter-data-jpa-test`.
-- `@MockBean` được thay bằng `@MockitoBean`
-  (`org.springframework.test.context.bean.override.mockito`).
+- Hibernate 7 đòi cột `ENUM` của MySQL cho `@Enumerated(EnumType.STRING)`; dự án
+  lưu enum dạng `VARCHAR`, nên entity phải khai thêm
+  `@JdbcTypeCode(SqlTypes.VARCHAR)` (ADR 0005).
+- Spring Security 7 đã bỏ `AntPathRequestMatcher`; dùng `PathPatternRequestMatcher`.
 
 ### Ngôn ngữ
 

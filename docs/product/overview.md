@@ -148,11 +148,14 @@ dễ nhận diện, whitespace hợp lý. Trạng thái ghế phải nhìn là h
 ưu tiên branding và form tìm chuyến; trang booking ưu tiên chức năng và trạng
 thái rõ ràng; trang admin ưu tiên bảng, form và CRUD mạch lạc.
 
-## Điểm chưa chốt
+## Điểm đã chốt
 
-Tên hiển thị đã chốt là **TrainGo** ngày 24/08/2026; `voyage-go` chỉ còn là tên
-repository. Xem `docs/decisions/0003-he-thong-giao-dien.md`.
+Tên hiển thị đã chốt là **TrainGo** ngày 24/08/2026. Xem
+`docs/decisions/0003-he-thong-giao-dien.md`. Repository trên GitHub hiện là
+`Train-go/train-go` (trước đây là `Voyage-GO/voyage-go`).
 
-Các điểm còn mở nằm ở `docs/plans/active/mvp-traingo.md`: cách thu hồi TripSeat
-hết hạn giữ chỗ, và quy tắc xóa dữ liệu đã bị tham chiếu với các entity ngoài
-ga. Seed data đã chốt ngày 01/10/2026, xem `docs/product/admin.md`.
+Tám quyết định nghiệp vụ D1-D8 đã chốt ngày 12/10/2026, gồm cách trả lại chỗ hết
+hạn giữ và luật xóa dữ liệu đang được dùng. Bảng tổng hợp nằm ở
+`docs/plans/active/chia-viec-mvp.md`; luật chi tiết nằm ở `booking-flow.md`,
+`admin.md`, `auth.md` và `domain-model.md`. Seed data đã chốt ngày 01/10/2026, xem
+`docs/product/admin.md`.
