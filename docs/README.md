@@ -15,6 +15,9 @@ Start with the smallest authoritative surface.
 - `plans/`: one durable working-memory document for work that needs it.
 - `session/`: consumer-owned staging area for draft plans and working-session
   documents. A draft is promoted to `plans/active/` and deleted here.
+- `reports/`: consumer-owned project reports that are read, not worked from (for
+  example `reports/erd-hien-tai.html`, the current database diagram). Each is a
+  dated snapshot; the migrations and `product/domain-model.md` stay authoritative.
 - `templates/`: optional decision, plan, runbook, and Harness-improvement
   structures.
 

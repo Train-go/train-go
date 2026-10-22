@@ -8,10 +8,15 @@ import com.voyagego.traingo.entity.Station;
 
 public interface StationRepository extends JpaRepository<Station, Long> {
 
-	List<Station> findAllByOrderByNameAsc();
+	/** North to south along the line. */
+	List<Station> findAllByOrderByKmMarkAsc();
 
 	boolean existsByCode(String code);
 
 	boolean existsByCodeAndIdNot(String code, Long id);
+
+	boolean existsByKmMark(int kmMark);
+
+	boolean existsByKmMarkAndIdNot(int kmMark, Long id);
 
 }

@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ERD hiện tại của TrainGo</title>
+<style>
+:root {
+  --bg:#f5f7fa; --surface:#fff; --fg:#1b2430; --muted:#5b6675; --line:#d6dce4;
+  --rel:#6b7686; --accent:#1f6f8b;
+  --g-cat:#2f6f9f; --g-trip:#b4691f; --g-book:#3d7a52;
+  --key-pk:#9a6a00; --key-fk:#1f6f8b; --key-uk:#7a4aa0;
+  --font:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) { :root {
+  --bg:#12171d; --surface:#1a2129; --fg:#e6eaef; --muted:#9aa5b3; --line:#2d3742;
+  --rel:#8793a3; --accent:#6bb8d4;
+  --g-cat:#4a8fc0; --g-trip:#d38a3e; --g-book:#58a073;
+  --key-pk:#e3b341; --key-fk:#6bb8d4; --key-uk:#b58be0; color-scheme:dark; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.6 var(--font); padding:32px max(16px,env(safe-area-inset-right)) 56px max(16px,env(safe-area-inset-left)); }
+main { max-width:1180px; margin:0 auto; display:grid; grid-template-columns:minmax(0,1fr); gap:32px; }
+h1 { margin:0; font-size:1.9rem; text-wrap:balance; }
+h2 { margin:0 0 12px; font-size:1.2rem; }
+h3 { margin:0; font-family:var(--mono); font-size:1rem; }
+.lead { color:var(--muted); margin:6px 0 0; max-width:70ch; }
+code { overflow-wrap:anywhere; font-family:var(--mono); font-size:.9em; background:color-mix(in srgb,var(--line) 45%,transparent); padding:1px 5px; border-radius:3px; }
+.legend { display:flex; flex-wrap:wrap; gap:8px 20px; color:var(--muted); font-size:.88rem; margin:0 0 12px; }
+.legend span { display:inline-flex; align-items:center; gap:6px; }
+.sw { width:12px; height:12px; border-radius:2px; display:inline-block; }
+.sw.g-cat { background:var(--g-cat); } .sw.g-trip { background:var(--g-trip); } .sw.g-book { background:var(--g-book); }
+.diagram { background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:12px; overflow-x:auto; }
+.diagram svg { display:block; width:100%; min-width:980px; height:auto; }
+svg text { font-family:var(--font); }
+svg .box { fill:var(--surface); stroke:var(--line); stroke-width:1.2; }
+svg .hd { fill:var(--g-cat); }
+svg .g-trip .hd { fill:var(--g-trip); } svg .g-book .hd { fill:var(--g-book); }
+svg .g-cat .box { stroke:var(--g-cat); } svg .g-trip .box { stroke:var(--g-trip); } svg .g-book .box { stroke:var(--g-book); }
+svg .tn { fill:#fff; font:600 14px var(--mono); }
+svg .cn { fill:var(--fg); font:12.5px var(--mono); }
+svg .ct { fill:var(--muted); font:11.5px var(--mono); }
+svg .sep { stroke:var(--line); stroke-width:.6; }
+svg .key { font:700 10px var(--mono); }
+svg .k-PK { fill:var(--key-pk); } svg .k-FK { fill:var(--key-fk); } svg .k-UK { fill:var(--key-uk); }
+svg .rel { fill:none; stroke:var(--rel); stroke-width:1.4; }
+svg .rel.opt { stroke-dasharray:5 4; }
+svg .card { fill:var(--fg); font:600 12px var(--mono); }
+svg .verb { fill:var(--muted); font:italic 12px var(--font); }
+.cards { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
+.card { background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--g-cat); border-radius:6px; padding:14px 16px; min-width:0; }
+.card.g-trip { border-top-color:var(--g-trip); } .card.g-book { border-top-color:var(--g-book); }
+.card header { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:4px 12px; }
+.card p { margin:6px 0 10px; }
+.card p.blk { margin:12px 0 6px; }
+table.plain-t { min-width:0; }
+.grp { font-size:.78rem; color:var(--muted); }
+.scroll { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; min-width:480px; font-size:.88rem; }
+th,td { text-align:left; padding:5px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+th { font-size:.74rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+td code { overflow-wrap:normal; white-space:nowrap; }
+.c-name { font-family:var(--mono); white-space:nowrap; }
+.c-type { font-family:var(--mono); color:var(--muted); white-space:nowrap; }
+.c-note { color:var(--muted); }
+.key { font:700 .72rem var(--mono); padding:1px 6px; border-radius:3px; border:1px solid currentColor; }
+.k-PK { color:var(--key-pk); } .k-FK { color:var(--key-fk); } .k-UK { color:var(--key-uk); }
+.sample-h { margin:14px 0 6px !important; font-size:.78rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+table.sample, table.overview { min-width:0; }
+table.sample { font-size:.8rem; }
+table.sample th { text-transform:none; letter-spacing:0; font-family:var(--mono); }
+table.sample td { font-family:var(--mono); white-space:nowrap; }
+.card ul { margin:10px 0 0; padding-left:1.2em; font-size:.88rem; }
+.rels { background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:8px 12px; overflow-x:auto; }
+.rels td:nth-child(3) { font-family:var(--mono); white-space:nowrap; }
+ol,ul.plain { margin:0; padding-left:1.2em; display:grid; gap:6px; max-width:80ch; }
+</style>
+</head>
+<body>
+<main>
+<header>
+  <h1>ERD hiện tại của TrainGo</h1>
+  <p class="lead">Cập nhật 20/10/2026 theo migration <code>V5__north_south_line.sql</code>: ga có lý trình <code>km_mark</code>, chuyến lưu giờ đi và giờ đến bằng ngày-giờ đầy đủ, dữ liệu mẫu là 8 ga trên trục Bắc - Nam và lịch của tàu SE1. Lý do: <code>docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md</code>.</p>
+</header>
+
+<section>
+  <h2>Tổng quan các bảng</h2>
+  <div class="rels"><table class="overview">
+    <thead><tr><th>Bảng</th><th>Chức năng</th></tr></thead>
+    <tbody><tr><td><code>stations</code></td><td>Lưu thông tin các ga tàu.</td></tr><tr><td><code>routes</code></td><td>Lưu các tuyến đường giữa hai ga.</td></tr><tr><td><code>trains</code></td><td>Lưu thông tin các đoàn tàu.</td></tr><tr><td><code>trips</code></td><td>Lưu từng lần chạy của một tàu trên một tuyến.</td></tr><tr><td><code>trip_seats</code></td><td>Quản lý ghế, giường nằm và tình trạng chỗ trên từng chuyến.</td></tr><tr><td><code>users</code></td><td>Lưu tài khoản khách hàng và quản trị viên.</td></tr><tr><td><code>bookings</code></td><td>Lưu thông tin đơn đặt vé của khách hàng.</td></tr><tr><td><code>tickets</code></td><td>Lưu thông tin hành khách và vé tàu.</td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Sơ đồ</h2>
+  <p class="legend">
+    <span><i class="sw g-cat"></i>Danh mục tàu và tuyến</span>
+    <span><i class="sw g-trip"></i>Chuyến và ghế theo chuyến</span>
+    <span><i class="sw g-book"></i>Tài khoản và đặt vé</span>
+  </p>
+  <div class="diagram">
+<svg viewBox="0 0 1050 860" width="1050" height="860" role="img" aria-label="Sơ đồ ERD 8 bảng của TrainGo">
+<path class="rel" d="M90,192 L90,240"/>
+<path class="rel" d="M220,192 L220,240"/>
+<path class="rel" d="M290,281 L325,281 L325,325 L360,325"/>
+<path class="rel" d="M630,281 L665,281 L665,303 L700,303"/>
+<path class="rel" d="M290,607 L325,607 L325,651 L360,651"/>
+<path class="rel" d="M630,607 L665,607 L665,629 L700,629"/>
+<path class="rel" d="M420,126 L420,240"/>
+<path class="rel" d="M420,430 L420,566"/>
+<path class="rel" d="M810,430 L810,566"/>
+<g class="tbl g-cat" transform="translate(0,0)">
+<rect class="box" x="20" y="24" width="270" height="168" rx="5"/>
+<path class="hd" d="M20,29 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="32" y="44">stations</text>
+<text class="key k-PK" x="30" y="69">PK</text>
+<text class="cn" x="58" y="69">id</text>
+<text class="ct" x="280" y="69" text-anchor="end">bigint</text>
+<line class="sep" x1="20" x2="290" y1="76" y2="76"/>
+<text class="key k-UK" x="30" y="91">UK</text>
+<text class="cn" x="58" y="91">code</text>
+<text class="ct" x="280" y="91" text-anchor="end">varchar(10)</text>
+<line class="sep" x1="20" x2="290" y1="98" y2="98"/>
+<text class="cn" x="58" y="113">name</text>
+<text class="ct" x="280" y="113" text-anchor="end">varchar(100)</text>
+<line class="sep" x1="20" x2="290" y1="120" y2="120"/>
+<text class="cn" x="58" y="135">city</text>
+<text class="ct" x="280" y="135" text-anchor="end">varchar(100)</text>
+<line class="sep" x1="20" x2="290" y1="142" y2="142"/>
+<text class="cn" x="58" y="157">address</text>
+<text class="ct" x="280" y="157" text-anchor="end">varchar(255)</text>
+<line class="sep" x1="20" x2="290" y1="164" y2="164"/>
+<text class="key k-UK" x="30" y="179">UK</text>
+<text class="cn" x="58" y="179">km_mark</text>
+<text class="ct" x="280" y="179" text-anchor="end">int</text>
+</g>
+<g class="tbl g-cat" transform="translate(0,0)">
+<rect class="box" x="20" y="240" width="270" height="124" rx="5"/>
+<path class="hd" d="M20,245 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="32" y="260">routes</text>
+<text class="key k-PK" x="30" y="285">PK</text>
+<text class="cn" x="58" y="285">id</text>
+<text class="ct" x="280" y="285" text-anchor="end">bigint</text>
+<line class="sep" x1="20" x2="290" y1="292" y2="292"/>
+<text class="key k-FK" x="30" y="307">FK</text>
+<text class="cn" x="58" y="307">from_station_id</text>
+<text class="ct" x="280" y="307" text-anchor="end">bigint</text>
+<line class="sep" x1="20" x2="290" y1="314" y2="314"/>
+<text class="key k-FK" x="30" y="329">FK</text>
+<text class="cn" x="58" y="329">to_station_id</text>
+<text class="ct" x="280" y="329" text-anchor="end">bigint</text>
+<line class="sep" x1="20" x2="290" y1="336" y2="336"/>
+<text class="cn" x="58" y="351">distance_km</text>
+<text class="ct" x="280" y="351" text-anchor="end">int</text>
+</g>
+<g class="tbl g-cat" transform="translate(0,0)">
+<rect class="box" x="360" y="24" width="270" height="102" rx="5"/>
+<path class="hd" d="M360,29 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="372" y="44">trains</text>
+<text class="key k-PK" x="370" y="69">PK</text>
+<text class="cn" x="398" y="69">id</text>
+<text class="ct" x="620" y="69" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="76" y2="76"/>
+<text class="key k-UK" x="370" y="91">UK</text>
+<text class="cn" x="398" y="91">code</text>
+<text class="ct" x="620" y="91" text-anchor="end">varchar(10)</text>
+<line class="sep" x1="360" x2="630" y1="98" y2="98"/>
+<text class="cn" x="398" y="113">name</text>
+<text class="ct" x="620" y="113" text-anchor="end">varchar(100)</text>
+</g>
+<g class="tbl g-trip" transform="translate(0,0)">
+<rect class="box" x="360" y="240" width="270" height="190" rx="5"/>
+<path class="hd" d="M360,245 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="372" y="260">trips</text>
+<text class="key k-PK" x="370" y="285">PK</text>
+<text class="cn" x="398" y="285">id</text>
+<text class="ct" x="620" y="285" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="292" y2="292"/>
+<text class="key k-FK" x="370" y="307">FK</text>
+<text class="cn" x="398" y="307">train_id</text>
+<text class="ct" x="620" y="307" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="314" y2="314"/>
+<text class="key k-FK" x="370" y="329">FK</text>
+<text class="cn" x="398" y="329">route_id</text>
+<text class="ct" x="620" y="329" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="336" y2="336"/>
+<text class="cn" x="398" y="351">departure_at</text>
+<text class="ct" x="620" y="351" text-anchor="end">datetime</text>
+<line class="sep" x1="360" x2="630" y1="358" y2="358"/>
+<text class="cn" x="398" y="373">arrival_at</text>
+<text class="ct" x="620" y="373" text-anchor="end">datetime</text>
+<line class="sep" x1="360" x2="630" y1="380" y2="380"/>
+<text class="cn" x="398" y="395">base_price</text>
+<text class="ct" x="620" y="395" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="402" y2="402"/>
+<text class="cn" x="398" y="417">status</text>
+<text class="ct" x="620" y="417" text-anchor="end">varchar(20)</text>
+</g>
+<g class="tbl g-trip" transform="translate(0,0)">
+<rect class="box" x="700" y="240" width="270" height="190" rx="5"/>
+<path class="hd" d="M700,245 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="712" y="260">trip_seats</text>
+<text class="key k-PK" x="710" y="285">PK</text>
+<text class="cn" x="738" y="285">id</text>
+<text class="ct" x="960" y="285" text-anchor="end">bigint</text>
+<line class="sep" x1="700" x2="970" y1="292" y2="292"/>
+<text class="key k-FK" x="710" y="307">FK</text>
+<text class="cn" x="738" y="307">trip_id</text>
+<text class="ct" x="960" y="307" text-anchor="end">bigint</text>
+<line class="sep" x1="700" x2="970" y1="314" y2="314"/>
+<text class="cn" x="738" y="329">coach_number</text>
+<text class="ct" x="960" y="329" text-anchor="end">int</text>
+<line class="sep" x1="700" x2="970" y1="336" y2="336"/>
+<text class="cn" x="738" y="351">coach_type</text>
+<text class="ct" x="960" y="351" text-anchor="end">varchar(20)</text>
+<line class="sep" x1="700" x2="970" y1="358" y2="358"/>
+<text class="cn" x="738" y="373">seat_code</text>
+<text class="ct" x="960" y="373" text-anchor="end">varchar(5)</text>
+<line class="sep" x1="700" x2="970" y1="380" y2="380"/>
+<text class="cn" x="738" y="395">cabin_number</text>
+<text class="ct" x="960" y="395" text-anchor="end">int</text>
+<line class="sep" x1="700" x2="970" y1="402" y2="402"/>
+<text class="cn" x="738" y="417">status</text>
+<text class="ct" x="960" y="417" text-anchor="end">varchar(20)</text>
+</g>
+<g class="tbl g-book" transform="translate(0,0)">
+<rect class="box" x="20" y="566" width="270" height="212" rx="5"/>
+<path class="hd" d="M20,571 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="32" y="586">users</text>
+<text class="key k-PK" x="30" y="611">PK</text>
+<text class="cn" x="58" y="611">id</text>
+<text class="ct" x="280" y="611" text-anchor="end">bigint</text>
+<line class="sep" x1="20" x2="290" y1="618" y2="618"/>
+<text class="cn" x="58" y="633">full_name</text>
+<text class="ct" x="280" y="633" text-anchor="end">varchar(100)</text>
+<line class="sep" x1="20" x2="290" y1="640" y2="640"/>
+<text class="cn" x="58" y="655">date_of_birth</text>
+<text class="ct" x="280" y="655" text-anchor="end">date</text>
+<line class="sep" x1="20" x2="290" y1="662" y2="662"/>
+<text class="key k-UK" x="30" y="677">UK</text>
+<text class="cn" x="58" y="677">email</text>
+<text class="ct" x="280" y="677" text-anchor="end">varchar(255)</text>
+<line class="sep" x1="20" x2="290" y1="684" y2="684"/>
+<text class="cn" x="58" y="699">password_hash</text>
+<text class="ct" x="280" y="699" text-anchor="end">varchar(100)</text>
+<line class="sep" x1="20" x2="290" y1="706" y2="706"/>
+<text class="cn" x="58" y="721">role</text>
+<text class="ct" x="280" y="721" text-anchor="end">varchar(20)</text>
+<line class="sep" x1="20" x2="290" y1="728" y2="728"/>
+<text class="cn" x="58" y="743">created_at</text>
+<text class="ct" x="280" y="743" text-anchor="end">datetime</text>
+<line class="sep" x1="20" x2="290" y1="750" y2="750"/>
+<text class="cn" x="58" y="765">is_delete</text>
+<text class="ct" x="280" y="765" text-anchor="end">boolean</text>
+</g>
+<g class="tbl g-book" transform="translate(0,0)">
+<rect class="box" x="360" y="566" width="270" height="234" rx="5"/>
+<path class="hd" d="M360,571 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="372" y="586">bookings</text>
+<text class="key k-PK" x="370" y="611">PK</text>
+<text class="cn" x="398" y="611">id</text>
+<text class="ct" x="620" y="611" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="618" y2="618"/>
+<text class="key k-UK" x="370" y="633">UK</text>
+<text class="cn" x="398" y="633">booking_code</text>
+<text class="ct" x="620" y="633" text-anchor="end">varchar(20)</text>
+<line class="sep" x1="360" x2="630" y1="640" y2="640"/>
+<text class="key k-FK" x="370" y="655">FK</text>
+<text class="cn" x="398" y="655">users_id</text>
+<text class="ct" x="620" y="655" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="662" y2="662"/>
+<text class="key k-FK" x="370" y="677">FK</text>
+<text class="cn" x="398" y="677">trip_id</text>
+<text class="ct" x="620" y="677" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="684" y2="684"/>
+<text class="cn" x="398" y="699">total_price</text>
+<text class="ct" x="620" y="699" text-anchor="end">bigint</text>
+<line class="sep" x1="360" x2="630" y1="706" y2="706"/>
+<text class="cn" x="398" y="721">booking_status</text>
+<text class="ct" x="620" y="721" text-anchor="end">varchar(20)</text>
+<line class="sep" x1="360" x2="630" y1="728" y2="728"/>
+<text class="cn" x="398" y="743">payment_status</text>
+<text class="ct" x="620" y="743" text-anchor="end">varchar(20)</text>
+<line class="sep" x1="360" x2="630" y1="750" y2="750"/>
+<text class="cn" x="398" y="765">paid_at</text>
+<text class="ct" x="620" y="765" text-anchor="end">datetime</text>
+<line class="sep" x1="360" x2="630" y1="772" y2="772"/>
+<text class="cn" x="398" y="787">created_at</text>
+<text class="ct" x="620" y="787" text-anchor="end">datetime</text>
+</g>
+<g class="tbl g-book" transform="translate(0,0)">
+<rect class="box" x="700" y="566" width="270" height="212" rx="5"/>
+<path class="hd" d="M700,571 a5,5 0 0 1 5,-5 h260 a5,5 0 0 1 5,5 v25 h-270 z"/>
+<text class="tn" x="712" y="586">tickets</text>
+<text class="key k-PK" x="710" y="611">PK</text>
+<text class="cn" x="738" y="611">id</text>
+<text class="ct" x="960" y="611" text-anchor="end">bigint</text>
+<line class="sep" x1="700" x2="970" y1="618" y2="618"/>
+<text class="key k-FK" x="710" y="633">FK</text>
+<text class="cn" x="738" y="633">booking_id</text>
+<text class="ct" x="960" y="633" text-anchor="end">bigint</text>
+<line class="sep" x1="700" x2="970" y1="640" y2="640"/>
+<text class="key k-FK" x="710" y="655">FK</text>
+<text class="cn" x="738" y="655">trip_seat_id</text>
+<text class="ct" x="960" y="655" text-anchor="end">bigint</text>
+<line class="sep" x1="700" x2="970" y1="662" y2="662"/>
+<text class="cn" x="738" y="677">full_name</text>
+<text class="ct" x="960" y="677" text-anchor="end">varchar(100)</text>
+<line class="sep" x1="700" x2="970" y1="684" y2="684"/>
+<text class="cn" x="738" y="699">identity_number</text>
+<text class="ct" x="960" y="699" text-anchor="end">varchar(20)</text>
+<line class="sep" x1="700" x2="970" y1="706" y2="706"/>
+<text class="cn" x="738" y="721">ticket_price</text>
+<text class="ct" x="960" y="721" text-anchor="end">bigint</text>
+<line class="sep" x1="700" x2="970" y1="728" y2="728"/>
+<text class="key k-UK" x="710" y="743">UK</text>
+<text class="cn" x="738" y="743">ticket_code</text>
+<text class="ct" x="960" y="743" text-anchor="end">varchar(20)</text>
+<line class="sep" x1="700" x2="970" y1="750" y2="750"/>
+<text class="cn" x="738" y="765">issued_at</text>
+<text class="ct" x="960" y="765" text-anchor="end">datetime</text>
+</g>
+<text class="card" x="100" y="206" text-anchor="start">1</text>
+<text class="card" x="100" y="234" text-anchor="start">N</text>
+<text class="verb" x="142" y="222" text-anchor="middle">from</text>
+<text class="card" x="230" y="206" text-anchor="start">1</text>
+<text class="card" x="230" y="234" text-anchor="start">N</text>
+<text class="verb" x="272" y="222" text-anchor="middle">to</text>
+<text class="card" x="302" y="275" text-anchor="middle">1</text>
+<text class="card" x="354" y="319" text-anchor="end">N</text>
+<text class="card" x="642" y="275" text-anchor="middle">1</text>
+<text class="card" x="694" y="297" text-anchor="end">N</text>
+<text class="card" x="302" y="601" text-anchor="middle">1</text>
+<text class="card" x="354" y="645" text-anchor="end">N</text>
+<text class="card" x="642" y="601" text-anchor="middle">1</text>
+<text class="card" x="694" y="623" text-anchor="end">N</text>
+<text class="card" x="430" y="140" text-anchor="start">1</text>
+<text class="card" x="430" y="234" text-anchor="start">N</text>
+<text class="card" x="430" y="446" text-anchor="start">1</text>
+<text class="card" x="430" y="560" text-anchor="start">N</text>
+<text class="card" x="820" y="446" text-anchor="start">1</text>
+<text class="card" x="820" y="560" text-anchor="start">N</text>
+</svg>
+  </div>
+</section>
+
+<section>
+  <h2>Quan hệ giữa các bảng</h2>
+  <div class="rels"><table>
+    <thead><tr><th>Bảng cha</th><th>Khóa ngoại ở bảng con</th><th>Bậc</th><th>Ý nghĩa</th></tr></thead>
+    <tbody><tr><td><code>stations</code></td><td><code>routes.from_station_id</code></td><td>1 - N</td><td>Một ga là ga đi của nhiều tuyến.</td></tr><tr><td><code>stations</code></td><td><code>routes.to_station_id</code></td><td>1 - N</td><td>Một ga là ga đến của nhiều tuyến.</td></tr><tr><td><code>trains</code></td><td><code>trips.train_id</code></td><td>1 - N</td><td>Một tàu chạy nhiều chuyến, chuyến sau nối tiếp chuyến trước.</td></tr><tr><td><code>routes</code></td><td><code>trips.route_id</code></td><td>1 - N</td><td>Một tuyến có nhiều chuyến.</td></tr><tr><td><code>trips</code></td><td><code>trip_seats.trip_id</code></td><td>1 - N</td><td>Một chuyến có 96 chỗ.</td></tr><tr><td><code>users</code></td><td><code>bookings.users_id</code></td><td>1 - N</td><td>Một khách có nhiều đơn.</td></tr><tr><td><code>trips</code></td><td><code>bookings.trip_id</code></td><td>1 - N</td><td>Một chuyến có nhiều đơn.</td></tr><tr><td><code>bookings</code></td><td><code>tickets.booking_id</code></td><td>1 - N</td><td>Một đơn có nhiều hành khách, mỗi hành khách một dòng tickets.</td></tr><tr><td><code>trip_seats</code></td><td><code>tickets.trip_seat_id</code></td><td>1 - N</td><td>Một chỗ theo chuyến có thể nằm ở nhiều đơn theo thời gian (đơn cũ bị hủy, đơn mới lấy lại).</td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Chi tiết từng bảng</h2>
+  <div class="cards">
+<article class="card g-cat" id="t-stations"><header><h3>Bảng stations – Ga tàu</h3><span class="grp">Danh mục tàu và tuyến</span></header><p class="blk"><strong>Mục đích:</strong> Lưu thông tin các ga tàu trong hệ thống, bao gồm mã ga, tên ga, thành phố, địa chỉ và lý trình.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của ga.</td></tr><tr><td class="c-name">code</td><td class="c-type">varchar(10) <span class=key k-UK>UK</span></td><td>Mã viết tắt của ga, ví dụ SGN.</td></tr><tr><td class="c-name">name</td><td class="c-type">varchar(100)</td><td>Tên đầy đủ của ga.</td></tr><tr><td class="c-name">city</td><td class="c-type">varchar(100)</td><td>Thành phố hoặc tỉnh nơi ga tọa lạc.</td></tr><tr><td class="c-name">address</td><td class="c-type">varchar(255)</td><td>Địa chỉ cụ thể của ga.</td></tr><tr><td class="c-name">km_mark</td><td class="c-type">int <span class=key k-UK>UK</span></td><td>Lý trình: số km tính từ ga Hà Nội theo đường sắt Thống Nhất.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong> Mỗi ga phải có mã riêng, không được trùng với ga khác. Thành phố và địa chỉ có thể để trống. Lý trình bắt buộc, không âm và không trùng giữa các ga. Mọi danh sách ga xếp theo lý trình, nên luôn đi từ Bắc vào Nam.</p><p class="blk"><strong>Ví dụ:</strong> Ga Sài Gòn có mã SGN, tên là Ga Sài Gòn, nằm tại TP. Hồ Chí Minh, lý trình km 1726.</p><p class="blk"><strong>8 ga trong dữ liệu mẫu:</strong></p><div class="scroll"><table class="plain-t"><thead><tr><th>Mã</th><th>Ga</th><th>Lý trình (km)</th></tr></thead><tbody><tr><td>HNI</td><td>Hà Nội</td><td>0</td></tr><tr><td>THA</td><td>Thanh Hóa</td><td>175</td></tr><tr><td>VIN</td><td>Vinh</td><td>319</td></tr><tr><td>DHO</td><td>Đồng Hới</td><td>522</td></tr><tr><td>HUE</td><td>Huế</td><td>688</td></tr><tr><td>DNG</td><td>Đà Nẵng</td><td>791</td></tr><tr><td>NTR</td><td>Nha Trang</td><td>1315</td></tr><tr><td>SGN</td><td>Sài Gòn</td><td>1726</td></tr></tbody></table></div><p class="sample-h">Dữ liệu mẫu (3 dòng đầu trong database)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>code</th><th>name</th><th>city</th><th>address</th><th>km_mark</th></tr></thead><tbody><tr><td>9</td><td>HNI</td><td>Ga Hà Nội</td><td>Hà Nội</td><td>120 Lê Duẩn</td><td>0</td></tr><tr><td>10</td><td>THA</td><td>Ga Thanh Hóa</td><td>Thanh Hóa</td><td>NULL</td><td>175</td></tr><tr><td>11</td><td>VIN</td><td>Ga Vinh</td><td>Nghệ An</td><td>NULL</td><td>319</td></tr></tbody></table></div></article>
+<article class="card g-cat" id="t-routes"><header><h3>Bảng routes – Tuyến tàu</h3><span class="grp">Danh mục tàu và tuyến</span></header><p class="blk"><strong>Mục đích:</strong> Lưu thông tin các tuyến đường từ một ga đến một ga khác, bao gồm ga xuất phát, ga đến và khoảng cách giữa hai ga.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của tuyến.</td></tr><tr><td class="c-name">from_station_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Ga xuất phát, lấy từ bảng stations.</td></tr><tr><td class="c-name">to_station_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Ga đến, lấy từ bảng stations.</td></tr><tr><td class="c-name">distance_km</td><td class="c-type">int</td><td>Khoảng cách giữa hai ga, tính bằng km.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong> Ga đi và ga đến phải khác nhau. Khoảng cách phải lớn hơn 0. Không được tạo hai tuyến có cùng ga đi và ga đến.</p><p class="blk"><strong>Ví dụ:</strong> Tuyến Hà Nội → Thanh Hóa dài 175 km. Tuyến Thanh Hóa → Hà Nội được xem là một tuyến riêng vì đi theo chiều ngược lại.</p><p class="blk">Dữ liệu mẫu có 16 tuyến: 7 chặng giữa hai ga kề nhau, mỗi chặng 2 chiều, cộng tuyến Hà Nội ↔ Sài Gòn. Không có ga trung gian: muốn đi Hà Nội → Huế thì phải có tuyến Hà Nội → Huế.</p><p class="sample-h">Dữ liệu mẫu (3 dòng đầu trong database)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>from_station_id</th><th>to_station_id</th><th>distance_km</th></tr></thead><tbody><tr><td>9</td><td>10 (THA)</td><td>9 (HNI)</td><td>175</td></tr><tr><td>10</td><td>9 (HNI)</td><td>10 (THA)</td><td>175</td></tr><tr><td>11</td><td>11 (VIN)</td><td>10 (THA)</td><td>144</td></tr></tbody></table></div></article>
+<article class="card g-cat" id="t-trains"><header><h3>Bảng trains – Đoàn tàu</h3><span class="grp">Danh mục tàu và tuyến</span></header><p class="blk"><strong>Mục đích:</strong> Lưu thông tin các đoàn tàu đang được sử dụng trong hệ thống.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của đoàn tàu.</td></tr><tr><td class="c-name">code</td><td class="c-type">varchar(10) <span class=key k-UK>UK</span></td><td>Mã tàu, ví dụ SE1.</td></tr><tr><td class="c-name">name</td><td class="c-type">varchar(100)</td><td>Tên của đoàn tàu.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong> Mỗi đoàn tàu có một mã riêng, không được trùng nhau. Tàu không gắn với tuyến nào: tuyến của tàu do các chuyến của nó quyết định.</p><p class="blk">Trong phiên bản TrainGo hiện tại, tất cả đoàn tàu đều có cùng một cách bố trí chỗ ngồi, được quy định sẵn trong chương trình:</p><div class="scroll"><table class="plain-t"><thead><tr><th>Toa</th><th>Loại chỗ</th><th>Số chỗ mỗi toa</th><th>Phụ thu</th></tr></thead><tbody><tr><td>1–2</td><td>Ghế ngồi</td><td>32</td><td>0đ</td></tr><tr><td>3–4</td><td>Giường nằm</td><td>16</td><td>200.000đ</td></tr></tbody></table></div><p class="blk">Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.</p><p class="sample-h">Dữ liệu mẫu (cả 3 tàu trong database)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>code</th><th>name</th></tr></thead><tbody><tr><td>9</td><td>SE1</td><td>Thống Nhất 1</td></tr><tr><td>10</td><td>SE2</td><td>Thống Nhất 2</td></tr><tr><td>11</td><td>SE3</td><td>Thống Nhất 3</td></tr></tbody></table></div></article>
+<article class="card g-trip" id="t-trips"><header><h3>Bảng trips – Chuyến tàu</h3><span class="grp">Chuyến và ghế theo chuyến</span></header><p class="blk"><strong>Mục đích:</strong> Lưu từng lần chạy của một đoàn tàu trên một tuyến, bao gồm ngày giờ khởi hành, ngày giờ đến, giá vé và trạng thái chuyến.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của chuyến tàu.</td></tr><tr><td class="c-name">train_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Đoàn tàu thực hiện chuyến đi.</td></tr><tr><td class="c-name">route_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Tuyến đường mà tàu sẽ chạy.</td></tr><tr><td class="c-name">departure_at</td><td class="c-type">datetime</td><td>Ngày giờ khởi hành.</td></tr><tr><td class="c-name">arrival_at</td><td class="c-type">datetime</td><td>Ngày giờ dự kiến đến ga cuối.</td></tr><tr><td class="c-name">base_price</td><td class="c-type">bigint</td><td>Giá vé cơ bản, tính bằng VNĐ.</td></tr><tr><td class="c-name">status</td><td class="c-type">varchar(20)</td><td>Trạng thái của chuyến tàu.</td></tr></tbody></table></div><p class="blk"><strong>Các trạng thái:</strong></p><div class="scroll"><table class="plain-t"><thead><tr><th>Trạng thái</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td>SCHEDULED</td><td>Chuyến tàu đã được lên lịch.</td></tr><tr><td>COMPLETED</td><td>Chuyến tàu đã hoàn thành.</td></tr><tr><td>CANCELLED</td><td>Chuyến tàu đã bị hủy.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong></p><ul><li>Giá vé cơ bản không được âm.</li><li>Ngày giờ đến phải sau ngày giờ khởi hành. Vì cả hai cột đều lưu ngày, chuyến chạy qua đêm hoặc dài hơn 24 giờ vẫn lưu đúng.</li><li>Chuyến được tạo từ trang tàu và phải nối chặng: ga đi của chuyến mới là ga đến của chuyến cuối cùng của tàu đó (không tính chuyến đã hủy), và giờ đi cách giờ đến của chuyến đó ít nhất 30 phút. Tàu chưa có chuyến nào thì chọn tuyến bất kỳ.</li><li>Một tàu không bao giờ có hai chuyến chồng giờ.</li></ul><p class="blk"><strong>Ví dụ:</strong> Tàu SE1 chạy Hà Nội → Thanh Hóa ngày 16/10/2026, khởi hành 08:00, đến 10:55, giá cơ bản 180.000đ. Chuyến kế tiếp của SE1 bắt buộc đi từ Thanh Hóa: ngày 17/10/2026 chạy Thanh Hóa → Vinh lúc 08:00.</p><p class="blk"><strong>Lịch mẫu:</strong> chỉ SE1 có chuyến, mỗi ngày một chặng lúc 08:00, đi 7 ngày xuống Sài Gòn rồi 7 ngày lên Hà Nội, tổng 18 chuyến. Ngày được tính từ lúc chạy migration, nên ngày trong bảng dưới là của lần chạy ngày 20/10/2026.</p><p class="sample-h">Dữ liệu mẫu (3 chuyến đầu tiên theo giờ khởi hành)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>train_id</th><th>route_id</th><th>departure_at</th><th>arrival_at</th><th>base_price</th><th>status</th></tr></thead><tbody><tr><td>131</td><td>9 (SE1)</td><td>10 (HNI → THA)</td><td>2026-10-16 08:00:00</td><td>2026-10-16 10:55:00</td><td>180000</td><td>COMPLETED</td></tr><tr><td>133</td><td>9 (SE1)</td><td>12 (THA → VIN)</td><td>2026-10-17 08:00:00</td><td>2026-10-17 10:25:00</td><td>140000</td><td>COMPLETED</td></tr><tr><td>135</td><td>9 (SE1)</td><td>14 (VIN → DHO)</td><td>2026-10-18 08:00:00</td><td>2026-10-18 11:25:00</td><td>200000</td><td>COMPLETED</td></tr></tbody></table></div></article>
+<article class="card g-trip" id="t-trip_seats"><header><h3>Bảng trip_seats – Chỗ ngồi theo chuyến</h3><span class="grp">Chuyến và ghế theo chuyến</span></header><p class="blk"><strong>Mục đích:</strong> Quản lý tất cả ghế ngồi và giường nằm của từng chuyến tàu, giúp hệ thống biết chỗ nào còn trống hoặc đã có người đặt.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của chỗ trên chuyến tàu.</td></tr><tr><td class="c-name">trip_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Chuyến tàu chứa chỗ này.</td></tr><tr><td class="c-name">coach_number</td><td class="c-type">int</td><td>Số toa tàu, ví dụ toa 1, 2, 3, 4.</td></tr><tr><td class="c-name">coach_type</td><td class="c-type">varchar(20)</td><td>Loại toa: ghế ngồi hoặc giường nằm.</td></tr><tr><td class="c-name">seat_code</td><td class="c-type">varchar(5)</td><td>Mã chỗ, ví dụ A01 hoặc B01.</td></tr><tr><td class="c-name">cabin_number</td><td class="c-type">int</td><td>Số khoang, chỉ áp dụng cho toa giường nằm.</td></tr><tr><td class="c-name">status</td><td class="c-type">varchar(20)</td><td>Tình trạng hiện tại của chỗ.</td></tr></tbody></table></div><p class="blk"><strong>Các trạng thái:</strong></p><div class="scroll"><table class="plain-t"><thead><tr><th>Trạng thái</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td>AVAILABLE</td><td>Chỗ còn trống, có thể đặt.</td></tr><tr><td>BOOKED</td><td>Chỗ đã được đặt.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong> Mỗi chuyến có 96 chỗ. Không được tạo trùng mã chỗ trong cùng một toa của cùng một chuyến. Chỗ chuyển sang BOOKED lúc thanh toán thành công, hệ thống không giữ chỗ tạm trước đó.</p><p class="blk"><strong>Ví dụ:</strong> Chuyến tàu số 131, toa số 1, ghế A01 đang có trạng thái AVAILABLE, nghĩa là khách hàng có thể chọn ghế này.</p><p class="blk"><strong>Cách tính giá vé:</strong> Giá vé bằng giá cơ bản của chuyến (<code>trips.base_price</code>), mọi chỗ trong cùng chuyến cùng một giá.</p><p class="sample-h">Dữ liệu mẫu (3 chỗ đầu của chuyến 131)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>trip_id</th><th>coach_number</th><th>coach_type</th><th>seat_code</th><th>cabin_number</th><th>status</th></tr></thead><tbody><tr><td>11108</td><td>131</td><td>1</td><td>SEAT</td><td>A01</td><td>NULL</td><td>AVAILABLE</td></tr><tr><td>11112</td><td>131</td><td>1</td><td>SEAT</td><td>A02</td><td>NULL</td><td>AVAILABLE</td></tr><tr><td>11115</td><td>131</td><td>1</td><td>SEAT</td><td>A03</td><td>NULL</td><td>AVAILABLE</td></tr></tbody></table></div></article>
+<article class="card g-book" id="t-users"><header><h3>Bảng users – Người dùng</h3><span class="grp">Tài khoản và đặt vé</span></header><p class="blk"><strong>Mục đích:</strong> Lưu thông tin tài khoản dùng để đăng nhập và sử dụng hệ thống TrainGo.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của người dùng.</td></tr><tr><td class="c-name">full_name</td><td class="c-type">varchar(100)</td><td>Họ và tên người dùng.</td></tr><tr><td class="c-name">date_of_birth</td><td class="c-type">date</td><td>Ngày sinh của người dùng.</td></tr><tr><td class="c-name">email</td><td class="c-type">varchar(255) <span class=key k-UK>UK</span></td><td>Email dùng để đăng nhập.</td></tr><tr><td class="c-name">password_hash</td><td class="c-type">varchar(100)</td><td>Mật khẩu đã được mã hóa bằng BCrypt.</td></tr><tr><td class="c-name">role</td><td class="c-type">varchar(20)</td><td>Vai trò của người dùng.</td></tr><tr><td class="c-name">created_at</td><td class="c-type">datetime</td><td>Thời gian tạo tài khoản.</td></tr><tr><td class="c-name">is_delete</td><td class="c-type">boolean</td><td>Cờ xóa mềm của tài khoản: 0 là còn dùng, 1 là đã xóa.</td></tr></tbody></table></div><p class="blk"><strong>Vai trò:</strong></p><div class="scroll"><table class="plain-t"><thead><tr><th>Vai trò</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td>CUSTOMER</td><td>Khách hàng sử dụng hệ thống để đặt vé.</td></tr><tr><td>ADMIN</td><td>Quản trị viên quản lý hệ thống.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong> Mỗi email chỉ được đăng ký một tài khoản. Mật khẩu được lưu dưới dạng đã mã hóa, không lưu trực tiếp mật khẩu gốc.</p><p class="sample-h">Dữ liệu mẫu (3 dòng đầu trong database)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>full_name</th><th>date_of_birth</th><th>email</th><th>password_hash</th><th>role</th><th>created_at</th><th>is_delete</th></tr></thead><tbody><tr><td>1</td><td>Quản trị viên</td><td>NULL</td><td>admin@traingo.vn</td><td>(hash)</td><td>ADMIN</td><td>2026-09-12 11:34:33</td><td>0</td></tr><tr><td>2</td><td>Nguyễn Văn An</td><td>1995-04-12</td><td>an.nguyen@example.com</td><td>(hash)</td><td>CUSTOMER</td><td>2026-09-22 11:34:33</td><td>0</td></tr><tr><td>3</td><td>Trần Thị Bình</td><td>1990-01-25</td><td>binh.tran@example.com</td><td>(hash)</td><td>CUSTOMER</td><td>2026-09-27 11:34:33</td><td>0</td></tr></tbody></table></div></article>
+<article class="card g-book" id="t-bookings"><header><h3>Bảng bookings – Đơn đặt vé</h3><span class="grp">Tài khoản và đặt vé</span></header><p class="blk"><strong>Mục đích:</strong> Lưu thông tin mỗi lần khách hàng đặt vé tàu. Một đơn đặt vé có thể chứa vé cho nhiều hành khách nhưng chỉ thuộc một chuyến tàu.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của đơn đặt vé.</td></tr><tr><td class="c-name">booking_code</td><td class="c-type">varchar(20) <span class=key k-UK>UK</span></td><td>Mã đơn đặt vé, ví dụ BK202610001.</td></tr><tr><td class="c-name">users_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Khách hàng thực hiện đặt vé.</td></tr><tr><td class="c-name">trip_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Chuyến tàu được đặt.</td></tr><tr><td class="c-name">total_price</td><td class="c-type">bigint</td><td>Tổng tiền của đơn đặt vé.</td></tr><tr><td class="c-name">booking_status</td><td class="c-type">varchar(20)</td><td>Trạng thái của đơn đặt vé.</td></tr><tr><td class="c-name">payment_status</td><td class="c-type">varchar(20)</td><td>Trạng thái thanh toán.</td></tr><tr><td class="c-name">paid_at</td><td class="c-type">datetime</td><td>Thời gian thanh toán thành công.</td></tr><tr><td class="c-name">created_at</td><td class="c-type">datetime</td><td>Thời gian tạo đơn đặt vé.</td></tr></tbody></table></div><p class="blk"><strong>Trạng thái đặt vé:</strong></p><div class="scroll"><table class="plain-t"><thead><tr><th>Trạng thái</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td>PENDING</td><td>Đơn đang chờ xử lý hoặc thanh toán. Database cho phép nhưng hiện chưa có luồng nào dùng.</td></tr><tr><td>CONFIRMED</td><td>Đơn đã được xác nhận.</td></tr><tr><td>CANCELLED</td><td>Đơn đã bị hủy.</td></tr></tbody></table></div><p class="blk"><strong>Trạng thái thanh toán:</strong></p><div class="scroll"><table class="plain-t"><thead><tr><th>Trạng thái</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td>UNPAID</td><td>Chưa thanh toán. Database cho phép nhưng hiện chưa có luồng nào dùng.</td></tr><tr><td>PAID</td><td>Đã thanh toán thành công.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong> Mỗi đơn có một mã riêng. Tổng tiền không được âm. Đơn chỉ có thể được xác nhận khi đã thanh toán. Khi thanh toán thành công, hệ thống phải lưu thời gian thanh toán.</p><p class="blk"><strong>Ví dụ:</strong> Khách hàng Nguyễn Văn An đặt 2 ghế ngồi trên chuyến SE1 Thanh Hóa → Vinh ngày 17/10/2026, mỗi vé 140.000đ. Hệ thống tạo một đơn có tổng tiền 280.000đ.</p><p class="sample-h">Dữ liệu mẫu (3 dòng đầu trong database)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>booking_code</th><th>users_id</th><th>trip_id</th><th>total_price</th><th>booking_status</th><th>payment_status</th><th>paid_at</th><th>created_at</th></tr></thead><tbody><tr><td>24</td><td>BK202610001</td><td>2</td><td>133</td><td>280000</td><td>CONFIRMED</td><td>PAID</td><td>2026-10-14 16:12:54</td><td>2026-10-14 16:12:54</td></tr><tr><td>25</td><td>BK202610002</td><td>3</td><td>137</td><td>370000</td><td>CONFIRMED</td><td>PAID</td><td>2026-10-16 16:12:54</td><td>2026-10-16 16:12:54</td></tr><tr><td>26</td><td>BK202610003</td><td>4</td><td>141</td><td>520000</td><td>CONFIRMED</td><td>PAID</td><td>2026-10-18 16:12:54</td><td>2026-10-18 16:12:54</td></tr></tbody></table></div></article>
+<article class="card g-book" id="t-tickets"><header><h3>Bảng tickets – Vé tàu</h3><span class="grp">Tài khoản và đặt vé</span></header><p class="blk"><strong>Mục đích:</strong> Lưu thông tin từng hành khách và chỗ ngồi được đặt trong một đơn. Mỗi dòng tương ứng với một hành khách và một chỗ trên chuyến tàu.</p><div class="scroll"><table><thead><tr><th>Cột</th><th>Kiểu dữ liệu</th><th>Giải thích</th></tr></thead><tbody><tr><td class="c-name">id</td><td class="c-type">bigint <span class=key k-PK>PK</span></td><td>Mã ID của vé.</td></tr><tr><td class="c-name">booking_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Đơn đặt vé chứa vé này.</td></tr><tr><td class="c-name">trip_seat_id</td><td class="c-type">bigint <span class=key k-FK>FK</span></td><td>Chỗ ngồi hoặc giường nằm được chọn.</td></tr><tr><td class="c-name">full_name</td><td class="c-type">varchar(100)</td><td>Họ và tên hành khách.</td></tr><tr><td class="c-name">identity_number</td><td class="c-type">varchar(20)</td><td>Số CCCD hoặc giấy tờ tùy thân.</td></tr><tr><td class="c-name">ticket_price</td><td class="c-type">bigint</td><td>Giá tiền của vé.</td></tr><tr><td class="c-name">ticket_code</td><td class="c-type">varchar(20) <span class=key k-UK>UK</span></td><td>Mã vé điện tử sau khi thanh toán.</td></tr><tr><td class="c-name">issued_at</td><td class="c-type">datetime</td><td>Thời gian phát hành vé.</td></tr></tbody></table></div><p class="blk"><strong>Quy tắc:</strong> Trong cùng một đơn, không được thêm trùng một chỗ. Giá vé không được âm. Dòng vé chỉ được tạo khi thanh toán thành công, cùng lúc với đơn, nên luôn có mã vé điện tử và thời gian phát hành.</p><p class="blk">Nếu đơn cũ bị hủy và chỗ được mở bán trở lại, khách hàng khác có thể đặt chỗ đó trong một đơn mới.</p><p class="blk"><strong>Ví dụ:</strong> Đơn BK202610001 có hai hành khách:</p><div class="scroll"><table class="plain-t"><thead><tr><th>Hành khách</th><th>Chỗ</th><th>Giá vé</th></tr></thead><tbody><tr><td>Nguyễn Văn An</td><td>Toa 1 – A01</td><td>140.000đ</td></tr><tr><td>Nguyễn Thị Mai</td><td>Toa 1 – A02</td><td>140.000đ</td></tr></tbody></table></div><p class="blk">Sau khi thanh toán thành công, mỗi hành khách nhận một mã vé điện tử riêng.</p><p class="sample-h">Dữ liệu mẫu (3 dòng đầu trong database)</p><div class="scroll"><table class="sample"><thead><tr><th>id</th><th>booking_id</th><th>trip_seat_id</th><th>full_name</th><th>identity_number</th><th>ticket_price</th><th>ticket_code</th><th>issued_at</th></tr></thead><tbody><tr><td>38</td><td>24</td><td>11396</td><td>Nguyễn Văn An</td><td>079095001234</td><td>140000</td><td>TK202610001-01</td><td>2026-10-14 16:12:54</td></tr><tr><td>39</td><td>24</td><td>11400</td><td>Nguyễn Thị Mai</td><td>079197004321</td><td>140000</td><td>TK202610001-02</td><td>2026-10-14 16:12:54</td></tr><tr><td>40</td><td>25</td><td>11922</td><td>Trần Thị Bình</td><td>001190006789</td><td>370000</td><td>TK202610002-01</td><td>2026-10-16 16:12:54</td></tr></tbody></table></div></article>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

@@ -43,11 +43,18 @@
 							<div class="invalid-feedback" th:errors="*{code}">Vui lòng nhập mã ga.</div>
 							<div id="codeHelp" class="form-text">Chữ cái không dấu và chữ số, tối đa 10 ký tự. Hệ thống tự viết hoa, ví dụ SGN.</div>
 						</div>
-						<div class="col-md-8">
+						<div class="col-md-5">
 							<label for="name" class="form-label">Tên ga <span class="text-danger">*</span></label>
 							<input type="text" class="form-control" th:field="*{name}" th:errorclass="is-invalid"
 								maxlength="100" required>
 							<div class="invalid-feedback" th:errors="*{name}">Vui lòng nhập tên ga.</div>
+						</div>
+						<div class="col-md-3">
+							<label for="kmMark" class="form-label">Lý trình (km) <span class="text-danger">*</span></label>
+							<input type="number" class="form-control" th:field="*{kmMark}" th:errorclass="is-invalid"
+								min="0" max="5000" step="1" inputmode="numeric" required aria-describedby="kmMarkHelp">
+							<div class="invalid-feedback" th:errors="*{kmMark}">Vui lòng nhập lý trình.</div>
+							<div id="kmMarkHelp" class="form-text">Số km tính từ ga Hà Nội, ví dụ Huế là 688. Danh sách ga xếp theo số này.</div>
 						</div>
 						<div class="col-md-4">
 							<label for="city" class="form-label">Tỉnh / Thành phố</label>

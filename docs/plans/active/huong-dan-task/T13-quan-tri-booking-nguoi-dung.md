@@ -47,12 +47,12 @@ Không làm (`SPEC.md` mục 39):
 
 ```
 users 1 ──< bookings >── 1 trips >── routes, trains
-               └──< booking_passengers >── trip_seats >── seats >── coaches
+               └──< tickets >── trip_seats
 ```
 
 Đọc sơ đồ: một người dùng có nhiều booking, mỗi booking thuộc một chuyến (chuyến gắn với
 tuyến và tàu). Một booking có nhiều hành khách; mỗi hành khách ngồi một chỗ của chuyến, chỗ
-đó là một ghế thuộc một toa.
+đó là một dòng `trip_seats`, ghi sẵn số toa và mã chỗ.
 
 Bốn con số trên dashboard hiện tính như sau, trong `AdminService`. Task này không đổi chúng:
 
@@ -93,7 +93,7 @@ Trang chi tiết booking dùng lại `MyBooking` của T10, cộng thêm tên v�
 Các method dashboard cần đã có sẵn: `findAllByOrderByCreatedAtDesc`,
 `findTop5ByOrderByCreatedAtDesc`, `sumTotalPriceByBookingStatus` trong
 `repository/BookingRepository`, `countByBooking()` trong
-`repository/BookingPassengerRepository` (đếm hành khách của mọi booking trong một câu truy
+`repository/TicketRepository` (đếm hành khách của mọi booking trong một câu truy
 vấn) và `findAllByOrderByCreatedAtAsc` trong `repository/UserRepository`. Bạn dùng lại,
 không viết thêm bản thứ hai.
 
@@ -114,8 +114,8 @@ List<Booking> findByBookingStatusAndPaidAtGreaterThanEqual(
   tính doanh thu 7 ngày.
 
 Trang chi tiết đọc hành khách bằng `findByBookingIdOrderByIdAsc` (T12) hoặc
-`findByBookingIdInOrderByIdAsc` (T10) của `BookingPassengerRepository`, và vé bằng
-`findByBookingPassengerIdIn` (T10) của `TicketRepository`.
+`findByBookingIdInOrderByIdAsc` (T10) của `TicketRepository`. Hành khách và vé là cùng một
+dòng `Ticket`, nên không cần truy vấn riêng cho vé.
 
 ### Bước 3. Service: xử lý nghiệp vụ
 
@@ -183,7 +183,7 @@ dashboard và trong `model/response/` không còn class `Admin*` cũ nào (`Admi
 ## 5. Luật và lỗi phải xử lý
 
 - Bốn con số trên dashboard giữ đúng cách tính ở mục 3.
-- Booking `CANCELLED` và `PENDING` không tính vào doanh thu, kể cả trên biểu đồ.
+- Booking `CANCELLED` không tính vào doanh thu, kể cả trên biểu đồ.
 - Admin hủy booking theo đúng luật hủy của khách (dùng chung service của T10).
 - Booking không tồn tại: trả 404.
 - Danh sách người dùng chỉ để xem, không có nút thêm, sửa, xóa.
@@ -227,39 +227,40 @@ docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=
 
 **Kịch bản 2. Tìm theo mã.**
 
-1. Gõ `004` vào ô tìm kiếm trên header, Enter. Kết quả đúng: trang `/admin/bookings?q=004`
-   chỉ còn booking có mã kết thúc bằng `004` (booking đã hủy của `an.nguyen` trên SE22), ô
-   tìm kiếm điền sẵn `004`.
+1. Gõ `006` vào ô tìm kiếm trên header, Enter. Kết quả đúng: trang `/admin/bookings?q=006`
+   chỉ còn booking có mã kết thúc bằng `006` (booking đã hủy của `lan.hoang` trên chuyến Đà
+   Nẵng → Huế của SE1), ô tìm kiếm điền sẵn `006`.
 2. Gõ `bk` chữ thường: ra mọi booking.
 3. Gõ `xyz`: danh sách rỗng, có thông báo không tìm thấy, không lỗi.
 
 **Kịch bản 3. Chi tiết booking.**
 
-1. Mở chi tiết booking `...004`: thấy tên và email khách, chuyến, hành khách, toa, chỗ, giá,
+1. Mở chi tiết booking `...006`: thấy tên và email khách, chuyến, hành khách, toa, chỗ, giá,
    thời điểm thanh toán.
 2. Mở `/admin/bookings/999999`: trang 404.
 
 **Kịch bản 4. Admin hủy booking.**
 
-1. Chọn một booking sắp đi, ví dụ booking `...002` của `binh.tran`. Xem trạng thái:
+1. Chọn một booking sắp đi, ví dụ booking `...007` của `huy.dang` (Huế → Đồng Hới). Xem
+   trạng thái:
 
    ```sql
    SELECT b.booking_code, b.booking_status, b.payment_status, ts.id, ts.status
    FROM bookings b
-   JOIN booking_passengers bp ON bp.booking_id = b.id
-   JOIN trip_seats ts ON ts.id = bp.trip_seat_id
-   WHERE b.booking_code LIKE '%002';
+   JOIN tickets tk ON tk.booking_id = b.id
+   JOIN trip_seats ts ON ts.id = tk.trip_seat_id
+   WHERE b.booking_code LIKE '%007';
    ```
 
    Kết quả: `CONFIRMED`, `PAID`, chỗ `BOOKED`.
 2. Mở chi tiết booking đó trong trang admin, bấm Hủy, xác nhận. Trang hiện thông báo xanh.
 3. Chạy lại câu SQL. Kết quả đúng: `CANCELLED`, vẫn `PAID`, chỗ `AVAILABLE`.
-4. Đăng xuất, đăng nhập `binh.tran@example.com`, mở `/my-trips`: booking nằm ở nhóm Đã hủy.
+4. Đăng xuất, đăng nhập `huy.dang@example.com`, mở `/my-trips`: booking nằm ở nhóm Đã hủy.
 5. Quay lại admin, mở chi tiết booking vừa hủy: không còn nút Hủy. Gửi thẳng
    `POST /admin/bookings/<id>/cancel` (ví dụ bấm nút ở một tab mở từ trước): thông báo đỏ,
    database không đổi.
-6. Làm như bước 5 với một booking trên chuyến đã đi (`...003` của `cuong.le`): không có nút
-   Hủy, gửi thẳng thì bị từ chối.
+6. Làm như bước 5 với một booking trên chuyến đã đi (`...001` của `an.nguyen`, chuyến Thanh
+   Hóa → Vinh đã `COMPLETED`): không có nút Hủy, gửi thẳng thì bị từ chối.
 
 **Kịch bản 5. Danh sách người dùng.**
 
@@ -289,7 +290,7 @@ Muốn chạy lại từ đầu với dữ liệu sạch, làm mới database th
 
 - [ ] Bốn con số trên dashboard bằng kết quả SQL ở mục 6; biểu đồ hiện doanh thu thật của
       7 ngày gần nhất.
-- [ ] Tìm `004` trên header ra đúng booking `...004`; mở chi tiết thấy hành khách và chỗ.
+- [ ] Tìm `006` trên header ra đúng booking `...006`; mở chi tiết thấy hành khách và chỗ.
 - [ ] Hủy booking sắp đi từ trang admin: chỗ trống lại, booking hiện ở nhóm Đã hủy trong
       `/my-trips` của khách đó.
 - [ ] `/admin/users` hiện đủ tài khoản, không có nút thêm, sửa, xóa.

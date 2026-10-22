@@ -9,8 +9,9 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 /**
- * The physical make-up of a train: its coaches and their seats. A Train runs
- * many Trips, so booking state never lives here but on TripSeat.
+ * A train. Every train has the same fixed coach layout, which is not stored
+ * here: it is copied onto TripSeat when a trip is created. A Train runs many
+ * Trips, so booking state never lives here but on TripSeat.
  */
 @Entity
 @Table(name = "trains", uniqueConstraints = @UniqueConstraint(name = "uk_trains_code", columnNames = "code"))

@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thiết kế giao diện admin TrainGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Light only on purpose: the page documents the light admin UI and prints to A4. */
+:root {
+	color-scheme: light;
+	--ink: #0b1a36; --ink-2: #1c2b4a; --ink-3: #2a3b5e;
+	--primary: #2c4d98; --primary-soft: #e8eefa;
+	--bg: #edf1f5; --paper: #f8fafc; --surface: #ffffff; --field: #f4f6f9; --line: #e0e6ed;
+	--muted: #5b6b80; --on-dark: #b3bfd6;
+	--ok: #15803d; --ok-soft: #e3f4e8; --warn: #9a4a06; --warn-soft: #fdf0dc; --danger: #b42318; --danger-soft: #fdecea;
+	--display: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+	--body: "Noto Sans", "Be Vietnam Pro", system-ui, sans-serif;
+	--mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 15px/1.6 var(--body); }
+main { max-width: 1120px; margin: 0 auto; padding-block: 40px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; grid-template-columns: minmax(0, 1fr); gap: 56px; }
+h1, h2, h3, h4 { font-family: var(--display); margin: 0; line-height: 1.25; text-wrap: balance; }
+h1 { font-size: 2rem; font-weight: 800; }
+h2 { font-size: 1.45rem; font-weight: 800; margin-bottom: 14px; }
+h3 { font-size: 1.15rem; font-weight: 700; margin: 0 0 10px; }
+h4 { font-size: 1rem; font-weight: 700; }
+p { margin: 0 0 10px; max-width: 75ch; }
+code { font-family: var(--mono); font-size: .88em; background: var(--field); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--primary); }
+.lead { color: var(--muted); font-size: 1.05rem; margin-top: 8px; }
+.meta { color: var(--muted); font-size: .9rem; margin-top: 6px; }
+section > p, section > ul { max-width: 75ch; }
+ul.tight { margin: 0 0 10px; padding-left: 1.2em; display: grid; gap: 4px; }
+
+/* page cards */
+.page { display: grid; gap: 18px; padding-top: 8px; border-top: 2px solid var(--line); }
+.page-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.page-head .tag { font: 700 .75rem var(--mono); color: var(--primary); background: var(--primary-soft); padding: 2px 8px; border-radius: 999px; }
+.job { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--primary); border-radius: 8px; padding: 12px 16px; }
+.job b { font-family: var(--display); }
+.opts { display: grid; gap: 22px; }
+.opt { display: grid; gap: 10px; min-width: 0; }
+.opt-h { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.badge { font: 700 .75rem var(--display); padding: 3px 10px; border-radius: 999px; border: 1px solid currentColor; }
+.badge.rec { color: var(--ok); background: var(--ok-soft); }
+.badge.alt { color: var(--muted); }
+.badge.no { color: var(--danger); background: var(--danger-soft); }
+.why { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px 20px; font-size: .92rem; }
+.why div { min-width: 0; }
+.why b { display: block; font-family: var(--display); font-size: .82rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 2px; }
+.small-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+
+/* mock screen frame */
+.frame { overflow-x: auto; border-radius: 10px; }
+.scr { min-width: 760px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 14px; font-size: 14px; }
+.scr.narrow { min-width: 0; }
+.scr-top { display: flex; align-items: center; gap: 12px; }
+.scr-top h5 { margin: 0; font: 800 1.35rem var(--display); }
+.scr-top .crumb { color: var(--primary); font-weight: 700; font-family: var(--display); font-size: .85rem; }
+.scr-top .sp { flex: 1; }
+.btn { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 8px; background: var(--primary); color: #fff; font: 700 .88rem var(--display); white-space: nowrap; }
+.btn.ghost { background: var(--surface); color: var(--primary); border: 1px solid var(--line); }
+.btn.sm { height: 34px; font-size: .82rem; }
+.btn.dis { background: var(--field); color: var(--muted); border: 1px solid var(--line); }
+.card { background: var(--surface); border-radius: 10px; padding: 14px 16px; border: 1px solid var(--line); min-width: 0; }
+.card h6 { margin: 0 0 8px; font: 700 1rem var(--display); }
+.muted { color: var(--muted); }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 999px; font: 700 .76rem var(--display); white-space: nowrap; }
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.sched { color: var(--primary); background: var(--primary-soft); }
+.pill.done { color: var(--muted); background: var(--field); }
+.pill.go { color: var(--warn); background: var(--warn-soft); }
+.pill.ok { color: var(--ok); background: var(--ok-soft); }
+.pill.cancel { color: var(--danger); background: var(--danger-soft); }
+.code { font: 700 .8rem var(--mono); background: var(--field); padding: 2px 7px; border-radius: 6px; }
+.tbl { width: 100%; border-collapse: collapse; }
+.tbl th { text-align: left; font: 700 .72rem var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.tbl td { padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.tbl td.num, .tbl th.num { text-align: right; }
+.tbl small { display: block; color: var(--muted); font-size: .78rem; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab { padding: 6px 12px; border-radius: 8px; font: 700 .85rem var(--display); color: var(--muted); background: var(--surface); border: 1px solid var(--line); }
+.tab.on { color: #fff; background: var(--ink); border-color: var(--ink); }
+.tab em { font-style: normal; opacity: .75; margin-left: 4px; }
+.field { display: grid; gap: 4px; }
+.field label { font: 700 .82rem var(--display); }
+.input { height: 38px; border: 1px solid var(--line); background: var(--field); border-radius: 8px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.input.locked { background: var(--bg); color: var(--ink-2); }
+.help { font-size: .78rem; color: var(--muted); }
+
+/* station strip */
+.strip { position: relative; height: 150px; margin: 0 56px; }
+.rail { position: absolute; left: 0; right: 0; top: 74px; height: 6px; border-radius: 3px; background: repeating-linear-gradient(90deg, var(--ink-3) 0 14px, var(--on-dark) 14px 22px); }
+.stop { position: absolute; top: 0; height: 100%; width: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+.stop i { position: absolute; left: -9px; top: 68px; width: 18px; height: 18px; border-radius: 50%; background: var(--surface); border: 4px solid var(--ink); }
+.stop span { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; text-align: center; display: grid; line-height: 1.25; }
+.stop.up span { bottom: 92px; }
+.stop.down span { top: 94px; }
+.stop b { font: 700 .85rem var(--display); }
+.stop small { color: var(--muted); font-size: .75rem; }
+.stop.sel i { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 0 5px var(--primary-soft); }
+.stop.sel b { color: var(--primary); }
+.st-detail { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: .9rem; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 600; }
+.rl { display: flex; justify-content: space-between; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.rl:last-child { border-bottom: 0; }
+
+/* region photo cards (option B) */
+.regions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.region h6 { margin: 0 0 6px; font: 700 .85rem var(--display); color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.ph { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ph div { aspect-ratio: 4 / 3; max-width: 100%; border-radius: 8px; background: linear-gradient(160deg, #c9d4e3, #e8edf4); display: flex; align-items: flex-end; padding: 6px; font: 700 .78rem var(--display); }
+
+/* route pairs and matrix */
+.pair { display: grid; grid-template-columns: minmax(0, 1.6fr) 80px minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 10px; padding: 9px 4px; border-bottom: 1px solid var(--line); }
+.pn { display: flex; align-items: center; gap: 8px; font-family: var(--display); }
+.sw2 { color: var(--muted); }
+.km { text-align: right; font-variant-numeric: tabular-nums; }
+.dir { display: flex; justify-content: space-between; gap: 6px; padding: 4px 10px; border-radius: 8px; background: var(--field); font: 700 .8rem var(--mono); }
+.dir em { font: 500 .78rem var(--body); color: var(--muted); font-style: normal; }
+.grp-h { padding: 12px 4px 2px; font: 700 .75rem var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.mx { border-collapse: separate; border-spacing: 3px; font-size: .82rem; }
+.mx th { font: 700 .75rem var(--mono); color: var(--muted); padding: 2px 6px; }
+.mx th.corner { font-family: var(--display); font-weight: 600; }
+.mx td { width: 52px; height: 32px; text-align: center; border-radius: 6px; font-variant-numeric: tabular-nums; }
+.mx td.on { background: var(--primary-soft); color: var(--primary); font-weight: 700; }
+.mx td.off { background: var(--surface); color: #a3afbf; border: 1px dashed var(--line); }
+.mx td.self { background: repeating-linear-gradient(45deg, var(--field) 0 4px, var(--surface) 4px 8px); }
+
+/* train cards */
+.trains { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.tc { display: grid; gap: 10px; align-content: start; }
+.tc-h { display: flex; align-items: center; gap: 8px; }
+.tc-h b { font: 800 1.05rem var(--display); }
+.mini-line { position: relative; height: 22px; margin: 4px 6px 0; }
+.mini-line::before { content: ""; position: absolute; left: 0; right: 0; top: 9px; height: 4px; border-radius: 2px; background: var(--line); }
+.mini-line i { position: absolute; top: 7px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--on-dark); }
+.mini-line i.at { top: 3px; width: 16px; height: 16px; margin-left: -8px; background: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+.mini-ends { display: flex; justify-content: space-between; font-size: .72rem; color: var(--muted); margin-top: -2px; }
+.empty { display: grid; gap: 8px; justify-items: start; padding: 10px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); font-size: .88rem; }
+
+/* train detail */
+.td-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stat b { display: block; font: 800 1.25rem var(--display); }
+.stat small { color: var(--muted); }
+.td-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.past-row, .fold { display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: var(--field); color: var(--muted); font-size: .86rem; }
+.lnk { color: var(--primary); font-weight: 700; font-family: var(--display); }
+.leg { display: grid; grid-template-columns: 96px minmax(0, 1fr) 64px auto; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.leg b { font-family: var(--display); }
+.leg small { display: block; color: var(--muted); font-size: .78rem; }
+.ls { text-align: right; font-size: .82rem; color: var(--muted); }
+.dwell { margin-left: 46px; padding: 4px 0 4px 14px; border-left: 2px dashed var(--on-dark); color: var(--muted); font-size: .78rem; }
+.append { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; padding: 12px; border: 2px dashed var(--primary); border-radius: 8px; background: var(--primary-soft); }
+.append small { display: block; color: var(--muted); }
+.tl { display: grid; gap: 6px; }
+.dest { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dest div { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--surface); }
+.dest div.on { border: 2px solid var(--primary); background: var(--primary-soft); }
+.dest small { display: block; color: var(--muted); }
+.frm { display: grid; gap: 12px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* marey */
+svg.marey { display: block; width: 100%; height: auto; }
+svg.marey .g { stroke: var(--line); stroke-width: 1; }
+svg.marey .g.v { stroke-dasharray: 2 3; }
+svg.marey .sl { font: 600 11px var(--body); fill: var(--ink-2); }
+svg.marey .dl { font: 500 10px var(--body); fill: var(--muted); }
+svg.marey .run { fill: none; stroke: var(--primary); stroke-width: 2.4; stroke-linejoin: round; }
+svg.marey .run.past { stroke: var(--on-dark); }
+svg.marey .now { stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 4 3; }
+svg.marey .pos { fill: var(--warn); stroke: var(--surface); stroke-width: 2; }
+svg.marey .end { fill: var(--surface); stroke: var(--primary); stroke-width: 2.4; }
+svg.marey .nl { font: 700 11px var(--display); fill: var(--ink-2); }
+svg.marey.mini .sl { font-size: 10px; }
+.marey-card { display: grid; gap: 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: .82rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+
+/* trips by day, trip detail */
+.day-h { display: flex; gap: 8px; align-items: baseline; padding: 10px 8px 4px; font: 700 .9rem var(--display); }
+.day-h small { color: var(--muted); font-weight: 500; }
+.coach-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.coach-tabs span { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-size: .8rem; }
+.coach-tabs span b { font-family: var(--display); }
+.coach-tabs span.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.cabins { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.cab { border: 1px solid var(--line); border-radius: 8px; padding: 6px; background: var(--surface); }
+.cab small { color: var(--muted); font-size: .72rem; }
+.beds { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 4px; }
+.bed { text-align: center; padding: 5px 0; border-radius: 6px; background: var(--field); font: 700 .74rem var(--mono); }
+.bed.sold { background: var(--primary); color: #fff; }
+.block-note { display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); font-size: .82rem; }
+.board { background: #0e1726; color: #f4d35e; border-radius: 10px; padding: 12px; font: 700 .9rem var(--mono); display: grid; gap: 6px; }
+.board div { display: grid; grid-template-columns: 70px 60px 1fr 90px; gap: 10px; border-bottom: 1px solid #23324a; padding-bottom: 6px; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; font-size: .74rem; }
+.cal div { border: 1px solid var(--line); border-radius: 6px; padding: 4px; min-height: 48px; background: var(--surface); }
+.cal div b { display: block; color: var(--muted); font-size: .7rem; }
+
+/* nav proposal */
+.nav-demo { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 18px; align-items: start; }
+.side { background: var(--ink); color: #fff; border-radius: 10px; padding: 14px 10px; display: grid; gap: 2px; font-family: var(--display); font-size: .9rem; }
+.side .grp { color: var(--on-dark); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; padding: 10px 10px 4px; }
+.side .it { padding: 7px 10px; border-radius: 8px; }
+.side .it.on { background: #fff; color: var(--ink); font-weight: 700; }
+.flow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.flow span { padding: 8px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font: 700 .9rem var(--display); }
+.flow span.hl { background: var(--primary); color: #fff; border-color: var(--primary); }
+.flow i { color: var(--muted); font-style: normal; }
+
+/* decision table */
+.dec { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: .92rem; }
+.dec th, .dec td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.dec th { font: 700 .75rem var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); background: var(--field); }
+.scroll { overflow-x: auto; }
+.refs li { margin-bottom: 6px; }
+
+@media (max-width: 720px) {
+	.nav-demo { grid-template-columns: minmax(0, 1fr); }
+	h1 { font-size: 1.6rem; }
+}
+/* Printed at scale 0.62 (see the PDF export), so A4 keeps the desktop layout. */
+@media print {
+	@page { size: A4; margin: 12mm 12mm; }
+	body { background: #fff; }
+	main { padding-block: 0; gap: 40px; }
+	.frame { overflow: visible; }
+	.scr, .why, .job, .small-opts > .opt, .dec tr, .card.marey-card, .nav-demo { break-inside: avoid; }
+	h2, h3, h4, .page-head, .opt-h { break-after: avoid; }
+	main > section:last-of-type { break-before: page; }
+	a { color: var(--ink); text-decoration: none; }
+}
+</style>
+</head>
+<body>
+<main>
+
+<header>
+	<h1>Thiết kế giao diện admin TrainGo</h1>
+	<p class="lead">Đề xuất bố cục cho từng trang quản trị, dựa trên mô hình ga, tuyến, tàu, chuyến sau migration V5.</p>
+	<p class="meta">20/10/2026 · Dữ liệu trong các hình là dữ liệu mẫu thật của V5: 8 ga, 16 tuyến, 3 tàu, 18 chuyến của SE1, 8 booking. Mốc "hôm nay" là 20/10/2026.</p>
+</header>
+
+<section>
+	<h2>1. Vì sao phải làm lại</h2>
+	<p>Bộ mockup admin trước đây (đã bỏ khỏi <code>ui-mau</code> ngày 20/10) vẽ cho mô hình cũ: mỗi tàu chạy cố định một cặp ga (SNT1 Sài Gòn - Nha Trang, SP1 Hà Nội - Lào Cai), và chuyến được tạo ở trang Chuyến. Sau V5, ba điều đã đổi:</p>
+	<ul class="tight">
+		<li><b>Ga có lý trình.</b> 8 ga nằm trên một trục từ Hà Nội (km 0) đến Sài Gòn (km 1726). Thứ tự này là cách nhóm tự nhiên nhất, không cần nhóm theo vùng.</li>
+		<li><b>Chuyến thuộc về tàu.</b> Chuyến mới chỉ được nối vào cuối lịch của một tàu, nên chỗ tạo chuyến phải là trang của tàu đó.</li>
+		<li><b>Tàu nào cũng có 4 toa giống nhau.</b> Sơ đồ toa trên trang tàu không cho admin biết thêm gì. Nó có ích ở trang chuyến, nơi mỗi chỗ có trạng thái đã bán hay còn trống.</li>
+	</ul>
+	<p>Bản này đề xuất bố cục cho từng trang. Mỗi trang ghi việc chính admin làm ở đó, phương án khuyến nghị, các phương án khác và lý do. Phi chọn ở bảng cuối (mục 6), rồi tôi mới làm mockup đầy đủ.</p>
+</section>
+
+<section>
+	<h2>2. Mô hình trong một hình</h2>
+	<p>Đây là <b>biểu đồ chạy tàu</b> (biểu đồ thời gian - quãng đường) mà ngành đường sắt dùng để lập và theo dõi lịch tàu. Trục dọc là 8 ga đặt đúng theo lý trình, trục ngang là ngày. Mỗi đoạn dốc là một chuyến, mỗi đoạn nằm ngang là lúc tàu dừng ở ga. Đường của SE1 đi xuống Sài Gòn rồi quay lên, cho thấy luật nối chặng: đoạn sau luôn bắt đầu đúng ở ga mà đoạn trước kết thúc.</p>
+	<div class="card marey-card">
+		<svg viewBox="0 0 940 300" class="marey" role="img" aria-label="Biểu đồ chạy tàu SE1: trục dọc là 8 ga theo lý trình, trục ngang là ngày từ 16/10 đến 02/11"><line class="g" x1="78" x2="864" y1="10.0" y2="10.0"/><text class="sl" x="72" y="14.0" text-anchor="end">Hà Nội</text><line class="g" x1="78" x2="864" y1="36.8" y2="36.8"/><text class="sl" x="72" y="40.8" text-anchor="end">Thanh Hóa</text><line class="g" x1="78" x2="864" y1="58.8" y2="58.8"/><text class="sl" x="72" y="62.8" text-anchor="end">Vinh</text><line class="g" x1="78" x2="864" y1="89.8" y2="89.8"/><text class="sl" x="72" y="93.8" text-anchor="end">Đồng Hới</text><line class="g" x1="78" x2="864" y1="115.2" y2="115.2"/><text class="sl" x="72" y="119.2" text-anchor="end">Huế</text><line class="g" x1="78" x2="864" y1="131.0" y2="131.0"/><text class="sl" x="72" y="135.0" text-anchor="end">Đà Nẵng</text><line class="g" x1="78" x2="864" y1="211.1" y2="211.1"/><text class="sl" x="72" y="215.1" text-anchor="end">Nha Trang</text><line class="g" x1="78" x2="864" y1="274.0" y2="274.0"/><text class="sl" x="72" y="278.0" text-anchor="end">Sài Gòn</text><line class="g v" x1="78.0" x2="78.0" y1="10" y2="274"/><text class="dl" x="80.0" y="294">16/10</text><line class="g v" x1="165.3" x2="165.3" y1="10" y2="274"/><text class="dl" x="167.3" y="294">18/10</text><line class="g v" x1="252.7" x2="252.7" y1="10" y2="274"/><text class="dl" x="254.7" y="294">20/10</text><line class="g v" x1="340.0" x2="340.0" y1="10" y2="274"/><text class="dl" x="342.0" y="294">22/10</text><line class="g v" x1="427.3" x2="427.3" y1="10" y2="274"/><text class="dl" x="429.3" y="294">24/10</text><line class="g v" x1="514.7" x2="514.7" y1="10" y2="274"/><text class="dl" x="516.7" y="294">26/10</text><line class="g v" x1="602.0" x2="602.0" y1="10" y2="274"/><text class="dl" x="604.0" y="294">28/10</text><line class="g v" x1="689.3" x2="689.3" y1="10" y2="274"/><text class="dl" x="691.3" y="294">30/10</text><line class="g v" x1="776.7" x2="776.7" y1="10" y2="274"/><text class="dl" x="778.7" y="294">01/11</text><polyline class="run past" points="92.6,10.0 97.9,36.8 136.2,36.8 140.6,58.8 179.9,58.8 186.1,89.8 223.6,89.8 228.6,115.2 267.2,115.2 270.4,131.0 282.2,131.0"/><polyline class="run" points="282.2,131.0 310.9,131.0 326.8,211.1 354.6,211.1 367.0,274.0 398.2,274.0 410.7,211.1 441.9,211.1 457.8,131.0 485.6,131.0 488.7,115.2 529.2,115.2 534.2,89.8 572.9,89.8 579.1,58.8 616.6,58.8 621.0,36.8 660.2,36.8 665.5,10.0 703.9,10.0 709.2,36.8 747.6,36.8 752.0,58.8 791.2,58.8 797.4,89.8 834.9,89.8 839.9,115.2"/><line class="now" x1="282.2" x2="282.2" y1="8" y2="274"/><circle class="pos" cx="282.2" cy="131.0" r="5"/><text class="nl" x="288.2" y="20">Hôm nay</text><circle class="end" cx="839.9" cy="115.2" r="5"/><text class="nl" x="847.9" y="119.2">Huế 02/11</text></svg>
+		<div class="legend">
+			<span><i style="background:var(--on-dark)"></i>Đã chạy</span>
+			<span><i style="background:var(--primary)"></i>Đã lên lịch</span>
+			<span><i style="background:var(--warn)"></i>Vị trí hiện tại: Đà Nẵng, đến lúc 09:45 hôm nay</span>
+		</div>
+	</div>
+	<p>Hình này cũng giải thích một giới hạn: khách muốn đi Hà Nội → Huế không mua được vé, vì không có tuyến Hà Nội → Huế và SPEC không cho vé nối chuyến.</p>
+</section>
+
+<section>
+	<h2>3. Điều hướng</h2>
+	<div class="nav-demo">
+		<nav class="side" aria-label="Menu đề xuất">
+			<div class="it">Tổng quan</div>
+			<div class="grp">Dữ liệu nền</div>
+			<div class="it">Ga</div>
+			<div class="it">Tuyến</div>
+			<div class="grp">Vận hành</div>
+			<div class="it on">Tàu</div>
+			<div class="it">Chuyến</div>
+			<div class="grp">Bán vé</div>
+			<div class="it">Booking</div>
+			<div class="it">Người dùng</div>
+		</nav>
+		<div>
+			<p>Menu giữ nguyên 7 mục nhưng chia thành 3 nhóm theo đúng thứ tự dựng dữ liệu. Admin mới nhìn menu là biết phải làm gì trước:</p>
+			<div class="flow"><span>Ga</span><i>→</i><span>Tuyến</span><i>→</i><span>Tàu</span><i>→</i><span class="hl">Trang tàu: nối chuyến</span><i>→</i><span>Chuyến</span><i>→</i><span>Booking</span></div>
+			<p style="margin-top:12px">Trang trung tâm là <b>trang của từng tàu</b>. Trang Chuyến chỉ để tra cứu mọi chuyến của mọi tàu, và từ mỗi chuyến có đường quay về trang tàu của nó.</p>
+		</div>
+	</div>
+</section>
+
+<section>
+	<h2>4. Từng trang</h2>
+	<div style="display:grid;gap:48px">
+
+	<!-- GA -->
+	<article class="page first">
+		<div class="page-head"><h3>4.1 Ga</h3><span class="tag">/admin/stations</span></div>
+		<div class="job"><b>Việc chính:</b> thêm hoặc sửa một ga, xem ga đó đang có những tuyến nào. Việc này ít khi xảy ra, vì 8 ga gần như cố định.</div>
+		<div class="opts">
+			<div class="opt">
+				<div class="opt-h"><h4>A. Sơ đồ trục lý trình</h4><span class="badge rec">Khuyến nghị</span></div>
+				<div class="frame"><div class="scr">
+					<div class="scr-top"><h5>Ga</h5><span class="sp"></span><span class="btn">+ Thêm ga</span></div>
+					<div class="card"><div class="strip"><div class="rail"></div><button class="stop up" style="left:0.00%" type="button"><i></i><span><b>Hà Nội</b><small>Km 0</small></span></button><button class="stop down" style="left:10.14%" type="button"><i></i><span><b>Thanh Hóa</b><small>Km 175</small></span></button><button class="stop up" style="left:18.48%" type="button"><i></i><span><b>Vinh</b><small>Km 319</small></span></button><button class="stop down" style="left:30.24%" type="button"><i></i><span><b>Đồng Hới</b><small>Km 522</small></span></button><button class="stop up" style="left:39.86%" type="button"><i></i><span><b>Huế</b><small>Km 688</small></span></button><button class="stop down sel" style="left:45.83%" type="button"><i></i><span><b>Đà Nẵng</b><small>Km 791</small></span></button><button class="stop up" style="left:76.19%" type="button"><i></i><span><b>Nha Trang</b><small>Km 1315</small></span></button><button class="stop down" style="left:100.00%" type="button"><i></i><span><b>Sài Gòn</b><small>Km 1726</small></span></button></div></div>
+					<div class="st-detail">
+						<div class="card">
+							<h6>Ga Đà Nẵng <span class="code">DNG</span></h6>
+							<dl class="kv"><dt>Lý trình</dt><dd>Km 791</dd><dt>Thành phố</dt><dd>Đà Nẵng</dd><dt>Địa chỉ</dt><dd>791 Hải Phòng</dd></dl>
+							<div style="display:flex;gap:8px;margin-top:12px"><span class="btn ghost sm">Sửa</span><span class="btn dis sm">Xóa</span></div>
+							<p class="help" style="margin-top:6px">Không xóa được: ga đang có 4 tuyến.</p>
+						</div>
+						<div class="card">
+							<h6>Tuyến của ga này</h6>
+							<div class="rl"><span>Đà Nẵng → Huế</span><span class="muted">103 km</span></div>
+							<div class="rl"><span>Huế → Đà Nẵng</span><span class="muted">103 km</span></div>
+							<div class="rl"><span>Đà Nẵng → Nha Trang</span><span class="muted">524 km</span></div>
+							<div class="rl"><span>Nha Trang → Đà Nẵng</span><span class="muted">524 km</span></div>
+						</div>
+					</div>
+				</div></div>
+				<div class="why">
+					<div><b>Vì sao chọn</b>Khoảng cách giữa các chấm đúng tỉ lệ km, nên admin thấy ngay đoạn Đà Nẵng - Nha Trang dài nhất. Bấm một ga thì bảng bên dưới đổi theo, không phải mở trang mới.</div>
+					<div><b>Trên điện thoại</b>Trục chuyển thành dọc, ga trên cùng là Hà Nội. Chi tiết ga xếp xuống dưới trục.</div>
+					<div><b>Khi thêm ga</b>Ga mới tự rơi vào đúng chỗ trên trục theo lý trình nhập vào. Lý trình trùng thì báo lỗi ngay ở ô đó.</div>
+				</div>
+			</div>
+			<div class="small-opts">
+				<div class="opt">
+					<div class="opt-h"><h4>B. Thẻ ảnh theo vùng</h4><span class="badge alt">Mockup cũ</span></div>
+					<div class="frame"><div class="scr narrow">
+						<div class="regions">
+							<div class="region"><h6>Miền Bắc</h6><div class="ph"><div>Hà Nội</div><div>Thanh Hóa</div></div></div>
+							<div class="region"><h6>Miền Trung</h6><div class="ph"><div>Vinh</div><div>Huế</div></div></div>
+							<div class="region"><h6>Miền Nam</h6><div class="ph"><div>Nha Trang</div><div>Sài Gòn</div></div></div>
+						</div>
+					</div></div>
+					<p class="help">Nhóm theo vùng có ích khi có hàng chục ga. Với 8 ga, thứ tự lý trình đã là cách nhóm tốt hơn. Ảnh cần cột <code>image_url</code> mà schema chưa có.</p>
+				</div>
+				<div class="opt">
+					<div class="opt-h"><h4>C. Bảng có cột lý trình</h4><span class="badge alt">App đang dùng</span></div>
+					<div class="frame"><div class="scr narrow"><div class="card">
+						<table class="tbl"><thead><tr><th>Lý trình</th><th>Ga</th><th>Thành phố</th></tr></thead>
+						<tbody><tr><td>Km 0</td><td>Ga Hà Nội <span class="code">HNI</span></td><td>Hà Nội</td></tr><tr><td>Km 175</td><td>Ga Thanh Hóa <span class="code">THA</span></td><td>Thanh Hóa</td></tr><tr><td>Km 319</td><td>Ga Vinh <span class="code">VIN</span></td><td>Nghệ An</td></tr></tbody></table>
+					</div></div></div>
+					<p class="help">Đơn giản, đã chạy được. Nhưng không thấy khoảng cách giữa các ga và không thấy tuyến của từng ga.</p>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	<!-- TUYEN -->
+	<article class="page">
+		<div class="page-head"><h3>4.2 Tuyến</h3><span class="tag">/admin/routes</span></div>
+		<div class="job"><b>Việc chính:</b> biết cặp ga nào đã có tuyến, cặp nào còn thiếu chiều về, và thêm tuyến mới với khoảng cách đúng.</div>
+		<div class="opts">
+			<div class="opt">
+				<div class="opt-h"><h4>A. Cặp ga hai chiều</h4><span class="badge rec">Khuyến nghị</span></div>
+				<div class="frame"><div class="scr">
+					<div class="scr-top"><h5>Tuyến</h5><span class="sp"></span><span class="btn">+ Thêm tuyến</span></div>
+					<div class="card">
+						<div class="grp-h" style="padding-top:0">Chặng giữa hai ga kề nhau</div>
+						<div class="pair"><div class="pn"><b>Hà Nội</b><span class="sw2">⇄</span><b>Thanh Hóa</b></div><span class="km">175 km</span><span class="dir">HNI → THA <em>2 chuyến</em></span><span class="dir">THA → HNI <em>1 chuyến</em></span></div><div class="pair"><div class="pn"><b>Thanh Hóa</b><span class="sw2">⇄</span><b>Vinh</b></div><span class="km">144 km</span><span class="dir">THA → VIN <em>2 chuyến</em></span><span class="dir">VIN → THA <em>1 chuyến</em></span></div><div class="pair"><div class="pn"><b>Vinh</b><span class="sw2">⇄</span><b>Đồng Hới</b></div><span class="km">203 km</span><span class="dir">VIN → DHO <em>2 chuyến</em></span><span class="dir">DHO → VIN <em>1 chuyến</em></span></div><div class="pair"><div class="pn"><b>Đồng Hới</b><span class="sw2">⇄</span><b>Huế</b></div><span class="km">166 km</span><span class="dir">DHO → HUE <em>2 chuyến</em></span><span class="dir">HUE → DHO <em>1 chuyến</em></span></div><div class="pair"><div class="pn"><b>Huế</b><span class="sw2">⇄</span><b>Đà Nẵng</b></div><span class="km">103 km</span><span class="dir">HUE → DNG <em>1 chuyến</em></span><span class="dir">DNG → HUE <em>1 chuyến</em></span></div><div class="pair"><div class="pn"><b>Đà Nẵng</b><span class="sw2">⇄</span><b>Nha Trang</b></div><span class="km">524 km</span><span class="dir">DNG → NTR <em>1 chuyến</em></span><span class="dir">NTR → DNG <em>1 chuyến</em></span></div><div class="pair"><div class="pn"><b>Nha Trang</b><span class="sw2">⇄</span><b>Sài Gòn</b></div><span class="km">411 km</span><span class="dir">NTR → SGN <em>1 chuyến</em></span><span class="dir">SGN → NTR <em>1 chuyến</em></span></div><div class="grp-h">Tuyến dài</div><div class="pair"><div class="pn"><b>Hà Nội</b><span class="sw2">⇄</span><b>Sài Gòn</b></div><span class="km">1726 km</span><span class="dir">HNI → SGN <em>0 chuyến</em></span><span class="dir">SGN → HNI <em>0 chuyến</em></span></div>
+					</div>
+				</div></div>
+				<div class="why">
+					<div><b>Vì sao chọn</b>16 tuyến gộp lại thành 8 dòng. Mỗi dòng là một cặp ga, xếp từ Bắc vào Nam, có số chuyến của từng chiều. Thiếu một chiều thì ô chiều đó hiện nút "Thêm chiều về".</div>
+					<div><b>Form thêm tuyến</b>Hai ô chọn ga xếp theo lý trình. Chọn xong hai ga thì ô khoảng cách tự điền <code>|km đến - km đi|</code>, admin vẫn sửa được.</div>
+					<div><b>Bấm vào một chiều</b>Mở danh sách chuyến của tuyến đó ở trang Chuyến, đã lọc sẵn.</div>
+				</div>
+			</div>
+			<div class="small-opts">
+				<div class="opt">
+					<div class="opt-h"><h4>B. Ma trận ga đi × ga đến</h4><span class="badge alt">Phương án khác</span></div>
+					<div class="frame"><div class="scr narrow"><div class="card scroll"><table class="mx"><thead><tr><th class="corner">Đi \ Đến</th><th>HNI</th><th>THA</th><th>VIN</th><th>DHO</th><th>HUE</th><th>DNG</th><th>NTR</th><th>SGN</th></tr></thead><tbody><tr><th>HNI</th><td class="self"></td><td class="on">175</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="on">1726</td></tr><tr><th>THA</th><td class="on">175</td><td class="self"></td><td class="on">144</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td></tr><tr><th>VIN</th><td class="off" aria-label="Chưa có tuyến">+</td><td class="on">144</td><td class="self"></td><td class="on">203</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td></tr><tr><th>DHO</th><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="on">203</td><td class="self"></td><td class="on">166</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td></tr><tr><th>HUE</th><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="on">166</td><td class="self"></td><td class="on">103</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td></tr><tr><th>DNG</th><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="on">103</td><td class="self"></td><td class="on">524</td><td class="off" aria-label="Chưa có tuyến">+</td></tr><tr><th>NTR</th><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="on">524</td><td class="self"></td><td class="on">411</td></tr><tr><th>SGN</th><td class="on">1726</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="off" aria-label="Chưa có tuyến">+</td><td class="on">411</td><td class="self"></td></tr></tbody></table></div></div></div>
+					<p class="help">Thấy hết 56 cặp có thể có, ô trống bấm vào để tạo tuyến. Giải thích nhanh vì sao Hà Nội → Huế không bán được. Nhược điểm: khó đọc với người mới, và chật trên điện thoại. Có thể đặt làm chế độ xem phụ của phương án A.</p>
+				</div>
+				<div class="opt">
+					<div class="opt-h"><h4>C. Danh sách 16 dòng</h4><span class="badge alt">Mockup cũ</span></div>
+					<div class="frame"><div class="scr narrow"><div class="card">
+						<table class="tbl"><thead><tr><th>Tuyến</th><th class="num">Khoảng cách</th><th class="num">Chuyến</th></tr></thead>
+						<tbody><tr><td>Hà Nội → Thanh Hóa</td><td class="num">175 km</td><td class="num">2</td></tr><tr><td>Hà Nội → Sài Gòn</td><td class="num">1726 km</td><td class="num">0</td></tr><tr><td>Thanh Hóa → Hà Nội</td><td class="num">175 km</td><td class="num">1</td></tr></tbody></table>
+					</div></div></div>
+					<p class="help">Chiều đi và chiều về nằm cách xa nhau, khó thấy tuyến nào đang thiếu chiều.</p>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	<!-- TAU -->
+	<article class="page">
+		<div class="page-head"><h3>4.3 Tàu</h3><span class="tag">/admin/trains</span></div>
+		<div class="job"><b>Việc chính:</b> biết mỗi tàu đang ở đâu, chuyến kế tiếp là gì, lịch đã xếp tới ngày nào. Từ đây vào trang của từng tàu.</div>
+		<div class="opts">
+			<div class="opt">
+				<div class="opt-h"><h4>A. Thẻ tàu có vị trí hiện tại</h4><span class="badge rec">Khuyến nghị</span></div>
+				<div class="frame"><div class="scr">
+					<div class="scr-top"><h5>Tàu</h5><span class="sp"></span><span class="btn">+ Thêm tàu</span></div>
+					<div class="trains">
+						<div class="card tc">
+							<div class="tc-h"><span class="code">SE1</span><b>Thống Nhất 1</b></div>
+							<div><div class="mini-line"><i style="left:0%"></i><i style="left:10.1%"></i><i style="left:18.5%"></i><i style="left:30.2%"></i><i style="left:39.9%"></i><i class="at" style="left:45.8%"></i><i style="left:76.2%"></i><i style="left:100%"></i></div><div class="mini-ends"><span>Hà Nội</span><span>Sài Gòn</span></div></div>
+							<dl class="kv"><dt>Đang ở</dt><dd>Đà Nẵng, đến 09:45 hôm nay</dd><dt>Chuyến tới</dt><dd>21/10 08:00 → Nha Trang</dd><dt>Lịch đến</dt><dd>02/11, tại Huế</dd></dl>
+							<span class="lnk">Xem lịch chạy →</span>
+						</div>
+						<div class="card tc">
+							<div class="tc-h"><span class="code">SE2</span><b>Thống Nhất 2</b></div>
+							<div class="empty">Chưa có chuyến nào.<span class="btn sm">+ Tạo chuyến đầu tiên</span></div>
+						</div>
+						<div class="card tc">
+							<div class="tc-h"><span class="code">SE3</span><b>Thống Nhất 3</b></div>
+							<div class="empty">Chưa có chuyến nào.<span class="btn sm">+ Tạo chuyến đầu tiên</span></div>
+						</div>
+					</div>
+				</div></div>
+				<div class="why">
+					<div><b>Vì sao chọn</b>Chỉ có 3 tàu, nên mỗi tàu đủ chỗ cho một thẻ. Câu hỏi admin hay hỏi nhất là "tàu đang ở đâu, bao giờ hết lịch", và thẻ trả lời ngay mà không cần mở thêm trang.</div>
+					<div><b>Tàu chưa có chuyến</b>Thẻ nói rõ trạng thái và có nút tạo chuyến đầu tiên. Với tàu chưa có chuyến, admin được chọn tuyến bất kỳ.</div>
+					<div><b>Phương án đã loại</b>Bảng 3 dòng: gọn nhưng không có chỗ cho vị trí hiện tại. Sơ đồ toa trên trang này: bỏ, vì toa của mọi tàu giống nhau.</div>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	<!-- CHI TIET TAU -->
+	<article class="page">
+		<div class="page-head"><h3>4.4 Trang của một tàu</h3><span class="tag">/admin/trains/{id}</span></div>
+		<div class="job"><b>Việc chính:</b> xem lịch chạy của tàu và nối thêm chuyến vào cuối lịch. Đây là nơi duy nhất tạo chuyến.</div>
+		<div class="opts">
+			<div class="opt">
+				<div class="opt-h"><h4>A. Dòng thời gian các chặng, có nút nối chuyến</h4><span class="badge rec">Khuyến nghị</span></div>
+				<div class="frame"><div class="scr">
+					<div class="scr-top"><span class="crumb">← Tàu</span></div>
+					<div class="scr-top"><span class="code">SE1</span><h5>Thống Nhất 1</h5><span class="sp"></span><span class="btn ghost sm">Sửa tàu</span></div>
+					<div class="td-stats">
+						<div class="card stat"><b>Đà Nẵng</b><small>Đang ở, đến 09:45 hôm nay</small></div>
+						<div class="card stat"><b>13 chuyến</b><small>Sắp chạy, đến hết 02/11</small></div>
+						<div class="card stat"><b>10 vé</b><small>Đã bán trên lịch này</small></div>
+					</div>
+					<div class="td-grid">
+						<div class="card">
+							<h6>Lịch chạy</h6>
+							<div class="tl"><div class="past-row">5 chuyến đã chạy, từ 16/10 đến hôm nay <span class="lnk">Xem</span></div><div class="leg"><div class="ld"><b>21/10</b><small>08:00 → 16:45</small></div><div class="lr"><b>Đà Nẵng → Nha Trang</b><small>524 km · 520.000đ</small></div><div class="ls">1/96 vé</div><span class="pill sched">Đã lên lịch</span></div><div class="dwell">Dừng ở Nha Trang 15 giờ 15 phút</div><div class="leg"><div class="ld"><b>22/10</b><small>08:00 → 14:50</small></div><div class="lr"><b>Nha Trang → Sài Gòn</b><small>411 km · 410.000đ</small></div><div class="ls">2/96 vé</div><span class="pill sched">Đã lên lịch</span></div><div class="dwell">Dừng ở Sài Gòn 17 giờ 10 phút</div><div class="leg"><div class="ld"><b>23/10</b><small>08:00 → 14:50</small></div><div class="lr"><b>Sài Gòn → Nha Trang</b><small>411 km · 410.000đ</small></div><div class="ls">2/96 vé</div><span class="pill sched">Đã lên lịch</span></div><div class="dwell">Dừng ở Nha Trang 17 giờ 10 phút</div><div class="leg"><div class="ld"><b>24/10</b><small>08:00 → 16:45</small></div><div class="lr"><b>Nha Trang → Đà Nẵng</b><small>524 km · 520.000đ</small></div><div class="ls">0/96 vé</div><span class="pill sched">Đã lên lịch</span></div><div class="dwell">Dừng ở Đà Nẵng 15 giờ 15 phút</div><div class="fold">8 chuyến từ 25/10 đến 01/11 <span class="lnk">Mở rộng</span></div><div class="leg"><div class="ld"><b>02/11</b><small>08:00 → 10:45</small></div><div class="lr"><b>Đồng Hới → Huế</b><small>166 km · 170.000đ</small></div><div class="ls">0/96 vé</div><span class="pill sched">Đã lên lịch</span></div><div class="append"><div><b>Nối chuyến tiếp từ Huế</b><small>Sớm nhất 02/11 lúc 11:15</small></div><span class="btn sm">+ Nối chuyến</span></div></div>
+						</div>
+						<div style="display:grid;gap:14px">
+							<div class="card marey-card"><h6>Biểu đồ chạy tàu</h6><svg viewBox="0 0 560 230" class="marey mini" role="img" aria-label="Biểu đồ chạy tàu SE1: trục dọc là 8 ga theo lý trình, trục ngang là ngày từ 16/10 đến 02/11"><line class="g" x1="64" x2="552" y1="10.0" y2="10.0"/><text class="sl" x="58" y="14.0" text-anchor="end">HNI</text><line class="g" x1="64" x2="552" y1="30.3" y2="30.3"/><text class="sl" x="28" y="34.3" text-anchor="end">THA</text><line class="g" x1="64" x2="552" y1="47.0" y2="47.0"/><text class="sl" x="58" y="51.0" text-anchor="end">VIN</text><line class="g" x1="64" x2="552" y1="70.5" y2="70.5"/><text class="sl" x="28" y="74.5" text-anchor="end">DHO</text><line class="g" x1="64" x2="552" y1="89.7" y2="89.7"/><text class="sl" x="58" y="93.7" text-anchor="end">HUE</text><line class="g" x1="64" x2="552" y1="101.7" y2="101.7"/><text class="sl" x="28" y="105.7" text-anchor="end">DNG</text><line class="g" x1="64" x2="552" y1="162.4" y2="162.4"/><text class="sl" x="58" y="166.4" text-anchor="end">NTR</text><line class="g" x1="64" x2="552" y1="210.0" y2="210.0"/><text class="sl" x="28" y="214.0" text-anchor="end">SGN</text><line class="g v" x1="64.0" x2="64.0" y1="10" y2="210"/><text class="dl" x="66.0" y="224">16/10</text><line class="g v" x1="145.3" x2="145.3" y1="10" y2="210"/><text class="dl" x="147.3" y="224">19/10</text><line class="g v" x1="226.7" x2="226.7" y1="10" y2="210"/><text class="dl" x="228.7" y="224">22/10</text><line class="g v" x1="308.0" x2="308.0" y1="10" y2="210"/><text class="dl" x="310.0" y="224">25/10</text><line class="g v" x1="389.3" x2="389.3" y1="10" y2="210"/><text class="dl" x="391.3" y="224">28/10</text><line class="g v" x1="470.7" x2="470.7" y1="10" y2="210"/><text class="dl" x="472.7" y="224">31/10</text><polyline class="run past" points="73.0,10.0 76.3,30.3 100.1,30.3 102.9,47.0 127.3,47.0 131.1,70.5 154.4,70.5 157.5,89.7 181.5,89.7 183.5,101.7 190.8,101.7"/><polyline class="run" points="190.8,101.7 208.6,101.7 218.5,162.4 235.7,162.4 243.4,210.0 262.8,210.0 270.5,162.4 289.9,162.4 299.8,101.7 317.0,101.7 319.0,89.7 344.1,89.7 347.3,70.5 371.3,70.5 375.1,47.0 398.4,47.0 401.1,30.3 425.5,30.3 428.8,10.0 452.6,10.0 455.9,30.3 479.7,30.3 482.4,47.0 506.8,47.0 510.7,70.5 533.9,70.5 537.0,89.7"/><line class="now" x1="190.8" x2="190.8" y1="8" y2="210"/><circle class="pos" cx="190.8" cy="101.7" r="4"/></svg></div>
+							<div class="card">
+								<h6>Nối chuyến tiếp</h6>
+								<div class="frm">
+									<div class="field"><label>Ga đi</label><div class="input locked">Huế <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Đã khóa" role="img"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div><span class="help">Là ga đến của chuyến 02/11.</span></div>
+									<div class="field"><label>Ga đến</label><div class="dest"><div class="on"><b>Đà Nẵng</b><small>103 km</small></div><div><b>Đồng Hới</b><small>166 km</small></div></div></div>
+									<div class="row2">
+										<div class="field"><label>Khởi hành</label><div class="input">03/11/2026 08:00</div></div>
+										<div class="field"><label>Đến nơi</label><div class="input">03/11/2026 09:45</div></div>
+									</div>
+									<div class="field"><label>Giá cơ bản</label><div class="input">100.000đ</div></div>
+									<span class="btn" style="justify-self:start">Thêm chuyến</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div></div>
+				<div class="why">
+					<div><b>Vì sao chọn</b>Đọc từ trên xuống giống lịch trình thật: chặng, rồi thời gian dừng ở ga, rồi chặng kế. Chuyến đã chạy gộp lại thành một dòng để lịch sắp chạy luôn ở trên cùng.</div>
+					<div><b>Luật nối chặng hiện ra trên form</b>Ga đi bị khóa và nói rõ lấy từ chuyến nào. Ô ga đến chỉ có các tuyến xuất phát từ Huế. Giờ khởi hành sớm nhất là 11:15, tức 30 phút sau giờ đến.</div>
+					<div><b>Biểu đồ nhỏ bên phải</b>Cho thấy cả vòng chạy trong một hình. Bấm vào một đoạn thì dòng thời gian cuộn tới chuyến đó, giống cách MBTA nối biểu đồ với bản đồ.</div>
+				</div>
+				<p class="help">Chưa có trong luật hiện tại, cần Phi quyết: tự gợi ý giờ đến theo 60 km/h và giá cơ bản theo 1.000đ/km, như cách dữ liệu mẫu được tính. Admin vẫn sửa được hai ô này.</p>
+			</div>
+			<div class="small-opts">
+				<div class="opt">
+					<div class="opt-h"><h4>B. Biểu đồ chạy tàu làm chính</h4><span class="badge alt">Phương án khác</span></div>
+					<div class="frame"><div class="scr narrow"><div class="card"><svg viewBox="0 0 560 230" class="marey mini" role="img" aria-label="Biểu đồ chạy tàu SE1: trục dọc là 8 ga theo lý trình, trục ngang là ngày từ 16/10 đến 02/11"><line class="g" x1="64" x2="552" y1="10.0" y2="10.0"/><text class="sl" x="58" y="14.0" text-anchor="end">HNI</text><line class="g" x1="64" x2="552" y1="30.3" y2="30.3"/><text class="sl" x="28" y="34.3" text-anchor="end">THA</text><line class="g" x1="64" x2="552" y1="47.0" y2="47.0"/><text class="sl" x="58" y="51.0" text-anchor="end">VIN</text><line class="g" x1="64" x2="552" y1="70.5" y2="70.5"/><text class="sl" x="28" y="74.5" text-anchor="end">DHO</text><line class="g" x1="64" x2="552" y1="89.7" y2="89.7"/><text class="sl" x="58" y="93.7" text-anchor="end">HUE</text><line class="g" x1="64" x2="552" y1="101.7" y2="101.7"/><text class="sl" x="28" y="105.7" text-anchor="end">DNG</text><line class="g" x1="64" x2="552" y1="162.4" y2="162.4"/><text class="sl" x="58" y="166.4" text-anchor="end">NTR</text><line class="g" x1="64" x2="552" y1="210.0" y2="210.0"/><text class="sl" x="28" y="214.0" text-anchor="end">SGN</text><line class="g v" x1="64.0" x2="64.0" y1="10" y2="210"/><text class="dl" x="66.0" y="224">16/10</text><line class="g v" x1="145.3" x2="145.3" y1="10" y2="210"/><text class="dl" x="147.3" y="224">19/10</text><line class="g v" x1="226.7" x2="226.7" y1="10" y2="210"/><text class="dl" x="228.7" y="224">22/10</text><line class="g v" x1="308.0" x2="308.0" y1="10" y2="210"/><text class="dl" x="310.0" y="224">25/10</text><line class="g v" x1="389.3" x2="389.3" y1="10" y2="210"/><text class="dl" x="391.3" y="224">28/10</text><line class="g v" x1="470.7" x2="470.7" y1="10" y2="210"/><text class="dl" x="472.7" y="224">31/10</text><polyline class="run past" points="73.0,10.0 76.3,30.3 100.1,30.3 102.9,47.0 127.3,47.0 131.1,70.5 154.4,70.5 157.5,89.7 181.5,89.7 183.5,101.7 190.8,101.7"/><polyline class="run" points="190.8,101.7 208.6,101.7 218.5,162.4 235.7,162.4 243.4,210.0 262.8,210.0 270.5,162.4 289.9,162.4 299.8,101.7 317.0,101.7 319.0,89.7 344.1,89.7 347.3,70.5 371.3,70.5 375.1,47.0 398.4,47.0 401.1,30.3 425.5,30.3 428.8,10.0 452.6,10.0 455.9,30.3 479.7,30.3 482.4,47.0 506.8,47.0 510.7,70.5 533.9,70.5 537.0,89.7"/><line class="now" x1="190.8" x2="190.8" y1="8" y2="210"/><circle class="pos" cx="190.8" cy="101.7" r="4"/></svg></div></div></div>
+					<p class="help">Nhìn toàn cảnh rất tốt, đúng chất nghề đường sắt. Nhưng khó đọc giờ chính xác và khó bấm trên điện thoại, nên chỉ hợp làm hình phụ.</p>
+				</div>
+				<div class="opt">
+					<div class="opt-h"><h4>C. Lịch tháng</h4><span class="badge no">Không nên</span></div>
+					<div class="frame"><div class="scr narrow"><div class="cal">
+						<div><b>19</b>DHO→HUE</div><div><b>20</b>HUE→DNG</div><div><b>21</b>DNG→NTR</div><div><b>22</b>NTR→SGN</div><div><b>23</b>SGN→NTR</div><div><b>24</b>NTR→DNG</div><div><b>25</b>DNG→HUE</div>
+					</div></div></div>
+					<p class="help">Đẹp khi mỗi ngày đúng một chặng như dữ liệu mẫu. Vỡ ngay khi một ngày có hai chặng, hoặc một chuyến như Hà Nội → Sài Gòn kéo dài 29 giờ qua hai ô.</p>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	<!-- CHUYEN -->
+	<article class="page">
+		<div class="page-head"><h3>4.5 Chuyến</h3><span class="tag">/admin/trips</span></div>
+		<div class="job"><b>Việc chính:</b> tra một chuyến bất kỳ theo tàu, ngày hoặc tuyến; xem chuyến đó đã bán chỗ nào; hủy chuyến khi được phép.</div>
+		<div class="opts">
+			<div class="opt">
+				<div class="opt-h"><h4>A. Danh sách nhóm theo ngày</h4><span class="badge rec">Khuyến nghị</span></div>
+				<div class="frame"><div class="scr">
+					<div class="scr-top"><h5>Chuyến</h5><span class="sp"></span><span class="muted" style="font-size:.85rem">Chuyến mới được tạo trên trang của từng tàu.</span><span class="btn ghost sm">Đến trang Tàu</span></div>
+					<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+						<div class="tabs"><span class="tab on">Sắp chạy<em>13</em></span><span class="tab">Đã chạy<em>5</em></span><span class="tab">Đã hủy<em>0</em></span></div>
+						<span class="sp" style="flex:1"></span>
+						<div class="input" style="min-width:150px">Tất cả tàu <span class="muted">▾</span></div>
+						<div class="input" style="min-width:150px">Từ 20/10/2026</div>
+					</div>
+					<div class="card">
+						<table class="tbl"><thead><tr><th>Tàu</th><th>Tuyến</th><th>Giờ</th><th class="num">Giá cơ bản</th><th class="num">Đã bán</th><th>Trạng thái</th></tr></thead>
+						<tbody>
+						<tr><td colspan="6" style="padding:0;border:0"><div class="day-h">Ngày mai <small>Thứ Tư, 21/10</small></div></td></tr>
+						<tr><td><span class="code">SE1</span></td><td>Đà Nẵng → Nha Trang</td><td>08:00 → 16:45</td><td class="num">520.000đ</td><td class="num">1/96</td><td><span class="pill sched">Đã lên lịch</span></td></tr>
+						<tr><td colspan="6" style="padding:0;border:0"><div class="day-h">Thứ Năm <small>22/10</small></div></td></tr>
+						<tr><td><span class="code">SE1</span></td><td>Nha Trang → Sài Gòn</td><td>08:00 → 14:50</td><td class="num">410.000đ</td><td class="num">2/96</td><td><span class="pill sched">Đã lên lịch</span></td></tr>
+						<tr><td colspan="6" style="padding:0;border:0"><div class="day-h">Thứ Sáu <small>23/10</small></div></td></tr>
+						<tr><td><span class="code">SE1</span></td><td>Sài Gòn → Nha Trang</td><td>08:00 → 14:50</td><td class="num">410.000đ</td><td class="num">2/96</td><td><span class="pill sched">Đã lên lịch</span></td></tr>
+						</tbody></table>
+					</div>
+				</div></div>
+				<div class="why">
+					<div><b>Vì sao chọn</b>Admin thường hỏi "hôm nay, ngày mai có chuyến nào". Nhóm theo ngày trả lời câu đó trước, rồi mới tới bộ lọc. Ba tab dùng cùng phép so giờ khởi hành với hiện tại như luật đặt và hủy vé (D8), nên chuyến 08:00 hôm nay đã nằm ở tab "Đã chạy".</div>
+					<div><b>Không có nút "Tạo chuyến"</b>Thay bằng một dòng chỉ đường sang trang Tàu, vì tạo chuyến ở đây sẽ phải chọn tàu rồi mới biết ga đi, tức là lặp lại trang tàu.</div>
+					<div><b>Trên điện thoại</b>Mỗi dòng thành một thẻ hai hàng thay vì bảng cuộn ngang trong khung như hiện tại.</div>
+				</div>
+			</div>
+			<div class="opt">
+				<div class="opt-h"><h4>Chi tiết chuyến: sơ đồ toa có chỗ đã bán</h4><span class="badge rec">Khuyến nghị</span></div>
+				<div class="frame"><div class="scr">
+					<div class="scr-top"><span class="crumb">← Chuyến</span><span class="muted" style="font-size:.85rem">·</span><span class="crumb">SE1 Thống Nhất 1</span></div>
+					<div class="scr-top"><h5>Nha Trang → Sài Gòn</h5><span class="pill sched">Đã lên lịch</span><span class="sp"></span><span class="btn dis sm">Hủy chuyến</span></div>
+					<div class="block-note">Không hủy được: chuyến đã có 1 booking. Hủy booking đó trước nếu cần.</div>
+					<div class="td-grid">
+						<div class="card">
+							<div class="coach-tabs" style="margin-bottom:10px"><span><b>Toa 1</b> 0/32</span><span><b>Toa 2</b> 0/32</span><span><b>Toa 3</b> 0/16</span><span class="on"><b>Toa 4</b> 2/16</span></div>
+							<div class="cabins"><div class="cab"><small>Khoang 1</small><div class="beds"><span class="bed">B01</span><span class="bed">B02</span><span class="bed">B03</span><span class="bed">B04</span></div></div><div class="cab"><small>Khoang 2</small><div class="beds"><span class="bed">B05</span><span class="bed">B06</span><span class="bed">B07</span><span class="bed">B08</span></div></div><div class="cab"><small>Khoang 3</small><div class="beds"><span class="bed sold">B09</span><span class="bed sold">B10</span><span class="bed">B11</span><span class="bed">B12</span></div></div><div class="cab"><small>Khoang 4</small><div class="beds"><span class="bed">B13</span><span class="bed">B14</span><span class="bed">B15</span><span class="bed">B16</span></div></div></div>
+						</div>
+						<div class="card">
+							<h6>Hành khách</h6>
+							<div class="rl"><span>Phạm Thu Dung<small class="muted" style="display:block">Toa 4 · B09 · BK202610004</small></span><span>610.000đ</span></div>
+							<div class="rl"><span>Phạm Quang Minh<small class="muted" style="display:block">Toa 4 · B10 · BK202610004</small></span><span>610.000đ</span></div>
+							<p class="help" style="margin-top:8px">22/10/2026 · 08:00 → 14:50 · 411 km · giá cơ bản 410.000đ</p>
+						</div>
+					</div>
+				</div></div>
+				<div class="why">
+					<div><b>Vì sao chọn</b>Sơ đồ toa chuyển từ trang tàu sang đây, vì chỉ ở mức chuyến thì mỗi chỗ mới có trạng thái. Bấm một chỗ đã bán thì dòng hành khách tương ứng được tô sáng.</div>
+					<div><b>Nút bị chặn nói lý do</b>Nút "Hủy chuyến" mờ đi và có dòng lý do ngay bên dưới, không bắt admin đoán.</div>
+				</div>
+			</div>
+			<div class="small-opts">
+				<div class="opt">
+					<div class="opt-h"><h4>B. Bảng giờ kiểu nhà ga</h4><span class="badge no">Không nên</span></div>
+					<div class="board"><div><span>08:00</span><span>SE1</span><span>NHA TRANG → SÀI GÒN</span><span>ĐÚNG GIỜ</span></div><div><span>08:00</span><span>SE1</span><span>SÀI GÒN → NHA TRANG</span><span>23/10</span></div></div>
+					<p class="help">Hợp với màn hình TV ở sảnh ga. Ở trang quản trị thì ít thông tin trên mỗi dòng, và chữ vàng trên nền tối khó in.</p>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	<!-- BOOKING -->
+	<article class="page">
+		<div class="page-head"><h3>4.6 Booking</h3><span class="tag">/admin/bookings</span></div>
+		<div class="job"><b>Việc chính:</b> tìm một booking theo mã hoặc tên khách khi khách hỏi, xem vé trong booking đó.</div>
+		<div class="opts">
+			<div class="opt">
+				<div class="opt-h"><h4>A. Ba tab giống My Trips của khách</h4><span class="badge rec">Khuyến nghị</span></div>
+				<div class="frame"><div class="scr">
+					<div class="scr-top"><h5>Booking</h5></div>
+					<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+						<div class="tabs"><span class="tab on">Sắp đi<em>5</em></span><span class="tab">Đã đi<em>2</em></span><span class="tab">Đã hủy<em>1</em></span></div>
+						<span style="flex:1"></span>
+						<div class="input" style="min-width:260px"><span class="muted">Tìm mã booking hoặc tên khách</span></div>
+					</div>
+					<div class="card">
+						<table class="tbl"><thead><tr><th>Mã</th><th>Khách</th><th>Chuyến</th><th class="num">Vé</th><th class="num">Tổng tiền</th></tr></thead>
+						<tbody>
+						<tr><td><span class="code">BK202610003</span></td><td>Lê Hoàng Cường</td><td>SE1 Đà Nẵng → Nha Trang<small>21/10 08:00</small></td><td class="num">1</td><td class="num">520.000đ</td></tr>
+						<tr><td><span class="code">BK202610004</span></td><td>Phạm Thu Dung</td><td>SE1 Nha Trang → Sài Gòn<small>22/10 08:00</small></td><td class="num">2</td><td class="num">1.220.000đ</td></tr>
+						<tr><td><span class="code">BK202610005</span></td><td>Vũ Minh Đức</td><td>SE1 Sài Gòn → Nha Trang<small>23/10 08:00</small></td><td class="num">2</td><td class="num">820.000đ</td></tr>
+						</tbody></table>
+					</div>
+				</div></div>
+				<div class="why">
+					<div><b>Vì sao chọn</b>Admin và khách nhìn booking theo cùng ba nhóm, nên khi khách gọi hỏi "vé sắp đi của tôi" thì admin mở đúng tab. Cột Chuyến ghi cả tàu và giờ đi, bấm vào là sang chi tiết chuyến.</div>
+					<div><b>Chi tiết booking</b>Trang chi tiết gồm danh sách vé, chỗ, giá từng vé, và nút hủy kèm lý do khi bị chặn.</div>
+				</div>
+			</div>
+		</div>
+	</article>
+
+	<!-- NGUOI DUNG + TONG QUAN -->
+	<article class="page">
+		<div class="page-head"><h3>4.7 Người dùng và 4.8 Tổng quan</h3></div>
+		<div class="small-opts">
+			<div class="opt">
+				<h4>Người dùng</h4>
+				<p>Giữ bảng hiện tại, thêm cột số booking và tab Khách hàng / Quản trị. 12 tài khoản thì không cần thêm gì khác. Bấm một khách thì mở danh sách booking của khách đó ở trang Booking.</p>
+			</div>
+			<div class="opt">
+				<h4>Tổng quan (làm sau cùng)</h4>
+				<p>Hướng đề xuất: khối "Hôm nay" gồm chuyến chạy hôm nay và vị trí từng tàu trên trục Bắc - Nam; doanh thu theo ngày lấy từ booking thật, thay biểu đồ số giả 26/08 - 01/09 đang có. Chi tiết sẽ làm sau khi các trang trên được chốt.</p>
+			</div>
+		</div>
+	</article>
+
+	</div>
+</section>
+
+<section>
+	<h2>5. Quy tắc chung cho mọi trang</h2>
+	<ul class="tight">
+		<li><b>Mọi danh sách ga theo lý trình,</b> từ Hà Nội vào Sài Gòn: ô chọn ga, danh sách tuyến, bộ lọc.</li>
+		<li><b>Nút bị chặn phải nói lý do</b> ngay cạnh nút, không chỉ làm mờ. Ví dụ "Không xóa được: ga đang có 4 tuyến."</li>
+		<li><b>Xóa và hủy luôn hỏi lại trong trang,</b> nêu hậu quả cụ thể. Làm xong thì báo kết quả bằng thông báo nhỏ ở góc.</li>
+		<li><b>Trạng thái trống có việc để làm:</b> tàu chưa có chuyến thì có nút tạo chuyến đầu tiên.</li>
+		<li><b>Trạng thái có chữ đi kèm màu,</b> không dựa vào màu một mình.</li>
+		<li><b>Luôn có đường quay lại:</b> trang con có dòng "← Tàu", "← Chuyến" ở đầu, và nút Back của trình duyệt quay đúng trang trước.</li>
+		<li><b>Trên điện thoại</b> bảng chuyển thành thẻ, không có trang nào cuộn ngang.</li>
+		<li><b>Chữ trên màn hình</b> chỉ là chữ cho admin: không ghi chú nội bộ, không chữ "demo" hay "mẫu", và chỉ thêm dòng hướng dẫn khi nó giúp admin làm đúng.</li>
+	</ul>
+</section>
+
+<section>
+	<h2>6. Phi cần chọn</h2>
+	<div class="scroll">
+	<table class="dec">
+		<thead><tr><th>Trang</th><th>Khuyến nghị</th><th>Phương án khác</th></tr></thead>
+		<tbody>
+			<tr><td>Ga</td><td>A. Sơ đồ trục lý trình</td><td>B. Thẻ ảnh theo vùng · C. Bảng</td></tr>
+			<tr><td>Tuyến</td><td>A. Cặp ga hai chiều</td><td>B. Ma trận (có thể làm chế độ xem phụ) · C. Danh sách 16 dòng</td></tr>
+			<tr><td>Tàu</td><td>A. Thẻ tàu có vị trí hiện tại</td><td>Bảng</td></tr>
+			<tr><td>Trang một tàu</td><td>A. Dòng thời gian + biểu đồ nhỏ + form nối chuyến</td><td>B. Biểu đồ chạy tàu làm chính</td></tr>
+			<tr><td>Chuyến</td><td>A. Nhóm theo ngày, ba tab; chi tiết chuyến có sơ đồ toa</td><td>Bảng phẳng như hiện tại</td></tr>
+			<tr><td>Booking</td><td>A. Ba tab giống My Trips</td><td>Bảng có cột trạng thái</td></tr>
+			<tr><td>Menu</td><td>Chia 3 nhóm: Dữ liệu nền, Vận hành, Bán vé</td><td>Giữ 7 mục phẳng</td></tr>
+		</tbody>
+	</table>
+	</div>
+	<p style="margin-top:12px">Hai câu hỏi về luật, ngoài bố cục:</p>
+	<ul class="tight">
+		<li>Form nối chuyến có tự gợi ý giờ đến (60 km/h) và giá cơ bản (1.000đ/km) không? Admin vẫn sửa được.</li>
+		<li>Trang Tuyến có thêm nút "Thêm chiều về" cho cặp ga đang thiếu một chiều không?</li>
+	</ul>
+</section>
+
+<section>
+	<h2>7. Nguồn tham khảo</h2>
+	<p>Skill <code>ui-ux-pro-max</code>:</p>
+	<ul class="tight refs">
+		<li>Hai lần tạo design system đều ra mẫu landing page (glassmorphism, rồi HUD viễn tưởng), không hợp với trang quản trị nên không dùng. Màu và font giữ theo mockup admin trước đây (navy, cobalt, Be Vietnam Pro, Noto Sans).</li>
+		<li>Tra cứu sản phẩm: "Logistics/Delivery" gợi ý phong cách tối giản Swiss + Flat và dashboard "Real-Time Monitoring + Route Analytics". Đề xuất này đi theo hướng đó.</li>
+		<li>Hướng dẫn UX áp dụng: Confirmation Dialogs, Confirmation Messages, Empty States, Disabled States, Table Handling trên mobile, Active State của menu, Back Button.</li>
+		<li>Tra biểu đồ cho lịch chạy chỉ ra biểu đồ đường thông thường, nên database của skill không có mẫu riêng cho lịch tàu. Biểu đồ chạy tàu lấy từ các nguồn dưới đây.</li>
+	</ul>
+	<p>Mẫu giao diện của ngành đường sắt:</p>
+	<ul class="tight refs">
+		<li><a href="https://docs.trenolab.com/docs/getting-started/trenolive/timetabling/graphic_timetable">Trenolab, Graphic timetable</a>: phần mềm lập lịch tàu dùng biểu đồ thời gian - quãng đường, bấm một đường để mở form sửa chuyến.</li>
+		<li><a href="https://github.com/mbtaviz/mbtaviz.github.io/wiki/The-Trains-Visualization">MBTA, The Trains Visualization</a>: biểu đồ Marey đặt cạnh bản đồ, rê chuột trên biểu đồ thì vị trí tàu trên bản đồ đổi theo.</li>
+		<li><a href="https://jmri.org/help/en/html/tools/TimeTable.shtml">JMRI Timetable</a>: lịch tàu tổ chức theo ga, chặng và lịch chạy; mỗi loại tàu một màu trên biểu đồ.</li>
+		<li><a href="https://www.witpress.com/elibrary/wit-transactions-on-the-built-environment/37/6794">TDG (WIT Press)</a>: biểu đồ thời gian - quãng đường dùng cho cả lập lịch, theo dõi và xem lại lịch sử.</li>
+		<li><a href="https://opus4.kobv.de/opus4-zib/frontdoor/index/index/docId/7399">ZIB, trực quan hóa vòng quay đầu máy</a>: một vòng quay của tàu là chuỗi chặng lặp lại theo ngày, giống lịch của SE1.</li>
+		<li><a href="https://phptravels.com/train-module-features">PHPTRAVELS, Train module</a>: trang quản trị bán vé tàu có sơ đồ toa và giường, theo từng chuyến.</li>
+	</ul>
+</section>
+
+</main>
+</body>
+</html>

@@ -11,10 +11,10 @@ services:
       MYSQL_DATABASE: traingo
       MYSQL_USER: traingo
       MYSQL_PASSWORD: traingo
-    # Host port 3007, not 3306: a MySQL installed on the dev machine often
-    # already listens on 3306, and the container then fails to start.
+    # Host port 3306. If a MySQL installed on the dev machine already listens
+    # there, stop it first or the container fails to start.
     ports:
-      - "3007:3306"
+      - "3306:3306"
     volumes:
       - traingo-mysql-data:/var/lib/mysql
     healthcheck:

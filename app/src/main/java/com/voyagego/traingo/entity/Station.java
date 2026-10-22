@@ -11,12 +11,14 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 /**
- * A railway station (docs/product/domain-model.md). Hibernate creates the
- * "stations" table from this class on startup (ddl-auto=update), so there is
- * no SQL script to keep in step with it.
+ * A railway station on the north-south line (docs/product/domain-model.md).
+ * The table comes from the Flyway migrations; Hibernate only validates this
+ * class against it.
  */
 @Entity
-@Table(name = "stations", uniqueConstraints = @UniqueConstraint(name = "uk_stations_code", columnNames = "code"))
+@Table(name = "stations", uniqueConstraints = {
+		@UniqueConstraint(name = "uk_stations_code", columnNames = "code"),
+		@UniqueConstraint(name = "uk_stations_km_mark", columnNames = "km_mark") })
 public class Station {
 
 	// Column sizes, shared with StationRequest so validation and schema agree.
@@ -41,19 +43,27 @@ public class Station {
 	@Column(length = ADDRESS_MAX_LENGTH)
 	private String address;
 
+	/**
+	 * Distance from Hà Nội along the line, in km. Lists of stations are sorted
+	 * by it, so they read north to south.
+	 */
+	@Column(nullable = false)
+	private int kmMark;
+
 	/** Required by JPA. */
 	protected Station() {
 	}
 
-	public Station(String code, String name, String city, String address) {
-		update(code, name, city, address);
+	public Station(String code, String name, String city, String address, int kmMark) {
+		update(code, name, city, address, kmMark);
 	}
 
-	public void update(String code, String name, String city, String address) {
+	public void update(String code, String name, String city, String address, int kmMark) {
 		this.code = normalizeCode(code);
 		this.name = name;
 		this.city = city;
 		this.address = address;
+		this.kmMark = kmMark;
 	}
 
 	/**
@@ -82,6 +92,10 @@ public class Station {
 
 	public String getAddress() {
 		return address;
+	}
+
+	public int getKmMark() {
+		return kmMark;
 	}
 
 }

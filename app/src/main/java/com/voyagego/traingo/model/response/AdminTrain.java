@@ -4,14 +4,10 @@ public class AdminTrain {
 
 	private final String code;
 	private final String name;
-	private final int coaches;
-	private final int seats;
 
-	public AdminTrain(String code, String name, int coaches, int seats) {
+	public AdminTrain(String code, String name) {
 		this.code = code;
 		this.name = name;
-		this.coaches = coaches;
-		this.seats = seats;
 	}
 
 	public String getCode() {
@@ -20,14 +16,6 @@ public class AdminTrain {
 
 	public String getName() {
 		return name;
-	}
-
-	public int getCoaches() {
-		return coaches;
-	}
-
-	public int getSeats() {
-		return seats;
 	}
 
 }

@@ -1,12 +1,12 @@
 package com.voyagego.traingo.entity;
 
 /**
- * Valid moves: AVAILABLE -> HELD -> BOOKED on payment, HELD -> AVAILABLE when
- * the hold expires, BOOKED -> AVAILABLE when the booking is cancelled.
- * SELECTED exists only in the browser and is never stored.
+ * Valid moves: AVAILABLE -> BOOKED when the booking is paid, BOOKED ->
+ * AVAILABLE when the booking is cancelled. There is no hold: a seat is claimed
+ * only inside the payment transaction. SELECTED exists only in the browser and
+ * is never stored.
  */
 public enum TripSeatStatus {
 	AVAILABLE,
-	HELD,
 	BOOKED
 }

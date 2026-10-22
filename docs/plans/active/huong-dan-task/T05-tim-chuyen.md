@@ -5,7 +5,7 @@
 
 | Đợt | Phần việc | Độ khó | Cần xong trước | Task đang chờ task này | Tên branch |
 | --- | --- | --- | --- | --- | --- |
-| 1 | B | Vừa (khoảng 2-3 ngày) | Quyết định D6, D8 | T09 (nút "Chọn chỗ") | `feat/t05-trip-search` |
+| 1 | B | Vừa (khoảng 2-3 ngày) | Quyết định D6, D8, D9 | T09 (nút "Chọn chỗ") | `feat/t05-trip-search` |
 
 Các từ như `@EntityGraph`, DTO, `record` được giải thích trong `README.md` cùng thư mục.
 Cách chia package theo tầng (`controller/`, `service/`, `model/request/`...) nằm ở
@@ -20,10 +20,15 @@ chuyến để xem chi tiết từng toa, rồi đi tiếp sang bước chọn c
 
 Khách **không cần đăng nhập** để tìm và xem chuyến.
 
-Hiện trang chủ **đã đọc dữ liệu thật** từ database: ô chọn ga lấy từ bảng `stations`, và
-bốn thẻ tuyến phổ biến là bốn tuyến có nhiều booking nhất (ghi chú dưới thẻ là quãng
-đường). Nhưng form đang gửi **tên ga**, còn trang tìm chuyến cần **mã ga**. Task này đổi
-trang chủ sang gửi mã ga, rồi làm trang danh sách và trang chi tiết chuyến.
+Hiện trang chủ **đã đọc dữ liệu thật** từ database: ô chọn ga lấy từ bảng `stations`, xếp
+theo lý trình từ Bắc vào Nam, và bốn thẻ tuyến phổ biến là bốn tuyến có nhiều booking nhất
+(ghi chú dưới thẻ là quãng đường). Nhưng form đang gửi **tên ga**, còn trang tìm chuyến cần
+**mã ga**. Task này đổi trang chủ sang gửi mã ga, rồi làm trang danh sách và trang chi tiết
+chuyến.
+
+Khách chỉ tìm được chuyến cho **cặp ga có tuyến**. Không có vé nối chuyến (`SPEC.md` mục
+32.1, ADR 0011): dữ liệu mẫu không có tuyến Hà Nội → Huế, nên tìm Hà Nội → Huế ra danh sách
+rỗng, dù tàu SE1 có chạy qua Huế bằng nhiều chặng.
 
 ## 2. Phạm vi
 
@@ -42,38 +47,41 @@ Không làm (`SPEC.md` mục 7):
 ## 3. Dữ liệu dùng tới
 
 ```
-stations 1 ──< routes 1 ──< trips >── 1 trains 1 ──< coaches 1 ──< seats
-                             │                                      │
-                             └──────────< trip_seats >──────────────┘
+stations 1 ──< routes 1 ──< trips >── 1 trains
+                             │
+                             └──< trip_seats
 ```
 
 Đọc sơ đồ: một tuyến (`routes`) nối hai ga và có nhiều chuyến (`trips`). Mỗi chuyến chạy
-bằng một tàu (`trains`); tàu có nhiều toa (`coaches`), toa có nhiều ghế (`seats`). Bảng
-`trip_seats` ghi trạng thái của **từng ghế trên từng chuyến**: cùng một ghế có thể trống ở
-chuyến hôm nay nhưng đã bán ở chuyến ngày mai.
+bằng một tàu (`trains`) và có 96 dòng `trip_seats`. Bảng `trip_seats` ghi **từng chỗ trên từng
+chuyến**: số toa, loại toa, mã chỗ, phụ thu và trạng thái. Cùng mã chỗ `A01` của toa 1 có thể
+trống ở chuyến hôm nay nhưng đã bán ở chuyến ngày mai. Không có bảng toa hay ghế (ADR 0009).
 
 | Bảng | Cột dùng tới |
 | --- | --- |
 | `stations` | `id`, `code`, `name` |
 | `routes` | `origin_station_id`, `destination_station_id` |
-| `trips` | `route_id`, `train_id`, `departure_date`, `departure_time`, `arrival_time`, `base_price`, `status` |
-| `coaches` | `train_id`, `coach_number`, `coach_type`, `price_modifier` |
-| `trip_seats` | `trip_id`, `seat_id`, `status`, `held_until` |
+| `trips` | `route_id`, `train_id`, `departure_at`, `arrival_at`, `base_price`, `status` |
+| `trip_seats` | `trip_id`, `coach_number`, `coach_type`, `price_modifier`, `status` |
 
 Hai khái niệm dùng suốt task này:
 
-- Một chỗ **còn trống** khi `status = AVAILABLE`, hoặc khi `status = HELD` nhưng thời hạn
-  giữ `held_until` đã qua (quyết định D1). Nói cách khác, chỗ có người giữ mà hết 5 phút thì
-  coi như trống lại.
-- Một chuyến **đặt được** khi `status = SCHEDULED` và thời điểm khởi hành (`departure_date`
-  cộng `departure_time`) vẫn còn ở sau hiện tại (quyết định D8).
+- Một chỗ **còn trống** khi `status = AVAILABLE`. Chỗ chỉ có hai trạng thái `AVAILABLE` và
+  `BOOKED`; không còn giữ chỗ, nên không có hạn giữ phải so giờ (ADR 0010).
+- Một chuyến **đặt được** khi `status = SCHEDULED` và thời điểm khởi hành `departure_at` vẫn
+  còn ở sau hiện tại (quyết định D8).
+
+`departure_at` và `arrival_at` là ngày-giờ đầy đủ (`DATETIME`, Java `LocalDateTime`), và
+database chặn giờ đến không sau giờ đi. Chuyến có thể đến vào hôm sau, hoặc chạy hơn 24 giờ
+(Hà Nội - Sài Gòn khoảng 29 giờ). Không còn quy ước "giờ đến nhỏ hơn giờ đi là hôm sau", nên
+không có phép cộng 24 giờ nào.
 
 ## 4. Các bước làm
 
 ### Bước 1. Model: thêm method cho entity, tạo request và DTO
 
-Thêm vào entity `entity/Trip` method `departureAt()`, trả ngày và giờ khởi hành gộp làm một
-(mô tả ở T07). Task nào làm trước thì thêm; T07, T09, T10 dùng lại, không viết bản thứ hai.
+Entity `entity/Trip` đã có `getDepartureAt()` và `getArrivalAt()` kiểu `LocalDateTime`, nên
+không cần thêm method nào vào entity.
 
 Tạo class mới `model/request/TripSearchRequest`. Tên các field phải khớp đúng tên các ô
 đang có trong form ở trang chủ:
@@ -93,9 +101,9 @@ file:
 
 ```java
 record TripSummary(Long tripId, String trainCode, String originName,
-        String destinationName, LocalDate departureDate, LocalTime departureTime,
-        LocalTime arrivalTime, boolean arrivesNextDay, Duration duration,
-        long availableSeats, long lowestPrice, boolean enoughSeats) { }
+        String destinationName, LocalDateTime departureAt, LocalDateTime arrivalAt,
+        Duration duration, long availableSeats, long lowestPrice,
+        boolean enoughSeats) { }
 
 record CoachOffer(int coachNumber, CoachType coachType, long ticketPrice,
         long availableSeats) { }
@@ -119,32 +127,41 @@ Optional<Route> findByOriginStationCodeAndDestinationStationCode(
 Thêm vào `repository/TripRepository`, để lấy chuyến kèm tàu và hai ga trong một lần đọc:
 
 ```java
+/** Trips on the route leaving in [from, to), earliest first. */
 @EntityGraph(attributePaths = {"train", "route.originStation",
         "route.destinationStation"})
-List<Trip> findByRouteIdAndDepartureDateAndStatusOrderByDepartureTimeAsc(
-        Long routeId, LocalDate date, TripStatus status);
+@Query("""
+    select t from Trip t
+    where t.route.id = :routeId and t.status = :status
+      and t.departureAt >= :from and t.departureAt < :to
+    order by t.departureAt""")
+List<Trip> findForSearch(Long routeId, TripStatus status,
+        LocalDateTime from, LocalDateTime to);
 
 @EntityGraph(attributePaths = {"train", "route.originStation",
         "route.destinationStation"})
 Optional<Trip> findWithDetailsById(Long id);
 ```
 
-Thêm vào `repository/CoachRepository`, để lấy toa của nhiều tàu cùng lúc:
-
-```java
-List<Coach> findByTrainIdInOrderByCoachNumberAsc(Collection<Long> trainIds);
-```
+Ngày khách chọn là một `LocalDate`, còn cột là ngày-giờ. Service truyền
+`from = date.atStartOfDay()` và `to = date.plusDays(1).atStartOfDay()`, tức mọi chuyến khởi
+hành từ 00:00 ngày đó tới trước 00:00 hôm sau. Dùng `>=` và `<` thay vì `between`, vì
+`between` lấy cả hai đầu và sẽ kéo vào chuyến khởi hành đúng 00:00 hôm sau. Câu này dùng được
+chỉ mục `idx_trips_route_departure (route_id, departure_at)` có sẵn trong V5.
 
 Thêm câu đếm chỗ trống theo từng chuyến và từng toa. Câu này đếm cho **cả danh sách** trong
-một lần, thay vì hỏi database riêng cho từng chuyến.
+một lần, thay vì hỏi database riêng cho từng chuyến. Mọi thông tin của toa (số toa, loại, phụ
+thu) nằm ngay trong `trip_seats`, nên chỉ cần nhóm theo các cột đó, không cần join.
 
-Kết quả đếm là một interface projection, đặt trong `model/dto/` giống `IdCount` và
-`TrainCapacity` đang có. Tạo `model/dto/CoachAvailability`:
+Kết quả đếm là một interface projection, đặt trong `model/dto/` giống `IdCount` đang có.
+Tạo `model/dto/CoachAvailability`:
 
 ```java
 public interface CoachAvailability {
     Long getTripId();
-    Long getCoachId();
+    int getCoachNumber();
+    CoachType getCoachType();
+    long getPriceModifier();
     long getAvailable();
 }
 ```
@@ -153,17 +170,21 @@ Rồi thêm vào `repository/TripSeatRepository`:
 
 ```java
 @Query("""
-    select ts.trip.id as tripId, s.coach.id as coachId, count(ts) as available
-    from TripSeat ts join ts.seat s
+    select ts.trip.id as tripId, ts.coachNumber as coachNumber,
+           ts.coachType as coachType, ts.priceModifier as priceModifier,
+           sum(case when ts.status = :available then 1 else 0 end) as available
+    from TripSeat ts
     where ts.trip.id in :tripIds
-      and (ts.status = :available
-           or (ts.status = :held and ts.heldUntil < :now))
-    group by ts.trip.id, s.coach.id""")
+    group by ts.trip.id, ts.coachNumber, ts.coachType, ts.priceModifier
+    order by ts.trip.id, ts.coachNumber""")
 List<CoachAvailability> countAvailable(Collection<Long> tripIds,
-        TripSeatStatus available, TripSeatStatus held, LocalDateTime now);
+        TripSeatStatus available);
 ```
 
-Giá trị enum (`AVAILABLE`, `HELD`) được truyền vào qua tham số, không viết thẳng trong câu
+Dùng `sum(case ...)` thay vì lọc ở `where` để toa hết chỗ vẫn có một dòng với `available = 0`:
+trang chi tiết cần hiện đủ 4 toa, kể cả toa đã bán hết.
+
+Giá trị enum `AVAILABLE` được truyền vào qua tham số, không viết thẳng trong câu
 truy vấn. Vì sao: viết thẳng thì phải phụ thuộc vào cách Hibernate đọc tên enum, dễ lỗi
 khó hiểu.
 
@@ -174,7 +195,7 @@ Tạo `service/TripSearchService`. Thời điểm hiện tại lấy bằng `Loc
 
 | Method | Việc |
 | --- | --- |
-| `List<TripSummary> search(TripSearchRequest form)` | Kiểm tra hai luật còn lại; sai thì ném `InvalidSearchException` kèm tên field bị lỗi. Tìm tuyến theo hai mã ga; không có tuyến thì trả danh sách rỗng. Lấy các chuyến `SCHEDULED` trong ngày, bỏ chuyến đã khởi hành, rồi ghép số chỗ trống và giá |
+| `List<TripSummary> search(TripSearchRequest form)` | Kiểm tra hai luật còn lại; sai thì ném `InvalidSearchException` kèm tên field bị lỗi. Tìm tuyến theo hai mã ga; không có tuyến thì trả danh sách rỗng. Lấy các chuyến `SCHEDULED` khởi hành trong ngày bằng `findForSearch`, bỏ chuyến có `departureAt` không còn sau hiện tại, rồi ghép số chỗ trống và giá |
 | `TripDetail findDetail(long tripId)` | Không thấy chuyến thì ném `TripNotFoundException` (404). Chuyến đã hủy hoặc đã khởi hành vẫn xem được, nhưng `bookable = false` |
 
 Hai exception `InvalidSearchException` và `TripNotFoundException` đặt trong
@@ -182,10 +203,12 @@ Hai exception `InvalidSearchException` và `TripNotFoundException` đặt trong
 
 Cách tính:
 
-- Giá vé của một toa = `basePrice + priceModifier` (`docs/product/domain-model.md`).
+- Giá vé của một toa = `basePrice + priceModifier` (`docs/product/domain-model.md`). Danh sách
+  toa của một chuyến lấy từ chính kết quả `countAvailable`, không cần bảng toa.
 - "Giá từ" là giá thấp nhất trong các toa **còn chỗ trống**.
-- Khi `arrivalTime` trước `departureTime`, tàu đến vào ngày hôm sau. Khi đó thời gian di
-  chuyển phải cộng thêm 24 giờ.
+- Thời gian di chuyển = `Duration.between(departureAt, arrivalAt)`. Kết quả luôn dương
+  (database chặn giờ đến không sau giờ đi) và có thể từ 24 giờ trở lên. Không cộng thêm 24 giờ
+  trong bất kỳ trường hợp nào.
 - `enoughSeats = availableSeats >= passengers`. Chuyến không đủ chỗ vẫn hiện trong danh
   sách, nhưng không có nút chọn.
 
@@ -194,14 +217,15 @@ Cách tính:
 `service/HomeService` hiện có hai method:
 
 - `stations()` trả `List<String>` là **tên** ga, lấy từ
-  `StationRepository.findAllByOrderByNameAsc()`.
+  `StationRepository.findAllByOrderByKmMarkAsc()`, tức xếp theo lý trình từ Bắc vào Nam.
 - `popularRoutes()` chọn bốn tuyến có nhiều booking chưa hủy nhất; bằng nhau thì tuyến
   nhiều chuyến hơn đứng trước, rồi tới id nhỏ hơn. Ghi chú dưới thẻ là quãng đường
   (`distanceKm + " km"`). Kết quả là `model/response/PopularRoute` chỉ chứa tên ga.
 
 Sửa như sau:
 
-- `stations()` trả `List<Station>` thay vì chỉ tên, để trang chủ có cả mã lẫn tên ga.
+- `stations()` trả `List<Station>` thay vì chỉ tên, để trang chủ có cả mã lẫn tên ga. **Giữ
+  nguyên** thứ tự theo lý trình.
 - `PopularRoute` thêm hai field `originCode`, `destinationCode`. `popularRoutes()` điền
   thêm hai mã này. **Giữ nguyên** cách sắp xếp và ghi chú quãng đường.
 - Sửa comment đầu class `HomeService`: form đã gửi mã ga.
@@ -236,8 +260,10 @@ Dùng khung trang khách `layout/base.html`, CSS `app.css`; class tự đặt ma
   `landing.js` không phải sửa: nó chép `data-from`, `data-to` vào hai ô chọn, nên chỉ cần
   hai giá trị đó khớp `th:value` của ô chọn.
 - `templates/trips/list.html`: form tìm rút gọn ở đầu trang, điền sẵn điều kiện vừa tìm;
-  mỗi chuyến là một thẻ giống ví dụ ở `SPEC.md` mục 8. Không có chuyến nào thì hiện
-  "Không có chuyến phù hợp" kèm gợi ý đổi ngày.
+  mỗi chuyến là một thẻ giống ví dụ ở `SPEC.md` mục 8. Giờ đi, giờ đến định dạng bằng
+  `#temporals.format(..., 'HH:mm')`; khi ngày đến khác ngày đi thì hiện thêm ngày đến, ví dụ
+  `00:30 22/10`. Thời gian di chuyển hiện bằng giờ và phút, ví dụ "8 giờ 45 phút". Không có
+  chuyến nào thì hiện "Không có chuyến phù hợp" kèm gợi ý đổi ngày.
 - `templates/trips/detail.html`: thông tin chuyến và bảng toa (số toa, loại toa, giá vé, số
   chỗ còn). Chuyến đã hủy hiện nhãn "Đã hủy" và không có nút chọn chỗ.
 - Tiền hiện dạng `350.000đ`: `#numbers.formatInteger(price, 0, 'POINT')`.
@@ -255,49 +281,79 @@ Dùng khung trang khách `layout/base.html`, CSS `app.css`; class tự đặt ma
 Chạy ứng dụng (`.\mvnw.cmd spring-boot:run`). Các bước có SQL thì mở MySQL bằng
 `docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=utf8mb4 traingo`.
 
-1. Ở trang chủ, chọn Sài Gòn → Nha Trang, ngày mai, 2 khách, bấm "Tìm chuyến". Đường dẫn
-   có `from=SGN&to=NTR`, không phải tên ga.
-2. Thấy chuyến SNT1, 20:30 → 04:50 (+1 ngày), thời gian di chuyển **8 giờ 20 phút** (không
-   phải số âm). Đây là cách kiểm tra phép tính qua nửa đêm.
-3. Bấm một thẻ tuyến phổ biến: hai ô ga được điền đúng.
-4. Thử lỗi: chọn ga đi trùng ga đến; sửa đường dẫn cho `date` là hôm qua; sửa
+Dữ liệu mẫu chỉ có chuyến của tàu SE1, mỗi ngày một chặng lúc 08:00, tính từ ngày seed chạy
+(`docs/RUNBOOK.md`, mục "Dữ liệu thử"). Câu SQL sau cho id, ngày giờ và tuyến của mọi chuyến,
+dùng cho các bước bên dưới:
+
+```sql
+SELECT t.id, o.code AS di, d.code AS den, t.departure_at, t.arrival_at, t.status
+FROM trips t
+JOIN routes r ON r.id = t.route_id
+JOIN stations o ON o.id = r.origin_station_id
+JOIN stations d ON d.id = r.destination_station_id
+ORDER BY t.departure_at;
+```
+
+1. Ở trang chủ, chọn Đà Nẵng → Nha Trang, ngày của chuyến `DNG` → `NTR` trong kết quả SQL
+   trên (ngày sau ngày seed chạy; nếu vừa làm mới database thì là ngày mai), 2 khách, bấm "Tìm
+   chuyến". Đường dẫn có `from=DNG&to=NTR`, không phải tên ga.
+2. Thấy chuyến SE1, 08:00 → 16:45, thời gian di chuyển **8 giờ 45 phút**, giá từ 520.000đ
+   (toa ghế), còn 95 chỗ: booking `BK...003` của dữ liệu mẫu đã mua một ghế. Mở chi tiết: toa
+   giường giá 720.000đ (520.000 + 200.000).
+3. Chuyến đến vào hôm sau và chạy hơn 24 giờ. Lấy id chuyến `NTR` → `DNG` (chưa có booking),
+   tạm đổi giờ đến thành 24 giờ 30 phút sau giờ đi:
+
+```sql
+UPDATE trips SET arrival_at = departure_at + INTERVAL 1470 MINUTE WHERE id = <id>;
+```
+
+   Tìm Nha Trang → Đà Nẵng đúng ngày đó: chuyến hiện 08:00 → 08:30 kèm ngày đến (hôm sau),
+   thời gian di chuyển **24 giờ 30 phút**, không phải số âm hay 30 phút. Thử xong thì trả về
+   như cũ (chặng 524 km chạy 525 phút):
+
+```sql
+UPDATE trips SET arrival_at = departure_at + INTERVAL 525 MINUTE WHERE id = <id>;
+```
+
+4. Bấm một thẻ tuyến phổ biến: hai ô ga được điền đúng.
+5. Thử lỗi: chọn ga đi trùng ga đến; sửa đường dẫn cho `date` là hôm qua; sửa
    `passengers=11`. Cả ba lần đều báo lỗi, không hiện danh sách.
-5. Chỗ giữ đã hết hạn phải được đếm là trống (quyết định D1). Lấy id một chuyến đang hiện
-   trong danh sách (ví dụ `12`), ghi lại số chỗ còn, rồi chạy:
+6. Không có tuyến thì không có chuyến. Tìm Hà Nội → Huế bất kỳ ngày nào: "Không có chuyến phù
+   hợp", vì dữ liệu mẫu không có tuyến này (SE1 chỉ chạy qua Huế bằng nhiều chặng).
+7. Chỗ đã bán không được đếm là còn trống. Lấy id một chuyến đang hiện trong danh sách, ghi
+   lại số chỗ còn, rồi chạy:
 
 ```sql
-UPDATE trip_seats SET status = 'HELD', held_by_user_id = 2,
-       held_until = NOW() + INTERVAL 5 MINUTE
-WHERE trip_id = 12 AND status = 'AVAILABLE' LIMIT 2;
+UPDATE trip_seats SET status = 'BOOKED'
+WHERE trip_id = <id> AND status = 'AVAILABLE' LIMIT 2;
 ```
 
-   Tải lại trang: số chỗ còn giảm 2. Đổi `NOW() + INTERVAL 5 MINUTE` thành
-   `NOW() - INTERVAL 1 MINUTE` (giữ đã hết hạn) với cùng hai chỗ đó:
+   Tải lại trang: số chỗ còn giảm 2. Thử xong thì trả hai chỗ về trạng thái trống:
 
 ```sql
-UPDATE trip_seats SET held_until = NOW() - INTERVAL 1 MINUTE
-WHERE trip_id = 12 AND status = 'HELD';
+UPDATE trip_seats SET status = 'AVAILABLE'
+WHERE trip_id = <id> AND status = 'BOOKED' AND id IN (<id hai chỗ vừa đổi>);
 ```
 
-   Tải lại trang: số chỗ còn trở về như cũ. Thử xong thì trả hai chỗ về trạng thái trống:
+   (Lấy hai id bằng `SELECT id FROM trip_seats WHERE trip_id = <id> AND status = 'BOOKED';`
+   trước khi trả lại, vì chuyến có thể đã có chỗ `BOOKED` từ dữ liệu mẫu.)
+
+8. Chuyến đã hủy không hiện. Chuyến `DNG` → `HUE` chỉ có một booking đã hủy. Tạm hủy nó:
+   `UPDATE trips SET status = 'CANCELLED' WHERE id = <id>;`. Tìm Đà Nẵng → Huế đúng ngày đó:
+   không thấy chuyến. Mở thẳng `/trips/<id>`: nhãn "Đã hủy", không có nút "Chọn chỗ". Xong thì
+   trả về `SCHEDULED`.
+9. Chuyến đã khởi hành không đặt được (quyết định D8). Ghi lại `departure_at` của một chuyến
+   sắp chạy, rồi tạm dời nó về hôm nay lúc 00:01, tức đã khởi hành:
 
 ```sql
-UPDATE trip_seats SET status = 'AVAILABLE', held_by_user_id = NULL, held_until = NULL
-WHERE trip_id = 12 AND status = 'HELD';
+UPDATE trips SET departure_at = TIMESTAMP(CURRENT_DATE, '00:01:00') WHERE id = <id>;
 ```
 
-6. Chuyến đã khởi hành không đặt được (quyết định D8). Dữ liệu mẫu chỉ có chuyến từ ngày
-   mai trở đi, nên tạm dời một chuyến về hôm nay lúc 00:01, tức đã khởi hành:
+   Tìm chuyến hôm nay trên tuyến đó: chuyến không hiện. Mở thẳng `/trips/<id>`: vẫn xem
+   được, nhưng không có nút "Chọn chỗ". Thử xong thì trả `departure_at` về giá trị đã ghi lại,
+   hoặc làm mới database theo `docs/RUNBOOK.md`.
 
-```sql
-UPDATE trips SET departure_date = CURRENT_DATE, departure_time = '00:01:00' WHERE id = 12;
-```
-
-   Tìm chuyến hôm nay trên tuyến đó: chuyến không hiện. Mở thẳng `/trips/12`: vẫn xem
-   được, nhưng không có nút "Chọn chỗ". Thử xong thì làm mới database theo
-   `docs/RUNBOOK.md`, hoặc sửa lại ngày giờ cũ của chuyến.
-
-7. Mở `/trips/999999`: trang 404.
+10. Mở `/trips/999999`: trang 404.
 
 ## 7. Lỗi hay gặp
 
@@ -308,17 +364,21 @@ UPDATE trips SET departure_date = CURRENT_DATE, departure_time = '00:01:00' WHER
 - Đổi ô chọn ga sang mã nhưng quên đổi `data-from`, `data-to` của thẻ tuyến phổ biến: bấm
   thẻ thì hai ô ga không chọn được gì, vì tên ga không khớp giá trị nào trong ô chọn.
 - Đặt tên tham số khác `passengers` ở link "Chọn chỗ": T09 không đọc được số khách.
+- Lọc ngày bằng `between date 00:00 and date+1 00:00`: chuyến khởi hành đúng 00:00 hôm sau hiện
+  ở cả hai ngày. Dùng `>= from` và `< to`.
+- Giữ lại phép "giờ đến trước giờ đi thì cộng 24 giờ" của code cũ: giờ đã là ngày-giờ đầy đủ,
+  phép cộng đó làm sai chuyến dài.
 
 ## 8. Kiểm tra trước khi báo xong
 
-- [ ] Ô chọn ga ở trang chủ gửi mã ga; thêm một ga ở `/admin/stations` là nó hiện ra ở
-      trang chủ.
+- [ ] Ô chọn ga ở trang chủ gửi mã ga, xếp từ Bắc vào Nam; thêm một ga ở `/admin/stations`
+      là nó hiện ra ở trang chủ, đúng vị trí theo lý trình.
 - [ ] Bốn thẻ tuyến phổ biến vẫn là bốn tuyến như trước khi làm task, cùng ghi chú quãng
       đường, và bấm vào thì điền đúng hai ga.
-- [ ] Tìm Sài Gòn → Nha Trang ngày mai, 2 khách: thấy chuyến SNT1, 20:30 → 04:50 (+1 ngày),
-      8 giờ 20 phút, giá từ 350.000đ, số chỗ còn khớp với database (96 nếu chuyến chưa có
-      booking).
-- [ ] Tìm Hà Nội → Lào Cai đúng ngày SP1 bị hủy trong dữ liệu mẫu: không thấy chuyến đó.
+- [ ] Tìm Đà Nẵng → Nha Trang đúng ngày của chuyến, 2 khách: thấy chuyến SE1, 08:00 → 16:45,
+      8 giờ 45 phút, giá từ 520.000đ, số chỗ còn khớp với database (95 với dữ liệu mẫu).
+- [ ] Chuyến chạy hơn 24 giờ hiện đúng ngày đến và thời gian di chuyển (kịch bản 3).
+- [ ] Chuyến đã hủy không hiện trong danh sách; cặp ga không có tuyến ra danh sách rỗng.
 - [ ] Đủ các bước trong kịch bản ở mục 6 cho đúng kết quả mong đợi.
 - [ ] Kiểm tra giao diện ở bề rộng 375px và 1280px: không bị tràn ngang.
 - [ ] `.\mvnw.cmd compile` chạy không lỗi và ứng dụng khởi động được

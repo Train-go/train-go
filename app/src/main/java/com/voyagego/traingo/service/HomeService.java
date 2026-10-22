@@ -43,8 +43,9 @@ public class HomeService {
 		this.bookingRepository = bookingRepository;
 	}
 
+	/** North to south along the line, the order a traveller reads a map in. */
 	public List<String> stations() {
-		return stationRepository.findAllByOrderByNameAsc().stream().map(Station::getName).toList();
+		return stationRepository.findAllByOrderByKmMarkAsc().stream().map(Station::getName).toList();
 	}
 
 	/**

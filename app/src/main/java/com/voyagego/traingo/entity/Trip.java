@@ -1,7 +1,6 @@
 package com.voyagego.traingo.entity;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -20,11 +19,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 /**
- * One run of a train on a route on a given day.
+ * One run of a train on a route. A trip belongs to its train: the admin adds
+ * it from the train's page, and it starts at the station where the train's
+ * previous trip ended (docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md).
  *
- * SPEC.md gives a trip a departure date and two times, with no arrival date.
- * An arrival time earlier than the departure time therefore means the next
- * day, and a trip cannot last 24 hours or more.
+ * Departure and arrival are full date-times, so a run of 24 hours or more,
+ * such as Hà Nội - Sài Gòn, can be stored.
  */
 @Entity
 @Table(name = "trips")
@@ -43,15 +43,12 @@ public class Trip {
 	private Route route;
 
 	@Column(nullable = false)
-	private LocalDate departureDate;
+	private LocalDateTime departureAt;
 
 	@Column(nullable = false)
-	private LocalTime departureTime;
+	private LocalDateTime arrivalAt;
 
-	@Column(nullable = false)
-	private LocalTime arrivalTime;
-
-	/** In dong. A ticket costs basePrice plus its coach's priceModifier. */
+	/** In dong. A ticket costs basePrice plus its trip seat's priceModifier. */
 	@Column(nullable = false)
 	private long basePrice;
 
@@ -64,13 +61,11 @@ public class Trip {
 	protected Trip() {
 	}
 
-	public Trip(Train train, Route route, LocalDate departureDate, LocalTime departureTime, LocalTime arrivalTime,
-			long basePrice) {
+	public Trip(Train train, Route route, LocalDateTime departureAt, LocalDateTime arrivalAt, long basePrice) {
 		this.train = train;
 		this.route = route;
-		this.departureDate = departureDate;
-		this.departureTime = departureTime;
-		this.arrivalTime = arrivalTime;
+		this.departureAt = departureAt;
+		this.arrivalAt = arrivalAt;
 		this.basePrice = basePrice;
 		this.status = TripStatus.SCHEDULED;
 	}
@@ -87,16 +82,12 @@ public class Trip {
 		return route;
 	}
 
-	public LocalDate getDepartureDate() {
-		return departureDate;
+	public LocalDateTime getDepartureAt() {
+		return departureAt;
 	}
 
-	public LocalTime getDepartureTime() {
-		return departureTime;
-	}
-
-	public LocalTime getArrivalTime() {
-		return arrivalTime;
+	public LocalDateTime getArrivalAt() {
+		return arrivalAt;
 	}
 
 	public long getBasePrice() {

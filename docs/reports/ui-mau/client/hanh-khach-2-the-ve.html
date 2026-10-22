@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hành khách - TrainGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+/* ================= Edit the look here =================
+   Palette sampled from Phi's reference shot: deep navy ink,
+   one cobalt action colour, cool grey-blue ground, soft field pills.
+   Low-tech reminder: a block of text stays under ~12 words,
+   a button label under 3 words, one main action per screen. */
+:root {
+	--ink: #0b1a36;
+	--ink-2: #1c2b4a;
+	--ink-3: #2a3b5e;
+	--primary: #2c4d98;
+	--primary-2: #223f80;
+	--primary-bright: #3b63c4;
+	--primary-light: #a9bff0;
+	--primary-soft: #e8eefa;
+	--bg: #edf1f5;
+	--surface: #ffffff;
+	--field: #f4f6f9;
+	--line: #e0e6ed;
+	--muted: #5b6b80;
+	--on-dark-muted: #b3bfd6;
+	--ok: #15803d;
+	--ok-soft: #e3f4e8;
+	--warn: #b45309;
+	--warn-soft: #fdf0dc;
+	--danger: #b42318;
+	--danger-soft: #fdecea;
+	--radius: 20px;
+	--radius-sm: 14px;
+	--tap: 56px;
+	--shadow: 0 1px 2px rgb(11 26 54 / 5%), 0 16px 36px -18px rgb(11 26 54 / 22%);
+	--display: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+	--body: "Noto Sans", "Be Vietnam Pro", system-ui, sans-serif;
+}
+/* ====================================================== */
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--body); font-size: 17px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--primary); }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+[hidden] { display: none !important; }
+.wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding-inline: 24px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.25; letter-spacing: -0.01em; text-wrap: balance; }
+
+.nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-block: 16px; }
+.logo { display: flex; align-items: center; gap: 10px; min-height: 48px; font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--ink); text-decoration: none; }
+.logo i { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--ink); color: #fff; font-style: normal; font-size: 18px; }
+.pills { display: flex; gap: 4px; padding: 5px; margin: 0; list-style: none; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); }
+.pills a { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 999px; color: var(--ink); font-weight: 600; text-decoration: none; }
+.pills a[aria-current="page"] { background: var(--ink); color: #fff; }
+.me-link { justify-self: end; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px 0 6px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); font-weight: 700; text-decoration: none; }
+.me-link i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-style: normal; }
+
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 4px 0 24px; padding: 0; }
+.steps li { position: relative; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.steps li:not(:last-child)::after { content: ""; flex: 1 1 auto; min-width: 12px; height: 2px; margin-right: 10px; background: #cfd8e3; }
+.steps li.done::after { background: var(--primary); }
+.steps a, .steps .cur { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 44px; color: inherit; text-decoration: none; }
+.steps .dot { flex: 0 0 auto; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-family: var(--display); font-weight: 700; }
+.steps .name { font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 15px; }
+.steps li.done .dot { background: var(--primary); box-shadow: none; color: #fff; }
+.steps li.done .name { color: var(--ink); }
+.steps li.now .dot { background: var(--ink); box-shadow: 0 0 0 4px var(--primary-soft); color: #fff; }
+.steps li.now .name { color: var(--ink); font-weight: 800; }
+
+.field { display: grid; gap: 6px; min-width: 0; }
+.field > span { color: var(--muted); font-size: 14px; font-weight: 600; }
+.inp { width: 100%; height: var(--tap); padding: 0 16px; border: 0; border-radius: var(--radius-sm); background: var(--field); font-weight: 600; }
+.inp::placeholder { color: #8a97a8; font-weight: 500; }
+.inp:focus { outline: none; box-shadow: inset 0 0 0 2px var(--primary); background: var(--surface); }
+.field.bad .inp { box-shadow: inset 0 0 0 2px var(--danger); background: var(--danger-soft); }
+.msg { color: var(--danger); font-size: 14px; font-weight: 600; }
+.seatcode { flex: 0 0 auto; display: grid; place-items: center; min-width: 56px; height: 56px; padding: 0 8px; border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-family: var(--display); font-weight: 800; font-size: 18px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: var(--tap); padding: 0 26px; border: 0; border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-family: var(--display); font-size: 18px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background .2s; }
+.btn:hover { background: var(--primary-2); }
+.btn:disabled { cursor: progress; opacity: .85; }
+.btn.ghost { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.ghost:hover { background: var(--field); }
+.spin { width: 20px; height: 20px; border: 3px solid rgb(255 255 255 / 35%); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.note { display: flex; gap: 8px; align-items: flex-start; color: var(--muted); font-size: 14px; }
+.mock { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); font-size: 14px; }
+
+.result { display: grid; justify-items: center; gap: 10px; padding: 40px 24px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); text-align: center; }
+.result > i { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; font-size: 36px; }
+.result.ok > i { background: var(--ok-soft); color: var(--ok); }
+.result.bad > i { background: var(--warn-soft); color: var(--warn); }
+.result h1 { font-size: clamp(26px, 3.4vw, 34px); }
+.result p { margin: 0; color: var(--muted); }
+.result .code { font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--ink); }
+.tickets { display: grid; gap: 8px; width: min(100%, 520px); margin: 8px 0; padding: 0; list-style: none; text-align: left; }
+.tickets li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; padding: 12px; border-radius: var(--radius-sm); background: var(--field); }
+.tickets small { display: block; color: var(--muted); font-size: 14px; }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px; }
+
+footer { margin-top: 56px; background: var(--ink); color: #c3cde0; font-size: 15px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-block: 20px; }
+footer a { display: inline-flex; align-items: center; min-height: 44px; color: #e6ecf8; }
+
+@media (max-width: 900px) {
+	.pills { display: none; }
+	.nav { grid-template-columns: 1fr auto; }
+}
+@media (max-width: 640px) {
+	.wrap { padding-inline: 16px; }
+	.steps li { flex-direction: column; gap: 6px; text-align: center; }
+	.steps a, .steps .cur { flex-direction: column; gap: 6px; }
+	.steps li:not(:last-child)::after { position: absolute; left: calc(50% + 21px); right: calc(-50% + 21px); top: 17px; margin: 0; min-width: 0; }
+	.steps .name { font-size: 12.5px; max-width: 100%; }
+	.me-link span { display: none; }
+	.me-link { padding: 0 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .spin { animation-duration: 3s; } }
+
+/* ---------- ticket layout ---------- */
+.col { max-width: 880px; margin: 0 auto; }
+.tripbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 18px 10px 10px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; }
+.tripbar .tr { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; }
+.tripbar b { font-family: var(--display); }
+.tripbar .muted { color: var(--muted); }
+.title { margin: 26px 0 20px; }
+.title h1 { font-size: clamp(30px, 3.8vw, 40px); font-weight: 800; }
+.title p { margin: 4px 0 0; color: var(--muted); }
+.title p b { color: var(--ink); }
+.stack { display: grid; gap: 26px; }
+
+/* ---------- the ticket ----------
+   One paper shape: a white body and a cobalt tear-off stub, joined by a
+   perforated line with a half-circle bite out of the top and bottom edge.
+   The bites are real holes (mask), so the drop shadow follows them. */
+.tkw { filter: drop-shadow(0 1px 1px rgb(11 26 54 / 10%)) drop-shadow(0 6px 10px rgb(11 26 54 / 7%)); scroll-margin: 24px; }
+.tk {
+	--stub: 210px; --bite: 15px;
+	position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--stub);
+	border-radius: 22px; background: var(--surface);
+	-webkit-mask:
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 0, #0000 97%, #000) top / 100% 51% no-repeat,
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 100%, #0000 97%, #000) bottom / 100% 51% no-repeat;
+	mask:
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 0, #0000 97%, #000) top / 100% 51% no-repeat,
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 100%, #0000 97%, #000) bottom / 100% 51% no-repeat;
+}
+.tk .main { display: grid; gap: 16px; padding: 20px 26px 22px; min-width: 0; }
+.tk .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.brand i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 13px; letter-spacing: 0; }
+.no { padding: 4px 10px; border-radius: 999px; background: var(--field); color: var(--muted); font-size: 13px; font-weight: 700; }
+.no.ok { background: var(--ok-soft); color: var(--ok); }
+.leg { display: grid; grid-template-columns: auto minmax(40px, 1fr) auto; align-items: center; gap: 16px; }
+.leg b { display: block; font-family: var(--display); font-size: 32px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.leg small { color: var(--muted); font-weight: 600; }
+.leg .end { text-align: right; }
+.leg .rail { position: relative; display: grid; justify-items: center; gap: 2px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.leg .rail::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: repeating-linear-gradient(90deg, #c9d3df 0 8px, transparent 8px 13px); }
+.leg .rail i { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 14px; }
+.info { display: grid; grid-template-columns: repeat(3, minmax(0, auto)); justify-content: start; gap: 6px 28px; padding-top: 14px; border-top: 1px dashed #d3dbe6; }
+.info dt { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.info dd { margin: 2px 0 0; font-weight: 700; }
+.who { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-top: 14px; border-top: 1px dashed #d3dbe6; }
+.who .person { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.who .person b { display: block; font-size: 18px; }
+.who .person small { display: block; color: var(--muted); font-size: 14px; }
+.who .label { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.avatar { flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: #fff; font-family: var(--display); font-size: 15px; font-weight: 800; }
+.avatar.other { background: var(--primary-soft); color: var(--primary); }
+.link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--field); color: var(--primary); font-weight: 700; cursor: pointer; }
+.link:hover { background: var(--primary-soft); }
+
+.stub { position: relative; display: grid; align-content: center; justify-items: center; gap: 2px; padding: 22px 16px; background: var(--primary); color: #fff; text-align: center; }
+.stub::before { content: ""; position: absolute; left: 0; top: calc(var(--bite) + 6px); bottom: calc(var(--bite) + 6px); border-left: 3px dotted rgb(255 255 255 / 55%); }
+.stub .coach { color: #c9d6f5; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.stub .big { font-family: var(--display); font-size: 50px; font-weight: 800; line-height: 1; }
+.stub .kind { display: inline-flex; align-items: center; gap: 6px; color: #e3eafb; font-size: 15px; font-weight: 600; }
+.stub .price { margin-top: 10px; padding: 4px 12px; border-radius: 999px; background: rgb(255 255 255 / 14%); font-family: var(--display); font-size: 18px; font-weight: 800; }
+.bars { width: 120px; height: 30px; margin-top: 12px; background: repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 4px, #fff 4px 5px, transparent 5px 8px, #fff 8px 11px, transparent 11px 13px); opacity: .8; }
+
+/* change who travels on one ticket (optional) */
+.edit { display: grid; gap: 12px; padding: 16px; border-radius: 16px; background: var(--field); }
+.edit-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.edit-head b { font-family: var(--display); }
+.edit .inp { background: var(--surface); }
+.fields { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px 14px; }
+.field.full { grid-column: 1 / -1; }
+.field > span em { font-style: normal; font-weight: 500; color: #8a97a8; }
+.edit-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.edit-actions .btn { height: 50px; }
+.edit-actions .mine { margin-right: auto; }
+
+.paybar { position: sticky; bottom: 0; z-index: 10; margin-top: 24px; padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgb(237 241 245 / 0%), var(--bg) 35%); }
+.paybar .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 12px 12px 22px; border-radius: 22px; background: var(--ink); color: #fff; box-shadow: var(--shadow); }
+.paybar small { display: block; color: var(--on-dark-muted); font-weight: 600; font-size: 14px; }
+.paybar strong { font-family: var(--display); font-size: 26px; font-weight: 800; }
+.paybar .btn { background: var(--primary-bright); white-space: nowrap; }
+.paybar .btn:hover { background: #3358b4; }
+.after { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 18px; align-items: center; }
+.after a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; text-decoration: none; }
+
+@media (max-width: 640px) {
+	/* phone: the stub becomes a strip along the bottom, bites on the left and right edges */
+	.tk {
+		--strip: 96px;
+		grid-template-columns: minmax(0, 1fr);
+		-webkit-mask:
+			radial-gradient(circle var(--bite) at 0 calc(100% - var(--strip)), #0000 97%, #000) left / 51% 100% no-repeat,
+			radial-gradient(circle var(--bite) at 100% calc(100% - var(--strip)), #0000 97%, #000) right / 51% 100% no-repeat;
+		mask:
+			radial-gradient(circle var(--bite) at 0 calc(100% - var(--strip)), #0000 97%, #000) left / 51% 100% no-repeat,
+			radial-gradient(circle var(--bite) at 100% calc(100% - var(--strip)), #0000 97%, #000) right / 51% 100% no-repeat;
+	}
+	.tk .main { padding: 16px 18px 18px; }
+	.leg b { font-size: 27px; }
+	.info { grid-template-columns: 1fr 1fr; }
+	.stub { height: var(--strip); grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "big coach price" "big kind price"; justify-items: start; align-items: center; align-content: center; gap: 0 12px; padding: 0 20px; text-align: left; }
+	.stub::before { top: 0; bottom: auto; left: calc(var(--bite) + 6px); right: calc(var(--bite) + 6px); border-left: 0; border-top: 3px dotted rgb(255 255 255 / 55%); }
+	.stub .big { grid-area: big; font-size: 38px; }
+	.stub .coach { grid-area: coach; }
+	.stub .kind { grid-area: kind; white-space: nowrap; }
+	.stub .coach { white-space: nowrap; }
+	.stub .price { grid-area: price; margin: 0; padding: 4px 10px; font-size: 16px; }
+	.bars { display: none; }
+	.fields { grid-template-columns: minmax(0, 1fr); }
+	.edit-actions .btn { flex: 1; }
+	.edit-actions .mine { flex-basis: 100%; }
+	.tripbar { border-radius: 20px; }
+	.paybar .in { padding: 10px 10px 10px 16px; }
+	.paybar strong { font-size: 21px; }
+	.paybar .btn { padding: 0 18px; }
+	.paybar .amt { display: none; }
+}
+@media (max-width: 400px) {
+	/* very narrow: the price moves under the seat type so nothing is cut */
+	.tk { --strip: 118px; }
+	.stub { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "big coach" "big kind" "big price"; }
+	.stub .price { justify-self: start; margin-top: 4px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+	<header class="nav">
+		<a class="logo" href="trang-chu-8-swiss.html"><i class="bi bi-train-front"></i>TrainGo</a>
+		<ul class="pills">
+			<li><a href="chon-chuyen-b-mo-rong.html" aria-current="page"><i class="bi bi-search"></i>Tìm vé</a></li>
+			<li><a href="#"><i class="bi bi-ticket-perforated"></i>Vé của tôi</a></li>
+			<li><a href="#"><i class="bi bi-question-circle"></i>Hướng dẫn</a></li>
+		</ul>
+		<a class="me-link" href="#"><i class="bi bi-person"></i><span>Minh Anh</span></a>
+	</header>
+	<nav aria-label="Các bước đặt vé">
+		<ol class="steps" id="steps">
+			<li class="done"><a href="chon-chuyen-b-mo-rong.html"><span class="dot"><i class="bi bi-check-lg"></i></span><span class="name">Chọn chuyến</span></a></li>
+			<li class="done"><a href="dat-ve-e2-tau-ngang-tom-tat.html"><span class="dot"><i class="bi bi-check-lg"></i></span><span class="name">Chọn chỗ</span></a></li>
+			<li class="now" aria-current="step"><span class="cur"><span class="dot">3</span><span class="name">Hành khách</span></span></li>
+			<li><span class="cur"><span class="dot">4</span><span class="name">Thanh toán</span></span></li>
+		</ol>
+	</nav>
+	<div class="col">
+		<div class="title"><h1>Vé của bạn</h1></div>
+		<div class="stack" id="tickets"></div>
+		<div class="paybar"><div class="in"><span><small id="count"></small><strong id="total"></strong></span><button class="btn" type="button" id="go">Tiếp tục <i class="bi bi-arrow-right"></i></button></div></div>
+		<div class="after"><a href="dat-ve-e2-tau-ngang-tom-tat.html"><i class="bi bi-arrow-left"></i>Chọn lại chỗ</a></div>
+	</div>
+</div>
+
+<footer><div class="wrap"><span>© 2026 TrainGo</span><a href="trang-chu-8-swiss.html">Trang chủ</a></div></footer>
+
+<script>
+// Seats come from the seat page through the session; opening the page directly shows a sample.
+var TRIP = { code: 'SNT3', from: 'Sài Gòn', to: 'Nha Trang', dep: '06:15', arr: '14:35', date: 'Thứ ba, 20/10/2026', dur: '8 giờ 20' };
+var SAMPLE_SEATS = [
+	{ code: 'A05', coach: 1, kind: 'Ghế ngồi', price: 380000 },
+	{ code: 'B02', coach: 3, kind: 'Giường nằm', price: 580000 }
+];
+// The signed-in customer: every ticket is in this name unless the customer names someone else.
+var ME = 'Nguyễn Minh Anh';
+var ME_PHONE = '0901234567';
+var BOOKING = 'BK202610005';
+var TODAY = new Date(2026, 9, 19);
+function $(id) { return document.getElementById(id); }
+function money(v) { return v.toLocaleString('vi-VN') + 'đ'; }
+function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function read(key) { try { return JSON.parse(sessionStorage.getItem(key)); } catch (e) { return null; } }
+function write(key, v) { try { sessionStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+var seats = read('traingo-seats');
+if (!seats || !seats.length) seats = SAMPLE_SEATS;
+var others = read('traingo-pax');           // seat code -> someone other than the customer
+if (!others || Array.isArray(others)) others = {};
+function total() { return seats.reduce(function (s, x) { return s + x.price; }, 0); }
+function icon(kind) { return kind === 'Giường nằm' ? 'bi-moon-stars' : 'bi-person'; }
+function initials(name) { var w = name.trim().split(/\s+/); return (w.length > 1 ? w[w.length - 2][0] : '') + w[w.length - 1][0]; }
+function maskDoc(doc) { return (/^\d{12}$/.test(doc) ? 'CCCD' : 'Hộ chiếu') + ' •••• ' + doc.slice(-4); }
+function ticketCode(i) { return BOOKING.replace('BK', 'TK') + '-' + String(i + 1).padStart(2, '0'); }
+function traveller(code) { return others[code] || { name: ME, me: true }; }
+
+var FIELDS = '<label class="field full" data-f="name"><span>Họ và tên</span><input class="inp" type="text" autocomplete="name" placeholder="Như trên giấy tờ"><small class="msg" hidden></small></label>' +
+	'<label class="field" data-f="dob"><span>Ngày sinh <em>(không bắt buộc)</em></span><input class="inp" type="text" inputmode="numeric" maxlength="10" placeholder="ngày/tháng/năm"><small class="msg" hidden></small></label>' +
+	'<label class="field" data-f="doc"><span>CCCD hoặc hộ chiếu <em>(không bắt buộc)</em></span><input class="inp" type="text" maxlength="14" autocomplete="off" placeholder="12 số CCCD"><small class="msg" hidden></small></label>';
+
+// mode: 'fill' (step 3), 'view' (step 4), 'issued' (after payment)
+function ticket(s, i, mode, editing) {
+	var t = traveller(s.code), who;
+	if (editing) {
+		who = '<form class="edit" data-code="' + s.code + '" novalidate><div class="edit-head"><b>Người đi vé ' + s.code + '</b></div>' +
+			'<div class="fields">' + FIELDS + '</div><div class="edit-actions">' +
+			(t.me ? '' : '<button class="btn ghost mine" type="button" data-mine><i class="bi bi-person-check"></i>Để tên tôi</button>') +
+			'<button class="btn ghost" type="button" data-cancel>Hủy</button><button class="btn" type="submit">Lưu</button></div></form>';
+	} else {
+		var sub = t.me ? 'SĐT •••• ' + ME_PHONE.slice(-4) : [t.dob ? 'Sinh ' + esc(t.dob) : '', t.doc ? maskDoc(t.doc) : ''].filter(Boolean).join(' · ') || '';
+		who = '<div class="who"><div class="person"><span class="avatar' + (t.me ? '' : ' other') + '">' + esc(initials(t.name)) + '</span>' +
+			'<div><b>' + esc(t.name) + '</b><small>' + sub + '</small></div></div>' +
+			(mode === 'fill' ? '<button class="link" type="button" data-edit="' + s.code + '"><i class="bi bi-pencil"></i>Đổi người đi</button>' : '') + '</div>';
+	}
+	var no = mode === 'issued' ? '<span class="no ok"><i class="bi bi-check-circle-fill"></i> ' + ticketCode(i) + '</span>' : '<span class="no">Vé ' + (i + 1) + '/' + seats.length + '</span>';
+	return '<div class="tkw" id="tk-' + s.code + '"><article class="tk">' +
+		'<div class="main"><div class="top"><span class="brand"><i class="bi bi-train-front"></i>TrainGo · ' + TRIP.code + ' · ' + TRIP.date.split(', ')[1] + '</span>' + no + '</div>' +
+		'<div class="leg"><div><b>' + TRIP.dep + '</b><small>' + TRIP.from + '</small></div><div class="rail"><i class="bi bi-train-front"></i><span>' + TRIP.dur + '</span></div><div class="end"><b>' + TRIP.arr + '</b><small>' + TRIP.to + '</small></div></div>' +
+		who + '</div>' +
+		'<div class="stub"><span class="coach">Toa ' + s.coach + '</span><span class="big">' + s.code + '</span><span class="kind"><i class="bi ' + icon(s.kind) + '"></i>' + s.kind + '</span><span class="price">' + money(s.price) + '</span><span class="bars" aria-hidden="true"></span></div>' +
+		'</article></div>';
+}
+var open = null;
+function render() {
+	$('tickets').innerHTML = seats.map(function (s, i) { return ticket(s, i, 'fill', s.code === open); }).join('');
+	$('count').textContent = seats.length + ' vé · Tổng tiền';
+	$('total').textContent = money(total());
+	var f = document.querySelector('form.edit');
+	if (f) {
+		var t = others[f.dataset.code] || {};
+		f.querySelector('[data-f="name"] input').value = t.name || '';
+		f.querySelector('[data-f="dob"] input').value = t.dob || '';
+		f.querySelector('[data-f="doc"] input').value = t.doc || '';
+		dobMask(f.querySelector('[data-f="dob"] input'));
+		f.querySelector('input').focus({ preventScroll: true });
+	}
+}
+function dobMask(input) {
+	input.addEventListener('input', function () {
+		var d = this.value.replace(/\D/g, '').slice(0, 8), out = d.slice(0, 2);
+		if (d.length > 2) out += '/' + d.slice(2, 4);
+		if (d.length > 4) out += '/' + d.slice(4);
+		this.value = out;
+	});
+}
+// Name is needed only when naming someone else; birth date and ID are optional but checked if typed.
+var CHECKS = {
+	name: function (v) { return v.trim().split(/\s+/).length >= 2 ? '' : 'Nhập đủ họ và tên.'; },
+	dob: function (v) {
+		if (!v.trim()) return '';
+		var m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v.trim());
+		if (!m) return 'Nhập dạng ngày/tháng/năm, ví dụ 14/03/1990.';
+		var d = new Date(+m[3], m[2] - 1, +m[1]);
+		if (d.getDate() !== +m[1] || d.getMonth() !== m[2] - 1) return 'Ngày này không có thật.';
+		if (d > TODAY || +m[3] < 1900) return 'Kiểm tra lại ngày sinh.';
+		return '';
+	},
+	doc: function (v) { v = v.replace(/\s/g, ''); return !v || /^\d{12}$/.test(v) || /^[A-Za-z]\d{7}$/.test(v) ? '' : 'CCCD có 12 số. Hộ chiếu dạng C1234567.'; }
+};
+function show(code) { $('tk-' + code).scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+$('tickets').addEventListener('click', function (e) {
+	var b = e.target.closest('[data-edit]');
+	if (b) { open = b.dataset.edit; render(); show(open); return; }
+	if (e.target.closest('[data-cancel]')) { var c = open; open = null; render(); show(c); return; }
+	if (e.target.closest('[data-mine]')) { delete others[open]; write('traingo-pax', others); var m = open; open = null; render(); show(m); }
+});
+$('tickets').addEventListener('submit', function (e) {
+	e.preventDefault();
+	var f = e.target, ok = true, data = {};
+	['name', 'dob', 'doc'].forEach(function (k) {
+		var field = f.querySelector('[data-f="' + k + '"]'), inp = field.querySelector('input'), err = CHECKS[k](inp.value);
+		field.classList.toggle('bad', !!err);
+		field.querySelector('.msg').textContent = err; field.querySelector('.msg').hidden = !err;
+		inp.setAttribute('aria-invalid', !!err);
+		if (err && ok) { ok = false; inp.focus(); }
+		data[k] = k === 'doc' ? inp.value.replace(/\s/g, '').toUpperCase() : inp.value.trim();
+	});
+	if (!ok) return;
+	if (data.name.toLowerCase() === ME.toLowerCase() && !data.dob && !data.doc) delete others[f.dataset.code];
+	else others[f.dataset.code] = data;
+	write('traingo-pax', others);
+	open = null; render(); show(f.dataset.code);
+});
+$('go').addEventListener('click', function () { location.href = 'thanh-toan.html'; });
+render();
+</script>
+</body>
+</html>
