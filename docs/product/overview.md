@@ -8,7 +8,7 @@ tài liệu ở đây phải được sửa lại cho khớp.
 
 - `overview.md` — tài liệu này: phạm vi, người dùng, luồng chính, màn hình.
 - `domain-model.md` — các entity, quan hệ, trạng thái và ràng buộc dữ liệu.
-- `booking-flow.md` — luồng đặt vé, giữ chỗ, thanh toán mô phỏng, hủy vé.
+- `booking-flow.md` — luồng đặt vé, thanh toán mô phỏng, hủy vé.
 - `admin.md` — chức năng quản trị và quy tắc dữ liệu vận hành.
 - `auth.md` — đăng ký, đăng nhập, phân quyền và quy tắc bảo mật.
 
@@ -31,7 +31,7 @@ trực tiếp cho việc đặt vé đều nằm ngoài phạm vi.
 khách, thanh toán mô phỏng, xem vé, xem và hủy booking của chính mình.
 
 **ADMIN** — người quản lý dữ liệu vận hành. Dashboard tổng quan, quản lý ga,
-tuyến, tàu, toa, chuyến, booking, và xem danh sách tài khoản.
+tuyến, tàu, chuyến, booking, và xem danh sách tài khoản.
 
 Không có role STAFF. Không có luồng kiểm vé hay check-in hành khách.
 
@@ -103,15 +103,15 @@ Admin:
 | `/admin` | Dashboard: tổng booking, tổng chuyến, tổng user, tổng doanh thu |
 | `/admin/stations` | Quản lý ga |
 | `/admin/routes` | Quản lý tuyến |
-| `/admin/trains`, `/admin/trains/:id` | Quản lý tàu; toa và ghế nằm trong trang chi tiết |
+| `/admin/trains`, `/admin/trains/:id` | Quản lý tàu; trang chi tiết chỉ xem sơ đồ toa cố định |
 | `/admin/trips` | Quản lý chuyến |
 | `/admin/bookings`, `/admin/bookings/:id` | Quản lý booking |
 | `/admin/users` | Danh sách tài khoản, chỉ xem |
 
 ## Phạm vi
 
-Trong phạm vi MVP: xác thực, phân quyền, quản lý ga / tuyến / tàu / toa / chuyến,
-sinh ghế tự động, TripSeat, tìm chuyến, chọn toa và chỗ trực quan, giữ chỗ, thông
+Trong phạm vi MVP: xác thực, phân quyền, quản lý ga / tuyến / tàu / chuyến,
+sinh chỗ tự động cho mỗi chuyến (96 TripSeat), TripSeat, tìm chuyến, chọn toa và chỗ trực quan, thông
 tin hành khách, review, thanh toán mô phỏng, vé điện tử, My Trips, hủy booking.
 
 Tính năng mở rộng, chỉ làm sau khi MVP ổn định: QR code trên vé, quét QR, bản đồ
@@ -135,10 +135,10 @@ khẩu.
 - **Security**: mật khẩu phải được hash; Customer không vào được trang Admin và
   không xem được booking của người khác; backend kiểm tra cả role lẫn quyền sở
   hữu.
-- **Data consistency**: xác nhận booking, hủy booking và giữ chỗ phải chạy trong
+- **Data consistency**: xác nhận booking (kèm khóa chỗ) và hủy booking phải chạy trong
   transaction.
 - **Error handling**: xử lý rõ các trường hợp chuyến không tồn tại, chuyến bị
-  hủy, ghế vừa bị người khác đặt, hết hạn giữ chỗ, booking không tồn tại, booking
+  hủy, ghế vừa bị người khác đặt, booking không tồn tại, booking
   không thuộc về Customer đang đăng nhập, và form không hợp lệ.
 
 ## Định hướng giao diện

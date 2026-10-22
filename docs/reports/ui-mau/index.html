@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mẫu giao diện TrainGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap">
+<style>
+:root { --ink: #111418; --bg: #f3f4f6; --surface: #fff; --line: #e3e5e9; --muted: #5b6370; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Be Vietnam Pro", system-ui, sans-serif; font-size: 17px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 40px 20px 56px; }
+h1 { margin: 0; font-size: clamp(30px, 4.5vw, 46px); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+.lead { color: var(--muted); max-width: 62ch; margin: 10px 0 0; }
+h2 { font-size: 22px; margin: 40px 0 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 14px; }
+a.item { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; align-items: center; padding: 16px; border-radius: 18px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); text-decoration: none; transition: transform .2s; }
+a.item:hover { transform: translateY(-2px); }
+.sw { display: grid; grid-template-columns: 1fr 1fr; width: 56px; height: 56px; border-radius: 14px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+.sw i { display: block; }
+a.item b { display: block; font-size: 18px; }
+a.item b small { font-weight: 600; color: #b45309; font-size: 13px; }
+a.item span span { color: var(--muted); font-size: 15px; }
+a.item.main { box-shadow: inset 0 0 0 2px var(--ink); }
+.note { margin-top: 40px; padding: 18px 20px; border-radius: 16px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-size: 15px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+	<h1>Mẫu giao diện TrainGo</h1>
+	<p class="lead">Luồng đặt vé 4 bước, cùng bảng màu navy đậm và xanh cobalt lấy từ ảnh mẫu của Phi.</p>
+
+	<h2>Client: luồng đặt vé</h2>
+	<div class="grid">
+		<a class="item main" href="client/trang-chu-8-swiss.html"><span class="sw"><i style="background:#0b1a36"></i><i style="background:#2c4d98"></i><i style="background:#edf1f5"></i><i style="background:#ffffff"></i></span><span><b>Trang chủ</b><span>Ảnh tàu, ô tìm nhanh, điểm đến và tuyến có ảnh, footer đầy đủ.</span></span></a>
+		<a class="item main" href="client/chon-chuyen-b-mo-rong.html"><span class="sw"><i style="background:#0b1a36"></i><i style="background:#2c4d98"></i><i style="background:#edf1f5"></i><i style="background:#ffffff"></i></span><span><b>1. Chọn chuyến</b><span>Chọn ga, dải ngày có nút trái phải, lọc chuyến, thẻ chuyến mở rộng.</span></span></a>
+		<a class="item main" href="client/dat-ve-e2-tau-ngang-tom-tat.html"><span class="sw"><i style="background:#0b1a36"></i><i style="background:#2c4d98"></i><i style="background:#a9bff0"></i><i style="background:#ffffff"></i></span><span><b>2. Chọn chỗ</b><span>Đoàn tàu nằm ngang. Chọn 1 đến 10 chỗ, mỗi chỗ một vé.</span></span></a>
+		<a class="item main" href="client/hanh-khach-2-the-ve.html"><span class="sw"><i style="background:#0b1a36"></i><i style="background:#2c4d98"></i><i style="background:#e8eefa"></i><i style="background:#ffffff"></i></span><span><b>3. Hành khách</b><span>Mỗi chỗ là một tấm vé đứng tên tài khoản. Đổi người đi nếu cần.</span></span></a>
+		<a class="item main" href="client/thanh-toan.html"><span class="sw"><i style="background:#0b1a36"></i><i style="background:#2c4d98"></i><i style="background:#ffffff"></i><i style="background:#ffffff"></i></span><span><b>4. Thanh toán</b><span>Một tờ hóa đơn giữa trang. Xem các vé sau khi cần.</span></span></a>
+	</div>
+
+	<h2>Admin</h2>
+	<div class="grid">
+		<a class="item main" href="admin/index.html"><span class="sw"><i style="background:#14201b"></i><i style="background:#0b6b72"></i><i style="background:#e4f1f1"></i><i style="background:#f6f7f5"></i></span><span><b>Quản trị</b><span>Lịch tàu xem theo ngày hoặc dạng bảng tính, sơ đồ ga và tuyến Bắc - Nam, ma trận tuyến, booking và người dùng.</span></span></a>
+		<a class="item" href="../thiet-ke-giao-dien-admin.html"><span class="sw"><i style="background:#0b1a36"></i><i style="background:#2c4d98"></i><i style="background:#e8eefa"></i><i style="background:#ffffff"></i></span><span><b>Đề xuất giao diện admin</b><span>Bố cục từng trang trên mô hình V5.</span></span></a>
+	</div>
+
+	<div class="note">Trang chủ dựng theo ui-ux-pro-max: design system "Minimalism &amp; Swiss + Accessible". Cả luồng đổi sang navy đậm và xanh cobalt theo ảnh mẫu, chữ Be Vietnam Pro và Noto Sans. Ảnh lấy từ Wikimedia Commons, tác giả ghi ở footer trang chủ. Dữ liệu chuyến là minh họa.</div>
+</div>
+</body>
+</html>

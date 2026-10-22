@@ -32,4 +32,4 @@ docker compose up -d      # MySQL cho môi trường dev
 .\mvnw.cmd spring-boot:run
 ```
 
-Ứng dụng chạy ở `http://localhost:8081`.
+Ứng dụng chạy ở `http://localhost:8080`.

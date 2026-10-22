@@ -22,9 +22,10 @@ Luồng MVP của `SPEC.md` mục 50 chạy được từ đầu tới cuối tr
 viên làm song song và ít phải sửa chung file:
 
 ```
-Admin: ga -> tuyến -> tàu -> toa + ghế -> chuyến
-Khách: tìm chuyến -> chọn chuyến -> chọn toa, chỗ -> giữ chỗ -> hành khách
-       -> xem lại -> thanh toán mô phỏng -> vé điện tử -> chuyến của tôi, hủy
+Admin: ga -> tuyến -> tàu (xem sơ đồ toa) -> chuyến
+Khách: tìm chuyến -> chọn chuyến -> chọn toa, chỗ -> hành khách -> xem lại
+       -> thanh toán mô phỏng (khóa chỗ, tạo booking và vé) -> vé điện tử
+       -> chuyến của tôi, hủy
 ```
 
 Mỗi task có một file hướng dẫn trong `docs/plans/active/huong-dan-task/`: task làm gì,
@@ -33,7 +34,7 @@ tay, và cách tự kiểm tra trước khi báo xong.
 
 ## Context
 
-- Đã có: database đủ 11 bảng và dữ liệu mẫu (ADR 0005, migration V1-V3), entity và
+- Đã có: database đủ 8 bảng và dữ liệu mẫu (ADR 0005, 0008, 0009, 0010, migration V1-V4), entity và
   repository cho mọi bảng, module Quản lý ga làm mẫu
   (`docs/session/huong-dan-mvc-quan-ly-ga.pdf`). Danh sách tàu, tuyến, chuyến, booking,
   người dùng và dashboard admin đã đọc từ database qua `AdminService` (commit `9ba771b`).
@@ -42,7 +43,7 @@ tay, và cách tự kiểm tra trước khi báo xong.
 - Dự án không có test tự động; mỗi task tự thử bằng tay theo kịch bản trong hướng dẫn
   (ADR 0007).
 - Yêu cầu gốc: `SPEC.md`, bản tóm tắt trong `docs/product/`.
-- Quyết định kỹ thuật đã chốt: `docs/decisions/0001` đến `0007` (ADR 0002 đã được ADR
+- Quyết định kỹ thuật đã chốt: `docs/decisions/0001` đến `0010` (ADR 0002 đã được ADR
   0007 thay thế).
 - Plan tổng của MVP: `docs/plans/active/mvp-traingo.md`.
 
@@ -59,7 +60,7 @@ phải đợi những task nó cần làm xong.
   T06 Chi tiết tàu + sơ đồ toa ──┐      │       │
                                  │      │       │
 Đợt 2                            v      v       v
-  T07 Quản lý chuyến      T08 Thêm toa (T06)   T09 Chọn chỗ, giữ chỗ
+  T07 Quản lý chuyến (T06)                     T09 Chọn chỗ
                                                 (T02, T05, T06)
   T10 Chuyến của tôi, hủy booking (T02)
                                                 │
@@ -82,7 +83,9 @@ cạnh được, vì dữ liệu mẫu đã có sẵn ga, tuyến, tàu, chuyế
 khoảng 2-3 ngày, Khó khoảng 4-5 ngày.
 
 T01 (Hạ tầng test, issue #3) đã bỏ ngày 12/10/2026 cùng với test tự động (ADR 0007).
-Số thứ tự các task còn lại giữ nguyên để khớp với issue và tên branch.
+T08 (Thêm toa, issue #10) bỏ ngày 19/10/2026 vì admin không còn quản lý toa (ADR 0009);
+issue #10 phải được đóng bằng tay trên GitHub. Số thứ tự các task còn lại giữ nguyên để
+khớp với issue và tên branch.
 
 | ID | Task | Đợt | Phần việc | Độ khó | Cần xong trước | Hướng dẫn | Issue |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -91,12 +94,12 @@ Số thứ tự các task còn lại giữ nguyên để khớp với issue và 
 | T04 | Quản lý tuyến | 1 | A | Vừa | Quyết định D2 | `T04-quan-ly-tuyen.md` | #6 |
 | T05 | Tìm chuyến, danh sách, chi tiết chuyến | 1 | B | Vừa | Quyết định D6, D8 | `T05-tim-chuyen.md` | #7 |
 | T06 | Chi tiết tàu và sơ đồ toa | 1 | B | Vừa | Không | `T06-chi-tiet-tau-so-do-toa.md` | #8 |
-| T07 | Quản lý chuyến | 2 | A | Vừa | Quyết định D2, D8; nên có T03, T04 | `T07-quan-ly-chuyen.md` | #9 |
-| T08 | Thêm toa vào tàu | 2 | C | Vừa | T06, quyết định D3 | `T08-them-toa.md` | #10 |
-| T09 | Chọn chỗ và giữ chỗ | 2 | B | Khó | T02, T05, T06, quyết định D1, D6, D7 | `T09-chon-cho-giu-cho.md` | #11 |
+| T07 | Quản lý chuyến | 2 | A | Vừa | T06, quyết định D2, D8; nên có T03, T04 | `T07-quan-ly-chuyen.md` | #9 |
+| T08 | Thêm toa vào tàu | Bỏ (ADR 0009) | - | - | Không | Đã xóa | #10 |
+| T09 | Chọn chỗ (tên file là tên cũ, ADR 0010) | 2 | B | Vừa | T02, T05, T06, quyết định D6, D7 | `T09-chon-cho-giu-cho.md` | #11 |
 | T10 | Chuyến của tôi và hủy booking | 2 | C | Vừa | T02, quyết định D8 | `T10-chuyen-cua-toi-huy-booking.md` | #12 |
-| T11 | Hành khách và xem lại booking | 3 | B | Vừa | T09, quyết định D5, D7 | `T11-hanh-khach-xem-lai.md` | #13 |
-| T12 | Thanh toán mô phỏng và vé điện tử | 3 | C | Khó | T11, quyết định D5, D7 | `T12-thanh-toan-ve-dien-tu.md` | #14 |
+| T11 | Hành khách và xem lại booking | 3 | B | Vừa | T09, quyết định D7 | `T11-hanh-khach-xem-lai.md` | #13 |
+| T12 | Thanh toán mô phỏng và vé điện tử (khóa chỗ, tạo booking và vé) | 3 | C | Khó | T11, quyết định D5, D7 | `T12-thanh-toan-ve-dien-tu.md` | #14 |
 | T13 | Quản trị booking, người dùng, dashboard | 3 | A | Vừa | T10 | `T13-quan-tri-booking-nguoi-dung.md` | #15 |
 | T14 | Hoàn thiện và kiểm thử xuyên suốt | 4 | Cả nhóm | Vừa | Tất cả | `T14-hoan-thien.md` | #16 |
 
@@ -104,19 +107,19 @@ Số thứ tự các task còn lại giữ nguyên để khớp với issue và 
 
 Mỗi **phần việc** là một chuỗi task nối tiếp nhau, do cùng một người làm từ đầu tới cuối.
 Người đó hiểu sâu phần của mình và ít phải đọc code người khác. Nhóm có một thành viên
-mới và hai thành viên đã vững backend, nên phần việc A nhẹ hơn hẳn, còn B và C ngang nhau.
+mới và hai thành viên đã vững backend, nên phần việc A nhẹ hơn hẳn, còn B và C gần ngang nhau.
 Phi gán tên sau:
 
 | Phần việc | Mảng phụ trách | Chuỗi task | Khối lượng | Dành cho |
 | --- | --- | --- | --- | --- |
 | A | Màn hình quản trị dữ liệu | T03 -> T04 -> T07 -> T13 | Khoảng 8-9 ngày | Thành viên mới: toàn màn hình thêm, sửa, xóa, xem danh sách theo đúng mẫu module ga, khó dần từng bước |
-| B | Khách tìm chuyến và chọn chỗ | T05 -> T06 -> T09 -> T11 | Khoảng 12 ngày | Một thành viên vững: JavaScript `fetch`, giữ chỗ không cho hai người trùng |
-| C | Tài khoản và lõi đặt vé | T02 -> T08 -> T10 -> T12 | Khoảng 14 ngày | Một thành viên vững: Spring Security, transaction trên nhiều bảng |
+| B | Khách tìm chuyến và chọn chỗ | T05 -> T06 -> T09 -> T11 | Khoảng 10 ngày | Một thành viên vững: JavaScript `fetch`, sơ đồ chọn chỗ theo từng toa, bản nháp booking trong session |
+| C | Tài khoản và lõi đặt vé | T02 -> T10 -> T12 | Khoảng 12 ngày | Một thành viên vững: Spring Security, transaction trên nhiều bảng, khóa chỗ chống hai người trùng lúc thanh toán |
 
 T14 chia đều cho cả nhóm khi tới đợt 4.
 
 Ở đợt 1, ba phần việc không phải chờ nhau. Ở đợt 2, phần B cần T02 của phần C xong mới bắt
-đầu T09; phần C cần T06 của phần B xong mới bắt đầu T08. Ở đợt 3, phần C cần T11 của phần B
+đầu T09; phần A cần T06 của phần B xong mới bắt đầu T07 (T07 dùng `CoachLayout` do T06 tạo). Ở đợt 3, phần C cần T11 của phần B
 xong mới bắt đầu T12; trong lúc chờ, phần C làm trước trang vé và trang lỗi của T14.
 
 Người làm phần A nên được người làm phần B hoặc C đọc pull request của từng task. Đó là
@@ -125,21 +128,28 @@ cách học nhanh nhất: so code của mình với module ga và với góp ý 
 ## Quyết định nghiệp vụ
 
 Phi chốt cả tám quyết định ngày 12/10/2026, theo đúng đề xuất, riêng D1 chọn hẳn cách
-không có job dọn dẹp. Issue #2 đã tick đủ. Luật sản phẩm tương ứng nằm ở
+không có job dọn dẹp. Issue #2 đã tick đủ. Ngày 19/10/2026 nhóm bỏ tính năng giữ chỗ
+(`docs/decisions/0010-bo-giu-cho.md`): D1 không còn áp dụng, D7 viết lại, D5 áp dụng ở T12
+thay vì T11. Ngày 20/10/2026 Phi chốt thêm D9 về ga, tuyến, tàu và chuyến
+(`docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`). Luật sản phẩm tương ứng nằm ở
 `docs/product/booking-flow.md`, `admin.md` và `auth.md`. Cột "Áp dụng từ" là task đầu tiên
 dùng quyết định đó. Muốn đổi một quyết định thì bàn với nhóm, rồi sửa bảng này, file
 `docs/product/` tương ứng và các hướng dẫn task có nhắc tới nó trong cùng một commit.
 
 | ID | Câu hỏi | Đã chốt | Áp dụng từ |
 | --- | --- | --- | --- |
-| D1 | Chỗ hết 5 phút giữ thì trả lại bằng cách nào? | Không có chương trình chạy ngầm. Chỗ `HELD` đã quá `heldUntil` được coi là trống ở mọi nơi, và người khác được giữ đè. Không làm job dọn dẹp định kỳ | T09 |
+| D1 | Chỗ hết 5 phút giữ thì trả lại bằng cách nào? | Không còn áp dụng (ADR 0010): không có giữ chỗ, không có `HELD`, `held_until`, hết hạn hay giữ đè. Chỗ chỉ có `AVAILABLE` và `BOOKED` | - |
 | D2 | Dữ liệu đang được dùng thì xóa hay hủy thế nào? | Tuyến: không cho xóa khi đã có chuyến; tuyến đã có chuyến chỉ sửa được khoảng cách, không đổi ga. Tàu: không có chức năng xóa. Chuyến: không xóa, chỉ hủy (`CANCELLED`), và không cho hủy khi đã có booking `CONFIRMED` | T04, T07 |
-| D3 | Thêm toa vào tàu đã có chuyến thì các chuyến đó ra sao? | Tạo thêm `TripSeat` `AVAILABLE` cho mọi chuyến `SCHEDULED` chưa khởi hành của tàu, trong cùng transaction | T08 |
+| D3 | Thêm toa vào tàu đã có chuyến thì các chuyến đó ra sao? | Không còn áp dụng (ADR 0009): admin không quản lý toa, mọi tàu dùng một cấu hình toa cố định trong code, T08 bị bỏ | - |
 | D4 | Đăng ký cần những gì? | Họ tên, email, mật khẩu, nhập lại mật khẩu. Mật khẩu ít nhất 8 ký tự. Email không được trùng, không phân biệt chữ hoa chữ thường | T02 |
-| D5 | Mã booking và mã vé tạo thế nào? | Booking: `BK` + năm tháng + số thứ tự 3 chữ số, lấy số tiếp theo trong tháng (`BK202610005`). Vé: đổi `BK` thành `TK`, thêm `-` và thứ tự hành khách (`TK202610005-01`), giống dữ liệu mẫu | T11 |
+| D5 | Mã booking và mã vé tạo thế nào? | Booking: `BK` + năm tháng + số thứ tự 3 chữ số, lấy số tiếp theo trong tháng (`BK202610005`). Vé: đổi `BK` thành `TK`, thêm `-` và thứ tự hành khách (`TK202610005-01`), giống dữ liệu mẫu. Cả hai sinh lúc thanh toán, trong transaction của T12 | T12 |
 | D6 | Mỗi booking tối đa mấy hành khách? | Từ 1 đến 10, khớp ô "Hành khách" đang có ở trang chủ | T05 |
-| D7 | Giữa các bước đặt vé, dữ liệu được lưu ở đâu? | Bấm "Tiếp tục" ở trang chọn chỗ thì giữ chỗ và lưu một bản nháp booking trong session. Bước hành khách và bước xem lại chỉ sửa bản nháp. Bấm "Tiếp tục thanh toán" mới tạo booking `PENDING` trong database. Bấm "Thanh toán" thì xác nhận | T09 |
-| D8 | Khi nào coi một chuyến là đã khởi hành hoặc đã hoàn thành? | Mọi luật đặt, giữ, hủy đều so thời điểm khởi hành (ngày + giờ) với hiện tại. Trạng thái `COMPLETED` chỉ để hiển thị; có thể thêm job mỗi giờ để gán, nhưng không bắt buộc | T05 |
+| D7 | Giữa các bước đặt vé, dữ liệu được lưu ở đâu? | Bản nháp (`BookingDraft`) nằm trong session suốt các bước chọn chỗ, nhập hành khách và xem lại; chưa ghi gì vào database. Bấm "Thanh toán" chạy một transaction: kiểm tra chuyến, khóa chỗ bằng `UPDATE` có điều kiện `AVAILABLE` sang `BOOKED` (thiếu dòng thì rollback, báo chỗ vừa được người khác đặt), tạo booking `CONFIRMED` / `PAID` và các vé (ADR 0010) | T09 |
+| D8 | Khi nào coi một chuyến là đã khởi hành hoặc đã hoàn thành? | Mọi luật đặt, giữ, hủy đều so thời điểm khởi hành (`departureAt`, ngày-giờ từ V5) với hiện tại. Trạng thái `COMPLETED` chỉ để hiển thị; có thể thêm job mỗi giờ để gán, nhưng không bắt buộc | T05 |
+| D9 | Ga, tuyến, tàu và chuyến liên quan thế nào? | Chốt 20/10/2026 (ADR 0011). Ga và tuyến là dữ liệu nền: 8 ga trên trục Bắc - Nam có lý trình (`kmMark`), mọi danh sách xếp theo lý trình. Tàu không gắn với tuyến. Chuyến tạo ở trang chi tiết tàu và nối chặng: ga đi = ga đến của chuyến cuối, giờ đi sau giờ đến ít nhất 30 phút. Giờ chuyến lưu ngày-giờ đầy đủ (`departureAt`, `arrivalAt`) | T03, T04, T05, T07 |
+| D10 | Vé ghi thông tin gì của người đi? | Chốt 21/10/2026: họ tên và số CCCD. Họ tên mặc định là tên tài khoản đang đặt. Bỏ ngày sinh (`tickets.date_of_birth`, migration `V6`, issue #19). Thẻ vé hiện số điện thoại của tài khoản, nên tài khoản có thêm `users.phone_number`, nhập khi đăng ký (issue #23) | #19, #23 |
+| D11 | Giá các loại chỗ trên một chuyến có khác nhau không? | Chốt 21/10/2026: không. Mọi chỗ cùng giá `trips.base_price`, bỏ phụ thu giường (`trip_seats.price_modifier`, migration `V6`, issue #19) | #19 |
+| D12 | Có đổi tên cột theo bản ERD 19/10 không? | Chốt 21/10/2026: không. Database giữ tên đang có (`origin_station_id`, `customer_id`...); ERD sửa theo database (issue #19) | #19 |
 
 ## Quy ước chung cho mọi task
 
@@ -149,7 +159,7 @@ dùng quyết định đó. Muốn đổi một quyết định thì bàn với 
   quản trị của nghiệp vụ nào có controller riêng của nghiệp vụ đó (ADR 0001, 0006).
 - **Entity**: được thêm method xử lý nghiệp vụ, ví dụ `Trip.cancel()`. Không được thêm hay
   sửa field ứng với cột trong database. Muốn đổi bảng thì bàn với nhóm và viết migration
-  mới `V4__...`; không sửa `V1`, `V2`, `V3`, vì máy của cả nhóm đã chạy các file đó.
+  mới `V6__...`; không sửa `V1` đến `V5`, vì máy của cả nhóm sẽ chạy các file đó.
 - **Thời gian**: chỗ nào cần biết "bây giờ" thì gọi `LocalDateTime.now()` (hoặc
   `LocalDate.now()`). Database và ứng dụng cùng chạy giờ `+07:00`.
 - **File dùng chung**: chỉ người phụ trách được sửa; người khác cần sửa thì nhờ người đó.
@@ -161,7 +171,8 @@ dùng quyết định đó. Muốn đổi một quyết định thì bàn với 
 | `service/TrainGoUserDetails.java` (thông tin người đang đăng nhập) | T02 |
 | `common/exception/TrainNotFoundException.java` | T03; T06 dùng lại |
 | `static/js/seat-map.js` (hàm vẽ sơ đồ toa) | T06; T09 mở rộng |
-| `model/dto/BookingDraft.java`, `service/BookingDraftStore.java`, `static/js/hold-countdown.js` | T09; T11 mở rộng |
+| `model/dto/CoachLayout.java` (cấu hình toa cố định, ADR 0009) | T06; T07 và T09 dùng lại |
+| `model/dto/BookingDraft.java`, `service/BookingDraftStore.java` | T09; T11 mở rộng |
 | `controller/BookingFlowController.java` | T11; T12 thêm handler |
 | `service/BookingCancellationService.java` | T10; T13 dùng lại |
 | Method `Trip.departureAt()` | Task nào làm trước thì thêm (T05 hoặc T07) |
@@ -195,11 +206,11 @@ ngay khi một bên được sửa.
 - D7 là quy ước chung giữa T09, T11 và T12, dễ bị mỗi task hiểu một kiểu. Cách phòng: người
   làm T11 và T12 đọc `model/dto/BookingDraft.java` và `service/BookingDraftStore.java` của
   T09 trước khi viết code, không tự tạo bản nháp riêng.
-- Hai người cùng sửa một entity, ví dụ `TripSeat` ở T09 và T12. Cách phòng: mỗi task chỉ thêm
+- Hai người cùng sửa một entity, ví dụ `Booking` ở T10 và T12. Cách phòng: mỗi task chỉ thêm
   method của mình; khi gộp có trùng chỗ thì chỉ là hai method khác nhau, giữ cả hai.
-- Không có test tự động, nên lỗi giữ chỗ trùng, transaction và phân quyền dễ lọt qua vì nhìn
+- Không có test tự động, nên lỗi hai người trùng một chỗ, transaction và phân quyền dễ lọt qua vì nhìn
   bằng mắt khó thấy. Cách phòng: kịch bản thử bằng tay của T02, T09, T10, T12 có bước thử hai
-  trình duyệt và bước SQL (ví dụ lùi `held_until` về quá khứ); người đọc PR tự chạy lại các
+  trình duyệt và bước SQL (ví dụ đánh dấu một chỗ là `BOOKED` ngay trước khi bấm "Thanh toán"); người đọc PR tự chạy lại các
   bước đó với nghiệp vụ rủi ro.
 
 ## Progress
@@ -218,9 +229,13 @@ ngay khi một bên được sửa.
 - [ ] Gán người cho từng issue.
 - [x] Chốt D1-D8 (issue #2, 12/10/2026).
 - [ ] Đợt 1: T02-T06.
-- [ ] Đợt 2: T07-T10.
+- [x] Bỏ bảng toa và ghế, bỏ T08 và D3, T07 chờ T06 (ADR 0009, 19/10/2026).
+- [x] Bỏ giữ chỗ (ADR 0010, 19/10/2026): T09 chỉ còn chọn chỗ, T11 chỉ làm việc trên bản nháp,
+      T12 tạo booking và vé trong transaction thanh toán; viết lại các hướng dẫn T05-T07, T09-T14.
+- [ ] Đợt 2: T07, T09, T10 (T08 đã bỏ).
 - [ ] Đợt 3: T11-T13.
 - [ ] Đợt 4: T14.
+- [x] Chia lại task theo giao diện mới thành issue lát cắt dọc (bản nháp `docs/session/plan-task-chi-tiet.md`). Đợt 1 là issue #19-#26, Đợt 2 #27-#31, Đợt 3 #32-#36, Đợt 4 #37-#42 (21/10/2026). Issue cũ #4-#16 đã đóng ("not planned") cùng ngày, mỗi issue có bình luận chỉ sang issue thay thế hoặc đợt sẽ thay nó, và thẻ của chúng đã được archive khỏi board.
 
 ## Decisions
 
@@ -245,6 +260,16 @@ ngay khi một bên được sửa.
   nhóm tự thêm vì `SPEC.md` mục 35 chỉ ghi "Xóa Route": chặn xóa dữ liệu đã có dữ liệu khác
   dựa vào, và không hủy chuyến đã có khách trả tiền vì hoàn tiền nằm ngoài phạm vi. D8 giữ
   job chuyển `COMPLETED` là phần không bắt buộc của T07.
+- 2026-10-19: Bỏ bảng `coaches` và `seats` (ADR 0009): mọi tàu dùng một cấu hình toa cố định
+  trong code (`CoachLayout`). Bỏ T08 và D3. T07 sinh 96 `trip_seats` từ `CoachLayout` nên chờ
+  T06; phần C còn T02 -> T10 -> T12.
+- 2026-10-19: Bỏ tính năng giữ chỗ 5 phút (ADR 0010, sau khi nhóm chốt cùng ngày). Chỗ chỉ khóa
+  lúc thanh toán trong một transaction; giữa các bước dữ liệu chỉ nằm trong session. D1 không còn
+  áp dụng, D7 viết lại, D5 áp dụng ở T12. Cập nhật phạm vi và ước lượng: T09 (chọn chỗ) từ Khó
+  (4-5 ngày) xuống Vừa (khoảng 3 ngày); T11 từ khoảng 2-3 ngày xuống khoảng 2 ngày vì không tạo
+  booking; T12 giữ Khó nhưng nặng hơn (khoảng 5 ngày) vì gánh khóa chỗ, tạo booking, tạo vé
+  và sinh mã. Phần việc B còn khoảng 10 ngày, C khoảng 12 ngày. Tên file `T09-chon-cho-giu-cho.md`
+  giữ nguyên để link không gãy.
 
 ## Validation
 

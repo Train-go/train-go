@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.voyagego.traingo.common.exception.DuplicateStationCodeException;
+import com.voyagego.traingo.common.exception.DuplicateStationKmMarkException;
 import com.voyagego.traingo.common.exception.StationInUseException;
 import com.voyagego.traingo.entity.Station;
 import com.voyagego.traingo.model.request.StationRequest;
@@ -81,8 +82,8 @@ public class StationAdminController {
 		Station station;
 		try {
 			station = stationService.create(form);
-		} catch (DuplicateStationCodeException | DataIntegrityViolationException ex) {
-			rejectDuplicateCode(bindingResult);
+		} catch (DuplicateStationCodeException | DuplicateStationKmMarkException | DataIntegrityViolationException ex) {
+			rejectDuplicate(bindingResult, ex);
 			return FORM_VIEW;
 		}
 		redirectAttributes.addFlashAttribute("successMessage", "Đã thêm " + describe(station) + ".");
@@ -107,8 +108,8 @@ public class StationAdminController {
 		Station station;
 		try {
 			station = stationService.update(id, form);
-		} catch (DuplicateStationCodeException | DataIntegrityViolationException ex) {
-			rejectDuplicateCode(bindingResult);
+		} catch (DuplicateStationCodeException | DuplicateStationKmMarkException | DataIntegrityViolationException ex) {
+			rejectDuplicate(bindingResult, ex);
 			return FORM_VIEW;
 		}
 		redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật " + describe(station) + ".");
@@ -127,8 +128,20 @@ public class StationAdminController {
 		return REDIRECT_TO_LIST;
 	}
 
-	private static void rejectDuplicateCode(BindingResult bindingResult) {
-		bindingResult.rejectValue("code", "duplicate", "Mã ga này đã được dùng cho một ga khác.");
+	/**
+	 * The service's own checks say which field is taken. A unique key that fails
+	 * under a concurrent request only says so in the database message, which
+	 * names the key (uk_stations_km_mark or uk_stations_code).
+	 */
+	private static void rejectDuplicate(BindingResult bindingResult, RuntimeException ex) {
+		boolean kmMarkTaken = ex instanceof DuplicateStationKmMarkException
+				|| (ex instanceof DataIntegrityViolationException integrity
+						&& String.valueOf(integrity.getMostSpecificCause().getMessage()).contains("uk_stations_km_mark"));
+		if (kmMarkTaken) {
+			bindingResult.rejectValue("kmMark", "duplicate", "Lý trình này đã được dùng cho một ga khác.");
+		} else {
+			bindingResult.rejectValue("code", "duplicate", "Mã ga này đã được dùng cho một ga khác.");
+		}
 	}
 
 	private static String describe(Station station) {

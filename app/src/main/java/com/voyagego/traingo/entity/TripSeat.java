@@ -1,7 +1,5 @@
 package com.voyagego.traingo.entity;
 
-import java.time.LocalDateTime;
-
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -20,13 +18,16 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
 /**
- * The state of one seat on one trip. Created for every seat of the train when
- * the trip is created. The unique key on (trip_id, seat_id) is the last line
- * of defence against two bookings sharing a seat.
+ * One seat or bed on one trip, with its own state. Created for every seat of
+ * the fixed coach layout when the trip is created (docs/product/domain-model.md
+ * describes the layout). The coach and seat data is copied here, so a trip's
+ * seat map reads from this one table. The unique key on
+ * (trip_id, coach_number, seat_code) is the last line of defence against two
+ * bookings sharing a seat.
  */
 @Entity
-@Table(name = "trip_seats", uniqueConstraints = @UniqueConstraint(name = "uk_trip_seats_trip_seat",
-		columnNames = { "trip_id", "seat_id" }))
+@Table(name = "trip_seats", uniqueConstraints = @UniqueConstraint(name = "uk_trip_seats_coach_seat",
+		columnNames = { "trip_id", "coach_number", "seat_code" }))
 public class TripSeat {
 
 	@Id
@@ -37,30 +38,44 @@ public class TripSeat {
 	@JoinColumn(name = "trip_id", nullable = false)
 	private Trip trip;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "seat_id", nullable = false)
-	private Seat seat;
+	/** 1, 2, 3 ... within the trip; shown as "Toa 01". */
+	@Column(nullable = false)
+	private int coachNumber;
+
+	/** SEAT coaches hold seats A01 ..., SLEEPER coaches hold beds B01 ... */
+	@Enumerated(EnumType.STRING)
+	@JdbcTypeCode(SqlTypes.VARCHAR)
+	@Column(nullable = false, length = 20)
+	private CoachType coachType;
+
+	/** A01 ... for seats, B01 ... for beds. */
+	@Column(nullable = false, length = 5)
+	private String seatCode;
+
+	/** Beds only: four beds per cabin, so B01-B04 are cabin 1. Null for seats. */
+	private Integer cabinNumber;
+
+	/** Added to Trip.basePrice for this seat, in dong. */
+	@Column(nullable = false)
+	private long priceModifier;
 
 	@Enumerated(EnumType.STRING)
 	@JdbcTypeCode(SqlTypes.VARCHAR)
 	@Column(nullable = false, length = 20)
 	private TripSeatStatus status;
 
-	/** Who holds the seat while it is HELD. The database requires it then. */
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "held_by_user_id")
-	private User heldBy;
-
-	/** End of the 5 minute hold while the seat is HELD. */
-	private LocalDateTime heldUntil;
-
 	/** Required by JPA. */
 	protected TripSeat() {
 	}
 
-	public TripSeat(Trip trip, Seat seat) {
+	public TripSeat(Trip trip, int coachNumber, CoachType coachType, String seatCode, Integer cabinNumber,
+			long priceModifier) {
 		this.trip = trip;
-		this.seat = seat;
+		this.coachNumber = coachNumber;
+		this.coachType = coachType;
+		this.seatCode = seatCode;
+		this.cabinNumber = cabinNumber;
+		this.priceModifier = priceModifier;
 		this.status = TripSeatStatus.AVAILABLE;
 	}
 
@@ -72,20 +87,28 @@ public class TripSeat {
 		return trip;
 	}
 
-	public Seat getSeat() {
-		return seat;
+	public int getCoachNumber() {
+		return coachNumber;
+	}
+
+	public CoachType getCoachType() {
+		return coachType;
+	}
+
+	public String getSeatCode() {
+		return seatCode;
+	}
+
+	public Integer getCabinNumber() {
+		return cabinNumber;
+	}
+
+	public long getPriceModifier() {
+		return priceModifier;
 	}
 
 	public TripSeatStatus getStatus() {
 		return status;
-	}
-
-	public User getHeldBy() {
-		return heldBy;
-	}
-
-	public LocalDateTime getHeldUntil() {
-		return heldUntil;
 	}
 
 }

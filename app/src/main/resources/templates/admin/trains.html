@@ -23,12 +23,7 @@
 				<div class="table-card-header flex-wrap">
 					<div>
 						<h4 class="card-title mb-2">Danh sách tàu</h4>
-						<!--
-							Coaches have no menu entry of their own: admin.md puts
-							them inside the train detail page, where adding a coach
-							generates its seats automatically.
-						-->
-						<small class="text-muted">Toa được quản lý trong trang chi tiết của từng tàu.</small>
+						<small class="text-muted">Mọi tàu dùng chung một cấu hình toa cố định.</small>
 					</div>
 					<div class="table-toolbar">
 						<button type="button" class="btn btn-primary btn-sm" disabled>
@@ -42,8 +37,6 @@
 							<tr>
 								<th scope="col">Mã tàu</th>
 								<th scope="col">Tên tàu</th>
-								<th scope="col">Số toa</th>
-								<th scope="col">Số ghế</th>
 								<th scope="col">Thao tác</th>
 							</tr>
 						</thead>
@@ -51,8 +44,6 @@
 							<tr th:each="train : ${trains}">
 								<td th:text="${train.code}">SE1</td>
 								<td th:text="${train.name}">Thống Nhất</td>
-								<td th:text="${train.coaches}">12</td>
-								<td th:text="${train.seats}">560</td>
 								<td>
 									<div class="table-actions">
 										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Xem chi tiết">

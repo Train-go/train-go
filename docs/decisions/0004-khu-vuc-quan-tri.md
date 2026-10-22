@@ -200,6 +200,7 @@ Tradeoffs:
   `disabled`; theo ADR 0001 và 0006, màn hình đó chuyển sang controller riêng của
   nghiệp vụ. `/admin/stations` đã làm xong ngày 01/10/2026; còn tuyến, tàu,
   chuyến, booking và người dùng.
-- Thêm `/admin/trains/{id}` để quản lý toa, theo `docs/product/admin.md`.
+- Thêm `/admin/trains/{id}` để xem sơ đồ toa cố định, theo `docs/product/admin.md`
+  (ADR 0009 bỏ chức năng quản lý toa).
 - Nếu tới cuối dự án CKEditor, Quill, EditorJS và boxicons vẫn không trang nào
   dùng, xóa khỏi `static/vendor/`.

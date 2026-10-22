@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trang chủ 8 - Tối giản Swiss</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+/* ================= Edit the look here =================
+   Style: Minimalism & Swiss + Accessible (ui-ux-pro-max design system for TrainGo).
+   Palette: deep navy + cobalt, sampled from Phi's reference shot. Pattern: Marketplace (search-first hero).
+   Photos: Wikimedia Commons, linked live (see "Nguồn ảnh" in the footer).
+   Low-tech reminder: a block of text stays under ~12 words,
+   a button label under 3 words, one main action per screen. */
+:root {
+	--primary: #0b1a36;        /* deep navy: headings, links, dark band */
+	--primary-2: #1c2b4a;
+	--deep: #0b1a36;           /* footer and photo overlays */
+	--accent: #2c4d98;         /* cobalt: the main button only */
+	--accent-2: #223f80;
+	--on-accent: #ffffff;      /* white on cobalt passes 4.5:1 */
+	--bg: #edf1f5;
+	--surface: #ffffff;
+	--line: #e0e6ed;
+	--muted: #5b6b80;
+	--text: #0b1a36;
+	--radius: 8px;             /* Swiss: small, consistent corners */
+	--tap: 56px;
+	--display: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+	--body: "Noto Sans", "Be Vietnam Pro", system-ui, sans-serif;
+}
+/* ====================================================== */
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--body); font-size: 17px; line-height: 1.55; color: var(--text); background: var(--surface); }
+button, select { font: inherit; color: inherit; }
+a { color: var(--primary); }
+img { display: block; max-width: 100%; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding-inline: 24px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.25; letter-spacing: -0.01em; }
+
+/* ---------- nav ---------- */
+.nav { position: relative; z-index: 3; background: var(--surface); border-bottom: 1px solid var(--line); }
+.nav .wrap { display: flex; align-items: center; gap: 28px; height: 72px; }
+.logo { display: flex; align-items: center; gap: 10px; min-height: 48px; font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--primary); text-decoration: none; }
+.logo i { display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius); background: var(--primary); color: #fff; font-style: normal; font-size: 18px; }
+.links { display: flex; gap: 4px; margin: 0 0 0 auto; list-style: none; padding: 0; }
+.links a { display: inline-flex; align-items: center; height: 48px; padding: 0 14px; border-radius: var(--radius); font-weight: 600; text-decoration: none; color: var(--text); }
+.links a:hover { background: var(--bg); }
+.login { display: inline-flex; align-items: center; height: 48px; padding: 0 20px; border-radius: var(--radius); border: 2px solid var(--primary); font-weight: 700; text-decoration: none; }
+
+/* ---------- hero: photo, navy veil, search across the bottom ---------- */
+.hero { position: relative; isolation: isolate; color: #fff; }
+.hero-img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; object-position: center 60%; }
+.hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(11 26 54 / 88%) 0%, rgb(11 26 54 / 60%) 45%, rgb(11 26 54 / 10%) 100%); }
+.hero .wrap { padding-block: 88px 120px; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: var(--radius); background: rgb(255 255 255 / 14%); font-weight: 600; font-size: 15px; }
+.hero h1 { margin-top: 18px; font-size: clamp(38px, 5.4vw, 66px); font-weight: 800; max-width: 14ch; text-wrap: balance; }
+.hero p { margin: 14px 0 0; font-size: 19px; color: rgb(255 255 255 / 85%); max-width: 36ch; }
+
+.search-wrap { position: relative; z-index: 2; margin-top: -48px; }
+.search { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr) auto; align-items: stretch; background: var(--surface); border: 2px solid var(--primary); border-radius: var(--radius); box-shadow: 0 20px 40px -20px rgb(11 26 54 / 45%); }
+.cell { display: flex; flex-direction: column; justify-content: center; min-width: 0; min-height: 84px; padding: 0 20px; border-right: 1px solid var(--line); cursor: pointer; }
+.cell small { font-weight: 700; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.cell select { width: 100%; min-height: 44px; border: 0; padding: 0; background: none; font-family: var(--display); font-size: 21px; font-weight: 700; appearance: none; -webkit-appearance: none; cursor: pointer; }
+.swap + .cell { padding-left: 32px; }
+.swap { align-self: center; width: 44px; height: 44px; margin: 0 -22px; z-index: 1; border: 2px solid var(--primary); border-radius: 50%; background: var(--surface); color: var(--primary); cursor: pointer; }
+.go { display: flex; align-items: center; gap: 10px; padding: 0 32px; border: 0; border-radius: 0 6px 6px 0; background: var(--accent); color: var(--on-accent); font-family: var(--display); font-size: 20px; font-weight: 800; cursor: pointer; transition: background .2s, color .2s; white-space: nowrap; }
+.go:hover { background: var(--accent-2); color: #fff; }
+
+/* ---------- sections ---------- */
+section { padding-block: 72px 0; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding-bottom: 14px; margin-bottom: 24px; border-bottom: 2px solid var(--text); }
+.sec-head h2 { font-size: clamp(26px, 3vw, 36px); font-weight: 800; }
+.sec-head p { margin: 4px 0 0; color: var(--muted); }
+.sec-head a { flex: 0 0 auto; font-weight: 700; display: inline-flex; align-items: center; min-height: 44px; gap: 6px; }
+
+/* destinations: one large + four small fills a 4 x 2 grid exactly */
+.places { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 230px; gap: 14px; }
+.place { position: relative; overflow: hidden; border-radius: var(--radius); color: #fff; text-decoration: none; isolation: isolate; }
+.place img { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.place::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 40%, rgb(11 26 54 / 82%)); }
+.place:hover img { transform: scale(1.05); }
+.place .txt { position: absolute; left: 20px; right: 20px; bottom: 18px; }
+.place small { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: 14px; color: rgb(255 255 255 / 85%); }
+.place strong { display: block; font-family: var(--display); font-size: 26px; line-height: 1.2; }
+.place.big { grid-column: span 2; grid-row: span 2; }
+.place.big strong { font-size: 42px; }
+
+/* popular routes: photo on top, facts below */
+.routes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.route { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--surface); text-decoration: none; color: var(--text); transition: border-color .2s, transform .2s; }
+.route:hover { border-color: var(--primary); transform: translateY(-2px); }
+.route .ph { aspect-ratio: 4 / 3; overflow: hidden; }
+.route .ph img { width: 100%; height: 100%; object-fit: cover; }
+.route .body { display: flex; flex-direction: column; gap: 8px; padding: 16px; flex: 1; }
+.route .line { display: flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 800; font-size: 19px; }
+.route .line i { color: var(--accent); font-size: 16px; }
+.route .meta { display: flex; gap: 14px; color: var(--muted); font-size: 15px; }
+.route .meta span { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+.route .line b { font: inherit; white-space: nowrap; }
+.route .more { margin-top: auto; padding-top: 8px; display: inline-flex; align-items: center; gap: 6px; font-weight: 700; color: var(--primary); }
+
+.trust { margin-top: 72px; background: var(--primary); color: #fff; }
+.trust .wrap { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding-block: 40px; }
+.trust div { display: flex; gap: 16px; align-items: center; }
+.trust i { font-size: 30px; color: #b9c8ec; }
+.trust strong { font-family: var(--display); font-size: 19px; }
+
+/* ---------- footer ---------- */
+.foot { background: var(--deep); color: #c3cde0; font-size: 15px; }
+.foot a { color: #e6ecf8; text-decoration: none; }
+.foot a:hover { color: #fff; text-decoration: underline; }
+.foot-top { display: grid; grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr)); gap: 32px; padding-block: 56px 40px; }
+.foot .logo { color: #fff; }
+.foot .logo i { background: var(--accent); color: var(--on-accent); }
+.foot-brand p { margin: 14px 0 18px; max-width: 30ch; }
+.social { display: flex; gap: 8px; }
+.social a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--radius); background: rgb(255 255 255 / 8%); font-size: 18px; }
+.social a:hover { background: rgb(255 255 255 / 16%); text-decoration: none; }
+.foot h3 { font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: #fff; margin-bottom: 14px; }
+.foot ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.foot ul a { display: inline-flex; align-items: center; min-height: 44px; }
+.foot-bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px 28px; border-top: 1px solid rgb(255 255 255 / 12%); }
+.pay { display: flex; gap: 8px; align-items: center; }
+.pay span { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px; border-radius: 6px; background: rgb(255 255 255 / 8%); color: #e6ecf8; font-size: 13px; font-weight: 600; }
+.credits { flex-basis: 100%; }
+.credits summary { cursor: pointer; display: inline-flex; min-height: 44px; align-items: center; color: #b9c8ec; }
+.credits ul { margin-top: 8px; gap: 4px; font-size: 13px; }
+
+@media (max-width: 1040px) {
+	.links { display: none; }
+	.login { margin-left: auto; }
+	.search { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); }
+	.cell.date { grid-column: 1 / -1; border-top: 1px solid var(--line); }
+	.go { grid-column: 1 / -1; height: 64px; justify-content: center; border-radius: 0 0 6px 6px; }
+	.places { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 200px; }
+	.place.big { grid-column: 1 / -1; grid-row: span 1; }
+	.routes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.foot-top { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.foot-brand { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+	.wrap { padding-inline: 16px; }
+	.hero .wrap { padding-block: 48px 96px; }
+	.search { grid-template-columns: minmax(0, 1fr); }
+	.cell { border-right: 0; border-bottom: 1px solid var(--line); }
+	.cell.date { grid-column: auto; }
+	.swap { margin: -22px 16px -22px auto; transform: rotate(90deg); }
+	.swap + .cell { padding-left: 20px; }
+	.go { grid-column: auto; }
+	.places { grid-auto-rows: 170px; gap: 10px; }
+	.place.big strong { font-size: 32px; }
+	.place strong { font-size: 21px; }
+	.place .txt { left: 14px; right: 14px; bottom: 12px; }
+	.routes { grid-template-columns: minmax(0, 1fr); }
+	.route { flex-direction: row; }
+	.route .ph { flex: 0 0 min(120px, 30%); aspect-ratio: auto; }
+	.route .body { min-width: 0; padding: 14px; }
+	.route .line { font-size: 17px; flex-wrap: wrap; gap: 2px 8px; }
+	.trust .wrap { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="nav">
+	<div class="wrap">
+		<a class="logo" href="#"><i class="bi bi-train-front"></i>TrainGo</a>
+		<ul class="links"><li><a href="#">Vé của tôi</a></li><li><a href="#">Hướng dẫn</a></li><li><a href="#">Hỗ trợ</a></li></ul>
+		<a class="login" href="#">Đăng nhập</a>
+	</div>
+</header>
+
+<main>
+	<div class="hero">
+		<img class="hero-img" src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/FileRTW2009-HoiAn_to_Hanoi2.jpg/1280px-FileRTW2009-HoiAn_to_Hanoi2.jpg" alt="Đoàn tàu Thống Nhất chạy qua cầu giữa núi rừng">
+		<div class="wrap">
+			<h1>Đặt vé tàu nhanh, rõ ràng.</h1>
+		</div>
+	</div>
+
+	<div class="wrap search-wrap">
+		<form class="search" action="chon-chuyen-b-mo-rong.html" method="get">
+			<label class="cell"><small>Đi từ</small><select id="from" name="from"><option value="SGN">Sài Gòn</option><option value="NTR">Nha Trang</option><option value="DNG">Đà Nẵng</option><option value="HUE">Huế</option><option value="HNI">Hà Nội</option><option value="LCI">Lào Cai</option></select></label>
+			<button class="swap" type="button" id="swap" aria-label="Đổi chiều"><i class="bi bi-arrow-left-right"></i></button>
+			<label class="cell"><small>Đến</small><select id="to" name="to"><option value="SGN">Sài Gòn</option><option value="NTR" selected>Nha Trang</option><option value="DNG">Đà Nẵng</option><option value="HUE">Huế</option><option value="HNI">Hà Nội</option><option value="LCI">Lào Cai</option></select></label>
+			<label class="cell date"><small>Ngày đi</small><select name="date"><option value="2026-10-19">Hôm nay, 19/10</option><option value="2026-10-20" selected>Ngày mai, 20/10</option><option value="2026-10-21">Thứ tư, 21/10</option></select></label>
+			<button class="go" type="submit">Tìm chuyến <i class="bi bi-arrow-right"></i></button>
+		</form>
+	</div>
+
+	<section class="wrap">
+		<div class="sec-head"><div><h2>Đi đâu cũng có tàu</h2></div><a href="#">Tất cả <i class="bi bi-arrow-right"></i></a></div>
+		<div class="places">
+			<a class="place big" href="#"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/B%E1%BB%9D_bi%E1%BB%83n_%E1%BB%9F_Nha_Trang.jpg/1280px-B%E1%BB%9D_bi%E1%BB%83n_%E1%BB%9F_Nha_Trang.jpg" alt="Vịnh Nha Trang" loading="lazy"><span class="txt"><small><i class="bi bi-geo-alt-fill"></i>Ga Nha Trang</small><strong>Nha Trang</strong></span></a>
+			<a class="place" href="#"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/Da_Nang_Dragon_Bridge_2020_IMG_3909.jpg/960px-Da_Nang_Dragon_Bridge_2020_IMG_3909.jpg" alt="Cầu Rồng Đà Nẵng về đêm" loading="lazy"><span class="txt"><small><i class="bi bi-geo-alt-fill"></i>Ga Đà Nẵng</small><strong>Đà Nẵng</strong></span></a>
+			<a class="place" href="#"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a6/Gate_in_Imperial_City%2C_Hu%E1%BA%BF_%28III%29.jpg/960px-Gate_in_Imperial_City%2C_Hu%E1%BA%BF_%28III%29.jpg" alt="Cổng Đại Nội Huế" loading="lazy"><span class="txt"><small><i class="bi bi-geo-alt-fill"></i>Ga Huế</small><strong>Huế</strong></span></a>
+			<a class="place" href="#"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Rice_terraces_in_Sa_Pa_02.jpg/960px-Rice_terraces_in_Sa_Pa_02.jpg" alt="Ruộng bậc thang Sa Pa" loading="lazy"><span class="txt"><small><i class="bi bi-geo-alt-fill"></i>Ga Lào Cai</small><strong>Sa Pa</strong></span></a>
+			<a class="place" href="#"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/bc/Hoan_Kiem_Lake_-_Hanoi%2C_Vietnam_-_DSC03695.JPG/960px-Hoan_Kiem_Lake_-_Hanoi%2C_Vietnam_-_DSC03695.JPG" alt="Hồ Hoàn Kiếm, Hà Nội" loading="lazy"><span class="txt"><small><i class="bi bi-geo-alt-fill"></i>Ga Hà Nội</small><strong>Hà Nội</strong></span></a>
+		</div>
+	</section>
+
+	<section class="wrap">
+		<div class="sec-head"><div><h2>Tuyến phổ biến</h2></div></div>
+		<div class="routes">
+			<a class="route" href="chon-chuyen-b-mo-rong.html?from=SGN&amp;to=NTR"><span class="ph"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b4/B%E1%BB%9D_bi%E1%BB%83n_%E1%BB%9F_Nha_Trang.jpg/960px-B%E1%BB%9D_bi%E1%BB%83n_%E1%BB%9F_Nha_Trang.jpg" alt="" loading="lazy"></span>
+				<span class="body"><span class="line"><b>Sài Gòn</b> <i class="bi bi-arrow-right"></i> <b>Nha Trang</b></span><span class="meta"><span><i class="bi bi-clock"></i>8 giờ</span><span><i class="bi bi-calendar3"></i>Mỗi ngày</span></span><span class="more">Xem chuyến <i class="bi bi-arrow-right"></i></span></span></a>
+			<a class="route" href="chon-chuyen-b-mo-rong.html?from=HNI&amp;to=DNG"><span class="ph"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6f/Da_Nang_Dragon_Bridge_2020_IMG_3909.jpg/960px-Da_Nang_Dragon_Bridge_2020_IMG_3909.jpg" alt="" loading="lazy"></span>
+				<span class="body"><span class="line"><b>Hà Nội</b> <i class="bi bi-arrow-right"></i> <b>Đà Nẵng</b></span><span class="meta"><span><i class="bi bi-clock"></i>16 giờ</span><span><i class="bi bi-calendar3"></i>Mỗi ngày</span></span><span class="more">Xem chuyến <i class="bi bi-arrow-right"></i></span></span></a>
+			<a class="route" href="chon-chuyen-b-mo-rong.html?from=HNI&amp;to=LCI"><span class="ph"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/6/61/Rice_terraces_in_Sa_Pa_02.jpg/960px-Rice_terraces_in_Sa_Pa_02.jpg" alt="" loading="lazy"></span>
+				<span class="body"><span class="line"><b>Hà Nội</b> <i class="bi bi-arrow-right"></i> <b>Lào Cai</b></span><span class="meta"><span><i class="bi bi-clock"></i>8 giờ</span><span><i class="bi bi-moon-stars"></i>Tàu đêm</span></span><span class="more">Xem chuyến <i class="bi bi-arrow-right"></i></span></span></a>
+			<a class="route" href="chon-chuyen-b-mo-rong.html?from=DNG&amp;to=SGN"><span class="ph"><img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/0/08/Ho_Chi_Minh_City_Skyline_at_Night.jpg/960px-Ho_Chi_Minh_City_Skyline_at_Night.jpg" alt="" loading="lazy"></span>
+				<span class="body"><span class="line"><b>Đà Nẵng</b> <i class="bi bi-arrow-right"></i> <b>Sài Gòn</b></span><span class="meta"><span><i class="bi bi-clock"></i>17 giờ</span><span><i class="bi bi-calendar3"></i>Mỗi ngày</span></span><span class="more">Xem chuyến <i class="bi bi-arrow-right"></i></span></span></a>
+		</div>
+	</section>
+
+	<div class="trust">
+		<div class="wrap">
+			<div><i class="bi bi-shield-check"></i><strong>Thanh toán an toàn</strong></div>
+			<div><i class="bi bi-phone"></i><strong>Vé nằm trong điện thoại</strong></div>
+			<div><i class="bi bi-arrow-counterclockwise"></i><strong>Hủy vé ngay trên web</strong></div>
+		</div>
+	</div>
+</main>
+
+<footer class="foot">
+	<div class="wrap foot-top">
+		<div class="foot-brand">
+			<a class="logo" href="#"><i class="bi bi-train-front"></i>TrainGo</a>
+			<p>Đặt vé tàu trực tuyến, chọn chỗ ngồi ngay trên sơ đồ toa.</p>
+			<div class="social">
+				<a href="#" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+				<a href="#" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+				<a href="#" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+			</div>
+		</div>
+		<div>
+			<h3>Đặt vé</h3>
+			<ul><li><a href="#">Tìm chuyến</a></li><li><a href="#">Vé của tôi</a></li><li><a href="#">Hủy vé</a></li></ul>
+		</div>
+		<div>
+			<h3>Hỗ trợ</h3>
+			<ul><li><a href="#">Hướng dẫn đặt vé</a></li><li><a href="#">Câu hỏi thường gặp</a></li><li><a href="#">Liên hệ</a></li></ul>
+		</div>
+		<div>
+			<h3>Chính sách</h3>
+			<ul><li><a href="#">Điều khoản sử dụng</a></li><li><a href="#">Bảo mật thông tin</a></li><li><a href="#">Quy định hủy vé</a></li></ul>
+		</div>
+		<div>
+			<h3>Ga tàu</h3>
+			<ul><li><a href="#">Ga Sài Gòn</a></li><li><a href="#">Ga Đà Nẵng</a></li><li><a href="#">Ga Hà Nội</a></li></ul>
+		</div>
+	</div>
+	<div class="wrap foot-bottom">
+		<span>© 2026 TrainGo. Hỗ trợ đặt vé tàu trực tuyến.</span>
+		<span class="pay" aria-label="Cách thanh toán"><span><i class="bi bi-credit-card"></i>Thẻ</span><span><i class="bi bi-bank"></i>Chuyển khoản</span><span><i class="bi bi-qr-code-scan"></i>QR</span></span>
+		<details class="credits">
+			<summary>Nguồn ảnh (Wikimedia Commons)</summary>
+			<ul>
+				<li><a href="https://commons.wikimedia.org/wiki/File:FileRTW2009-HoiAn_to_Hanoi2.jpg">Tàu Thống Nhất</a> · Benjamin Vander Steen · CC BY 2.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:B%E1%BB%9D_bi%E1%BB%83n_%E1%BB%9F_Nha_Trang.jpg">Nha Trang</a> · Bùi Thụy Đào Nguyên · CC BY-SA 3.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Da_Nang_Dragon_Bridge_2020_IMG_3909.jpg">Đà Nẵng</a> · Kuroczynski · CC BY-SA 4.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Gate_in_Imperial_City,_Hu%E1%BA%BF_(III).jpg">Huế</a> · Supanut Arunoprayote · CC BY 4.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Rice_terraces_in_Sa_Pa_02.jpg">Sa Pa</a> · Christophe95 · CC BY-SA 4.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Hoan_Kiem_Lake_-_Hanoi,_Vietnam_-_DSC03695.JPG">Hà Nội</a> · Daderot · CC0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Ho_Chi_Minh_City_Skyline_at_Night.jpg">Sài Gòn</a> · Tran Van Ngoc · CC0</li>
+			</ul>
+		</details>
+	</div>
+</footer>
+
+<script>
+var from = document.getElementById('from'), to = document.getElementById('to');
+document.getElementById('swap').onclick = function () { var a = from.value; from.value = to.value; to.value = a; };
+</script>
+</body>
+</html>

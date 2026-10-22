@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thanh toán - TrainGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+/* ================= Edit the look here =================
+   Palette sampled from Phi's reference shot: deep navy ink,
+   one cobalt action colour, cool grey-blue ground, soft field pills.
+   Low-tech reminder: a block of text stays under ~12 words,
+   a button label under 3 words, one main action per screen. */
+:root {
+	--ink: #0b1a36;
+	--ink-2: #1c2b4a;
+	--ink-3: #2a3b5e;
+	--primary: #2c4d98;
+	--primary-2: #223f80;
+	--primary-bright: #3b63c4;
+	--primary-light: #a9bff0;
+	--primary-soft: #e8eefa;
+	--bg: #edf1f5;
+	--surface: #ffffff;
+	--field: #f4f6f9;
+	--line: #e0e6ed;
+	--muted: #5b6b80;
+	--on-dark-muted: #b3bfd6;
+	--ok: #15803d;
+	--ok-soft: #e3f4e8;
+	--warn: #b45309;
+	--warn-soft: #fdf0dc;
+	--danger: #b42318;
+	--danger-soft: #fdecea;
+	--radius: 20px;
+	--radius-sm: 14px;
+	--tap: 56px;
+	--shadow: 0 1px 2px rgb(11 26 54 / 5%), 0 16px 36px -18px rgb(11 26 54 / 22%);
+	--display: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+	--body: "Noto Sans", "Be Vietnam Pro", system-ui, sans-serif;
+}
+/* ====================================================== */
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--body); font-size: 17px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--primary); }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+[hidden] { display: none !important; }
+.wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding-inline: 24px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.25; letter-spacing: -0.01em; text-wrap: balance; }
+
+.nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-block: 16px; }
+.logo { display: flex; align-items: center; gap: 10px; min-height: 48px; font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--ink); text-decoration: none; }
+.logo i { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--ink); color: #fff; font-style: normal; font-size: 18px; }
+.pills { display: flex; gap: 4px; padding: 5px; margin: 0; list-style: none; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); }
+.pills a { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 999px; color: var(--ink); font-weight: 600; text-decoration: none; }
+.pills a[aria-current="page"] { background: var(--ink); color: #fff; }
+.me-link { justify-self: end; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px 0 6px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); font-weight: 700; text-decoration: none; }
+.me-link i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-style: normal; }
+
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 4px 0 24px; padding: 0; }
+.steps li { position: relative; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.steps li:not(:last-child)::after { content: ""; flex: 1 1 auto; min-width: 12px; height: 2px; margin-right: 10px; background: #cfd8e3; }
+.steps li.done::after { background: var(--primary); }
+.steps a, .steps .cur { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 44px; color: inherit; text-decoration: none; }
+.steps .dot { flex: 0 0 auto; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-family: var(--display); font-weight: 700; }
+.steps .name { font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 15px; }
+.steps li.done .dot { background: var(--primary); box-shadow: none; color: #fff; }
+.steps li.done .name { color: var(--ink); }
+.steps li.now .dot { background: var(--ink); box-shadow: 0 0 0 4px var(--primary-soft); color: #fff; }
+.steps li.now .name { color: var(--ink); font-weight: 800; }
+
+.field { display: grid; gap: 6px; min-width: 0; }
+.field > span { color: var(--muted); font-size: 14px; font-weight: 600; }
+.inp { width: 100%; height: var(--tap); padding: 0 16px; border: 0; border-radius: var(--radius-sm); background: var(--field); font-weight: 600; }
+.inp::placeholder { color: #8a97a8; font-weight: 500; }
+.inp:focus { outline: none; box-shadow: inset 0 0 0 2px var(--primary); background: var(--surface); }
+.field.bad .inp { box-shadow: inset 0 0 0 2px var(--danger); background: var(--danger-soft); }
+.msg { color: var(--danger); font-size: 14px; font-weight: 600; }
+.seatcode { flex: 0 0 auto; display: grid; place-items: center; min-width: 56px; height: 56px; padding: 0 8px; border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-family: var(--display); font-weight: 800; font-size: 18px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: var(--tap); padding: 0 26px; border: 0; border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-family: var(--display); font-size: 18px; font-weight: 700; text-decoration: none; cursor: pointer; transition: background .2s; }
+.btn:hover { background: var(--primary-2); }
+.btn:disabled { cursor: progress; opacity: .85; }
+.btn.ghost { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn.ghost:hover { background: var(--field); }
+.spin { width: 20px; height: 20px; border: 3px solid rgb(255 255 255 / 35%); border-top-color: #fff; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.note { display: flex; gap: 8px; align-items: flex-start; color: var(--muted); font-size: 14px; }
+.mock { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); font-size: 14px; }
+
+.result { display: grid; justify-items: center; gap: 10px; padding: 40px 24px; border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); text-align: center; }
+.result > i { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; font-size: 36px; }
+.result.ok > i { background: var(--ok-soft); color: var(--ok); }
+.result.bad > i { background: var(--warn-soft); color: var(--warn); }
+.result h1 { font-size: clamp(26px, 3.4vw, 34px); }
+.result p { margin: 0; color: var(--muted); }
+.result .code { font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--ink); }
+.tickets { display: grid; gap: 8px; width: min(100%, 520px); margin: 8px 0; padding: 0; list-style: none; text-align: left; }
+.tickets li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px; padding: 12px; border-radius: var(--radius-sm); background: var(--field); }
+.tickets small { display: block; color: var(--muted); font-size: 14px; }
+.actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 6px; }
+
+footer { margin-top: 56px; background: var(--ink); color: #c3cde0; font-size: 15px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-block: 20px; }
+footer a { display: inline-flex; align-items: center; min-height: 44px; color: #e6ecf8; }
+
+@media (max-width: 900px) {
+	.pills { display: none; }
+	.nav { grid-template-columns: 1fr auto; }
+}
+@media (max-width: 640px) {
+	.wrap { padding-inline: 16px; }
+	.steps li { flex-direction: column; gap: 6px; text-align: center; }
+	.steps a, .steps .cur { flex-direction: column; gap: 6px; }
+	.steps li:not(:last-child)::after { position: absolute; left: calc(50% + 21px); right: calc(-50% + 21px); top: 17px; margin: 0; min-width: 0; }
+	.steps .name { font-size: 12.5px; max-width: 100%; }
+	.me-link span { display: none; }
+	.me-link { padding: 0 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .spin { animation-duration: 3s; } }
+
+/* ---------- ticket (shared with the passenger step) ---------- */
+.col { max-width: 880px; margin: 0 auto; }
+.tripbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 18px 10px 10px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; }
+.tripbar .tr { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: #fff; }
+.tripbar b { font-family: var(--display); }
+.tripbar .muted { color: var(--muted); }
+.title { margin: 26px 0 20px; }
+.title h1 { font-size: clamp(30px, 3.8vw, 40px); font-weight: 800; }
+.title p { margin: 4px 0 0; color: var(--muted); }
+.title p b { color: var(--ink); }
+.stack { display: grid; gap: 26px; }
+
+/* ---------- the ticket ----------
+   One paper shape: a white body and a cobalt tear-off stub, joined by a
+   perforated line with a half-circle bite out of the top and bottom edge.
+   The bites are real holes (mask), so the drop shadow follows them. */
+.tkw { filter: drop-shadow(0 1px 1px rgb(11 26 54 / 10%)) drop-shadow(0 6px 10px rgb(11 26 54 / 7%)); scroll-margin: 24px; }
+.tk {
+	--stub: 210px; --bite: 15px;
+	position: relative; display: grid; grid-template-columns: minmax(0, 1fr) var(--stub);
+	border-radius: 22px; background: var(--surface);
+	-webkit-mask:
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 0, #0000 97%, #000) top / 100% 51% no-repeat,
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 100%, #0000 97%, #000) bottom / 100% 51% no-repeat;
+	mask:
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 0, #0000 97%, #000) top / 100% 51% no-repeat,
+		radial-gradient(circle var(--bite) at calc(100% - var(--stub)) 100%, #0000 97%, #000) bottom / 100% 51% no-repeat;
+}
+.tk .main { display: grid; gap: 16px; padding: 20px 26px 22px; min-width: 0; }
+.tk .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.brand i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 13px; letter-spacing: 0; }
+.no { padding: 4px 10px; border-radius: 999px; background: var(--field); color: var(--muted); font-size: 13px; font-weight: 700; }
+.no.ok { background: var(--ok-soft); color: var(--ok); }
+.leg { display: grid; grid-template-columns: auto minmax(40px, 1fr) auto; align-items: center; gap: 16px; }
+.leg b { display: block; font-family: var(--display); font-size: 32px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.leg small { color: var(--muted); font-weight: 600; }
+.leg .end { text-align: right; }
+.leg .rail { position: relative; display: grid; justify-items: center; gap: 2px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.leg .rail::before { content: ""; position: absolute; left: 0; right: 0; top: 13px; height: 2px; background: repeating-linear-gradient(90deg, #c9d3df 0 8px, transparent 8px 13px); }
+.leg .rail i { position: relative; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 14px; }
+.info { display: grid; grid-template-columns: repeat(3, minmax(0, auto)); justify-content: start; gap: 6px 28px; padding-top: 14px; border-top: 1px dashed #d3dbe6; }
+.info dt { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.info dd { margin: 2px 0 0; font-weight: 700; }
+.who { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-top: 14px; border-top: 1px dashed #d3dbe6; }
+.who .person { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.who .person b { display: block; font-size: 18px; }
+.who .person small { display: block; color: var(--muted); font-size: 14px; }
+.who .label { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.avatar { flex: 0 0 auto; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: #fff; font-family: var(--display); font-size: 15px; font-weight: 800; }
+.avatar.other { background: var(--primary-soft); color: var(--primary); }
+.link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 0; border-radius: 12px; background: var(--field); color: var(--primary); font-weight: 700; cursor: pointer; }
+.link:hover { background: var(--primary-soft); }
+
+.stub { position: relative; display: grid; align-content: center; justify-items: center; gap: 2px; padding: 22px 16px; background: var(--primary); color: #fff; text-align: center; }
+.stub::before { content: ""; position: absolute; left: 0; top: calc(var(--bite) + 6px); bottom: calc(var(--bite) + 6px); border-left: 3px dotted rgb(255 255 255 / 55%); }
+.stub .coach { color: #c9d6f5; font-size: 13px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.stub .big { font-family: var(--display); font-size: 50px; font-weight: 800; line-height: 1; }
+.stub .kind { display: inline-flex; align-items: center; gap: 6px; color: #e3eafb; font-size: 15px; font-weight: 600; }
+.stub .price { margin-top: 10px; padding: 4px 12px; border-radius: 999px; background: rgb(255 255 255 / 14%); font-family: var(--display); font-size: 18px; font-weight: 800; }
+.bars { width: 120px; height: 30px; margin-top: 12px; background: repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 4px, #fff 4px 5px, transparent 5px 8px, #fff 8px 11px, transparent 11px 13px); opacity: .8; }
+
+/* change who travels on one ticket (optional) */
+.edit { display: grid; gap: 12px; padding: 16px; border-radius: 16px; background: var(--field); }
+.edit-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.edit-head b { font-family: var(--display); }
+.edit .inp { background: var(--surface); }
+.fields { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 12px 14px; }
+.field.full { grid-column: 1 / -1; }
+.field > span em { font-style: normal; font-weight: 500; color: #8a97a8; }
+.edit-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
+.edit-actions .btn { height: 50px; }
+.edit-actions .mine { margin-right: auto; }
+
+.paybar { position: sticky; bottom: 0; z-index: 10; margin-top: 24px; padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px)); background: linear-gradient(180deg, rgb(237 241 245 / 0%), var(--bg) 35%); }
+.paybar .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 12px 12px 22px; border-radius: 22px; background: var(--ink); color: #fff; box-shadow: var(--shadow); }
+.paybar small { display: block; color: var(--on-dark-muted); font-weight: 600; font-size: 14px; }
+.paybar strong { font-family: var(--display); font-size: 26px; font-weight: 800; }
+.paybar .btn { background: var(--primary-bright); white-space: nowrap; }
+.paybar .btn:hover { background: #3358b4; }
+.after { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 18px; align-items: center; }
+.after a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 700; text-decoration: none; }
+
+@media (max-width: 640px) {
+	/* phone: the stub becomes a strip along the bottom, bites on the left and right edges */
+	.tk {
+		--strip: 96px;
+		grid-template-columns: minmax(0, 1fr);
+		-webkit-mask:
+			radial-gradient(circle var(--bite) at 0 calc(100% - var(--strip)), #0000 97%, #000) left / 51% 100% no-repeat,
+			radial-gradient(circle var(--bite) at 100% calc(100% - var(--strip)), #0000 97%, #000) right / 51% 100% no-repeat;
+		mask:
+			radial-gradient(circle var(--bite) at 0 calc(100% - var(--strip)), #0000 97%, #000) left / 51% 100% no-repeat,
+			radial-gradient(circle var(--bite) at 100% calc(100% - var(--strip)), #0000 97%, #000) right / 51% 100% no-repeat;
+	}
+	.tk .main { padding: 16px 18px 18px; }
+	.leg b { font-size: 27px; }
+	.info { grid-template-columns: 1fr 1fr; }
+	.stub { height: var(--strip); grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "big coach price" "big kind price"; justify-items: start; align-items: center; align-content: center; gap: 0 12px; padding: 0 20px; text-align: left; }
+	.stub::before { top: 0; bottom: auto; left: calc(var(--bite) + 6px); right: calc(var(--bite) + 6px); border-left: 0; border-top: 3px dotted rgb(255 255 255 / 55%); }
+	.stub .big { grid-area: big; font-size: 38px; }
+	.stub .coach { grid-area: coach; }
+	.stub .kind { grid-area: kind; white-space: nowrap; }
+	.stub .coach { white-space: nowrap; }
+	.stub .price { grid-area: price; margin: 0; padding: 4px 10px; font-size: 16px; }
+	.bars { display: none; }
+	.fields { grid-template-columns: minmax(0, 1fr); }
+	.edit-actions .btn { flex: 1; }
+	.edit-actions .mine { flex-basis: 100%; }
+	.tripbar { border-radius: 20px; }
+	.paybar .in { padding: 10px 10px 10px 16px; }
+	.paybar strong { font-size: 21px; }
+	.paybar .btn { padding: 0 18px; }
+	.paybar .amt { display: none; }
+}
+@media (max-width: 400px) {
+	/* very narrow: the price moves under the seat type so nothing is cut */
+	.tk { --strip: 118px; }
+	.stub { grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "big coach" "big kind" "big price"; }
+	.stub .price { justify-self: start; margin-top: 4px; }
+}
+/* ---------- payment layout ---------- */
+.method { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--field); }
+.method .ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 18px; }
+.method b { display: block; line-height: 1.3; }
+.method small { color: var(--muted); font-size: 14px; }
+.method .tick { margin-left: auto; color: var(--ok); font-size: 20px; }
+.ln { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #d3dbe6; }
+.ln:first-child { padding-top: 0; }
+.ln b { display: block; font-size: 16px; line-height: 1.35; }
+.ln small { display: block; color: var(--muted); font-size: 14px; }
+.ln strong { font-family: var(--display); font-size: 17px; white-space: nowrap; }
+.seatchip { display: grid; place-items: center; min-width: 50px; height: 46px; padding: 0 6px; border-radius: 12px; background: var(--primary); color: #fff; font-family: var(--display); font-weight: 800; }
+.sum { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding: 14px 0 4px; }
+.sum span { color: var(--muted); font-weight: 600; }
+.sum strong { font-family: var(--display); font-size: 30px; font-weight: 800; }
+.pay { width: 100%; height: 62px; font-size: 20px; }
+.fine { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 0; color: var(--muted); font-size: 14px; }
+.fine i { margin-top: 2px; }
+.panel { display: grid; gap: 4px; padding: 24px; border-radius: 24px; background: var(--surface); box-shadow: var(--shadow); }
+.panel h2 { margin-bottom: 14px; font-size: 20px; }
+.panel .method { margin: 12px 0 14px; }
+.stampbar { display: none; }
+@media (max-width: 640px) { .panel { padding: 18px; border-radius: 22px; } .ln { grid-template-columns: auto minmax(0, 1fr); } .ln strong { grid-column: 2; } }
+.narrow { max-width: 580px; margin: 0 auto; }
+.rcw { filter: drop-shadow(0 1px 1px rgb(11 26 54 / 10%)) drop-shadow(0 8px 14px rgb(11 26 54 / 8%)); }
+.rc {
+	position: relative; padding: 30px 28px 34px; background: var(--surface);
+	-webkit-mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 18px 51% repeat-x, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 18px 51% repeat-x;
+	mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 18px 51% repeat-x, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 18px 51% repeat-x;
+}
+.rc-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+.rc-head .tag { padding: 4px 12px; border-radius: 999px; background: var(--field); color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.rc h1 { font-size: clamp(26px, 4vw, 32px); font-weight: 800; }
+.rc-trip { display: grid; gap: 4px; margin: 14px 0 20px; padding: 14px 0; border-block: 2px dashed #d3dbe6; }
+.rc-trip .route { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-family: var(--display); font-size: 20px; font-weight: 800; }
+.rc-trip .route i { color: var(--primary); }
+.rc-trip small { color: var(--muted); font-weight: 600; }
+.rc .method { margin: 14px 0; }
+.rc .pay { margin-top: 6px; }
+.stamp { transform: rotate(-4deg); padding: 3px 12px; border: 3px solid var(--ok); border-radius: 10px; color: var(--ok); font-family: var(--display); font-size: 15px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.more { margin-top: 22px; }
+.more summary { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 18px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 700; cursor: pointer; list-style: none; }
+.more summary::-webkit-details-marker { display: none; }
+.more summary i { color: var(--primary); transition: transform .2s; }
+.more[open] summary i.chev { transform: rotate(180deg); }
+.more .stack { margin-top: 22px; }
+@media (max-width: 640px) { .rc { padding: 24px 18px 30px; } .stamp { font-size: 13px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+	<header class="nav">
+		<a class="logo" href="trang-chu-8-swiss.html"><i class="bi bi-train-front"></i>TrainGo</a>
+		<ul class="pills">
+			<li><a href="chon-chuyen-b-mo-rong.html" aria-current="page"><i class="bi bi-search"></i>Tìm vé</a></li>
+			<li><a href="#"><i class="bi bi-ticket-perforated"></i>Vé của tôi</a></li>
+			<li><a href="#"><i class="bi bi-question-circle"></i>Hướng dẫn</a></li>
+		</ul>
+		<a class="me-link" href="#"><i class="bi bi-person"></i><span>Minh Anh</span></a>
+	</header>
+	<nav aria-label="Các bước đặt vé">
+		<ol class="steps" id="steps">
+			<li class="done"><a href="chon-chuyen-b-mo-rong.html"><span class="dot"><i class="bi bi-check-lg"></i></span><span class="name">Chọn chuyến</span></a></li>
+			<li class="done"><a href="dat-ve-e2-tau-ngang-tom-tat.html"><span class="dot"><i class="bi bi-check-lg"></i></span><span class="name">Chọn chỗ</span></a></li>
+			<li class="done"><a href="hanh-khach-2-the-ve.html"><span class="dot"><i class="bi bi-check-lg"></i></span><span class="name">Hành khách</span></a></li>
+			<li class="now" aria-current="step"><span class="cur"><span class="dot">4</span><span class="name">Thanh toán</span></span></li>
+		</ol>
+	</nav>
+	<div class="narrow" id="page">
+		<div class="title" id="done" style="margin-top:6px" hidden><h1 style="font-size:clamp(28px,3.6vw,36px)">Đặt vé thành công</h1></div>
+		<div class="rcw"><article class="rc" id="rc">
+			<header class="rc-head"><span class="brand"><i class="bi bi-train-front"></i>TrainGo</span><span class="tag" id="tag">Hóa đơn</span><span class="stamp" id="stamp" hidden>Đã thanh toán</span></header>
+			<div class="rc-trip" style="margin-top:0"><span class="route">Sài Gòn 06:15 <i class="bi bi-arrow-right"></i> Nha Trang 14:35</span><small>SNT3 · Thứ ba, 20/10/2026 · 8 giờ 20</small></div>
+			<div id="lines"></div>
+			<div class="sum"><span>Tổng tiền</span><strong id="total"></strong></div>
+			<div id="method"></div>
+			<button class="btn pay" type="button" id="pay"></button>
+			<div id="fine"></div>
+		</article></div>
+		<details class="more" id="more"><summary><i class="bi bi-ticket-perforated"></i>Xem các vé <i class="bi bi-chevron-down chev"></i></summary><div class="stack" id="tickets"></div></details>
+		<div class="after" id="after" style="margin-top:14px"><a href="dat-ve-e2-tau-ngang-tom-tat.html"><i class="bi bi-arrow-left-right"></i>Đổi chỗ</a></div>
+		<a id="taken" href="#" hidden aria-hidden="true"></a>
+	</div>
+</div>
+
+<footer><div class="wrap"><span>© 2026 TrainGo</span><a href="trang-chu-8-swiss.html">Trang chủ</a></div></footer>
+
+<script>
+// Seats come from the seat page through the session; opening the page directly shows a sample.
+var TRIP = { code: 'SNT3', from: 'Sài Gòn', to: 'Nha Trang', dep: '06:15', arr: '14:35', date: 'Thứ ba, 20/10/2026', dur: '8 giờ 20' };
+var SAMPLE_SEATS = [
+	{ code: 'A05', coach: 1, kind: 'Ghế ngồi', price: 380000 },
+	{ code: 'B02', coach: 3, kind: 'Giường nằm', price: 580000 }
+];
+// The signed-in customer: every ticket is in this name unless the customer names someone else.
+var ME = 'Nguyễn Minh Anh';
+var ME_PHONE = '0901234567';
+var BOOKING = 'BK202610005';
+var TODAY = new Date(2026, 9, 19);
+function $(id) { return document.getElementById(id); }
+function money(v) { return v.toLocaleString('vi-VN') + 'đ'; }
+function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+function read(key) { try { return JSON.parse(sessionStorage.getItem(key)); } catch (e) { return null; } }
+function write(key, v) { try { sessionStorage.setItem(key, JSON.stringify(v)); } catch (e) {} }
+var seats = read('traingo-seats');
+if (!seats || !seats.length) seats = SAMPLE_SEATS;
+var others = read('traingo-pax');           // seat code -> someone other than the customer
+if (!others || Array.isArray(others)) others = {};
+function total() { return seats.reduce(function (s, x) { return s + x.price; }, 0); }
+function icon(kind) { return kind === 'Giường nằm' ? 'bi-moon-stars' : 'bi-person'; }
+function initials(name) { var w = name.trim().split(/\s+/); return (w.length > 1 ? w[w.length - 2][0] : '') + w[w.length - 1][0]; }
+function maskDoc(doc) { return (/^\d{12}$/.test(doc) ? 'CCCD' : 'Hộ chiếu') + ' •••• ' + doc.slice(-4); }
+function ticketCode(i) { return BOOKING.replace('BK', 'TK') + '-' + String(i + 1).padStart(2, '0'); }
+function traveller(code) { return others[code] || { name: ME, me: true }; }
+
+var FIELDS = '<label class="field full" data-f="name"><span>Họ và tên</span><input class="inp" type="text" autocomplete="name" placeholder="Như trên giấy tờ"><small class="msg" hidden></small></label>' +
+	'<label class="field" data-f="dob"><span>Ngày sinh <em>(không bắt buộc)</em></span><input class="inp" type="text" inputmode="numeric" maxlength="10" placeholder="ngày/tháng/năm"><small class="msg" hidden></small></label>' +
+	'<label class="field" data-f="doc"><span>CCCD hoặc hộ chiếu <em>(không bắt buộc)</em></span><input class="inp" type="text" maxlength="14" autocomplete="off" placeholder="12 số CCCD"><small class="msg" hidden></small></label>';
+
+// mode: 'fill' (step 3), 'view' (step 4), 'issued' (after payment)
+function ticket(s, i, mode, editing) {
+	var t = traveller(s.code), who;
+	if (editing) {
+		who = '<form class="edit" data-code="' + s.code + '" novalidate><div class="edit-head"><b>Người đi vé ' + s.code + '</b></div>' +
+			'<div class="fields">' + FIELDS + '</div><div class="edit-actions">' +
+			(t.me ? '' : '<button class="btn ghost mine" type="button" data-mine><i class="bi bi-person-check"></i>Để tên tôi</button>') +
+			'<button class="btn ghost" type="button" data-cancel>Hủy</button><button class="btn" type="submit">Lưu</button></div></form>';
+	} else {
+		var sub = t.me ? 'SĐT •••• ' + ME_PHONE.slice(-4) : [t.dob ? 'Sinh ' + esc(t.dob) : '', t.doc ? maskDoc(t.doc) : ''].filter(Boolean).join(' · ') || '';
+		who = '<div class="who"><div class="person"><span class="avatar' + (t.me ? '' : ' other') + '">' + esc(initials(t.name)) + '</span>' +
+			'<div><b>' + esc(t.name) + '</b><small>' + sub + '</small></div></div>' +
+			(mode === 'fill' ? '<button class="link" type="button" data-edit="' + s.code + '"><i class="bi bi-pencil"></i>Đổi người đi</button>' : '') + '</div>';
+	}
+	var no = mode === 'issued' ? '<span class="no ok"><i class="bi bi-check-circle-fill"></i> ' + ticketCode(i) + '</span>' : '<span class="no">Vé ' + (i + 1) + '/' + seats.length + '</span>';
+	return '<div class="tkw" id="tk-' + s.code + '"><article class="tk">' +
+		'<div class="main"><div class="top"><span class="brand"><i class="bi bi-train-front"></i>TrainGo · ' + TRIP.code + ' · ' + TRIP.date.split(', ')[1] + '</span>' + no + '</div>' +
+		'<div class="leg"><div><b>' + TRIP.dep + '</b><small>' + TRIP.from + '</small></div><div class="rail"><i class="bi bi-train-front"></i><span>' + TRIP.dur + '</span></div><div class="end"><b>' + TRIP.arr + '</b><small>' + TRIP.to + '</small></div></div>' +
+		who + '</div>' +
+		'<div class="stub"><span class="coach">Toa ' + s.coach + '</span><span class="big">' + s.code + '</span><span class="kind"><i class="bi ' + icon(s.kind) + '"></i>' + s.kind + '</span><span class="price">' + money(s.price) + '</span><span class="bars" aria-hidden="true"></span></div>' +
+		'</article></div>';
+}
+
+function lines() {
+	return seats.map(function (s) {
+		var t = traveller(s.code);
+		return '<div class="ln"><span class="seatchip">' + s.code + '</span><span><b>' + s.kind + ' · Toa ' + s.coach + '</b><small>' + esc(t.name) + '</small></span><strong>' + money(s.price) + '</strong></div>';
+	}).join('');
+}
+var METHOD = '';
+var FINE = '<p class="fine"><i class="bi bi-info-circle"></i><span>Hủy được trước giờ tàu chạy, không mất phí.</span></p>';
+function issued() { return seats.map(function (s, i) { return ticket(s, i, 'issued', false); }).join(''); }
+function allDone() {
+	document.querySelectorAll('#steps li').forEach(function (li) { li.className = 'done'; li.removeAttribute('aria-current'); });
+	window.scrollTo(0, 0);
+}
+function okHead() {
+	return '<div class="result ok" role="status"><i class="bi bi-check-lg"></i><h1>Đặt vé thành công</h1><p>Mã đặt chỗ</p><span class="code">' + BOOKING + '</span>' +
+		'<p>' + seats.length + ' vé · ' + money(total()) + '</p>' +
+		'<div class="actions"><a class="btn" href="#"><i class="bi bi-ticket-perforated"></i>Vé của tôi</a><a class="btn ghost" href="trang-chu-8-swiss.html">Về trang chủ</a></div></div>';
+}
+function takenView() {
+	return '<div class="result bad" role="alert"><i class="bi bi-exclamation-lg"></i><h1>Chỗ ' + seats[seats.length - 1].code + ' vừa có người đặt</h1><p>Chưa trừ tiền. Chọn chỗ khác rồi thanh toán lại.</p>' +
+		'<div class="actions"><a class="btn" href="dat-ve-e2-tau-ngang-tom-tat.html">Chọn lại chỗ</a></div></div>';
+}
+// Every pay button runs the same simulated payment: one request, then success.
+function runPay(buttons, onOk) {
+	buttons.forEach(function (b) { b.disabled = true; b.innerHTML = '<span class="spin" aria-hidden="true"></span>Đang thanh toán'; });
+	setTimeout(onOk, 1200);
+}
+var PAYLABEL = 'Thanh toán ' + money(total());
+$('lines').innerHTML = lines(); $('method').innerHTML = METHOD; $('fine').innerHTML = FINE;
+$('total').textContent = money(total()); $('pay').textContent = PAYLABEL;
+$('tickets').innerHTML = seats.map(function (s, i) { return ticket(s, i, 'view', false); }).join('');
+$('pay').addEventListener('click', function () {
+	runPay([$('pay')], function () {
+		$('stamp').hidden = false; $('tag').hidden = true; $('after').hidden = true; $('method').hidden = true; $('fine').hidden = true;
+		$('pay').outerHTML = '<div class="actions" style="margin-top:8px"><a class="btn" href="#"><i class="bi bi-ticket-perforated"></i>Vé của tôi</a><a class="btn ghost" href="trang-chu-8-swiss.html">Về trang chủ</a></div>' +
+			'<p class="fine" style="justify-content:center"><i class="bi bi-check-circle-fill" style="color:var(--ok)"></i><span>Mã đặt chỗ <b style="color:var(--ink)">' + BOOKING + '</b></span></p>';
+		$('tickets').innerHTML = issued(); $('more').open = true;
+		$('done').hidden = false;
+		allDone();
+	});
+});
+$('taken').addEventListener('click', function (e) { e.preventDefault(); $('page').outerHTML = '<div class="narrow" id="page">' + takenView() + '</div>'; });
+if (location.hash === '#taken') $('taken').click();
+</script>
+</body>
+</html>

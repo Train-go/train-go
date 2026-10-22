@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chọn chuyến - TrainGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+/* ================= Edit the look here =================
+   Palette sampled from Phi's reference shot: deep navy ink,
+   one cobalt action colour, cool grey-blue ground, soft field pills.
+   Low-tech reminder: a block of text stays under ~12 words,
+   a button label under 3 words, one main action per screen. */
+:root {
+	--ink: #0b1a36;          /* titles, active pill */
+	--ink-2: #1c2b4a;
+	--primary: #2c4d98;      /* the one action colour */
+	--primary-2: #223f80;
+	--primary-soft: #e8eefa;
+	--bg: #edf1f5;
+	--surface: #ffffff;
+	--field: #f4f6f9;
+	--line: #e0e6ed;
+	--muted: #5b6b80;
+	--ok: #15803d;
+	--ok-soft: #e3f4e8;
+	--warn: #b45309;
+	--warn-soft: #fdf0dc;
+	--danger: #b42318;
+	--radius: 16px;
+	--radius-sm: 12px;
+	--tap: 52px;
+	--shadow: 0 1px 2px rgb(11 26 54 / 5%), 0 16px 36px -18px rgb(11 26 54 / 22%);
+	--display: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+	--body: "Noto Sans", "Be Vietnam Pro", system-ui, sans-serif;
+}
+/* ====================================================== */
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--body); font-size: 17px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--primary); }
+:focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+.wrap { width: 100%; max-width: 1200px; margin: 0 auto; padding-inline: 24px; }
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.25; letter-spacing: -0.01em; }
+
+/* ---------- header: logo, centred pill nav, login ---------- */
+.nav { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; padding-block: 16px; }
+.logo { display: flex; align-items: center; gap: 10px; min-height: 48px; font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--ink); text-decoration: none; }
+.logo i { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: var(--ink); color: #fff; font-style: normal; font-size: 18px; }
+.pills { display: flex; gap: 4px; padding: 5px; margin: 0; list-style: none; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow); }
+.pills a { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 999px; color: var(--ink); font-weight: 600; text-decoration: none; }
+.pills a[aria-current="page"] { background: var(--ink); color: #fff; }
+.login { justify-self: end; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); font-weight: 700; text-decoration: none; }
+
+/* ---------- 4 named steps ---------- */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 4px 0 20px; padding: 0; }
+.steps li { position: relative; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.steps li:not(:last-child)::after { content: ""; flex: 1 1 auto; min-width: 12px; height: 2px; margin-right: 10px; background: #cfd8e3; }
+.steps .dot { flex: 0 0 auto; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); font-family: var(--display); font-weight: 700; }
+.steps .name { font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 15px; }
+.steps li.now .dot { background: var(--ink); box-shadow: none; color: #fff; }
+.steps li.now .name { color: var(--ink); font-weight: 800; }
+
+/* ---------- search panel owned by this page ---------- */
+.search { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto; align-items: end; gap: 12px; padding: 20px; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); }
+.f { display: grid; gap: 6px; min-width: 0; }
+.f > span { color: var(--muted); font-size: 14px; font-weight: 600; }
+.box { position: relative; display: flex; align-items: center; height: 56px; border-radius: 14px; background: var(--field); }
+.box i { position: absolute; left: 16px; color: var(--muted); pointer-events: none; }
+.box select, .box input { width: 100%; height: 100%; padding: 0 14px 0 44px; border: 0; border-radius: 14px; background: transparent; font-weight: 700; appearance: none; cursor: pointer; }
+.box select { padding-right: 34px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath fill='%235b6b80' d='M1.6 4.6 8 11l6.4-6.4-1-1L8 9 2.6 3.6z'/%3E%3C/svg%3E") no-repeat right 14px center; }
+.box:focus-within { box-shadow: inset 0 0 0 2px var(--primary); }
+.swap { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 6px; border: 0; border-radius: 50%; background: var(--field); color: var(--ink); cursor: pointer; }
+.go { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 56px; padding: 0 26px; border: 0; border-radius: 14px; background: var(--primary); color: #fff; font-family: var(--display); font-weight: 700; cursor: pointer; transition: background .2s; }
+.go:hover { background: var(--primary-2); }
+.err { grid-column: 1 / -1; margin: -4px 0 0; color: var(--danger); font-weight: 600; font-size: 15px; }
+
+/* ---------- route title + date strip with arrows ---------- */
+.head-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; margin: 28px 0 14px; }
+.head-row h1 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; font-size: clamp(26px, 3.4vw, 36px); font-weight: 800; }
+.head-row h1 i { color: var(--primary); font-size: .7em; }
+.dates { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: stretch; gap: 8px; padding: 8px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); }
+.arrow { width: 48px; border: 0; border-radius: 14px; background: var(--field); color: var(--ink); font-size: 18px; cursor: pointer; }
+.arrow:disabled { opacity: .35; cursor: not-allowed; }
+.pick-date { position: relative; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); font-weight: 700; cursor: pointer; }
+.pick-date i { color: var(--primary); }
+.pick-date input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.day { min-height: 76px; padding: 6px 4px; border: 0; border-radius: 14px; background: none; cursor: pointer; line-height: 1.25; }
+.day small { display: block; color: var(--muted); font-size: 13px; font-weight: 600; }
+.day b { display: block; font-family: var(--display); font-size: 18px; }
+.day em { display: block; font-style: normal; font-size: 13px; font-weight: 700; color: var(--primary); }
+.day:hover:not(:disabled) { background: var(--field); }
+.day[aria-checked="true"] { background: var(--ink); }
+.day[aria-checked="true"] small, .day[aria-checked="true"] b { color: #fff; }
+.day[aria-checked="true"] em { color: #b9c8ec; }
+.day:disabled { cursor: not-allowed; }
+.day:disabled b, .day:disabled em { color: #9aa6b6; }
+
+/* ---------- filters + results ---------- */
+.layout { display: grid; grid-template-columns: 270px minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 20px; padding-bottom: 56px; }
+.filters { position: sticky; top: 16px; display: grid; gap: 18px; padding: 20px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); }
+.filters header { display: flex; align-items: center; justify-content: space-between; }
+.filters h2 { font-size: 19px; }
+.clear { height: 44px; padding: 0 10px; border: 0; background: none; color: var(--primary); font-weight: 700; cursor: pointer; }
+.group { display: grid; gap: 8px; }
+.group > span { color: var(--muted); font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.chip { display: grid; gap: 0; justify-items: start; min-height: 64px; padding: 10px 12px; border: 0; border-radius: var(--radius-sm); background: var(--field); text-align: left; cursor: pointer; line-height: 1.3; }
+.chip i { color: var(--primary); }
+.chip b { font-size: 15px; }
+.chip small { color: var(--muted); font-size: 13px; }
+.chip b { white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--primary-soft); box-shadow: inset 0 0 0 2px var(--primary); }
+.check { display: flex; align-items: center; gap: 10px; min-height: 44px; font-weight: 600; cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--primary); }
+.toggle-filters { display: none; }
+
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.bar h2 { font-size: 20px; }
+.sort { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.sort button { height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: none; font-weight: 600; color: var(--muted); cursor: pointer; }
+.sort button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+
+.list { display: grid; gap: 12px; }
+.trip { border-radius: var(--radius); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.trip[data-open="true"] { box-shadow: inset 0 0 0 2px var(--primary), var(--shadow); }
+.head { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 20px; width: 100%; padding: 18px 20px; border: 0; background: none; text-align: left; cursor: pointer; }
+.times { display: grid; grid-template-columns: auto minmax(40px, 1fr) auto; align-items: center; gap: 14px; }
+.times b { display: block; font-family: var(--display); font-size: 28px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.times small { display: block; color: var(--muted); font-size: 14px; font-weight: 600; }
+.times .end { text-align: right; }
+.times sup { color: var(--warn); font-size: 12px; font-weight: 700; }
+.rail { text-align: center; color: var(--muted); font-size: 13px; font-weight: 600; }
+.rail::before { content: ""; display: block; height: 2px; margin-bottom: 6px; background: repeating-linear-gradient(90deg, #c9d3df 0 8px, transparent 8px 13px); }
+.rail span { display: inline-flex; gap: 6px; align-items: center; }
+.from { text-align: right; line-height: 1.2; }
+.from small { margin-right: 4px; color: var(--muted); font-size: 13px; }
+.from strong { font-family: var(--display); font-size: 22px; font-weight: 800; }
+.from em { display: block; font-style: normal; font-size: 13px; font-weight: 700; color: var(--ok); }
+.from em.low { color: var(--warn); }
+.chev { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--field); color: var(--ink); transition: transform .2s; }
+.trip[data-open="true"] .chev { transform: rotate(180deg); background: var(--ink); color: #fff; }
+.opts { display: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 20px 20px; }
+.trip[data-open="true"] .opts { display: grid; }
+.opt { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 14px; border-radius: var(--radius-sm); background: var(--field); }
+.opt .ic { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 12px; background: var(--primary-soft); color: var(--primary); font-size: 22px; }
+.opt b { display: block; font-family: var(--display); font-size: 17px; }
+.opt .price { display: block; font-family: var(--display); font-weight: 800; font-size: 18px; }
+.opt small { color: var(--muted); font-weight: 600; font-size: 14px; }
+.opt small.low { color: var(--warn); }
+.opt a { display: inline-flex; align-items: center; justify-content: center; height: var(--tap); padding: 0 22px; border-radius: 14px; background: var(--primary); color: #fff; font-family: var(--display); font-weight: 700; text-decoration: none; transition: background .2s; }
+.opt a:hover { background: var(--primary-2); }
+.opt.none { opacity: .6; }
+.opt.none a { background: #dfe4ea; color: var(--muted); pointer-events: none; }
+.trip.full { opacity: .6; }
+.trip.full .head { cursor: default; }
+.trip.full .chev { visibility: hidden; }
+.empty { display: grid; justify-items: center; gap: 6px; padding: 36px 20px; border-radius: var(--radius); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--muted); text-align: center; }
+.empty i { font-size: 32px; color: var(--primary); }
+.empty strong { color: var(--ink); font-size: 18px; }
+.empty button { margin-top: 6px; height: 48px; padding: 0 20px; border: 0; border-radius: 14px; background: var(--primary-soft); color: var(--primary); font-weight: 700; cursor: pointer; }
+
+footer { background: var(--ink); color: #c3cde0; font-size: 15px; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-block: 20px; }
+footer a { display: inline-flex; align-items: center; min-height: 44px; color: #e6ecf8; }
+
+@media (max-width: 900px) {
+	.pills { display: none; }
+	.nav { grid-template-columns: 1fr auto; }
+	.layout { grid-template-columns: minmax(0, 1fr); }
+	.filters { position: static; display: none; }
+	.filters.show { display: grid; }
+	.toggle-filters { display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 18px; border: 0; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font-weight: 700; cursor: pointer; }
+	.toggle-filters b { display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; background: var(--primary); color: #fff; font-size: 13px; }
+	.toggle-filters b:empty { display: none; }
+	.chips { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.chips.two { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+	.wrap { padding-inline: 16px; }
+	.steps li { flex-direction: column; gap: 6px; text-align: center; }
+	.steps li:not(:last-child)::after { position: absolute; left: calc(50% + 21px); right: calc(-50% + 21px); top: 16px; margin: 0; min-width: 0; }
+	.steps .name { font-size: 12.5px; max-width: 100%; }
+	.search { grid-template-columns: minmax(0, 1fr) auto; padding: 16px; }
+	.search .f-from, .search .f-to { grid-column: 1 / 2; }
+	.swap { grid-column: 2; grid-row: 1 / 3; align-self: center; margin: 22px 0 0; transform: rotate(90deg); }
+	.go { grid-column: 1 / -1; }
+	.days { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 74px; overflow-x: auto; scrollbar-width: none; }
+	.arrow { width: 44px; }
+	.chips { grid-template-columns: 1fr 1fr; }
+	.head { grid-template-columns: minmax(0, 1fr) auto; gap: 12px 14px; padding: 16px; }
+	.times { grid-column: 1 / -1; }
+	.times b { font-size: 25px; }
+	.from { text-align: left; }
+	.opts { grid-template-columns: minmax(0, 1fr); padding: 0 16px 16px; }
+	.bar .sort { width: 100%; }
+	.sort button { flex: 1; padding: 0 6px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+	<header class="nav">
+		<a class="logo" href="trang-chu-8-swiss.html"><i class="bi bi-train-front"></i>TrainGo</a>
+		<ul class="pills">
+			<li><a href="chon-chuyen-b-mo-rong.html" aria-current="page"><i class="bi bi-search"></i>Tìm vé</a></li>
+			<li><a href="#"><i class="bi bi-ticket-perforated"></i>Vé của tôi</a></li>
+			<li><a href="#"><i class="bi bi-question-circle"></i>Hướng dẫn</a></li>
+		</ul>
+		<a class="login" href="#">Đăng nhập</a>
+	</header>
+
+	<nav aria-label="Các bước đặt vé">
+		<ol class="steps">
+			<li class="now" aria-current="step"><span class="dot">1</span><span class="name">Chọn chuyến</span></li>
+			<li><span class="dot">2</span><span class="name">Chọn chỗ</span></li>
+			<li><span class="dot">3</span><span class="name">Hành khách</span></li>
+			<li><span class="dot">4</span><span class="name">Thanh toán</span></li>
+		</ol>
+	</nav>
+
+	<!-- The page owns its search: changing it re-runs the search here, never sends the user back to the homepage. -->
+	<form class="search" id="search" novalidate>
+		<label class="f f-from"><span>Ga đi</span><span class="box"><i class="bi bi-geo-alt"></i><select id="from"></select></span></label>
+		<button class="swap" type="button" id="swap" aria-label="Đổi chiều"><i class="bi bi-arrow-left-right"></i></button>
+		<label class="f f-to"><span>Ga đến</span><span class="box"><i class="bi bi-geo-alt-fill"></i><select id="to"></select></span></label>
+		<button class="go" type="submit"><i class="bi bi-search"></i>Tìm chuyến</button>
+		<p class="err" id="err" hidden></p>
+	</form>
+
+	<div class="head-row">
+		<h1 id="title"></h1>
+		<label class="pick-date" title="Chọn ngày khác"><i class="bi bi-calendar3"></i><span id="sub"></span><i class="bi bi-chevron-down"></i><input type="date" id="date" min="2026-10-19" max="2026-12-13" aria-label="Chọn ngày đi"></label>
+	</div>
+	<div class="dates">
+		<button class="arrow" type="button" id="prev" aria-label="7 ngày trước"><i class="bi bi-chevron-left"></i></button>
+		<div class="days" role="radiogroup" aria-label="Ngày đi" id="days"></div>
+		<button class="arrow" type="button" id="next" aria-label="7 ngày sau"><i class="bi bi-chevron-right"></i></button>
+	</div>
+
+	<div class="layout">
+		<aside class="filters" id="filters" aria-label="Lọc chuyến">
+			<header><h2>Lọc chuyến</h2><button class="clear" type="button" id="clear">Bỏ lọc</button></header>
+			<div class="group"><span>Giờ đi</span>
+				<div class="chips" id="fTime">
+					<button class="chip" type="button" aria-pressed="false" data-v="sang"><i class="bi bi-sunrise"></i><b>Sáng</b><small>5h - 12h</small></button>
+					<button class="chip" type="button" aria-pressed="false" data-v="chieu"><i class="bi bi-sun"></i><b>Chiều</b><small>12h - 18h</small></button>
+					<button class="chip" type="button" aria-pressed="false" data-v="toi"><i class="bi bi-sunset"></i><b>Tối</b><small>18h - 22h</small></button>
+					<button class="chip" type="button" aria-pressed="false" data-v="dem"><i class="bi bi-moon-stars"></i><b>Đêm</b><small>22h - 5h</small></button>
+				</div>
+			</div>
+			<div class="group"><span>Loại chỗ</span>
+				<div class="chips two" id="fKind">
+					<button class="chip" type="button" aria-pressed="false" data-v="seat"><i class="bi bi-person"></i><b>Ghế ngồi</b></button>
+					<button class="chip" type="button" aria-pressed="false" data-v="bed"><i class="bi bi-moon"></i><b>Giường nằm</b></button>
+				</div>
+			</div>
+			<label class="check"><input type="checkbox" id="fAvail">Ẩn chuyến hết vé</label>
+		</aside>
+
+		<section>
+			<div class="bar">
+				<h2 id="count"></h2>
+				<button class="toggle-filters" type="button" id="toggleFilters" aria-controls="filters" aria-expanded="false"><i class="bi bi-sliders"></i>Lọc chuyến <b id="fCount"></b></button>
+				<div class="sort" role="group" aria-label="Sắp xếp" id="sort">
+					<button type="button" aria-pressed="true" data-v="dep">Sớm nhất</button>
+					<button type="button" aria-pressed="false" data-v="price">Rẻ nhất</button>
+					<button type="button" aria-pressed="false" data-v="dur">Nhanh nhất</button>
+				</div>
+			</div>
+			<div class="list" id="list"></div>
+		</section>
+	</div>
+</div>
+
+<footer><div class="wrap"><span>© 2026 TrainGo. Hỗ trợ đặt vé tàu trực tuyến.</span><a href="trang-chu-8-swiss.html">Về trang chủ</a></div></footer>
+
+<script>
+// Stations and routes as seeded in V2__seed_demo_data.sql.
+var STATIONS = [
+	['SGN', 'Sài Gòn'], ['NTR', 'Nha Trang'], ['QNH', 'Quy Nhơn'], ['DNG', 'Đà Nẵng'],
+	['HUE', 'Huế'], ['VIN', 'Vinh'], ['HNI', 'Hà Nội'], ['LCI', 'Lào Cai']
+];
+var ROUTES = { 'SGN-NTR': 411, 'SGN-DNG': 935, 'HNI-DNG': 791, 'HNI-LCI': 296 };
+// Sample departures of the Sài Gòn - Nha Trang day; other routes scale them by distance.
+// base = trips.base_price; a bed adds the coach's price_modifier of 200.000đ.
+var TEMPLATE = [
+	{ code: 'SNT3', dep: '06:15', mins: 500, base: 380000, seat: 20, bed: 28 },
+	{ code: 'SE5', dep: '09:00', mins: 470, base: 420000, seat: 4, bed: 0 },
+	{ code: 'SNT5', dep: '13:40', mins: 500, base: 350000, seat: 3, bed: 5 },
+	{ code: 'SNT1', dep: '20:30', mins: 500, base: 360000, seat: 0, bed: 0 },
+	{ code: 'SE7', dep: '22:15', mins: 475, base: 450000, seat: 36, bed: 14 }
+];
+var BED_EXTRA = 200000;
+var TODAY = new Date(2026, 9, 19);
+var LAST = new Date(2026, 11, 13);
+var DOW = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+var TIME = { sang: [5, 12], chieu: [12, 18], toi: [18, 22], dem: [22, 29] };
+
+var q = new URLSearchParams(location.search);
+var state = {
+	from: q.get('from') || 'SGN', to: q.get('to') || 'NTR',
+	date: parse(q.get('date')) || addDays(TODAY, 1),
+	start: null, sort: 'dep', open: null, time: [], kind: [], avail: false
+};
+var shown = { from: state.from, to: state.to };
+
+function $(id) { return document.getElementById(id); }
+function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function dayDiff(a, b) { return Math.round((b - a) / 864e5); }
+function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function parse(s) { if (!s) return null; var p = s.split('-'); var d = new Date(+p[0], p[1] - 1, +p[2]); return isNaN(d) || d < TODAY || d > LAST ? null : d; }
+function dm(d) { return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0'); }
+function name(code) { return STATIONS.filter(function (s) { return s[0] === code; })[0][1]; }
+function money(v) { return v.toLocaleString('vi-VN') + 'đ'; }
+function dur(m) { return Math.floor(m / 60) + 'g' + (m % 60 ? String(m % 60).padStart(2, '0') : ''); }
+function toMin(t) { var p = t.split(':'); return +p[0] * 60 + +p[1]; }
+function hhmm(m) { m %= 1440; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); }
+function distance(a, b) { return ROUTES[a + '-' + b] || ROUTES[b + '-' + a] || 0; }
+function soldOutDay(d) { return dayDiff(TODAY, d) % 9 === 3; }
+function weekendExtra(d) { var w = d.getDay(); return w === 5 || w === 6 || w === 0 ? 30000 : 0; }
+
+function trips(d) {
+	var km = distance(shown.from, shown.to);
+	if (!km || soldOutDay(d)) return [];
+	return TEMPLATE.map(function (t) {
+		var mins = Math.round(t.mins * km / 411 / 5) * 5;
+		var base = Math.round(t.base * km / 411 / 10000) * 10000 + weekendExtra(d);
+		var end = toMin(t.dep) + mins;
+		return { code: t.code, dep: t.dep, arr: hhmm(end), plus: Math.floor(end / 1440), mins: mins, seat: t.seat, bed: t.bed, seatPrice: base, bedPrice: base + BED_EXTRA };
+	});
+}
+function cheapest(t) { return t.seat ? t.seatPrice : t.bed ? t.bedPrice : 0; }
+function left(t) { return t.seat + t.bed; }
+function inTime(t) {
+	if (!state.time.length) return true;
+	var h = +t.dep.slice(0, 2); if (h < 5) h += 24;
+	return state.time.some(function (k) { return h >= TIME[k][0] && h < TIME[k][1]; });
+}
+function inKind(t) { return !state.kind.length || state.kind.some(function (k) { return t[k] > 0; }); }
+
+function renderDays() {
+	var html = '';
+	for (var i = 0; i < 7; i++) {
+		var d = addDays(state.start, i), out = d > LAST, all = trips(d), min = Math.min.apply(null, all.filter(left).map(cheapest));
+		var label = dayDiff(TODAY, d) === 0 ? 'Hôm nay' : dayDiff(TODAY, d) === 1 ? 'Ngày mai' : DOW[d.getDay()];
+		var none = out || !isFinite(min);
+		html += '<button class="day" type="button" role="radio" data-d="' + iso(d) + '" aria-checked="' + (iso(d) === iso(state.date)) + '"' + (none ? ' disabled' : '') + '>' +
+			'<small>' + label + '</small><b>' + dm(d) + '</b><em>' + (none ? 'Hết vé' : Math.round(min / 1000) + 'k') + '</em></button>';
+	}
+	$('days').innerHTML = html;
+	$('prev').disabled = state.start <= TODAY;
+	$('next').disabled = addDays(state.start, 7) > LAST;
+}
+function renderHead() {
+	$('title').innerHTML = name(shown.from) + ' <i class="bi bi-arrow-right"></i> ' + name(shown.to);
+	$('sub').textContent = DOW[state.date.getDay()] + ', ' + dm(state.date) + '/' + state.date.getFullYear();
+}
+function opt(kind, label, icon, n, price) {
+	var none = n === 0;
+	return '<div class="opt' + (none ? ' none' : '') + '"><span class="ic"><i class="bi ' + icon + '"></i></span>' +
+		'<span><b>' + label + '</b><span class="price">' + money(price) + '</span>' +
+		'<small class="' + (n > 0 && n <= 5 ? 'low' : '') + '">' + (none ? 'Hết chỗ' : 'Còn ' + n + ' chỗ') + '</small></span>' +
+		'<a href="dat-ve-e2-tau-ngang-tom-tat.html">' + (none ? 'Hết' : 'Chọn') + '</a></div>';
+}
+function renderList() {
+	var all = trips(state.date);
+	var rows = all.filter(function (t) { return inTime(t) && inKind(t) && (!state.avail || left(t) > 0); });
+	rows.sort(function (a, b) {
+		var full = (left(a) === 0) - (left(b) === 0);
+		if (full) return full;
+		if (state.sort === 'price') return cheapest(a) - cheapest(b);
+		if (state.sort === 'dur') return a.mins - b.mins;
+		return a.dep.localeCompare(b.dep);
+	});
+	var n = state.time.length + state.kind.length + (state.avail ? 1 : 0);
+	$('fCount').textContent = n || '';
+	$('count').textContent = rows.length + ' chuyến';
+	var list = $('list');
+	if (!distance(shown.from, shown.to)) {
+		list.innerHTML = '<div class="empty"><i class="bi bi-signpost-split"></i><strong>Chưa có tàu chạy tuyến này</strong>Thử chọn ga khác.</div>';
+		return;
+	}
+	if (!all.length) {
+		list.innerHTML = '<div class="empty"><i class="bi bi-calendar-x"></i><strong>Ngày này đã hết vé</strong>Chọn ngày khác ở dải ngày phía trên.</div>';
+		return;
+	}
+	if (!rows.length) {
+		list.innerHTML = '<div class="empty"><i class="bi bi-funnel"></i><strong>Không có chuyến phù hợp</strong>Thử bỏ bớt bộ lọc.<button type="button" data-clear>Bỏ lọc</button></div>';
+		return;
+	}
+	list.innerHTML = rows.map(function (t) {
+		var full = left(t) === 0, open = t.code === state.open && !full, n = left(t);
+		return '<article class="trip' + (full ? ' full' : '') + '" data-open="' + open + '" data-code="' + t.code + '">' +
+			'<button class="head" type="button" aria-expanded="' + open + '"' + (full ? ' disabled' : '') + '>' +
+			'<span class="times"><span><b>' + t.dep + '</b><small>' + name(shown.from) + '</small></span>' +
+			'<span class="rail"><span><i class="bi bi-train-front"></i>' + t.code + ' · ' + dur(t.mins) + '</span></span>' +
+			'<span class="end"><b>' + t.arr + (t.plus ? '<sup>+' + t.plus + '</sup>' : '') + '</b><small>' + name(shown.to) + '</small></span></span>' +
+			'<span class="from">' + (full ? '<strong>Hết vé</strong>' : '<small>từ</small><strong>' + money(cheapest(t)) + '</strong><em class="' + (n <= 8 ? 'low' : '') + '">Còn ' + n + ' chỗ</em>') + '</span>' +
+			'<span class="chev" aria-hidden="true"><i class="bi bi-chevron-down"></i></span></button>' +
+			'<div class="opts">' + opt('seat', 'Ghế ngồi', 'bi-person', t.seat, t.seatPrice) + opt('bed', 'Giường nằm', 'bi-moon-stars', t.bed, t.bedPrice) + '</div></article>';
+	}).join('');
+}
+function windowFor(d) { return addDays(TODAY, Math.floor(dayDiff(TODAY, d) / 7) * 7); }
+function syncForm() {
+	$('from').value = state.from; $('to').value = state.to;
+	$('date').value = iso(state.date);
+}
+function render() { renderHead(); renderDays(); renderList(); }
+function setPressed(group, values) {
+	group.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', values.indexOf(b.dataset.v) >= 0); });
+}
+function clearFilters() {
+	state.time = []; state.kind = []; state.avail = false; $('fAvail').checked = false;
+	setPressed($('fTime'), []); setPressed($('fKind'), []); renderList();
+}
+
+var opts = STATIONS.map(function (s) { return '<option value="' + s[0] + '">' + s[1] + ' (' + s[0] + ')</option>'; }).join('');
+$('from').innerHTML = opts; $('to').innerHTML = opts;
+state.start = windowFor(state.date);
+var first = trips(state.date).filter(left)[0]; state.open = first ? first.code : null;
+syncForm(); render();
+
+$('date').addEventListener('click', function () { try { this.showPicker(); } catch (e) { /* older browsers open it themselves */ } });
+$('date').addEventListener('change', function () {
+	var d = parse(this.value); if (!d) return;
+	state.date = d; state.start = windowFor(d); state.open = null; render();
+});
+$('swap').addEventListener('click', function () { var f = $('from').value; $('from').value = $('to').value; $('to').value = f; });
+$('search').addEventListener('submit', function (e) {
+	e.preventDefault();
+	var err = $('err');
+	err.hidden = true;
+	if ($('from').value === $('to').value) { err.textContent = 'Ga đi và ga đến phải khác nhau.'; err.hidden = false; return; }
+	state.from = shown.from = $('from').value; state.to = shown.to = $('to').value;
+	state.open = null;
+	render();
+});
+$('prev').addEventListener('click', function () { state.start = addDays(state.start, -7); if (state.start < TODAY) state.start = new Date(TODAY); renderDays(); });
+$('next').addEventListener('click', function () { state.start = addDays(state.start, 7); renderDays(); });
+$('days').addEventListener('click', function (e) {
+	var b = e.target.closest('.day'); if (!b || b.disabled) return;
+	state.date = parse(b.dataset.d); state.open = null; syncForm(); render();
+});
+$('list').addEventListener('click', function (e) {
+	if (e.target.closest('[data-clear]')) { clearFilters(); return; }
+	var h = e.target.closest('.head'); if (!h || h.disabled) return;
+	var code = h.closest('.trip').dataset.code;
+	state.open = state.open === code ? null : code; renderList();
+});
+$('sort').addEventListener('click', function (e) {
+	var b = e.target.closest('button'); if (!b) return;
+	state.sort = b.dataset.v; setPressed(this, [b.dataset.v]); renderList();
+});
+['fTime', 'fKind'].forEach(function (id) {
+	var key = id === 'fTime' ? 'time' : 'kind';
+	$(id).addEventListener('click', function (e) {
+		var b = e.target.closest('button'); if (!b) return;
+		var v = b.dataset.v, list = state[key], at = list.indexOf(v);
+		if (at >= 0) list.splice(at, 1); else list.push(v);
+		setPressed(this, list); renderList();
+	});
+});
+$('fAvail').addEventListener('change', function () { state.avail = this.checked; renderList(); });
+$('clear').addEventListener('click', clearFilters);
+$('toggleFilters').addEventListener('click', function () {
+	var open = $('filters').classList.toggle('show');
+	this.setAttribute('aria-expanded', open);
+});
+</script>
+</body>
+</html>

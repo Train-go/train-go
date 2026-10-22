@@ -46,6 +46,7 @@
 					<table class="table table-modern datatable align-middle mb-0">
 						<thead>
 							<tr>
+								<th scope="col">Lý trình</th>
 								<th scope="col">Mã ga</th>
 								<th scope="col">Tên ga</th>
 								<th scope="col">Tỉnh / Thành phố</th>
@@ -55,6 +56,7 @@
 						</thead>
 						<tbody>
 							<tr th:each="station : ${stations}">
+								<td class="text-nowrap" th:text="|Km ${station.kmMark}|">Km 1726</td>
 								<td class="fw-semibold" th:text="${station.code}">SGN</td>
 								<td th:text="${station.name}">Ga Sài Gòn</td>
 								<td th:text="${station.city}">TP. Hồ Chí Minh</td>

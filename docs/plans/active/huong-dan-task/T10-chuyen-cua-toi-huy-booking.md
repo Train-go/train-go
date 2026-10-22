@@ -20,14 +20,21 @@ booking nếu còn hủy được (`SPEC.md` mục 31).
 Bạn không cần chờ luồng đặt vé làm xong mới bắt đầu. Dữ liệu mẫu (seed) đã có sẵn booking,
 nên bạn đăng nhập bằng các tài khoản dưới đây là thử được ngay:
 
-| Tài khoản (mật khẩu `Customer@123`) | Booking trong seed |
+| Tài khoản (mật khẩu `Customer@123`) | Booking trong seed (mọi booking đều trên tàu SE1) |
 | --- | --- |
-| `an.nguyen@example.com` | 1 sắp đi (SNT1, 2 khách), 1 đã hủy (SE22) |
-| `binh.tran@example.com` | 1 sắp đi (SE19, toa giường) |
-| `cuong.le@example.com` | 1 đã đi (SNT1, chuyến `COMPLETED`) |
+| `an.nguyen@example.com` | `...001` đã đi: Thanh Hóa → Vinh, 2 khách, chuyến `COMPLETED` |
+| `binh.tran@example.com` | `...002` đã đi: Đồng Hới → Huế, toa giường, chuyến `COMPLETED` |
+| `cuong.le@example.com` | `...003` sắp đi: Đà Nẵng → Nha Trang, 1 khách |
+| `dung.pham@example.com` | `...004` sắp đi: Nha Trang → Sài Gòn, 2 khách, toa giường |
+| `duc.vu@example.com` | `...005` sắp đi: Sài Gòn → Nha Trang, 2 khách |
+| `lan.hoang@example.com` | `...006` đã hủy: Đà Nẵng → Huế |
+| `huy.dang@example.com` | `...007` sắp đi: Huế → Đồng Hới |
+| `ha.bui@example.com` | `...008` sắp đi: Thanh Hóa → Hà Nội |
 
-Seed `V3__seed_more_demo_data.sql` còn thêm booking cho ba tài khoản này và cho tám khách
-khác, nên mỗi nhóm có thể dài hơn bảng trên. Bảng chỉ ghi các booking của seed `V2`.
+Mã booking đầy đủ là `BK` + năm tháng lúc seed chạy + số thứ tự, ví dụ `BK202610004`. Tất cả
+nằm trong `V5__north_south_line.sql`; booking của V2, V3 đã bị V5 xóa. Mỗi tài khoản trên chỉ
+có một booking, nên muốn thấy đủ ba nhóm thì đăng nhập lần lượt nhiều tài khoản, hoặc tự đặt
+thêm khi T12 đã xong.
 
 ## 2. Phạm vi
 
@@ -49,18 +56,17 @@ Không làm:
 ```
 users 1 ──< bookings >── 1 trips >── routes, trains
                │
-               └──< booking_passengers >── 1 trip_seats >── 1 seats >── coaches
-                          │
-                          └── 1 tickets
+               └──< tickets >── 1 trip_seats
 
 bookings: customer_id, trip_id, booking_code, total_price,
-          booking_status (PENDING | CONFIRMED | CANCELLED),
-          payment_status (UNPAID | PAID), paid_at, created_at
+          booking_status (CONFIRMED | CANCELLED),
+          payment_status (PAID), paid_at, created_at
 ```
 
 Đọc sơ đồ: một khách (`users`) có nhiều booking. Mỗi booking thuộc một chuyến (`trips`) và
-có nhiều hành khách (`booking_passengers`). Mỗi hành khách ngồi đúng một chỗ của chuyến
-(`trip_seats`) và có đúng một vé (`tickets`). Ký hiệu `1 ──<` nghĩa là "một ... có nhiều ...".
+có nhiều hành khách; mỗi dòng `tickets` là một hành khách ngồi đúng một chỗ của chuyến
+(`trip_seats`) và cũng là vé của chỗ đó (xem `docs/decisions/0008-gop-ve-vao-hanh-khach.md`).
+Booking chỉ được tạo lúc thanh toán thành công nên luôn có `ticket_code`. Ký hiệu `1 ──<` nghĩa là "một ... có nhiều ...".
 
 Khi khách hủy, hai thay đổi dưới đây phải xảy ra trong **cùng một** transaction
 (`SPEC.md` mục 45.4). Vì sao: nếu chỉ đổi được một nửa, sẽ có booking đã hủy mà chỗ vẫn
@@ -82,15 +88,18 @@ Cách chia ba nhóm (theo quyết định D8):
 | Đã đi | `CONFIRMED` và (chuyến `COMPLETED` hoặc thời điểm khởi hành đã qua) |
 | Đã hủy | `CANCELLED` |
 
-Booking `PENDING` (đang chờ thanh toán, theo quyết định D7) không hiện ở trang này.
+Booking chỉ có hai trạng thái là `CONFIRMED` và `CANCELLED`: booking được tạo thẳng
+`CONFIRMED` / `PAID` trong transaction thanh toán (T12, ADR 0010). `PENDING` và `UNPAID` vẫn có
+trong các ràng buộc `CHECK` của database nhưng không còn luồng nào tạo ra, nên task này không
+xử lý chúng.
 
 ## 4. Các bước làm
 
 ### Bước 1. Model: thêm method nghiệp vụ và tạo DTO
 
-Các entity `Booking`, `BookingPassenger`, `Ticket`, `TripSeat` trong `entity/` đã có,
+Các entity `Booking`, `Ticket`, `TripSeat` trong `entity/` đã có,
 **không thêm hay sửa field**. Bạn chỉ thêm hai method để đổi trạng thái. Mỗi method tự kiểm
-tra trạng thái hiện tại trước khi đổi, để không bao giờ hủy nhầm một booking chưa xác nhận:
+tra trạng thái hiện tại trước khi đổi, để không bao giờ hủy lại một booking đã hủy:
 
 ```java
 // Booking
@@ -118,7 +127,7 @@ record PassengerLine(String fullName, int coachNumber, String seatCode,
         long ticketPrice, Long ticketId) { }
 
 record MyBooking(Long id, String bookingCode, String routeLabel, String trainCode,
-        LocalDate departureDate, LocalTime departureTime, BookingStatus bookingStatus,
+        LocalDateTime departureAt, BookingStatus bookingStatus,
         PaymentStatus paymentStatus, long totalPrice, boolean cancellable,
         List<PassengerLine> passengers) { }
 
@@ -147,19 +156,15 @@ Optional<Booking> findByIdAndCustomerId(Long id, Long customerId);
 - `@EntityGraph` đọc luôn chuyến, tàu và hai ga trong cùng câu `SELECT`, để view không bị
   lỗi `LazyInitializationException`.
 
-Thêm vào `repository/BookingPassengerRepository`. Method này lấy hành khách của **mọi**
-booking trong một lần, thay vì hỏi database riêng cho từng booking:
+Thêm vào `repository/TicketRepository`. Method này lấy hành khách (tức các dòng `Ticket`)
+của **mọi** booking trong một lần, thay vì hỏi database riêng cho từng booking:
 
 ```java
-@EntityGraph(attributePaths = {"tripSeat", "tripSeat.seat", "tripSeat.seat.coach"})
-List<BookingPassenger> findByBookingIdInOrderByIdAsc(Collection<Long> bookingIds);
+@EntityGraph(attributePaths = {"tripSeat"})
+List<Ticket> findByBookingIdInOrderByIdAsc(Collection<Long> bookingIds);
 ```
 
-Thêm vào `repository/TicketRepository`:
-
-```java
-List<Ticket> findByBookingPassengerIdIn(Collection<Long> passengerIds);
-```
+Link `/tickets/{ticketId}` dùng chính `Ticket.id`.
 
 ### Bước 3. Service: xử lý nghiệp vụ
 
@@ -184,7 +189,7 @@ public Booking cancelByAdmin(long bookingId) { ... }
 Cả hai method cùng gọi một method riêng làm các việc sau:
 
 1. Kiểm tra booking đang `CONFIRMED`.
-2. Kiểm tra chuyến chưa khởi hành: `trip.departureAt()` còn ở sau `LocalDateTime.now()`.
+2. Kiểm tra chuyến chưa khởi hành: `trip.getDepartureAt()` còn ở sau `LocalDateTime.now()`.
 3. Gọi `booking.cancel()`, rồi `releaseBooked()` cho mọi `TripSeat` của booking.
 
 Sai một điều kiện thì ném `BookingCannotBeCancelledException` kèm lý do. Hai method chỉ khác
@@ -241,21 +246,23 @@ docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=
 
 **Kịch bản 1. Xem danh sách theo ba nhóm.**
 
-1. Đăng nhập `an.nguyen@example.com`, mở `/my-trips`.
-2. Kết quả đúng: booking SNT1 (2 khách) nằm ở Sắp đi, booking SE22 nằm ở Đã hủy. Mỗi dòng
-   có tuyến, ngày đi, tàu, toa và chỗ, trạng thái booking, trạng thái thanh toán.
-3. Đăng nhập `cuong.le@example.com`: booking trên chuyến `COMPLETED` nằm ở Đã đi.
+1. Đăng nhập `dung.pham@example.com`, mở `/my-trips`.
+2. Kết quả đúng: booking `...004` (Nha Trang → Sài Gòn, 2 khách) nằm ở Sắp đi. Mỗi dòng có
+   tuyến, ngày đi, tàu, toa và chỗ, trạng thái booking, trạng thái thanh toán.
+3. Đăng nhập `an.nguyen@example.com`: booking `...001` trên chuyến `COMPLETED` nằm ở Đã đi.
+4. Đăng nhập `lan.hoang@example.com`: booking `...006` nằm ở Đã hủy.
 
 **Kịch bản 2. Hủy booking sắp đi.**
 
-1. Vẫn với `an.nguyen@example.com`, mở chi tiết booking SNT1 sắp đi. Ghi lại mã booking.
+1. Đăng nhập lại `dung.pham@example.com`, mở chi tiết booking `...004` sắp đi. Ghi lại mã
+   booking.
 2. Trước khi hủy, xem trạng thái chỗ:
 
    ```sql
    SELECT b.booking_code, b.booking_status, b.payment_status, ts.id, ts.status
    FROM bookings b
-   JOIN booking_passengers bp ON bp.booking_id = b.id
-   JOIN trip_seats ts ON ts.id = bp.trip_seat_id
+   JOIN tickets tk ON tk.booking_id = b.id
+   JOIN trip_seats ts ON ts.id = tk.trip_seat_id
    WHERE b.booking_code = '<mã booking>';
    ```
 
@@ -273,7 +280,7 @@ docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=
 
 **Kịch bản 4. Không hủy được chuyến đã đi.**
 
-1. Đăng nhập `cuong.le@example.com`, mở chi tiết booking ở nhóm Đã đi: không có nút hủy.
+1. Đăng nhập `an.nguyen@example.com`, mở chi tiết booking ở nhóm Đã đi: không có nút hủy.
 2. Gửi thẳng `POST /my-trips/<id>/cancel` cho booking đó như kịch bản 3.
 3. Kết quả đúng: thông báo đỏ, booking vẫn `CONFIRMED`, các chỗ vẫn `BOOKED`.
 
@@ -287,10 +294,11 @@ docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=
    ORDER BY b.id;
    ```
 
-2. Đăng nhập `an.nguyen@example.com`, mở `/my-trips/<id booking của binh.tran>`.
+2. Đăng nhập `dung.pham@example.com`, mở `/my-trips/<id booking của cuong.le>`.
    Kết quả đúng: trang 404, không phải 403 và không lộ thông tin gì của booking.
-3. Gửi `POST /my-trips/<id booking của binh.tran>/cancel`. Kết quả đúng: 404, và chạy lại
-   SQL ở kịch bản 2 cho booking đó thấy trạng thái không đổi.
+3. Gửi `POST /my-trips/<id booking của cuong.le>/cancel` (booking sắp đi, nên nếu thiếu kiểm
+   tra quyền sở hữu thì nó sẽ bị hủy thật). Kết quả đúng: 404, và chạy lại SQL ở kịch bản 2
+   cho booking đó thấy vẫn `CONFIRMED`, chỗ vẫn `BOOKED`.
 4. Mở `/my-trips/999999` (id không tồn tại): cũng 404.
 
 Muốn chạy lại từ đầu với dữ liệu sạch, làm mới database theo `docs/RUNBOOK.md`.
@@ -307,11 +315,12 @@ Muốn chạy lại từ đầu với dữ liệu sạch, làm mới database th
 
 ## 8. Kiểm tra trước khi báo xong
 
-- [ ] Đăng nhập `an.nguyen@example.com`: thấy booking SNT1 ở Sắp đi, booking SE22 ở Đã hủy.
+- [ ] `dung.pham@example.com` thấy booking `...004` ở Sắp đi; `lan.hoang@example.com` thấy
+      booking `...006` ở Đã hủy.
 - [ ] Hủy booking sắp đi: booking chuyển sang nhóm Đã hủy; mọi chỗ của booking đó trống lại
       (kiểm tra bằng SQL ở mục 6, hoặc trên trang chọn chỗ của T09).
 - [ ] Đổi id trên đường dẫn sang booking của người khác: nhận 404, cả khi xem lẫn khi hủy.
-- [ ] `cuong.le@example.com` thấy booking ở nhóm Đã đi, không có nút hủy.
+- [ ] `an.nguyen@example.com` thấy booking ở nhóm Đã đi, không có nút hủy.
 - [ ] Đã đi hết các kịch bản ở mục 6.
 - [ ] Kiểm tra giao diện ở màn hình rộng 375px.
 - [ ] `.\mvnw.cmd compile` chạy không lỗi và ứng dụng khởi động được

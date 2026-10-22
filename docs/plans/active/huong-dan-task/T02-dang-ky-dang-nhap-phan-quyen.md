@@ -47,12 +47,12 @@ users
   role          VARCHAR(20)   NOT NULL     CUSTOMER | ADMIN
   created_at    DATETIME      NOT NULL
 
-Được tham chiếu bởi: bookings.customer_id, trip_seats.held_by_user_id
+Được tham chiếu bởi: bookings.customer_id
 ```
 
 Đọc sơ đồ: mỗi người dùng có họ tên, email không trùng, mật khẩu đã mã hóa bằng BCrypt
-(không bao giờ lưu mật khẩu gốc) và một role: `CUSTOMER` hoặc `ADMIN`. Bảng `bookings` và
-`trip_seats` trỏ về bảng này để biết booking của ai, ai đang giữ chỗ.
+(không bao giờ lưu mật khẩu gốc) và một role: `CUSTOMER` hoặc `ADMIN`. Bảng `bookings` trỏ về bảng
+này để biết booking của ai.
 
 Dữ liệu mẫu có sẵn `admin@traingo.vn` / `Admin@123` và các khách hàng mật khẩu
 `Customer@123` (`docs/RUNBOOK.md`). Email luôn được lưu chữ thường.

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Đặt vé E2 - Tàu nằm ngang và tóm tắt bên phải</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+/* ================= Edit the look here =================
+   Palette and fonts match trang-chu-8-swiss.html (navy + orange).
+   Low-tech reminder: a block of text stays under ~12 words,
+   a button label under 3 words, one main action per screen. */
+:root {
+	--ink: #0b1a36;            /* dark blocks and main text */
+	--ink-2: #1c2b4a;
+	--ink-3: #2a3b5e;
+	--accent: #2c4d98;         /* cobalt: fills on light ground, white text */
+	--accent-bright: #3b63c4;  /* cobalt button on the dark summary, white text */
+	--accent-light: #a9bff0;   /* cobalt marks on dark ground, ink text */
+	--on-accent: #ffffff;
+	--accent-soft: #dbe4f7;
+	--bg: #edf1f5;
+	--surface: #ffffff;
+	--line: #e0e6ed;
+	--muted: #5b6b80;
+	--on-dark-muted: #b3bfd6;
+	--taken: #e7eaee;
+	--taken-ink: #8a94a1;
+	--r-card: 24px;
+	--r-pill: 999px;
+	--seat: 54px;
+	--shadow: 0 1px 2px rgb(11 26 54 / 6%), 0 18px 40px -12px rgb(11 26 54 / 18%);
+	--display: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+	--body: "Noto Sans", "Be Vietnam Pro", system-ui, sans-serif;
+}
+/* ====================================================== */
+
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--body); font-size: 17px; line-height: 1.5; color: var(--ink); background: var(--bg); }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.wrap { width: 100%; max-width: 1320px; margin: 0 auto; padding-inline: 20px; }
+h1, h2 { font-family: var(--display); letter-spacing: -0.02em; margin: 0; line-height: 1.2; }
+
+/* ---------- header ---------- */
+.head { display: flex; align-items: center; gap: 16px; padding-block: 18px; }
+.back { display: grid; place-items: center; flex: 0 0 48px; height: 48px; border-radius: 50%; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); text-decoration: none; font-size: 20px; }
+.logo { font-family: var(--display); font-weight: 700; font-size: 20px; }
+/* all four steps always visible; a line joins them */
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); list-style: none; margin: 0 0 22px; padding: 16px 20px; border-radius: var(--r-card); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.steps li { position: relative; display: flex; align-items: center; gap: 12px; min-width: 0; }
+.steps li:not(:last-child)::after { content: ""; flex: 1 1 auto; min-width: 16px; height: 3px; margin-right: 12px; border-radius: 3px; background: var(--line); }
+.steps li.done::after { background: var(--ink); }
+.steps .dot { position: relative; z-index: 1; flex: 0 0 auto; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--bg); color: var(--muted); font-family: var(--display); font-weight: 700; box-shadow: inset 0 0 0 2px var(--line); }
+.steps .name { font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.steps li.done .dot { background: var(--accent); color: var(--on-accent); box-shadow: none; }
+.steps li.done .name { color: var(--ink); }
+.steps li.now .dot { background: var(--ink); color: #fff; box-shadow: 0 0 0 4px var(--accent-soft); }
+.steps li.now .name { color: var(--ink); font-weight: 800; }
+
+/* ---------- two columns: train + seats | summary ---------- */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; align-items: start; padding-bottom: 56px; }
+h1 { font-size: clamp(28px, 3.2vw, 40px); font-weight: 800; margin: 4px 0 16px; }
+h1 mark { background: var(--accent-soft); color: inherit; padding: 0 .15em; border-radius: 10px; }
+
+/* the whole train, side view */
+.train { display: flex; align-items: flex-end; padding: 18px 18px 26px; border-radius: var(--r-card); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); overflow-x: auto; scrollbar-width: none; position: relative; }
+.train::after { content: ""; position: absolute; left: 18px; right: 18px; bottom: 14px; height: 4px; border-radius: 4px; background: repeating-linear-gradient(90deg, var(--line) 0 18px, transparent 18px 26px); }
+.loco { flex: 0 0 84px; height: 116px; margin-right: 8px; border-radius: 48px 14px 14px 18px; background: var(--ink); color: var(--accent-light); display: grid; place-items: center; font-size: 28px; }
+.car { position: relative; display: flex; flex-direction: column; align-items: flex-start; flex: 1 0 150px; height: 116px; margin-left: 10px; padding: 12px 14px 0; border: 0; border-radius: 14px; background: var(--bg); text-align: left; cursor: pointer; transition: background .15s, transform .15s; }
+.car::before { content: ""; position: absolute; left: -12px; bottom: 30px; width: 14px; height: 6px; background: var(--line); }
+.car:hover { transform: translateY(-2px); }
+.car b { font-family: var(--display); font-size: 18px; }
+.car small { color: var(--muted); font-weight: 600; font-size: 13px; }
+.win { position: absolute; left: 14px; right: 14px; bottom: 12px; display: flex; gap: 5px; }
+.win i { flex: 1; height: 16px; border-radius: 5px; background: var(--surface); }
+.win i.sold { background: var(--taken-ink); }
+.car[aria-selected="true"] { background: var(--ink); color: #fff; }
+.car[aria-selected="true"] small { color: var(--accent-light); }
+.car[aria-selected="true"] .win i { background: var(--ink-3); }
+.car[aria-selected="true"] .win i.sold { background: var(--on-dark-muted); }
+.car.full { opacity: .5; }
+.hint { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 12px 4px 18px; color: var(--muted); font-size: 15px; font-weight: 600; }
+.hint span { display: inline-flex; align-items: center; gap: 8px; }
+.hint i { width: 22px; height: 22px; border-radius: 7px; }
+.l-free { background: var(--surface); box-shadow: inset 0 0 0 2px var(--line); }
+.l-on { background: var(--accent); box-shadow: inset 0 0 0 2px var(--ink); }
+.l-taken { background: var(--taken); box-shadow: inset 0 0 0 2px #cdd5df; }
+
+/* seat map laid out like the coach from above */
+.coach { display: grid; grid-template-columns: auto minmax(0, 1fr); border-radius: var(--r-card); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.coach-side { display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 170px; padding: 22px; background: var(--ink); color: #fff; }
+.coach-side h2 { font-size: 24px; }
+.coach-side span { color: var(--on-dark-muted); font-weight: 600; }
+.coach-side strong { margin-top: 10px; display: inline-flex; align-self: flex-start; align-items: center; height: 36px; padding: 0 12px; border-radius: var(--r-pill); background: var(--accent-light); color: var(--ink); }
+.map { padding: 22px; overflow-x: auto; }
+.seats { display: grid; grid-auto-flow: column; grid-template-rows: repeat(2, var(--seat)) 26px repeat(2, var(--seat)); grid-auto-columns: minmax(var(--seat), 1fr); gap: 8px; }
+.aisle { display: grid; place-items: center; color: var(--taken-ink); font-size: 12px; white-space: nowrap; }
+.cabins { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(120px, 1fr); gap: 10px; }
+.cabin { padding: 10px; border-radius: 18px; background: var(--bg); }
+.cabin p { margin: 0 0 8px; color: var(--muted); font-weight: 700; font-size: 13px; }
+.cabin div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.seat { position: relative; min-height: var(--seat); border: 0; border-radius: 14px; background: var(--surface); box-shadow: inset 0 0 0 2px var(--line); font-weight: 700; cursor: pointer; transition: transform .12s; }
+.seat:hover:not(:disabled):not([aria-pressed="true"]) { box-shadow: inset 0 0 0 2px var(--ink); }
+.seat:active:not(:disabled) { transform: scale(.94); }
+.seat[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); box-shadow: inset 0 0 0 2px var(--ink); }
+.seat:disabled { background: var(--taken); box-shadow: none; color: var(--taken-ink); cursor: not-allowed; }
+.seat:disabled::after { content: ""; position: absolute; left: 30%; right: 30%; top: 50%; height: 2px; background: var(--taken-ink); transform: rotate(-35deg); }
+
+/* ---------- summary ---------- */
+.summary { position: sticky; top: 16px; background: var(--ink); color: #fff; border-radius: 28px; padding: 24px; box-shadow: var(--shadow); }
+.summary h2 { font-size: 15px; color: var(--on-dark-muted); font-family: var(--body); letter-spacing: 0; font-weight: 600; margin-bottom: 14px; }
+.journey { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.journey b { display: block; font-family: var(--display); font-size: 30px; line-height: 1.1; }
+.journey small { color: var(--on-dark-muted); font-weight: 600; font-size: 14px; }
+.journey .end { text-align: right; }
+.journey .rail { height: 2px; background: repeating-linear-gradient(90deg, var(--ink-3) 0 8px, transparent 8px 14px); position: relative; }
+.journey .rail i { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 0 6px; background: var(--ink); color: var(--accent-light); }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0 20px; }
+.meta span { display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: var(--r-pill); background: var(--ink-2); color: var(--on-dark-muted); font-size: 14px; font-weight: 600; }
+.picked { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 8px; }
+.picked li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 58px; padding: 0 6px 0 8px; border-radius: 16px; background: var(--ink-2); }
+.picked .code { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: var(--accent-light); color: var(--ink); font-weight: 800; font-size: 14px; }
+.picked .what b { display: block; font-size: 15px; }
+.picked .what small { color: var(--on-dark-muted); font-size: 13px; font-weight: 600; }
+.picked button { width: 44px; height: 44px; border: 0; border-radius: 12px; background: none; color: var(--on-dark-muted); cursor: pointer; }
+.picked button:hover { background: var(--ink-3); color: #fff; }
+.total { display: flex; align-items: baseline; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--ink-3); }
+.total span { color: var(--on-dark-muted); font-weight: 600; }
+.total strong { font-family: var(--display); font-size: 30px; }
+.next { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 62px; margin-top: 18px; border: 0; border-radius: 18px; background: var(--accent-bright); color: var(--on-accent); font-family: var(--display); font-size: 20px; font-weight: 700; cursor: pointer; transition: transform .15s; }
+.next:active:not(:disabled) { transform: scale(.98); }
+.next:disabled { background: var(--ink-2); color: var(--on-dark-muted); cursor: not-allowed; }
+.toast { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); max-width: calc(100vw - 32px); background: var(--accent); color: var(--on-accent); padding: 12px 18px; border-radius: 14px; font-weight: 700; z-index: 20; box-shadow: var(--shadow); }
+
+/* tablet: the summary drops under the seats */
+@media (max-width: 1100px) {
+	.layout { grid-template-columns: minmax(0, 1fr); }
+	.summary { position: static; }
+}
+/* phone: coach turns upright, summary becomes a bar at the bottom */
+@media (max-width: 760px) {
+	.wrap { padding-inline: 14px; }
+	.steps { padding: 12px 8px; }
+	.steps li { flex-direction: column; gap: 6px; text-align: center; }
+	.steps li:not(:last-child)::after { position: absolute; left: calc(50% + 26px); right: calc(-50% + 26px); top: 19px; margin: 0; min-width: 0; }
+	.steps .name { font-size: 12.5px; max-width: 100%; }
+	.steps .dot { width: 40px; height: 40px; }
+	.loco { flex-basis: 56px; height: 108px; font-size: 22px; }
+	.car { flex-basis: 128px; height: 108px; }
+	.coach { grid-template-columns: minmax(0, 1fr); }
+	.coach-side { width: auto; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 4px 12px; padding: 14px 16px; }
+	.coach-side strong { margin: 0 0 0 auto; }
+	.map { padding: 14px; }
+	.seats { grid-auto-flow: row; grid-template-rows: none; grid-template-columns: repeat(2, minmax(0, 1fr)) 16px repeat(2, minmax(0, 1fr)); grid-auto-columns: auto; }
+	.aisle { font-size: 0; }
+	.cabins { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-columns: auto; }
+	.layout { padding-bottom: 190px; }
+	.summary { position: fixed; z-index: 5; left: 10px; right: 10px; top: auto; bottom: 10px; padding: 12px; border-radius: 24px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px 12px; }
+	.summary h2, .journey, .meta { display: none; }
+	.picked { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+	.picked li { min-height: 44px; padding: 0 2px 0 4px; gap: 6px; }
+	.picked .code { width: 36px; height: 36px; }
+	.picked .what { display: none; }
+	.total { border: 0; padding: 0 0 0 6px; flex-direction: column; }
+	.total span { font-size: 13px; }
+	.total strong { font-size: 24px; }
+	.next { margin: 0; width: auto; height: 56px; padding: 0 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+	<header class="head">
+		<a class="back" href="chon-chuyen-b-mo-rong.html" aria-label="Quay lại"><i class="bi bi-arrow-left"></i></a>
+		<span class="logo">TrainGo</span>
+	</header>
+
+	<nav aria-label="Các bước đặt vé">
+		<ol class="steps">
+			<li class="done"><span class="dot"><i class="bi bi-check-lg"></i></span><span class="name">Chọn chuyến</span></li>
+			<li class="now" aria-current="step"><span class="dot">2</span><span class="name">Chọn chỗ</span></li>
+			<li><span class="dot">3</span><span class="name">Hành khách</span></li>
+			<li><span class="dot">4</span><span class="name">Thanh toán</span></li>
+		</ol>
+	</nav>
+
+	<div class="layout">
+		<main>
+			<h1 id="heading"></h1>
+			<div class="train" role="tablist" aria-label="Đoàn tàu" id="train"></div>
+			<div class="hint"><span><i class="l-free"></i>Trống</span><span><i class="l-on"></i>Bạn chọn</span><span><i class="l-taken"></i>Đã bán</span></div>
+			<section class="coach">
+				<div class="coach-side"><h2 id="coachTitle"></h2><span id="coachKind"></span><strong id="coachPrice"></strong></div>
+				<div class="map" id="map"></div>
+			</section>
+		</main>
+
+		<aside class="summary">
+			<h2>Chuyến của bạn</h2>
+			<div class="journey">
+				<div><b>06:15</b><small>Sài Gòn</small></div>
+				<div class="rail"><i class="bi bi-train-front"></i></div>
+				<div class="end"><b>14:35</b><small>Nha Trang</small></div>
+			</div>
+			<div class="meta"><span>SNT3</span><span>T3 20/10</span><span>8 giờ 20</span></div>
+			<ul class="picked" id="picked"></ul>
+			<div class="total"><span>Tổng tiền</span><strong id="total">0đ</strong></div>
+			<button class="next" id="next" type="button" disabled>Tiếp tục</button>
+		</aside>
+	</div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+// One booking holds 1 to 10 passengers (D6); the seat count decides how many tickets.
+var MAX = 10, BASE = 380000;
+var COACHES = [
+	{ n: 1, kind: 'Ghế ngồi', bed: false, plus: 0, size: 32, taken: [2, 3, 6, 7, 9, 12, 15, 18, 21, 24, 27, 30] },
+	{ n: 2, kind: 'Ghế ngồi', bed: false, plus: 0, size: 32, taken: 'all' },
+	{ n: 3, kind: 'Giường nằm', bed: true, plus: 200000, size: 16, taken: [1, 5, 9, 13] },
+	{ n: 4, kind: 'Giường nằm', bed: true, plus: 200000, size: 16, taken: [] }
+];
+var active = 1, picked = [];
+function code(c, i) { return (c.bed ? 'B' : 'A') + (i < 10 ? '0' : '') + i; }
+function isTaken(c, i) { return c.taken === 'all' || c.taken.indexOf(i) >= 0; }
+function free(c) { var f = 0; for (var i = 1; i <= c.size; i++) if (!isTaken(c, i)) f++; return f; }
+function money(v) { return v.toLocaleString('vi-VN') + 'đ'; }
+function has(c, s) { return picked.some(function (p) { return p.c === c && p.s === s; }); }
+function seat(c, i) {
+	var b = document.createElement('button'), k = code(c, i);
+	b.type = 'button'; b.className = 'seat'; b.textContent = k; b.disabled = isTaken(c, i);
+	b.setAttribute('aria-pressed', has(c.n, k));
+	b.setAttribute('aria-label', 'Toa ' + c.n + ' chỗ ' + k + (b.disabled ? ', đã bán' : ''));
+	b.onclick = function () { toggle(c.n, k); };
+	return b;
+}
+function toggle(c, s) {
+	var k = picked.findIndex(function (p) { return p.c === c && p.s === s; });
+	if (k >= 0) picked.splice(k, 1);
+	else if (picked.length >= MAX) { toast('Mỗi lần đặt tối đa ' + MAX + ' vé.'); return; }
+	else picked.push({ c: c, s: s });
+	render();
+}
+var t;
+function toast(m) { var e = document.getElementById('toast'); e.textContent = m; e.hidden = false; clearTimeout(t); t = setTimeout(function () { e.hidden = true; }, 2600); }
+function render() {
+	var train = document.getElementById('train');
+	train.innerHTML = '<span class="loco" aria-hidden="true"><i class="bi bi-train-front-fill"></i></span>';
+	COACHES.forEach(function (c) {
+		var f = free(c), mine = picked.filter(function (p) { return p.c === c.n; }).length;
+		var b = document.createElement('button');
+		b.type = 'button'; b.className = 'car' + (f ? '' : ' full'); b.setAttribute('role', 'tab');
+		b.setAttribute('aria-selected', c.n === active);
+		// six windows; filled ones show how much of the coach is sold
+		var sold = Math.round((c.size - f) / c.size * 6), w = '';
+		for (var i = 0; i < 6; i++) w += '<i class="' + (i < sold ? 'sold' : '') + '"></i>';
+		b.innerHTML = '<b>Toa ' + c.n + '</b><small>' + (mine ? 'Đã chọn ' + mine : f ? c.kind + ' · ' + f : 'Hết chỗ') + '</small><span class="win" aria-hidden="true">' + w + '</span>';
+		b.onclick = function () { active = c.n; render(); };
+		train.appendChild(b);
+	});
+	var c = COACHES[active - 1], map = document.getElementById('map'); map.innerHTML = '';
+	document.getElementById('coachTitle').textContent = 'Toa ' + c.n;
+	document.getElementById('heading').innerHTML = 'Chọn <mark>' + c.kind.toLowerCase() + '</mark>';
+	document.getElementById('coachKind').textContent = c.kind;
+	document.getElementById('coachPrice').textContent = money(BASE + c.plus);
+	if (!c.bed) {
+		var g = document.createElement('div'); g.className = 'seats';
+		for (var i = 1; i <= c.size; i++) {
+			g.appendChild(seat(c, i));
+			if (i % 4 === 2) { var a = document.createElement('span'); a.className = 'aisle'; a.textContent = i === 2 ? 'Lối đi' : ''; g.appendChild(a); }
+		}
+		map.appendChild(g);
+	} else {
+		var cs = document.createElement('div'); cs.className = 'cabins';
+		for (var k = 0; k < 4; k++) {
+			var cab = document.createElement('div'); cab.className = 'cabin';
+			cab.innerHTML = '<p>Khoang ' + (k + 1) + '</p>';
+			var inner = document.createElement('div');
+			for (var j = 1; j <= 4; j++) inner.appendChild(seat(c, k * 4 + j));
+			cab.appendChild(inner); cs.appendChild(cab);
+		}
+		map.appendChild(cs);
+	}
+	var list = document.getElementById('picked'); list.innerHTML = '';
+	var sum = 0;
+	picked.forEach(function (p) {
+		var co = COACHES[p.c - 1];
+		sum += BASE + co.plus;
+		var li = document.createElement('li');
+		li.innerHTML = '<span class="code">' + p.s + '</span><span class="what"><b>Toa ' + p.c + ' · ' + co.kind + '</b><small>' + money(BASE + co.plus) + '</small></span>';
+		var x = document.createElement('button'); x.type = 'button'; x.setAttribute('aria-label', 'Bỏ chỗ ' + p.s); x.innerHTML = '<i class="bi bi-x-lg"></i>';
+		x.onclick = function () { toggle(p.c, p.s); };
+		li.appendChild(x); list.appendChild(li);
+	});
+	document.getElementById('total').textContent = money(sum);
+	var next = document.getElementById('next');
+	next.disabled = !picked.length;
+	next.innerHTML = picked.length ? 'Tiếp tục · ' + picked.length + ' vé <i class="bi bi-arrow-right"></i>' : 'Chọn ít nhất 1 chỗ';
+}
+document.getElementById('next').onclick = function () {
+	// the draft goes to the session, as in docs/product/booking-flow.md; nothing is locked yet
+	var seats = picked.map(function (p) { var c = COACHES[p.c - 1]; return { code: p.s, coach: p.c, kind: c.kind, price: BASE + c.plus }; });
+	try { sessionStorage.setItem('traingo-seats', JSON.stringify(seats)); } catch (e) {}
+	location.href = 'hanh-khach-2-the-ve.html';
+};
+render();
+</script>
+</body>
+</html>

@@ -5,7 +5,7 @@
 
 | Đợt | Phần việc | Độ khó | Cần xong trước | Task đang chờ task này | Tên branch |
 | --- | --- | --- | --- | --- | --- |
-| 1 | A | Dễ (khoảng 1 ngày) | Không | T07 (chọn tàu khi tạo chuyến) | `feat/t03-train-admin` |
+| 1 | A | Dễ (khoảng 1 ngày) | Không (nên đọc trước quyết định D9) | T07 (thêm chuyến ở trang chi tiết tàu) | `feat/t03-train-admin` |
 
 Các từ như entity, repository, flash message được giải thích trong `README.md` cùng thư
 mục. Cách chia package theo tầng (`controller/`, `service/`, `model/request/`...) nằm ở
@@ -13,7 +13,7 @@ mục. Cách chia package theo tầng (`controller/`, `service/`, `model/request
 
 ## 1. Task này làm gì
 
-Hiện trang `/admin/trains` **đã hiện danh sách tàu thật**, kèm số toa và số chỗ, nhưng chỉ
+Hiện trang `/admin/trains` **đã hiện danh sách tàu thật** (mã và tên), nhưng chỉ
 để xem: code nằm chung trong `service/AdminService` (method `trains()`) và
 `controller/AdminController`. Task này chuyển màn hình đó sang controller và service riêng
 của tàu, rồi thêm chức năng thêm tàu và sửa tàu.
@@ -26,31 +26,39 @@ của tàu, rồi thêm chức năng thêm tàu và sửa tàu.
 
 Làm:
 
-- Chuyển danh sách tàu (kèm số toa, số chỗ) sang controller và service riêng.
+- Chuyển danh sách tàu (mã và tên) sang controller và service riêng.
 - Thêm tàu, sửa tàu.
 
 Không làm:
 
 - Xóa tàu: spec không có chức năng này (quyết định D2).
-- Trang chi tiết tàu và sơ đồ toa: thuộc T06.
-- Thêm toa: thuộc T08.
+- Trang chi tiết tàu `/admin/trains/{id}`: khung trang và sơ đồ toa thuộc T06; phần **Lịch
+  chạy** (các chuyến của tàu theo thời gian, dấu "chuỗi bị đứt", nút "Thêm chuyến") thuộc T07.
+  Chuyến thuộc về tàu và được thêm ở trang đó (quyết định D9,
+  `docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`), nên task này không đụng tới chuyến.
+- Thêm toa: không làm. Mọi tàu dùng một cấu hình toa cố định trong code (ADR 0009), nên task
+  T08 đã bỏ.
 
 ## 3. Dữ liệu dùng tới
 
 ```
 trains
   id    BIGINT PK
-  code  VARCHAR(10)  NOT NULL, UNIQUE (uk_trains_code)   ví dụ SE19
-  name  VARCHAR(100) NOT NULL                            ví dụ Hà Nội - Đà Nẵng
+  code  VARCHAR(10)  NOT NULL, UNIQUE (uk_trains_code)   ví dụ SE1
+  name  VARCHAR(100) NOT NULL                            ví dụ Thống Nhất 1
 
-trains 1 ──< coaches (coaches.train_id)
 trains 1 ──< trips   (trips.train_id)
 ```
 
-Đọc sơ đồ: mỗi tàu có một mã (`code`) không trùng và một tên. Một tàu có nhiều toa
-(`coaches`) và chạy nhiều chuyến (`trips`). Ký hiệu `1 ──<` nghĩa là "một ... có nhiều ...".
+Đọc sơ đồ: mỗi tàu có một mã (`code`) không trùng và một tên. Một tàu chạy nhiều chuyến
+(`trips`). Ký hiệu `1 ──<` nghĩa là "một ... có nhiều ...".
 
-Dữ liệu mẫu có sẵn 8 tàu, mỗi tàu 4 toa, tổng 96 chỗ.
+Tàu không gắn với tuyến nào: tàu nào cũng chạy được tuyến nào, tuyến của từng chuyến mới là
+thứ quyết định tàu chạy từ đâu tới đâu (D9). Vì vậy tên tàu không phải tên tuyến.
+
+Dữ liệu mẫu có sẵn 3 tàu: `SE1`, `SE2`, `SE3` (tên Thống Nhất 1, 2, 3). Chỉ SE1 có chuyến.
+Không có bảng toa hay ghế: mọi tàu dùng chung một cấu hình toa cố định trong code (4 toa, 96
+chỗ), xem `docs/decisions/0009-bo-bang-toa-va-ghe.md`.
 
 ## 4. Các bước làm
 
@@ -82,16 +90,14 @@ Tạo class mới `model/request/TrainRequest`, chứa dữ liệu của form th
 Thêm method `static TrainRequest from(Train train)` để điền sẵn form khi sửa. Mỗi luật nhớ
 kèm thông báo tiếng Việt, ví dụ `@NotBlank(message = "Vui lòng nhập mã tàu.")`.
 
-Danh sách tàu cần một dòng hiển thị có cả id (để làm nút sửa, nút xem chi tiết), mã, tên,
-số toa, số chỗ. Class tạm `model/response/AdminTrain` hiện chưa có id. Theo ADR 0006, các
+Danh sách tàu cần một dòng hiển thị có cả id (để làm nút sửa, nút xem chi tiết), mã và tên.
+Class tạm `model/response/AdminTrain` hiện chưa có id. Theo ADR 0006, các
 class `Admin*` biến mất khi màn hình có controller riêng, nên hãy tạo response của task
 (ví dụ `model/response/TrainRow`) có thêm `id`, rồi xóa `AdminTrain`.
 
 ### Bước 2. Repository: thêm câu truy vấn
 
-`repository/TrainRepository` **đã có** `findAllByOrderByCodeAsc()`, và
-`repository/CoachRepository` **đã có** `summarizeByTrain()` (đếm số toa, số chỗ của mọi tàu
-trong một lần, trả về `model/dto/TrainCapacity`). Dùng lại cả hai cho danh sách.
+`repository/TrainRepository` **đã có** `findAllByOrderByCodeAsc()`. Dùng lại nó cho danh sách.
 
 Thêm vào `repository/TrainRepository` hai method kiểm tra mã trùng:
 
@@ -142,13 +148,14 @@ Chép từ `StationAdminController` ba chi tiết:
 - Bắt `DuplicateTrainCodeException | DataIntegrityViolationException` rồi gắn lỗi vào ô
   `code`, để người dùng thấy "Mã tàu đã tồn tại" ngay dưới ô nhập.
 
-Không khai `GET /admin/trains/{id}`: đường dẫn đó là trang chi tiết của T06.
+Không khai `GET /admin/trains/{id}`: đường dẫn đó là trang chi tiết của T06. Các đường dẫn
+`/admin/trains/{trainId}/trips/...` (form thêm chuyến) là của T07.
 
 ### Bước 5. Giao diện
 
 - `templates/admin/trains.html`: bỏ `disabled` ở các nút. Nút "Thêm tàu" trỏ tới
-  `/admin/trains/new`. Mỗi dòng có nút xem chi tiết (trỏ tới `/admin/trains/{id}` của T06)
-  và nút sửa. Giữ bốn cột Mã tàu, Tên tàu, Số toa, Số chỗ như hiện tại.
+  `/admin/trains/new`. Mỗi dòng có nút xem chi tiết (trỏ tới `/admin/trains/{id}` của T06,
+  nơi T07 thêm Lịch chạy) và nút sửa. Giữ hai cột Mã tàu, Tên tàu như hiện tại.
 - `templates/admin/train-form.html`: chép `station-form.html`, chỉ giữ hai ô `code` và
   `name`.
 
@@ -157,15 +164,15 @@ Không khai `GET /admin/trains/{id}`: đường dẫn đó là trang chi tiết 
 Sau khi `TrainAdminController` chạy được:
 
 - `controller/AdminController`: xóa handler `trains`.
-- `service/AdminService`: xóa `trains()`, và bỏ `TrainRepository`, `CoachRepository` khỏi
-  constructor nếu không còn chỗ nào dùng.
+- `service/AdminService`: xóa `trains()`, và bỏ `TrainRepository` khỏi constructor nếu không
+  còn chỗ nào dùng.
 - Xóa `model/response/AdminTrain.java`.
 
 Trang tổng quan (dashboard) không dùng danh sách tàu, nên xóa không ảnh hưởng gì.
 
 ## 5. Luật và lỗi phải xử lý
 
-- Mã tàu gõ chữ thường như `se1` được lưu thành `SE1`.
+- Mã tàu gõ chữ thường như `se4` được lưu thành `SE4`.
 - Mã đã có thì báo lỗi ngay dưới ô mã, không lưu.
 - Tàu không tồn tại (người dùng tự sửa số trên đường dẫn) thì trả trang 404.
 
@@ -173,10 +180,12 @@ Trang tổng quan (dashboard) không dùng danh sách tàu, nên xóa không ả
 
 Chạy ứng dụng (`.\mvnw.cmd spring-boot:run`), đăng nhập admin, rồi thử lần lượt:
 
-1. Mở `/admin/trains`: thấy 8 tàu mẫu, mỗi tàu 4 toa, 96 chỗ, như trước khi làm task.
-2. Thêm tàu mã `se1`, tên bất kỳ: lưu thành `SE1`, thấy thông báo "Đã thêm ...".
-3. Thêm lại mã `SE1` (hoặc `se1`): form hiện lại, lỗi "Mã tàu đã tồn tại" ngay dưới ô mã.
-4. Sửa tên tàu `SE1`, giữ nguyên mã: lưu được, không bị báo trùng với chính nó.
+1. Mở `/admin/trains`: thấy 3 tàu mẫu `SE1`, `SE2`, `SE3` (mã và tên), như trước khi làm
+   task.
+2. Thêm tàu mã `se4`, tên `Thống Nhất 4`: lưu thành `SE4`, thấy thông báo "Đã thêm ...".
+3. Thêm lại mã `SE4` (hoặc `se4`), rồi thử mã `se1` của dữ liệu mẫu: cả hai lần form hiện
+   lại, lỗi "Mã tàu đã tồn tại" ngay dưới ô mã.
+4. Sửa tên tàu `SE4`, giữ nguyên mã: lưu được, không bị báo trùng với chính nó.
 5. Sau khi lưu, bấm F5: trình duyệt không gửi lại form.
 6. Gõ `/admin/trains/999999/edit`: trang 404.
 
@@ -191,9 +200,9 @@ Chạy ứng dụng (`.\mvnw.cmd spring-boot:run`), đăng nhập admin, rồi t
 
 ## 8. Kiểm tra trước khi báo xong
 
-- [ ] Thêm tàu `se1` thì hiện thành `SE1`; thêm lại `SE1` thì bị báo trùng.
+- [ ] Thêm tàu `se4` thì hiện thành `SE4`; thêm lại `SE4` hay `se1` thì bị báo trùng.
 - [ ] Sửa tên tàu, thấy thông báo "Đã cập nhật ..."; bấm F5 không gửi lại form.
-- [ ] Danh sách vẫn hiện đúng số toa, số chỗ của mỗi tàu.
+- [ ] Danh sách vẫn hiện đủ 3 tàu mẫu với đúng mã và tên.
 - [ ] Sidebar sáng mục "Quản lý tàu" ở cả trang danh sách lẫn trang form.
 - [ ] `AdminController` không còn handler `trains`, `AdminService` không còn `trains()`.
 - [ ] `.\mvnw.cmd compile` chạy không lỗi và ứng dụng khởi động được
