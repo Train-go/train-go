@@ -147,12 +147,23 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 - Review: không còn finding; đối chiếu caller, chữ ký constructor, enum VARCHAR và phạm vi migration. `git diff --check` đạt.
 - Bằng chứng và backup chỉ ở máy local, ngoài Git: `C:/Users/mrcaf/AppData/Local/Temp/traingo-issue19-proof/` chứa `before.sql`, snapshot trước/sau, `app-run.log`, `browser-results.json`, ảnh và `layout-result.txt`. Backup có dữ liệu riêng tư; không commit. File tạm có thể được hệ điều hành dọn.
 - Phục hồi: database máy này đã ở V6; không chạy lại code cũ ánh xạ hai cột vừa bỏ. Nếu cần phục hồi dữ liệu đã bỏ, dùng backup ngoài repo sau khi cân nhắc dữ liệu phát sinh; không reset DB hoặc sửa lịch sử Flyway.
-- Commit triển khai: tra `git log feat/data-v6-coach-layout --oneline` (commit `feat(data): simplify ticket identity and add fixed coach layout`). Chưa push/PR/review từ thành viên khác; GitHub issue còn mở. Không coi kiểm chứng local là đã merge.
+- Commit triển khai: `94b5bf990db7744e694c3c1c40f59a8a5522fd20` (`feat(data): simplify ticket identity and add fixed coach layout`). Chưa push/PR/review từ thành viên khác; GitHub issue còn mở. Không coi kiểm chứng local là đã merge.
 - Tiếp theo: #22 có thể bắt đầu phần server; UI cần #20/#21. Khi chuyển branch, mang hồ sơ mới nhất sang và đọc lại issue. Vì DB local đã V6, branch chạy ứng dụng phải chứa thay đổi #19 tương ứng; không chạy entity cũ trên schema V6.
 
 ## Tiếp tục session sau
 
-Đưa câu này cho agent: “Đọc `docs/plans/active/tien-do-ticket-ca-nhan.md`, kiểm tra commit hồ sơ mới nhất trên các branch, cập nhật issue/assignee/dependency rồi tiếp tục ticket đầu tiên đủ điều kiện. Dùng MySQL Server theo application.properties, không Docker. Mỗi issue một branch, kiểm chứng rồi commit.”
+Người dùng yêu cầu kết thúc phiên hiện tại và thực hiện **#22 — Đăng nhập, phân quyền, đăng xuất** trong session mới. Chưa bắt đầu sửa code #22.
+
+Đưa câu này cho agent: “Tiếp tục issue #22 cho thanhphong97. Đọc README.md, AGENTS.md, docs/WORKFLOW.md và docs/plans/active/tien-do-ticket-ca-nhan.md bản mới nhất trên feat/data-v6-coach-layout trước khi chuyển branch. Dùng branch feat/auth-login, MySQL Server theo application.properties, không Docker. Đọc lại issue #22 và dependency #20/#21, giữ code #19 để tương thích DB V6 local. Sau kiểm chứng, cập nhật docs liên quan, file tiến độ và docs/WORKLOG.md cùng commit. Không push/merge khi chưa được yêu cầu.”
+
+Checklist đầu session #22:
+
+1. Kiểm tra working tree và Git history trên mọi branch; đọc hồ sơ mới nhất trước khi checkout. `feat/auth-login` đã tạo nhưng còn ở baseline `a138d97`, chưa chứa #19 hoặc hồ sơ mới.
+2. Đọc trực tiếp issue #22, bình luận và tình trạng #20/#21. Phần server có thể bắt đầu; UI chỉ tích hợp khi khung dùng chung đã sẵn sàng, ghi blocker thật nếu chưa có, không tự nhận phần việc người khác.
+3. Đồng bộ nền code tương thích V6 vào branch riêng một cách không phá lịch sử. #19 chưa merge main: nếu phát triển #22 dựa trên branch #19 thì ghi rõ dependency branch và phần diff riêng của #22; không gọi #19 là đã merge, không reset/cherry-pick mù hoặc sửa database lùi về V5.
+4. Triển khai đúng AC của #22; không làm đăng ký/số điện thoại thuộc #23. Kiểm tra role cả trang/API, saved request, BCrypt, lỗi đăng nhập, navbar và CSRF logout.
+5. Compile, chạy với MySQL Server và thử tay cả ba trạng thái chưa đăng nhập/CUSTOMER/ADMIN. Không thêm test tự động theo ADR 0007. Ghi riêng phần đã làm, đã compile, đã chạy và đã thử tay; không đánh dấu xong toàn issue khi UI còn chờ.
+6. Cập nhật `docs/product/auth.md` khi hành vi auth thay đổi, `docs/RUNBOOK.md` khi cách đăng nhập/chạy thay đổi, hồ sơ tiến độ và một dòng `docs/WORKLOG.md` cho task. Tài liệu và code trong cùng commit, review/kiểm chứng trước commit trên `feat/auth-login`.
 
 Lần tiếp theo: vào đúng git root `D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go`, đọc README/AGENTS/WORKFLOW và hồ sơ mới nhất trên `feat/data-v6-coach-layout`; giữ thay đổi người khác; dùng `thanhphong97`, truy vấn lại issue/PR và dependency. #19 đã kiểm chứng local, chưa PR; ưu tiên tiếp #22 phần server trên branch riêng, với code #19 để tương thích schema V6 local.
 
