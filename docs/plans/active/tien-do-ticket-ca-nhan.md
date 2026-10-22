@@ -5,7 +5,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `main`, commit `a138d97`.
 ## Trạng thái và nguồn
 
 - Đã đọc issue trực tiếp bằng GitHub REST API: `thanhphong97` được assign 7 issue mở trong bảng bên dưới.
-- Connector dùng `thanhphong97`; CLI dùng `phong-vht` và tài khoản CLI không có issue được assign trong repo. **Chờ người dùng xác nhận username**; danh sách hiện là ứng viên theo tài khoản connector, chưa khẳng định là tài khoản người dùng.
+- Người dùng xác nhận ngày 23/10/2026: dùng `thanhphong97` cho TrainGo; `phong-vht` chỉ dùng cho thư mục work. Danh sách 7 issue bên dưới đúng tài khoản cần theo dõi. Connector dùng đúng `thanhphong97`; CLI hiện dùng `phong-vht`, không lấy danh tính CLI làm assignee cho dự án này.
 - Project: https://github.com/orgs/Train-go/projects/1. Chưa đọc được board riêng tư vì CLI thiếu scope `read:project`; không suy diễn cột trạng thái từ trạng thái issue.
 - Đã đọc `README.md`, `AGENTS.md`, `docs/WORKFLOW.md`, các plan active và bản chia issue trong `docs/session/plan-task-chi-tiet.md`. Issue #19–#42 thay thế task cũ #4–#16; không triển khai lại task cũ.
 - Đây là file theo dõi duy nhất cho các phiên cá nhân; issue là nguồn AC, board là nguồn trạng thái nhóm. Không chép nguyên các hướng dẫn sang nhiều nơi.
@@ -13,6 +13,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `main`, commit `a138d97`.
 
 ## Quyết định của người dùng
 
+- GitHub cho TrainGo: `thanhphong97`. `phong-vht` dành cho thư mục work. Khi dùng CLI/API phải kiểm tra tài khoản thực thi; không tự đổi tài khoản toàn cục ảnh hưởng thư mục work.
 - Dùng **MySQL Server**, không dùng Docker để chạy hoặc kiểm chứng.
 - Mỗi issue một branch riêng; hoàn thành phần việc đã kiểm chứng thì commit. Commit code và dòng `docs/WORKLOG.md` tương ứng cùng nhau. Chưa có yêu cầu push hoặc merge.
 - Lưu tiến độ vào file để session tiếp theo đọc và tiếp tục.
@@ -127,21 +128,20 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 
 - [x] Đọc repo và issue; xác định danh sách 7 ticket của connector và các dependency.
 - [x] Kiểm tra properties, service MySQL80 và TCP 3306.
-- [ ] Xác nhận username người dùng.
+- [x] Người dùng xác nhận `thanhphong97` cho TrainGo; `phong-vht` chỉ dùng cho thư mục work (23/10/2026).
 - [ ] Đọc cột Project khi có quyền `read:project`; issue state không thay thế trạng thái board.
 - [x] Tạo branch `plan/assigned-issues-progress`; hồ sơ nằm trong commit checkpoint trên branch này, tra hash bằng Git history sau khi commit.
-- [x] Tạo đủ 7 branch issue trong bảng ở local, cùng xuất phát từ `a138d97`; chưa có code hoặc dependency mới trên các branch này. Mang commit hồ sơ mới nhất và dependency cần thiết sang trước khi bắt đầu; kiểm tra danh tính trước khi triển khai.
-- [ ] Bắt đầu #19 sau khi xác nhận phạm vi tài khoản; chưa có issue nào được triển khai trong phiên này.
+- [x] Tạo đủ 7 branch issue trong bảng ở local, cùng xuất phát từ `a138d97`; chưa có code hoặc dependency mới trên các branch này. Mang commit hồ sơ mới nhất và dependency cần thiết sang trước khi bắt đầu.
+- [ ] Bắt đầu #19 sau khi cập nhật lại issue và dependency; danh tính đã xác nhận, chưa có issue nào được triển khai trong phiên này.
 
 ## Tiếp tục session sau
 
 Đưa câu này cho agent: “Đọc `docs/plans/active/tien-do-ticket-ca-nhan.md`, kiểm tra commit hồ sơ mới nhất trên các branch, cập nhật issue/assignee/dependency rồi tiếp tục ticket đầu tiên đủ điều kiện. Dùng MySQL Server theo application.properties, không Docker. Mỗi issue một branch, kiểm chứng rồi commit.”
 
-Lần tiếp theo: vào đúng git root `D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go`, đọc README/AGENTS/WORKFLOW và hồ sơ; giữ thay đổi người khác; xác nhận username còn thiếu; truy vấn lại issue; kiểm tra runtime rồi làm #19 nếu vẫn được giao và chưa có người triển khai.
+Lần tiếp theo: vào đúng git root `D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go`, đọc README/AGENTS/WORKFLOW và hồ sơ; giữ thay đổi người khác; dùng `thanhphong97` cho dự án này, truy vấn lại issue; kiểm tra runtime rồi làm #19 nếu vẫn được giao và chưa có người triển khai.
 
 ## Giới hạn và câu hỏi còn mở
 
-- Username chưa xác nhận: `thanhphong97` hay tài khoản khác? CLI `phong-vht` không có assignment.
 - Token thiếu `read:project`. Để đọc board bằng CLI, chủ tài khoản có thể chạy `gh auth refresh -s read:project` và hoàn tất xác thực; phiên này chưa thay quyền đăng nhập.
 - `ck` và `npm` không tìm thấy trên PATH. Chưa tạo scaffold plan/phase bằng `ck plan create`; không giả lập trạng thái CLI. File này là hồ sơ tiến độ người dùng yêu cầu theo workflow repo.
 - Không có công cụ CBM list_projects trong session; chưa kiểm tra hoặc tạo index. Chỉ đối chiếu file và Git trực tiếp.
