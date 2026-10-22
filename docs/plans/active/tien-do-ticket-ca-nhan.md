@@ -1,6 +1,6 @@
 # Tiến độ ticket cá nhân và bàn giao phiên
 
-Ngày cập nhật: 2026-10-23. Baseline: `main`, commit `a138d97`. Branch đang làm: `feat/data-v6-coach-layout`.
+Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fetch. Branch đang làm: `feat/auth-login`; nền trước thay đổi #22 là `803752a`, chứa #19 chưa merge.
 
 ## Trạng thái và nguồn
 
@@ -9,7 +9,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `main`, commit `a138d97`. Branch đang
 - Project: https://github.com/orgs/Train-go/projects/1. Chưa đọc được board riêng tư vì CLI thiếu scope `read:project`; không suy diễn cột trạng thái từ trạng thái issue.
 - Đã đọc `README.md`, `AGENTS.md`, `docs/WORKFLOW.md`, các plan active và bản chia issue trong `docs/session/plan-task-chi-tiet.md`. Issue #19–#42 thay thế task cũ #4–#16; không triển khai lại task cũ.
 - Đây là file theo dõi duy nhất cho các phiên cá nhân; issue là nguồn AC, board là nguồn trạng thái nhóm. Không chép nguyên các hướng dẫn sang nhiều nơi.
-- #19 đã triển khai và kiểm chứng local trong phiên này; commit riêng trên branch issue tra bằng Git history bên dưới. Chưa push, mở PR hoặc đóng issue; các ticket khác chưa triển khai.
+- #19 đã triển khai và kiểm chứng local; xem checkpoint lịch sử. #22 đang triển khai phần server trên branch riêng, UI chờ #20/#21. Chưa push, mở PR hoặc đóng issue; các ticket còn lại chưa triển khai.
 
 ## Quyết định của người dùng
 
@@ -42,7 +42,7 @@ Trạng thái thực hiện bên dưới là hồ sơ phiên, **không phải c�
 | Issue | Phạm vi | Branch theo issue | Phụ thuộc / khả năng bắt đầu | Tiến độ |
 | --- | --- | --- | --- | --- |
 | [#19](https://github.com/Train-go/train-go/issues/19) | Nền dữ liệu V6, một giá, CoachLayout | `feat/data-v6-coach-layout` | Không có | Đã kiểm chứng local; chưa PR |
-| [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-login` | Server làm ngay; UI chờ #20, #21 | Chưa làm |
+| [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-login` | Server đã triển khai; UI chờ #20, #21 | Server kiểm chứng local; toàn issue chưa xong |
 | [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-register` | #19 và #22; exception dùng quy ước #21 | Chờ phụ thuộc |
 | [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | Server làm ngay; UI chờ #20, #21 | Chưa làm |
 | [#27](https://github.com/Train-go/train-go/issues/27) | Sơ đồ dọc Ga và tuyến | `feat/station-network-map` | #20, #21, #24 | Chờ phụ thuộc |
@@ -68,9 +68,9 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 
 ### #22 — đăng nhập
 
-- `common/config/SecurityConfig.java` hiện dùng form login mặc định; `/admin/**` mới yêu cầu authenticated, chưa kiểm tra role ADMIN.
-- Sửa `repository/UserRepository.java`; thêm UserDetails/UserDetailsService, BCrypt encoder, success handler theo role, `CurrentUserModelAdvice`, `AuthController` và trang login.
-- Gỡ ba cấu hình `spring.security.user.*`; phân quyền cả trang và API, giữ CSRF cho POST logout; API chưa đăng nhập trả 401 thay vì HTML redirect.
+- Đã nối `users`/BCrypt, email không phân biệt hoa/thường; phân quyền ADMIN và CUSTOMER cho các nhóm trang, ADMIN cho API quản trị. API bị chặn trả JSON 401/403; CSRF vẫn bật.
+- Đã sửa `repository/UserRepository.java`, thêm `TrainGoUserDetails`/service, encoder, success handler theo role và `CurrentUserModelAdvice`. Giữ login sinh tự động với trường `email`; `AuthController`/trang riêng và tích hợp shell chờ #20/#21.
+- Gỡ ba cấu hình `spring.security.user.*`; phân quyền cả trang và API, giữ CSRF cho POST logout; GET API chưa đăng nhập trả 401 JSON thay vì HTML redirect. POST thiếu CSRF có thể bị 403 trước kiểm tra đăng nhập.
 - Chấp nhận: email khác hoa thường đăng nhập được; sai email/mật khẩu cùng câu lỗi; khách không vào admin, admin không vào trang dành CUSTOMER; saved request quay về đúng trang; logout ở cả hai khu.
 
 ### #23 — đăng ký
@@ -150,22 +150,65 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 - Commit triển khai: `94b5bf990db7744e694c3c1c40f59a8a5522fd20` (`feat(data): simplify ticket identity and add fixed coach layout`). Chưa push/PR/review từ thành viên khác; GitHub issue còn mở. Không coi kiểm chứng local là đã merge.
 - Tiếp theo: #22 có thể bắt đầu phần server; UI cần #20/#21. Khi chuyển branch, mang hồ sơ mới nhất sang và đọc lại issue. Vì DB local đã V6, branch chạy ứng dụng phải chứa thay đổi #19 tương ứng; không chạy entity cũ trên schema V6.
 
+## Checkpoint #22 — 23/10/2026, phần server
+
+- [x] Kiểm tra branch và fetch: `origin/main` vẫn `a138d97`; fast-forward `feat/auth-login` từ `a138d97` lên `803752a` để nhận hồ sơ mới nhất và code #19 (`94b5bf9`) tương thích schema V6 local. #19 chưa merge; diff #22 cần xét từ nền `803752a`, không coi mọi thay đổi so main là của #22.
+- [x] Đọc lại issue/dependency: #22 còn mở, assign `thanhphong97`; #20/#21 còn mở, assign `VoAnhPhi`, chưa có remote branch tương ứng. Không nhận phần việc shell của người khác.
+- [x] Triển khai repository ignore-case, principal/service đọc `users`, BCrypt, role trang/API, JSON 401/403 `{message, fields: {}}`, `currentUser`, success handler và gỡ tài khoản tạm.
+- [x] Compile cuối PASS 48 source Java lúc 01:57:58, sau review. Ứng dụng khởi động bằng Maven trên MySQL80 8.0.46, Flyway V6/Hibernate validate qua; log `Started TrainGoApplication` sau 7,582 giây (PID 1192 của phiên); reload sau sửa đạt 1,561/0,904 giây.
+- [x] Thử trình duyệt lượt sạch 53/53 PASS: tài khoản seed và email khác hoa/thường; email không tồn tại/mật khẩu sai cùng lỗi chung, `admin`/`admin` thất bại; role trang/API và JSON tiếng Việt 401/403 đúng hợp đồng.
+- [x] Saved request `/my-trips?tab=upcoming` giữ nguyên URL sau login CUSTOMER và không bị GET API khách trả 401 ghi đè; ADMIN luôn về `/admin/trains`. Trang My Trips chưa có nên 404 sau redirect không phải bằng chứng hoàn thành trang.
+- [x] Logout thiếu CSRF trả 403 và vẫn giữ đăng nhập; logout hợp lệ ở hai role về `/`, session không còn quyền truy cập trang bảo vệ. Chưa thay thế thử logout qua cả hai UI sau khi tích hợp shell.
+- [x] Sáu lượt trang/viewport cho home, login, admin ở 1440px/390px không tràn ngang hoặc pageerror. Probe Java tạm đọc hai user thật từ MySQL: principal/advice PASS id, họ tên, email, role, authority; khách có `currentUser=null`.
+- [x] Review phần server không finding; `git diff --check` đạt; docs và một dòng WORKLOG đi cùng code. Không thêm migration, thư mục test hoặc dependency test.
+- [x] Dừng đúng instance TrainGo PID 1192 sau khi xác minh command line; cổng 8080 đã trả lại, MySQL80 vẫn Running.
+
+Commit chứa checkpoint này có tiêu đề `feat(auth): implement database login and role authorization`;
+tra hash bằng `git log -1 --format=%H --grep="feat(auth): implement database login and role authorization" feat/auth-login`.
+Danh tính commit dùng `thanhphong97` với email GitHub noreply theo profile đã xác minh,
+chỉ áp dụng cho lệnh commit, không đổi Git/CLI toàn cục. Chưa push/PR/merge;
+toàn issue #22 vẫn chưa hoàn thành.
+
+Bằng chứng local ngoài Git: `C:/Users/mrcaf/AppData/Local/Temp/traingo-issue22-proof/`
+chứa `results.json`, ảnh và kết quả kiểm chứng. File tạm có thể được hệ điều hành
+dọn; không commit dữ liệu riêng tư hoặc cấu hình database. Không thêm test tự
+động, thư mục `app/src/test` hoặc dependency test.
+
+Quyết định kỹ thuật trong phạm vi server: giữ login mặc định để có luồng đăng nhập
+hoạt động trong khi chưa có shell, không khai `loginPage` khi chưa có controller
+và template. Principal giữ dữ liệu cần cho template, tách khỏi persistence context.
+Request cache chỉ lưu GET không phải API để polling không thay đích quay lại;
+CUSTOMER giữ đúng URL/query gốc, không thêm tham số `continue`; ADMIN bỏ cache và
+luôn về `/admin/trains`. CSRF giữ nguyên cho thao tác ghi/logout.
+
+Giới hạn: lỗi tiếng Việt, giữ email khi sai, nút ẩn/hiện mật khẩu, redirect người
+đã đăng nhập khỏi trang login, navbar khách và sidebar admin còn chờ #20/#21.
+Header admin cũ vẫn tên cố định và form logout. Quy tắc public không tạo endpoint:
+404 ở `/register`, `/trips` hoặc `/my-trips` chưa triển khai không chứng minh trang
+đã hoàn thành. Saved redirect về My Trips chỉ chứng minh chuyển URL. Không làm
+đăng ký/phone (#23) hoặc ownership booking trong checkpoint này.
+
 ## Tiếp tục session sau
 
-Người dùng yêu cầu kết thúc phiên hiện tại và thực hiện **#22 — Đăng nhập, phân quyền, đăng xuất** trong session mới. Chưa bắt đầu sửa code #22.
+Tiếp tục **#22 — Đăng nhập, phân quyền, đăng xuất** trên `feat/auth-login` với
+phần server hiện có; UI phụ thuộc #20/#21. Đây là hồ sơ bền vững duy nhất; không
+tạo phase plan, journal hoặc trạng thái Harness song song.
 
-Đưa câu này cho agent: “Tiếp tục issue #22 cho thanhphong97. Đọc README.md, AGENTS.md, docs/WORKFLOW.md và docs/plans/active/tien-do-ticket-ca-nhan.md bản mới nhất trên feat/data-v6-coach-layout trước khi chuyển branch. Dùng branch feat/auth-login, MySQL Server theo application.properties, không Docker. Đọc lại issue #22 và dependency #20/#21, giữ code #19 để tương thích DB V6 local. Sau kiểm chứng, cập nhật docs liên quan, file tiến độ và docs/WORKLOG.md cùng commit. Không push/merge khi chưa được yêu cầu.”
+Đưa câu này cho agent: “Tiếp tục issue #22 cho thanhphong97. Vào đúng git root
+D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go, đọc README.md,
+AGENTS.md, docs/WORKFLOW.md và hồ sơ mới nhất trên feat/auth-login. Dùng MySQL
+Server theo application.properties, không Docker. Đọc lại #22 và dependency
+#20/#21; giữ code #19 để tương thích DB V6 local. Server đã triển khai, xem bằng
+chứng và phần UI còn thiếu trong checkpoint. Sau kiểm chứng cập nhật tài liệu,
+hồ sơ và docs/WORKLOG.md cùng commit. Không push/merge khi chưa được yêu cầu.”
 
-Checklist đầu session #22:
+Checklist nối phiên:
 
-1. Kiểm tra working tree và Git history trên mọi branch; đọc hồ sơ mới nhất trước khi checkout. `feat/auth-login` đã tạo nhưng còn ở baseline `a138d97`, chưa chứa #19 hoặc hồ sơ mới.
-2. Đọc trực tiếp issue #22, bình luận và tình trạng #20/#21. Phần server có thể bắt đầu; UI chỉ tích hợp khi khung dùng chung đã sẵn sàng, ghi blocker thật nếu chưa có, không tự nhận phần việc người khác.
-3. Đồng bộ nền code tương thích V6 vào branch riêng một cách không phá lịch sử. #19 chưa merge main: nếu phát triển #22 dựa trên branch #19 thì ghi rõ dependency branch và phần diff riêng của #22; không gọi #19 là đã merge, không reset/cherry-pick mù hoặc sửa database lùi về V5.
-4. Triển khai đúng AC của #22; không làm đăng ký/số điện thoại thuộc #23. Kiểm tra role cả trang/API, saved request, BCrypt, lỗi đăng nhập, navbar và CSRF logout.
-5. Compile, chạy với MySQL Server và thử tay cả ba trạng thái chưa đăng nhập/CUSTOMER/ADMIN. Không thêm test tự động theo ADR 0007. Ghi riêng phần đã làm, đã compile, đã chạy và đã thử tay; không đánh dấu xong toàn issue khi UI còn chờ.
-6. Cập nhật `docs/product/auth.md` khi hành vi auth thay đổi, `docs/RUNBOOK.md` khi cách đăng nhập/chạy thay đổi, hồ sơ tiến độ và một dòng `docs/WORKLOG.md` cho task. Tài liệu và code trong cùng commit, review/kiểm chứng trước commit trên `feat/auth-login`.
-
-Lần tiếp theo: vào đúng git root `D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go`, đọc README/AGENTS/WORKFLOW và hồ sơ mới nhất trên `feat/data-v6-coach-layout`; giữ thay đổi người khác; dùng `thanhphong97`, truy vấn lại issue/PR và dependency. #19 đã kiểm chứng local, chưa PR; ưu tiên tiếp #22 phần server trên branch riêng, với code #19 để tương thích schema V6 local.
+1. Kiểm tra working tree, HEAD và lịch sử hồ sơ trước khi sửa; giữ thay đổi người khác. Không fast-forward lại theo baseline cũ hoặc lùi schema.
+2. Kiểm tra lại assignee, issue/PR và #20/#21. Chỉ tích hợp UI khi khung đã có; nếu chưa, ghi blocker thật. #19 vẫn là dependency branch chưa merge, đọc lại remote trước khi mở PR.
+3. Khi shell sẵn sàng, thêm login riêng và hành vi UI theo AC #22, dùng `currentUser` ở navbar/sidebar; không làm đăng ký/phone hoặc nghiệp vụ ownership thuộc ticket sau.
+4. Compile, chạy MySQL Server, thử khách/CUSTOMER/ADMIN, saved request, API, lỗi đăng nhập, CSRF/logout; UI 1440px và 390px, bàn phím. Không thêm test tự động theo ADR 0007.
+5. Cập nhật ba tài liệu auth/RUNBOOK/hồ sơ và một dòng WORKLOG cùng commit trên branch issue. Chỉ đánh dấu hoàn thành toàn #22 khi cả server và UI có đủ bằng chứng; không dùng `Closes #22` cho checkpoint một phần.
 
 ## Giới hạn và câu hỏi còn mở
 
