@@ -57,7 +57,9 @@ booking chưa thanh toán.
 
 ## Thông tin hành khách
 
-Mỗi hành khách gồm họ tên, ngày sinh, CCCD hoặc passport, và chỗ được gán.
+Mỗi hành khách chỉ nhập họ tên (`fullName`) và số CCCD (`identityNumber`),
+đồng thời gắn với một chỗ đã chọn. Họ tên được điền sẵn từ tài khoản đang đăng nhập
+và cho phép sửa để đặt cho người khác. Không thu thập ngày sinh.
 
 Số hành khách phải bằng số chỗ đã chọn. Mỗi hành khách gán đúng một chỗ.
 
@@ -68,6 +70,11 @@ toa trong một lần.
 
 Phiên bản đầu không có giá theo người lớn / trẻ em, người cao tuổi, sinh viên,
 không có chính sách giảm giá.
+
+Giá mỗi ghế hoặc giường đều bằng `Trip.basePrice`, không có phụ thu theo toa.
+Khi thanh toán, lưu giá này vào `Ticket.ticketPrice` và cộng các vé thành
+`Booking.totalPrice`. Giá vé và tổng tiền booking cũ giữ nguyên khi giá chuyến
+thay đổi hoặc khi áp migration V6.
 
 ## Review trước khi trả tiền
 
@@ -114,7 +121,7 @@ Cách tạo mã (D5, chốt 12/10/2026), giống dữ liệu mẫu:
 
 QR code và xuất PDF là tính năng optional, làm sau khi MVP ổn định, theo thứ tự
 ưu tiên: vé trên web → QR code → PDF. Nếu làm QR, mã chỉ chứa `ticketCode` hoặc
-`ticketId`, tuyệt đối không chứa CCCD, passport, thông tin thanh toán hay toàn bộ
+`ticketId`, tuyệt đối không chứa CCCD, thông tin thanh toán hay toàn bộ
 thông tin cá nhân.
 
 ## My Trips

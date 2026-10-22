@@ -4,7 +4,7 @@ Nguồn gốc: `SPEC.md` mục 9–23 và 42. Tài liệu này mô tả entity, 
 thái và ràng buộc mà code phải tuân theo.
 
 Schema thật nằm trong `app/src/main/resources/db/migration/` (V1 tạo bảng, V4
-đơn giản hóa xuống 8 bảng, V5 thêm lý trình ga và giờ chuyến kiểu ngày-giờ) và được
+đơn giản hóa xuống 8 bảng, V5 thêm lý trình ga và giờ chuyến kiểu ngày-giờ, V6 bỏ ngày sinh hành khách và phụ thu chỗ) và được
 Flyway tạo khi ứng dụng khởi động
 (`docs/decisions/0005-quan-ly-schema-bang-flyway.md`). Tài liệu này giải thích ý
 nghĩa; khi tên cột hay ràng buộc cụ thể khác nhau, file migration là bản đúng.
@@ -31,7 +31,7 @@ Station <- Route -> Station         (ga đi, ga đến; không có ga trung gian
 
 Train                            (chỉ có mã và tên; cấu hình toa cố định nằm trong code)
  └── Trip                        (một lần chạy của tàu trên một Route; các chuyến của một tàu nối chặng)
- └── TripSeat                        (một chỗ của chuyến: giữ luôn số toa, mã chỗ, giá phụ thu và trạng thái)
+ └── TripSeat                        (một chỗ của chuyến: giữ luôn số toa, mã chỗ và trạng thái)
 
 User
  └── Booking
@@ -124,19 +124,19 @@ Tàu không gắn với tuyến nào: tàu nào cũng chạy được tuyến n�
 nào cũng được, miễn là trước chuyến. Dữ liệu mẫu có 3 tàu `SE1`, `SE2`, `SE3`.
 
 Database không có bảng toa hay ghế. Mọi tàu dùng chung **một cấu hình toa cố định**
-viết trong code (`model/dto/CoachLayout`, task T06). Cấu hình có 4 toa, 96 chỗ:
+bất biến trong code (`model/dto/CoachLayout`). Cấu hình có 4 toa, 96 chỗ:
 
-| Toa | Loại (`coachType`) | Số chỗ | Mã chỗ | Cabin | `priceModifier` |
-| --- | --- | --- | --- | --- | --- |
-| 1, 2 | `SEAT` | 32 | `A01` đến `A32` | không có | 0 |
-| 3, 4 | `SLEEPER` | 16 | `B01` đến `B16` | (số thứ tự - 1) / 4 + 1, tức `B01`-`B04` là cabin 1 | 200.000 |
+| Toa | Loại (`coachType`) | Số chỗ mỗi toa | Mã chỗ | Cabin |
+| --- | --- | --- | --- | --- |
+| 1, 2 | `SEAT` | 32 | `A01` đến `A32` | không có |
+| 3, 4 | `SLEEPER` | 16 | `B01` đến `B16` | (số thứ tự - 1) / 4 + 1, tức `B01`-`B04` là cabin 1 |
 
 Số toa hiển thị dạng `Toa 01`. Toa `SEAT` là ghế, toa `SLEEPER` là giường, nên
 không lưu loại chỗ riêng. Mỗi cabin 4 giường. Phiên bản đầu không phân biệt giường
 tầng 1, 2, 3, không có VIP, không có phòng riêng, không có nhiều mức giá phức tạp.
 
 Admin không thêm, sửa hay xóa toa. Muốn đổi cấu hình thì sửa hằng số trong code;
-chuyến đã tạo giữ nguyên chỗ và giá đã sinh.
+chuyến đã tạo giữ nguyên các chỗ đã sinh. Mọi ghế và giường trong cùng chuyến có cùng giá `Trip.basePrice`.
 
 ## Trip
 
@@ -189,7 +189,6 @@ trạng thái `AVAILABLE`, trong cùng transaction với việc tạo chuyến.
 | `coachType` | `SEAT` hoặc `SLEEPER` |
 | `seatCode` | `A01`... cho ghế, `B01`... cho giường. Bộ ba `tripId + coachNumber + seatCode` phải là duy nhất |
 | `cabinNumber` | Chỉ có với toa `SLEEPER`. Null với ghế |
-| `priceModifier` | Cộng vào `basePrice` của chuyến cho chỗ này, chép từ cấu hình lúc tạo chuyến |
 | `status` | `AVAILABLE`, `BOOKED` |
 
 Ràng buộc duy nhất trên `tripId + coachNumber + seatCode` phải được khai báo ở tầng database, vì
@@ -235,8 +234,7 @@ mã vé.
 | --- | --- |
 | `id`, `bookingId`, `tripSeatId` | Mỗi hành khách gắn đúng một TripSeat |
 | `fullName` | |
-| `dateOfBirth` | |
-| `identityNumber` | CCCD hoặc passport |
+| `identityNumber` | Số CCCD |
 | `ticketPrice` | Giá tại thời điểm đặt |
 | `ticketCode` | Bắt buộc, không được trùng. Mã booking đổi `BK` thành `TK` rồi thêm thứ tự hành khách, ví dụ `TK202610001-01` |
 | `issuedAt` | Bắt buộc. Lúc booking được thanh toán |
@@ -256,11 +254,13 @@ không chép thêm. Vé được xem trực tiếp trên website.
 ## Công thức giá
 
 ```
-Ticket Price = Trip.basePrice + TripSeat.priceModifier
+Ticket Price = Trip.basePrice
+Booking.totalPrice = tổng Ticket.ticketPrice
 ```
 
-Ví dụ: chuyến có `basePrice` 350.000đ, toa ghế `priceModifier` = 0 thì vé
-350.000đ; toa giường `priceModifier` = 200.000 thì vé 550.000đ.
+Ví dụ: chuyến có `basePrice` 350.000đ thì ghế và giường đều 350.000đ;
+đặt 2 chỗ có tổng tiền 700.000đ. Giá vé đã đặt được đóng băng trong `ticketPrice`,
+kể cả vé cũ từng có phụ thu; migration V6 không tính lại vé hoặc tổng booking cũ.
 
 Không có dynamic pricing, không có giá theo độ tuổi hay đối tượng.
 

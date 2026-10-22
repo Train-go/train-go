@@ -2,7 +2,10 @@
 
 Bản dễ nhìn hơn (sơ đồ có màu, thẻ từng bảng): mở `erd.html` bằng trình duyệt.
 
-Cập nhật 20/10/2026 theo migration `V5__north_south_line.sql`: ga có lý trình
+Schema cập nhật 23/10/2026 theo V6: bỏ ngày sinh hành khách và phụ thu chỗ;
+vé đã đặt giữ nguyên giá. Bảng `users` không có ngày sinh hoặc cờ xóa mềm.
+Các bảng dữ liệu mẫu dưới đây là ảnh chụp lịch sử 20/10/2026, không phải kết quả
+kiểm chứng sau V6. Nền dữ liệu theo migration `V5__north_south_line.sql`: ga có lý trình
 `km_mark`, chuyến lưu giờ đi và giờ đến bằng ngày-giờ đầy đủ, dữ liệu mẫu là 8 ga
 trên trục Bắc - Nam và lịch của tàu SE1. Lý do: `docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`.
 
@@ -33,8 +36,8 @@ erDiagram
     }
     routes {
         bigint id PK
-        bigint from_station_id FK
-        bigint to_station_id FK
+        bigint origin_station_id FK
+        bigint destination_station_id FK
         int distance_km
     }
     trains {
@@ -63,17 +66,15 @@ erDiagram
     users {
         bigint id PK
         varchar full_name
-        date date_of_birth
         varchar email UK
         varchar password_hash
         varchar role "CUSTOMER | ADMIN"
         datetime created_at
-        boolean is_delete
     }
     bookings {
         bigint id PK
         varchar booking_code UK
-        bigint users_id FK
+        bigint customer_id FK
         bigint trip_id FK
         bigint total_price
         varchar booking_status "CONFIRMED | CANCELLED (PENDING được phép nhưng không dùng)"
@@ -97,7 +98,7 @@ erDiagram
     trains ||--o{ trips : "train_id"
     routes ||--o{ trips : "route_id"
     trips ||--o{ trip_seats : "trip_id"
-    users ||--o{ bookings : "users_id"
+    users ||--o{ bookings : "customer_id"
     trips ||--o{ bookings : "trip_id"
     bookings ||--o{ tickets : "booking_id"
     trip_seats ||--o{ tickets : "trip_seat_id"
@@ -107,12 +108,12 @@ erDiagram
 
 | Bảng cha | Khóa ngoại ở bảng con | Bậc | Ý nghĩa |
 | --- | --- | --- | --- |
-| `stations` | `routes.from_station_id` | 1 - N | Một ga là ga đi của nhiều tuyến. |
-| `stations` | `routes.to_station_id` | 1 - N | Một ga là ga đến của nhiều tuyến. |
+| `stations` | `routes.origin_station_id` | 1 - N | Một ga là ga đi của nhiều tuyến. |
+| `stations` | `routes.destination_station_id` | 1 - N | Một ga là ga đến của nhiều tuyến. |
 | `trains` | `trips.train_id` | 1 - N | Một tàu chạy nhiều chuyến, chuyến sau nối tiếp chuyến trước. |
 | `routes` | `trips.route_id` | 1 - N | Một tuyến có nhiều chuyến. |
 | `trips` | `trip_seats.trip_id` | 1 - N | Một chuyến có 96 chỗ. |
-| `users` | `bookings.users_id` | 1 - N | Một khách có nhiều đơn. |
+| `users` | `bookings.customer_id` | 1 - N | Một khách có nhiều đơn. |
 | `trips` | `bookings.trip_id` | 1 - N | Một chuyến có nhiều đơn. |
 | `bookings` | `tickets.booking_id` | 1 - N | Một đơn có nhiều hành khách, mỗi hành khách một dòng tickets. |
 | `trip_seats` | `tickets.trip_seat_id` | 1 - N | Một chỗ theo chuyến có thể nằm ở nhiều đơn theo thời gian (đơn cũ bị hủy, đơn mới lấy lại). |
@@ -164,8 +165,8 @@ erDiagram
 | Cột | Kiểu dữ liệu | Giải thích |
 | --- | --- | --- |
 | `id` | `bigint` (PK) | Mã ID của tuyến. |
-| `from_station_id` | `bigint` (FK) | Ga xuất phát, lấy từ bảng stations. |
-| `to_station_id` | `bigint` (FK) | Ga đến, lấy từ bảng stations. |
+| `origin_station_id` | `bigint` (FK) | Ga xuất phát, lấy từ bảng stations. |
+| `destination_station_id` | `bigint` (FK) | Ga đến, lấy từ bảng stations. |
 | `distance_km` | `int` | Khoảng cách giữa hai ga, tính bằng km. |
 
 **Quy tắc:** Ga đi và ga đến phải khác nhau. Khoảng cách phải lớn hơn 0. Không được tạo hai tuyến có cùng ga đi và ga đến.
@@ -176,7 +177,7 @@ Dữ liệu mẫu có 16 tuyến: 7 chặng giữa hai ga kề nhau, mỗi chặ
 
 **Dữ liệu mẫu (3 dòng đầu trong database):**
 
-| id | from_station_id | to_station_id | distance_km |
+| id | origin_station_id | destination_station_id | distance_km |
 | --- | --- | --- | --- |
 | 9 | 10 (THA) | 9 (HNI) | 175 |
 | 10 | 9 (HNI) | 10 (THA) | 175 |
@@ -196,10 +197,10 @@ Dữ liệu mẫu có 16 tuyến: 7 chặng giữa hai ga kề nhau, mỗi chặ
 
 Trong phiên bản TrainGo hiện tại, tất cả đoàn tàu đều có cùng một cách bố trí chỗ ngồi, được quy định sẵn trong chương trình:
 
-| Toa | Loại chỗ | Số chỗ mỗi toa | Phụ thu |
+| Toa | Loại chỗ | Số chỗ mỗi toa | Mã chỗ |
 | --- | --- | --- | --- |
-| 1–2 | Ghế ngồi | 32 | 0đ |
-| 3–4 | Giường nằm | 16 | 200.000đ |
+| 1–2 | Ghế ngồi (`SEAT`) | 32 | A01–A32 |
+| 3–4 | Giường nằm (`SLEEPER`) | 16 | B01–B16, 4 giường/cabin |
 
 Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 
@@ -295,12 +296,10 @@ Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 | --- | --- | --- |
 | `id` | `bigint` (PK) | Mã ID của người dùng. |
 | `full_name` | `varchar(100)` | Họ và tên người dùng. |
-| `date_of_birth` | `date` | Ngày sinh của người dùng. |
 | `email` | `varchar(255)` (UK) | Email dùng để đăng nhập. |
 | `password_hash` | `varchar(100)` | Mật khẩu đã được mã hóa bằng BCrypt. |
 | `role` | `varchar(20)` | Vai trò của người dùng. |
 | `created_at` | `datetime` | Thời gian tạo tài khoản. |
-| `is_delete` | `boolean` | Cờ xóa mềm của tài khoản: 0 là còn dùng, 1 là đã xóa. |
 
 **Vai trò:**
 
@@ -313,11 +312,11 @@ Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 
 **Dữ liệu mẫu (3 dòng đầu trong database):**
 
-| id | full_name | date_of_birth | email | password_hash | role | created_at | is_delete |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Quản trị viên | NULL | admin@traingo.vn | (hash) | ADMIN | 2026-09-12 11:34:33 | 0 |
-| 2 | Nguyễn Văn An | 1995-04-12 | an.nguyen@example.com | (hash) | CUSTOMER | 2026-09-22 11:34:33 | 0 |
-| 3 | Trần Thị Bình | 1990-01-25 | binh.tran@example.com | (hash) | CUSTOMER | 2026-09-27 11:34:33 | 0 |
+| id | full_name | email | password_hash | role | created_at |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Quản trị viên | admin@traingo.vn | (hash) | ADMIN | 2026-09-12 11:34:33 |
+| 2 | Nguyễn Văn An | an.nguyen@example.com | (hash) | CUSTOMER | 2026-09-22 11:34:33 |
+| 3 | Trần Thị Bình | binh.tran@example.com | (hash) | CUSTOMER | 2026-09-27 11:34:33 |
 
 ### Bảng bookings – Đơn đặt vé
 
@@ -327,7 +326,7 @@ Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 | --- | --- | --- |
 | `id` | `bigint` (PK) | Mã ID của đơn đặt vé. |
 | `booking_code` | `varchar(20)` (UK) | Mã đơn đặt vé, ví dụ BK202610001. |
-| `users_id` | `bigint` (FK) | Khách hàng thực hiện đặt vé. |
+| `customer_id` | `bigint` (FK) | Khách hàng thực hiện đặt vé. |
 | `trip_id` | `bigint` (FK) | Chuyến tàu được đặt. |
 | `total_price` | `bigint` | Tổng tiền của đơn đặt vé. |
 | `booking_status` | `varchar(20)` | Trạng thái của đơn đặt vé. |
@@ -356,7 +355,7 @@ Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 
 **Dữ liệu mẫu (3 dòng đầu trong database):**
 
-| id | booking_code | users_id | trip_id | total_price | booking_status | payment_status | paid_at | created_at |
+| id | booking_code | customer_id | trip_id | total_price | booking_status | payment_status | paid_at | created_at |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 24 | BK202610001 | 2 | 133 | 280000 | CONFIRMED | PAID | 2026-10-14 16:12:54 | 2026-10-14 16:12:54 |
 | 25 | BK202610002 | 3 | 137 | 370000 | CONFIRMED | PAID | 2026-10-16 16:12:54 | 2026-10-16 16:12:54 |
@@ -372,12 +371,12 @@ Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 | `booking_id` | `bigint` (FK) | Đơn đặt vé chứa vé này. |
 | `trip_seat_id` | `bigint` (FK) | Chỗ ngồi hoặc giường nằm được chọn. |
 | `full_name` | `varchar(100)` | Họ và tên hành khách. |
-| `identity_number` | `varchar(20)` | Số CCCD hoặc giấy tờ tùy thân. |
+| `identity_number` | `varchar(20)` | Số CCCD. |
 | `ticket_price` | `bigint` | Giá tiền của vé. |
 | `ticket_code` | `varchar(20)` (UK) | Mã vé điện tử sau khi thanh toán. |
 | `issued_at` | `datetime` | Thời gian phát hành vé. |
 
-**Quy tắc:** Trong cùng một đơn, không được thêm trùng một chỗ. Giá vé không được âm. Dòng vé chỉ được tạo khi thanh toán thành công, cùng lúc với đơn, nên luôn có mã vé điện tử và thời gian phát hành.
+**Quy tắc:** Trong cùng một đơn, không được thêm trùng một chỗ. Giá vé không được âm, bằng `trips.base_price` lúc đặt và không tính lại sau này. Chỉ thu thập họ tên và CCCD của hành khách. Dòng vé chỉ được tạo khi thanh toán thành công, cùng lúc với đơn, nên luôn có mã vé điện tử và thời gian phát hành.
 
 Nếu đơn cũ bị hủy và chỗ được mở bán trở lại, khách hàng khác có thể đặt chỗ đó trong một đơn mới.
 

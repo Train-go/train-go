@@ -1,272 +1,155 @@
 # Runbook: chạy TrainGo ở máy local
 
-Cấu trúc theo `docs/templates/application-runbook.md`. Mỗi lệnh đều ghi rõ đã
-chạy thật hay chưa, để không ai tin nhầm một câu lệnh chưa được kiểm chứng.
+## Phạm vi và cấu hình
 
-## Phạm vi
+Ứng dụng Spring Boot nằm trong `app/`. Luồng vận hành hiện tại dùng **MySQL
+Server cài trên Windows**, không cần Docker. Cấu hình có thẩm quyền nằm ở
+`app/src/main/resources/application.properties`:
 
-Ứng dụng Spring Boot nằm trong thư mục `app/`. Runbook này phục vụ việc chạy ứng
-dụng ở máy cá nhân, không nói về triển khai production.
-
-## Yêu cầu môi trường
-
-| Thành phần | Trạng thái trên máy đã kiểm tra (23/08/2026) |
+| Thành phần | Giá trị |
 | --- | --- |
-| JDK | `java` trên PATH là 17.0.12; `JAVA_HOME` trỏ vào JBR 21 của Android Studio |
-| Maven | **Không có `mvn`** trên PATH. Dùng Maven Wrapper `mvnw` trong `app/` |
-| Docker | CLI 29.7.2; Docker Desktop phải bật thủ công trước khi chạy ứng dụng |
-| MySQL client | Không có trên PATH |
-| Cổng 8080 | Ứng dụng chạy ở đây. Nếu Apache của XAMPP đang bật thì phải tắt trước |
-| Cổng 3306 | MySQL Docker dùng cổng này. Service Windows `MySQL97` cũng giữ 3306, phải dừng trước |
+| Database | `traingo` trên `localhost:3306` |
+| Windows service | `MySQL80`, phải ở trạng thái `Running` |
+| Ứng dụng | `http://localhost:8080` |
+| Build | Maven Wrapper trong `app/`; Java theo `pom.xml` |
+| Schema | Flyway; Hibernate dùng `ddl-auto=validate` |
 
-Maven Wrapper dùng `JAVA_HOME` để chọn JDK, nên build hiện chạy bằng JDK 21 trong
-khi `pom.xml` khai `java.version=17`. Build vẫn thành công, nhưng nếu gặp lỗi build
-khó hiểu thì đây là nghi phạm đầu tiên. Cách xử lý sạch là cài một JDK riêng (17
-hoặc 21) và trỏ `JAVA_HOME` vào đó thay vì mượn JDK của Android Studio.
+Tên đăng nhập và mật khẩu database lấy từ cấu hình datasource hoặc cấu hình
+môi trường tương ứng; không chép thông tin bí mật vào tài liệu, log hay câu lệnh
+được chia sẻ. Khi dùng MySQL client, dùng `-p` để nhập mật khẩu qua lời nhắc.
 
-## Khởi động database
+## Kiểm tra database trước khi chạy
+
+```powershell
+Get-Service MySQL80
+Test-NetConnection localhost -Port 3306
+```
+
+Ngày 23/10/2026 đã kiểm tra service `MySQL80` đang `Running`, MySQL Server
+8.0.46, schema `traingo` ở V5. Ảnh chụp trước migration có 8 booking, 11 vé,
+tổng `tickets.ticket_price` là 3.660.000đ. Sau đó V6 đã áp thành công, Hibernate
+validate qua và ứng dụng khởi động ở 8080. Snapshot mọi vé (hash các trường giữ
+lại và giá), tổng tiền từng booking cùng số dòng trước/sau khớp hoàn toàn.
+
+Nếu service chưa chạy, khởi động MySQL Server bằng công cụ quản lý Windows với
+quyền thích hợp. Không dừng MySQL local để nhường cổng cho Docker. Nếu cổng 3306
+không truy cập được, kiểm tra trạng thái service và cấu hình datasource trước.
+
+## Biên dịch và chạy ứng dụng
+
+Từ gốc repository:
 
 ```powershell
 cd app
-docker compose up -d
-```
-
-Compose khai báo trong `app/compose.yaml`:
-
-| Mục | Giá trị |
-| --- | --- |
-| Image | `mysql:8.4` |
-| Tên container | `traingo-mysql` |
-| Cổng | host `3306` → container `3306` (đã đổi lại từ 3007 ngày 19/10/2026, xem bên dưới) |
-| Database | `traingo` |
-| User / password ứng dụng | `traingo` / `traingo` |
-| Volume | `traingo-mysql-data` |
-| Múi giờ | `--default-time-zone=+07:00`, khớp `serverTimezone` trong JDBC URL |
-
-**Đã kiểm chứng ngày 24/08/2026.** Container `traingo-mysql` lên và giữ trạng thái
-`healthy`, cổng `0.0.0.0:3306->3306/tcp`.
-
-**Đã kiểm chứng ngày 01/10/2026** sau khi thêm múi giờ: `docker compose up -d`
-tạo lại container, volume giữ nguyên, `SELECT @@global.time_zone` trả `+07:00`.
-Máy nào đang có container cũ chỉ cần chạy lại `docker compose up -d`.
-
-**Cổng phía máy: 3007 (12/10/2026), đổi lại 3306 (19/10/2026).** Máy dev có MySQL cài
-sẵn chạy dạng service Windows `MySQL97`, giữ cổng 3306, nên container không mở được
-cổng và báo:
-
-```
-ports are not available: exposing port TCP 0.0.0.0:3306 -> 127.0.0.1:0: listen tcp 0.0.0.0:3306: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
-```
-
-Từ 19/10/2026 `compose.yaml` và JDBC URL trong `application.properties` dùng lại 3306.
-Trước khi `docker compose up -d`, dừng service MySQL local bằng PowerShell chạy với
-quyền Administrator: `Stop-Service MySQL97` (muốn không tự bật lại khi khởi động máy:
-`Set-Service MySQL97 -StartupType Manual`). Volume và dữ liệu Docker giữ nguyên. Lệnh
-`docker exec` ở mục "Xem dữ liệu trong database" chạy bên trong container nên không đổi.
-
-Phải mở Docker Desktop trước. Nếu quên, lệnh thất bại với thông báo:
-
-```
-failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine
-```
-
-Đó là dấu hiệu Docker Desktop chưa bật, không phải lỗi cấu hình.
-
-Kiểm tra container:
-
-```powershell
-docker compose ps
-docker compose logs -f mysql
-```
-
-Dừng và giữ dữ liệu:
-
-```powershell
-docker compose down
-```
-
-Xóa cả dữ liệu (dùng khi cần làm sạch database, **mất toàn bộ dữ liệu đã seed**):
-
-```powershell
-docker compose down -v
-```
-
-## Chạy ứng dụng
-
-```powershell
-cd app
+.\mvnw.cmd compile
 .\mvnw.cmd spring-boot:run
 ```
 
-Ứng dụng nghe ở `http://localhost:8080`. Trang `/` là landing page đầy đủ theo
-`SPEC.md` mục 5.
+Maven Wrapper dùng `JAVA_HOME`; kiểm tra Java thực tế nếu phiên bản trên PATH
+và `JAVA_HOME` khác nhau. Lần chạy đầu có thể cần tải Maven và dependency.
 
-**Đã kiểm chứng ngày 24/08/2026:**
+Ứng dụng sẵn sàng khi log có `Started TrainGoApplication` và Tomcat nghe cổng
+8080. Sau đó mở `http://localhost:8080` để kiểm tra trang thật. Dừng instance do
+mình khởi động bằng `Ctrl+C` ở terminal đó; giữ MySQL Server đang chạy.
 
-```
-Tomcat started on port 8080 (http) with context path '/'
-Started TrainGoApplication in 2.756 seconds
-```
-
-`GET /` trả 200. Bootstrap được phục vụ từ chính ứng dụng tại
-`/vendor/bootstrap/bootstrap.min.css`, không lấy từ CDN.
-
-### Nếu cổng 8080 đang bị chiếm
-
-Nếu Apache của XAMPP (hoặc tiến trình khác) đang giữ 8080, Tomcat nhúng không bind được
-và ứng dụng chết ngay lúc khởi động với thông báo `Port 8080 was already in use`. Cổng
-khai trong `app/src/main/resources/application.properties`:
-
-```properties
-server.port=8080
-```
-
-Muốn biết tiến trình nào đang giữ một cổng:
+Nếu 8080 đang bị chiếm, xác định tiến trình trước khi xử lý:
 
 ```powershell
-netstat -ano | findstr :8080
+Get-NetTCPConnection -LocalPort 8080 -State Listen
 Get-Process -Id <PID>
 ```
 
-### Flyway tạo bảng và seed data lúc khởi động
+Không dừng tiến trình chưa xác định chủ sở hữu. Cổng ứng dụng khai trong
+`app/src/main/resources/application.properties`.
 
-Schema và dữ liệu demo nằm trong `app/src/main/resources/db/migration/`. Lần đầu
-chạy trên database trống, Flyway tạo 8 bảng rồi nạp seed. Những lần sau nó chỉ
-chạy migration mới chưa từng chạy. Sau đó Hibernate kiểm tra entity khớp schema
-(`ddl-auto=validate`). Lý do và quy ước: `docs/decisions/0005-quan-ly-schema-bang-flyway.md`.
+## Flyway và bảo toàn dữ liệu
 
-**Đã kiểm chứng ngày 01/10/2026** trên database trống:
+Migration nằm ở `app/src/main/resources/db/migration/`. Trên database trống,
+Flyway chạy các migration theo thứ tự. Trên database hiện có, chỉ migration
+chưa áp dụng được chạy. Không sửa V1–V5 đã chạy, không đổi checksum bằng tay,
+không bật `ddl-auto=update`.
 
-```
-Migrating schema `traingo` to version "1 - create schema"
-Migrating schema `traingo` to version "2 - seed demo data"
-Successfully applied 2 migrations to schema `traingo`, now at version v2 (execution time 00:00.564s)
-Started TrainGoApplication in 5.534 seconds
-```
+- V4 đưa schema xuống 8 bảng, gộp hành khách vào `tickets`, bỏ bảng toa/ghế và
+  giữ chỗ tạm.
+- V5 thêm lý trình ga, ngày-giờ chuyến và dữ liệu tuyến Bắc–Nam.
+- V6 bỏ `tickets.date_of_birth`; bỏ CHECK `ck_trip_seats_price_modifier` trước
+  khi bỏ `trip_seats.price_modifier`. V6 không cập nhật `ticket_price` hoặc
+  `bookings.total_price`, không xóa booking/vé đã có.
 
-Hai lỗi dễ gặp (chưa gặp thật trong dự án, nên chưa trích được nguyên văn
-thông báo):
+Mỗi vé mới có giá bằng `Trip.basePrice`, dù chọn ghế hay giường. Giá vé cũ,
+kể cả vé giường từng có phụ thu, vẫn giữ nguyên. Cấu hình toa bất biến trong
+`CoachLayout`: toa 1–2 có A01–A32 (`SEAT`), toa 3–4 có B01–B16 (`SLEEPER`),
+4 giường/cabin; tổng 96 chỗ mỗi chuyến. Hành khách chỉ nhập họ tên và CCCD.
 
-- Flyway báo checksum của một migration không khớp: ai đó đã sửa một migration
-  đã chạy. Trả file về như cũ và viết migration mới. Nếu chỉ là máy dev, có thể
-  reset database như mục "Làm mới dữ liệu demo".
-- Hibernate báo schema validation thiếu cột hoặc sai kiểu cột: entity và
-  migration lệch nhau. Sửa cho khớp, không bật lại `ddl-auto=update`.
+Trước khi áp migration xóa cột, sao lưu database bằng công cụ MySQL phù hợp và
+lưu bản sao ngoài repository. Khôi phục cần bản sao đó; không sửa migration
+cũ để đảo ngược. Nếu Flyway báo checksum sai, khôi phục file migration gốc và
+viết migration mới. Nếu Hibernate báo thiếu cột/sai kiểu, đối chiếu entity và
+schema với lịch sử Flyway.
 
-### Ứng dụng cần MySQL đang chạy
+## Xem dữ liệu bằng MySQL client
 
-Flyway mở kết nối ngay lúc khởi động. Không có MySQL thì ứng dụng chết với:
-
-```
-org.hibernate.HibernateException: Unable to determine Dialect without JDBC metadata
-```
-
-Thông báo này nói về Hibernate nhưng nguyên nhân thật là không kết nối được
-database. Kiểm tra `docker ps` trước khi đi tìm lỗi trong code.
-
-Vì `spring-boot-devtools` có trong dependency, ứng dụng tự khởi động lại khi file
-class trong `target/classes` thay đổi. Trong IntelliJ hoặc VS Code, việc này xảy
-ra khi bạn build lại project.
-
-## Kiểm tra trước khi báo xong
-
-Dự án không có test tự động (`docs/decisions/0007-bo-test-tu-dong.md`). Trước khi
-mở pull request:
+Dùng MySQL client của bản MySQL Server đã cài (hoặc MySQL Workbench). Nếu
+`mysql` không có trên PATH, chọn executable trong thư mục cài MySQL Server.
+Lấy username từ cấu hình của máy:
 
 ```powershell
-cd app
-.\mvnw.cmd compile          # code biên dịch được
-.\mvnw.cmd spring-boot:run  # ứng dụng khởi động được trên MySQL
+$databaseUser = Read-Host "Username trong cấu hình datasource"
+mysql --host=localhost --port=3306 --user=$databaseUser -p --default-character-set=utf8mb4 traingo
 ```
 
-Sau đó đi hết mục "Kịch bản thử bằng tay" trong file hướng dẫn của task, trên trình
-duyệt với dữ liệu mẫu.
+Truy vấn chỉ đọc để đối chiếu:
 
-Lần chạy đầu tiên trên một máy mới sẽ lâu vì Maven Wrapper tải Maven 3.9.16 và
-toàn bộ dependency về `~/.m2/repository`.
+```sql
+SELECT VERSION();
+SELECT version, description, success
+FROM flyway_schema_history ORDER BY installed_rank;
+SHOW COLUMNS FROM trip_seats;
+SHOW COLUMNS FROM tickets;
+SELECT COUNT(*) AS bookings FROM bookings;
+SELECT COUNT(*) AS tickets, SUM(ticket_price) AS ticket_total FROM tickets;
+```
+
+Sau V6 phải không còn hai cột đã bỏ; số lượng booking/vé và giá từng vé cũ phải
+khớp ảnh chụp trước migration. Khi đối chiếu giá, kiểm tra cả vé từng có phụ
+thu; không dùng giá chuyến hiện tại để tính lại lịch sử.
 
 ## Dữ liệu thử
 
-Người dùng nằm trong `V2__seed_demo_data.sql` và `V3__seed_more_demo_data.sql`.
-Ga, tuyến, tàu, chuyến và booking nằm trong `V5__north_south_line.sql`: V5 xóa dữ
-liệu cũ của V2, V3 rồi dựng lại quanh một trục Bắc - Nam
-(`docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`):
+User demo đến từ V2/V3; V5 dựng lại ga, tuyến, tàu, chuyến và booking quanh trục
+Bắc–Nam. Số dòng seed dự kiến: 12 user, 8 ga, 16 tuyến, 3 tàu, 18 chuyến,
+1.728 chỗ, 8 booking, 11 vé. Dữ liệu tự thêm có thể làm số dòng khác đi.
 
-| Bảng | Số dòng | Nội dung |
-| --- | --- | --- |
-| `users` | 12 | 1 admin, 11 khách (3 ở V2, 8 ở V3) |
-| `stations` | 8 | Hà Nội, Thanh Hóa, Vinh, Đồng Hới, Huế, Đà Nẵng, Nha Trang, Sài Gòn, có lý trình từ km 0 đến km 1726 |
-| `routes` | 16 | 7 chặng giữa hai ga kề nhau, mỗi chặng hai chiều, cộng HNI-SGN hai chiều |
-| `trains` | 3 | SE1, SE2, SE3; chỉ SE1 có chuyến |
-| `trips` | 18 | SE1 mỗi ngày một chặng, khởi hành 08:00, từ 4 ngày trước lúc seed chạy: 7 ngày xuống Nam, 7 ngày lên Bắc, rồi lặp lại. 4 chuyến đầu đã chạy (`COMPLETED`) |
-| `trip_seats` | 1.728 | 96 chỗ mỗi chuyến, theo cấu hình toa cố định: toa 1-2 ghế 32 chỗ, toa 3-4 giường 16 chỗ (+200.000đ) |
-| `bookings` | 8 | Đều trên chuyến của SE1: 2 trên chuyến đã chạy, 5 sắp đi, 1 đã hủy; đều đã thanh toán |
-| `tickets` | 11 | Mỗi hành khách một chỗ và một mã vé |
+Ngày chuyến được tính lúc seed chạy, nên danh sách chuyến tương lai sẽ cạn dần.
+Khi module tạo chuyến (#28) sẵn sàng, tạo chuyến mới bằng luồng admin để thử;
+không xóa/reset database đang có dữ liệu
+chỉ để đổi ngày demo. Thông tin đăng nhập ứng dụng tạm lấy từ cấu hình security
+hiện hành; tài khoản demo trong bảng `users` được mô tả ở migration V2/V3.
 
-Tài khoản:
+## Kiểm tra trước khi báo hoàn thành
 
-| Email | Mật khẩu | Role |
-| --- | --- | --- |
-| `admin@traingo.vn` | `Admin@123` | `ADMIN` |
-| `an.nguyen@example.com`, `binh.tran@example.com`, `cuong.le@example.com` | `Customer@123` | `CUSTOMER` |
-| `dung.pham@example.com`, `duc.vu@example.com`, `lan.hoang@example.com`, `huy.dang@example.com`, `ha.bui@example.com`, `son.ngo@example.com`, `linh.do@example.com`, `bao.ly@example.com` | `Customer@123` | `CUSTOMER` |
+Dự án không có test tự động (`docs/decisions/0007-bo-test-tu-dong.md`). Cần có
+bằng chứng riêng cho biên dịch, khởi động trên MySQL và thử trên trình duyệt:
 
-Cho tới khi làm xong Auth, trang login vẫn dùng tài khoản tạm `admin` / `admin`
-trong `application.properties`. Các tài khoản trên chỉ mới nằm trong bảng
-`users`.
+1. `compile` không lỗi.
+2. Ứng dụng khởi động trên MySQL Server local; log Flyway và lịch sử schema khớp.
+3. Đi hết “Kịch bản thử bằng tay” trong hướng dẫn task bằng dữ liệu thật.
+4. Với thay đổi giá/hành khách: kiểm tra ghế và giường cùng giá chuyến, chỉ nhập
+   họ tên + CCCD; đối chiếu vé/booking cũ giữ nguyên giá sau migration.
 
-Ga nào trong dữ liệu mẫu cũng có tuyến, nên màn hình từ chối xóa. Muốn thử xóa
-thì thêm một ga mới (ví dụ Quảng Ngãi, km 928) rồi xóa nó.
+## Bằng chứng và lịch sử môi trường
 
-### Làm mới dữ liệu demo
+Log ứng dụng nằm ở terminal chạy Maven; lỗi database xem trong công cụ/log của
+MySQL Server local. Ghi rõ thời điểm và phiên bản schema khi thu thập bằng chứng.
 
-Ngày của chuyến tính từ lúc seed chạy, nên khoảng 2 tuần sau danh sách chuyến sắp
-tới sẽ cạn. Reset database rồi chạy lại ứng dụng. **Lệnh đầu xóa toàn bộ dữ liệu
-trong database dev**, kể cả dữ liệu bạn tự thêm:
+Ngày 23/10/2026, issue #19: `compile` thành công với 44 source Java; V5 → V6
+thành công trên MySQL Server 8.0.46. Đã thử trang chủ và sáu danh sách admin
+(ga, tuyến, tàu, chuyến, booking, người dùng) ở 1440px và 390px: 14/14 lượt
+trả 200, không lỗi JavaScript hoặc tràn ngang trang. Danh sách hiện đủ 8 booking.
+Probe Java tạm kiểm tra đủ 96 chỗ, mọi khoang, tính bất biến, mã chỗ dưới locale
+Ả Rập, sao chép TripSeat và giá/thời điểm Ticket. Không thêm bộ test vào repo.
 
-```powershell
-cd app
-docker compose down -v
-docker compose up -d
-.\mvnw.cmd spring-boot:run
-```
-
-Flyway thấy database trống nên chạy lại V1 đến V4 với ngày mới.
-
-Máy đã chạy V2 từ trước thì lần chạy ứng dụng đầu tiên sau khi pull chỉ áp V3. V3 gắn
-booking vào chuyến thứ N còn sắp chạy của từng tàu, nên nếu V2 đã chạy nhiều ngày trước,
-những booking cần chuyến ở xa sẽ không được tạo. **Đã gặp ngày 12/10/2026** trên database
-seed ngày 02/10: mỗi tàu chỉ còn 4 chuyến sắp chạy, V3 tạo 8 trong 16 booking, nên
-`bookings` có 12 dòng thay vì 20. Muốn đủ số liệu như bảng trên thì làm mới dữ liệu như
-các lệnh ở đầu mục này.
-
-V4 (19/10/2026) đưa database từ 11 xuống 8 bảng, gộp ba thay đổi (ADR 0008, 0009, 0010):
-gộp `booking_passengers` và `tickets` thành `tickets`; bỏ `coaches` và `seats` (mỗi dòng
-`trip_seats` giữ `coach_number`, `coach_type`, `seat_code`, `cabin_number`, `price_modifier`, và cột
-`seat_id` biến mất); bỏ giữ chỗ (`trip_seats` mất `held_by_user_id`, `held_until`, trạng thái `HELD`,
-còn `tickets.ticket_code` và `issued_at` là `NOT NULL`). Máy đã chạy V3 chỉ cần pull rồi chạy ứng dụng,
-Flyway tự áp V4 và giữ nguyên dữ liệu. V4 xóa bảng và cột nên không đảo ngược được bằng migration:
-nếu cần dữ liệu cũ, hãy `mysqldump` trước khi chạy ứng dụng lần đầu sau khi pull. Truy vấn cũ dùng
-`booking_passengers`, `seats`, `coaches`, `trip_seats.seat_id`, `held_by_user_id` hoặc `held_until` sẽ lỗi.
-
-### Xem dữ liệu trong database
-
-Máy dev không có MySQL client, nên dùng client có sẵn trong container:
-
-```powershell
-docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=utf8mb4 traingo
-```
-
-Ví dụ `SHOW TABLES;` hoặc `SELECT * FROM flyway_schema_history;`. Phải có
-`--default-character-set=utf8mb4`, nếu không chữ tiếng Việt sẽ hiện sai.
-
-## Bằng chứng khi có sự cố
-
-- Log ứng dụng in ra console nơi chạy `spring-boot:run`.
-- Log database: `docker compose logs mysql`.
-## Điều chưa biết
-
-- Chưa kiểm chứng trên máy của hai thành viên còn lại. Máy này phải tắt XAMPP
-  Apache và service `MySQL97` để rảnh cổng 8080 và 3306; máy khác có thể không cần.
-- `JAVA_HOME` vẫn trỏ vào JBR của Android Studio. Build chạy được nhưng đây là
-  chỗ nên dọn.
+Runbook cũ từng kiểm chứng Docker MySQL vào 08–10/2026, có thay đổi cổng giữa
+3007 và 3306. Đó là lịch sử của môi trường trước; không phải hướng dẫn vận hành
+hiện tại. Bằng chứng khởi động/browser từ môi trường cũ không chứng minh kết quả
+trên MySQL Server local sau V6. Máy của các thành viên khác cần kiểm tra riêng.

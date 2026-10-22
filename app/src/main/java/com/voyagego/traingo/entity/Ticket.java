@@ -1,6 +1,5 @@
 package com.voyagego.traingo.entity;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -49,9 +48,6 @@ public class Ticket {
 	@Column(nullable = false, length = 100)
 	private String fullName;
 
-	@Column(nullable = false)
-	private LocalDate dateOfBirth;
-
 	/** CCCD or passport number. Never put it in a QR code. */
 	@Column(nullable = false, length = 20)
 	private String identityNumber;
@@ -74,16 +70,15 @@ public class Ticket {
 	protected Ticket() {
 	}
 
-	public Ticket(Booking booking, TripSeat tripSeat, String fullName, LocalDate dateOfBirth,
-			String identityNumber, long ticketPrice, String ticketCode) {
+	public Ticket(Booking booking, TripSeat tripSeat, String fullName, String identityNumber,
+			long ticketPrice, String ticketCode, LocalDateTime issuedAt) {
 		this.booking = booking;
 		this.tripSeat = tripSeat;
 		this.fullName = fullName;
-		this.dateOfBirth = dateOfBirth;
 		this.identityNumber = identityNumber;
 		this.ticketPrice = ticketPrice;
 		this.ticketCode = ticketCode;
-		this.issuedAt = LocalDateTime.now();
+		this.issuedAt = issuedAt;
 	}
 
 	public Long getId() {
@@ -100,10 +95,6 @@ public class Ticket {
 
 	public String getFullName() {
 		return fullName;
-	}
-
-	public LocalDate getDateOfBirth() {
-		return dateOfBirth;
 	}
 
 	public String getIdentityNumber() {

@@ -28,8 +28,10 @@ Mã nguồn ứng dụng nằm trong `app/`.
 
 ```powershell
 cd app
-docker compose up -d      # MySQL cho môi trường dev
+Get-Service MySQL80      # MySQL Server local phải ở trạng thái Running
 .\mvnw.cmd spring-boot:run
 ```
 
-Ứng dụng chạy ở `http://localhost:8080`.
+Ứng dụng chạy ở `http://localhost:8080`, kết nối MySQL Server local tại
+`localhost:3306`, database `traingo`, theo `app/src/main/resources/application.properties`.
+Xem `docs/RUNBOOK.md` để kiểm tra cấu hình và migration; không cần Docker.

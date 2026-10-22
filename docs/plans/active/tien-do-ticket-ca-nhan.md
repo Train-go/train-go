@@ -1,6 +1,6 @@
 # Tiến độ ticket cá nhân và bàn giao phiên
 
-Ngày cập nhật: 2026-10-23. Baseline: `main`, commit `a138d97`.
+Ngày cập nhật: 2026-10-23. Baseline: `main`, commit `a138d97`. Branch đang làm: `feat/data-v6-coach-layout`.
 
 ## Trạng thái và nguồn
 
@@ -9,7 +9,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `main`, commit `a138d97`.
 - Project: https://github.com/orgs/Train-go/projects/1. Chưa đọc được board riêng tư vì CLI thiếu scope `read:project`; không suy diễn cột trạng thái từ trạng thái issue.
 - Đã đọc `README.md`, `AGENTS.md`, `docs/WORKFLOW.md`, các plan active và bản chia issue trong `docs/session/plan-task-chi-tiet.md`. Issue #19–#42 thay thế task cũ #4–#16; không triển khai lại task cũ.
 - Đây là file theo dõi duy nhất cho các phiên cá nhân; issue là nguồn AC, board là nguồn trạng thái nhóm. Không chép nguyên các hướng dẫn sang nhiều nơi.
-- Chưa triển khai code, chưa compile, chưa khởi động ứng dụng và chưa thử nghiệp vụ trong phiên lập hồ sơ này.
+- #19 đã triển khai và kiểm chứng local trong phiên này; commit riêng trên branch issue tra bằng Git history bên dưới. Chưa push, mở PR hoặc đóng issue; các ticket khác chưa triển khai.
 
 ## Quyết định của người dùng
 
@@ -41,7 +41,7 @@ Trạng thái thực hiện bên dưới là hồ sơ phiên, **không phải c�
 
 | Issue | Phạm vi | Branch theo issue | Phụ thuộc / khả năng bắt đầu | Tiến độ |
 | --- | --- | --- | --- | --- |
-| [#19](https://github.com/Train-go/train-go/issues/19) | Nền dữ liệu V6, một giá, CoachLayout | `feat/data-v6-coach-layout` | Không có; đề xuất làm đầu tiên | Chưa làm |
+| [#19](https://github.com/Train-go/train-go/issues/19) | Nền dữ liệu V6, một giá, CoachLayout | `feat/data-v6-coach-layout` | Không có | Đã kiểm chứng local; chưa PR |
 | [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-login` | Server làm ngay; UI chờ #20, #21 | Chưa làm |
 | [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-register` | #19 và #22; exception dùng quy ước #21 | Chờ phụ thuộc |
 | [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | Server làm ngay; UI chờ #20, #21 | Chưa làm |
@@ -59,7 +59,7 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 
 ### #19 — dữ liệu và cấu hình toa
 
-- Hiện migration chỉ tới `V5__north_south_line.sql`, chưa có `model/dto/CoachLayout.java`.
+- Đã thêm V6 và `model/dto/CoachLayout.java`, bỏ hai field/getter cũ và cập nhật constructor entity; V1–V5 giữ nguyên.
 - Tạo migration V6 mới, bỏ `tickets.date_of_birth`, bỏ CHECK trước khi bỏ `trip_seats.price_modifier`; không sửa V1–V5.
 - Sửa `entity/Ticket.java`, `TripSeat.java`, comment giá trong `Trip.java`; thêm `CoachLayout` và constructor TripSeat nhận Seat.
 - Cấu hình: toa 1–2 mỗi toa A01–A32 loại SEAT; toa 3–4 mỗi toa B01–B16 loại SLEEPER, 4 giường/khoang; tổng 96 chỗ.
@@ -131,14 +131,30 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 - [x] Người dùng xác nhận `thanhphong97` cho TrainGo; `phong-vht` chỉ dùng cho thư mục work (23/10/2026).
 - [ ] Đọc cột Project khi có quyền `read:project`; issue state không thay thế trạng thái board.
 - [x] Tạo branch `plan/assigned-issues-progress`; hồ sơ nằm trong commit checkpoint trên branch này, tra hash bằng Git history sau khi commit.
-- [x] Tạo đủ 7 branch issue trong bảng ở local, cùng xuất phát từ `a138d97`; chưa có code hoặc dependency mới trên các branch này. Mang commit hồ sơ mới nhất và dependency cần thiết sang trước khi bắt đầu.
-- [ ] Bắt đầu #19 sau khi cập nhật lại issue và dependency; danh tính đã xác nhận, chưa có issue nào được triển khai trong phiên này.
+- [x] Tạo đủ 7 branch issue trong bảng ở local, ban đầu cùng xuất phát từ `a138d97`. Branch #19 đã fast-forward tới `ee3c012` để nhận hồ sơ rồi triển khai; sáu branch còn lại chưa có code/dependency mới. Mang commit hồ sơ mới nhất và dependency cần thiết sang trước khi bắt đầu.
+- [x] Đọc lại issue #19 và bình luận: còn mở, assign thanhphong97, không có bình luận mới hoặc dependency.
+- [x] Triển khai #19, compile, Flyway V6/Hibernate validate, SQL, probe Java, trình duyệt và review đều đạt; xem checkpoint chi tiết bên dưới.
+
+## Kết quả #19 — 23/10/2026
+
+- Phạm vi: V6 bỏ ngày sinh trên vé và modifier chỗ (bỏ CHECK trước); Ticket nhận issuedAt tường minh; TripSeat nhận CoachLayout.Seat; layout bất biến 4 toa/96 chỗ. Không tạo chuyến, thêm phone hoặc sửa V1–V5.
+- AC1: `.\mvnw.cmd compile` PASS, 44 source; `.\mvnw.cmd spring-boot:run` khởi động ở 8080 trên MySQL80 8.0.46; Flyway V5→V6 SUCCESS và Hibernate validate qua.
+- AC2: hai cột đã biến mất; 8 booking, 11 vé, 1.728 chỗ giữ nguyên. Mỗi vé (hash mọi trường giữ lại, giá) và tổng tiền từng booking khớp snapshot trước/sau; tổng giá vé vẫn 3.660.000đ.
+- AC3: probe Java tạm PASS 4 toa/96 chỗ theo thứ tự, không trùng cặp toa+mã, đúng mọi khoang, list bất biến; locale ar-EG vẫn mã ASCII; TripSeat sao chép đúng và AVAILABLE; Ticket giữ issuedAt truyền vào và giá lịch sử độc lập giá chuyến hiện tại.
+- AC4–AC5: sửa ERD Markdown/HTML đúng tên cột đang dùng, bỏ cột giả ở users; công thức giá vé mới bằng Trip.basePrice, chỉ thu họ tên+CCCD (tên mặc định từ tài khoản). Vé cũ không tính lại. Đã render/xem ERD, kiểm tra 26 bảng HTML và 8 box SVG không đè chữ.
+- Thử tay bằng browser: `/` và `/admin/stations`, `/admin/routes`, `/admin/trains`, `/admin/trips`, `/admin/bookings`, `/admin/users`, mỗi trang ở 1440px và 390px: 14/14 trả 200, không pageerror, không tràn ngang. Trang booking có đúng 8 booking. Không thêm test tự động/dependency test.
+- Sau kiểm chứng đã dừng đúng instance ứng dụng của phiên (PID 21048), cổng 8080 được trả lại; MySQL Server vẫn chạy. Maven kết thúc do chủ động dừng, không phải lỗi khởi động.
+- Review: không còn finding; đối chiếu caller, chữ ký constructor, enum VARCHAR và phạm vi migration. `git diff --check` đạt.
+- Bằng chứng và backup chỉ ở máy local, ngoài Git: `C:/Users/mrcaf/AppData/Local/Temp/traingo-issue19-proof/` chứa `before.sql`, snapshot trước/sau, `app-run.log`, `browser-results.json`, ảnh và `layout-result.txt`. Backup có dữ liệu riêng tư; không commit. File tạm có thể được hệ điều hành dọn.
+- Phục hồi: database máy này đã ở V6; không chạy lại code cũ ánh xạ hai cột vừa bỏ. Nếu cần phục hồi dữ liệu đã bỏ, dùng backup ngoài repo sau khi cân nhắc dữ liệu phát sinh; không reset DB hoặc sửa lịch sử Flyway.
+- Commit triển khai: tra `git log feat/data-v6-coach-layout --oneline` (commit `feat(data): simplify ticket identity and add fixed coach layout`). Chưa push/PR/review từ thành viên khác; GitHub issue còn mở. Không coi kiểm chứng local là đã merge.
+- Tiếp theo: #22 có thể bắt đầu phần server; UI cần #20/#21. Khi chuyển branch, mang hồ sơ mới nhất sang và đọc lại issue. Vì DB local đã V6, branch chạy ứng dụng phải chứa thay đổi #19 tương ứng; không chạy entity cũ trên schema V6.
 
 ## Tiếp tục session sau
 
 Đưa câu này cho agent: “Đọc `docs/plans/active/tien-do-ticket-ca-nhan.md`, kiểm tra commit hồ sơ mới nhất trên các branch, cập nhật issue/assignee/dependency rồi tiếp tục ticket đầu tiên đủ điều kiện. Dùng MySQL Server theo application.properties, không Docker. Mỗi issue một branch, kiểm chứng rồi commit.”
 
-Lần tiếp theo: vào đúng git root `D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go`, đọc README/AGENTS/WORKFLOW và hồ sơ; giữ thay đổi người khác; dùng `thanhphong97` cho dự án này, truy vấn lại issue; kiểm tra runtime rồi làm #19 nếu vẫn được giao và chưa có người triển khai.
+Lần tiếp theo: vào đúng git root `D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go`, đọc README/AGENTS/WORKFLOW và hồ sơ mới nhất trên `feat/data-v6-coach-layout`; giữ thay đổi người khác; dùng `thanhphong97`, truy vấn lại issue/PR và dependency. #19 đã kiểm chứng local, chưa PR; ưu tiên tiếp #22 phần server trên branch riêng, với code #19 để tương thích schema V6 local.
 
 ## Giới hạn và câu hỏi còn mở
 
