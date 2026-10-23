@@ -63,4 +63,8 @@ public class Route {
 		return distanceKm;
 	}
 
+	public void changeDistance(int distanceKm) {
+		this.distanceKm = distanceKm;
+	}
+
 }

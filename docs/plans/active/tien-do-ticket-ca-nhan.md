@@ -1,6 +1,6 @@
 # Tiến độ ticket cá nhân và bàn giao phiên
 
-Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fetch. Branch đang làm: `feat/auth-register` (fast-forward từ `feat/auth-login` tại `914b9fb`); tại checkpoint #22, nền trước thay đổi là `803752a`, chứa #19 chưa merge.
+Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fetch. Branch đang làm: `feat/route-admin`, fast-forward tới hồ sơ `7c88ad0` từ `feat/auth-register`, kế thừa V6/V7 và server #22/#23. Phần server #24 đã kiểm chứng local; chưa push/PR/merge.
 
 ## Trạng thái và nguồn
 
@@ -9,7 +9,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fe
 - Project: https://github.com/orgs/Train-go/projects/1. Chưa đọc được board riêng tư vì CLI thiếu scope `read:project`; không suy diễn cột trạng thái từ trạng thái issue.
 - Đã đọc `README.md`, `AGENTS.md`, `docs/WORKFLOW.md`, các plan active và bản chia issue trong `docs/session/plan-task-chi-tiet.md`. Issue #19–#42 thay thế task cũ #4–#16; không triển khai lại task cũ.
 - Đây là file theo dõi duy nhất cho các phiên cá nhân; issue là nguồn AC, board là nguồn trạng thái nhóm. Không chép nguyên các hướng dẫn sang nhiều nơi.
-- #19 và phần server #22 đã triển khai, kiểm chứng; toàn #22 còn chờ UI #20/#21. #23 đang triển khai phần server; controller/UI và exception chung chờ #21. Xem checkpoint lịch sử và quan sát branch mới nhất bên dưới; chưa có PR/merge hoặc đóng issue trong phiên này.
+- #19 và phần server #22/#23/#24 đã triển khai, kiểm chứng; toàn #22/#23/#24 còn chờ UI và tích hợp #20/#21. Xem checkpoint lịch sử và quan sát branch mới nhất bên dưới; chưa có PR/merge hoặc đóng issue trong phiên này.
 
 ## Quyết định của người dùng
 
@@ -44,12 +44,12 @@ Trạng thái thực hiện bên dưới là hồ sơ phiên, **không phải c�
 | [#19](https://github.com/Train-go/train-go/issues/19) | Nền dữ liệu V6, một giá, CoachLayout | `feat/data-v6-coach-layout` | Không có | Đã kiểm chứng local; issue đã đóng theo GitHub ngày 23/10/2026 |
 | [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-login` | Server đã triển khai; UI chờ #20, #21 | Server kiểm chứng local; toàn issue chưa xong |
 | [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-register` | Kế thừa #19 và server #22; UI/exception chờ #21 | Server đã kiểm chứng local; UI/error integration chờ #21 |
-| [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | Server làm ngay; UI chờ #20, #21 | Chưa làm |
+| [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | Server đã triển khai; UI/API error integration chờ #20, #21 | Server kiểm chứng local, review đạt; toàn issue chưa xong |
 | [#27](https://github.com/Train-go/train-go/issues/27) | Sơ đồ dọc Ga và tuyến | `feat/station-network-map` | #20, #21, #24 | Chờ phụ thuộc |
 | [#35](https://github.com/Train-go/train-go/issues/35) | Booking và Người dùng admin | `feat/admin-bookings-users` | #20, #29, #31; cần phone từ #23 cho chi tiết khách | Chờ phụ thuộc |
 | [#36](https://github.com/Train-go/train-go/issues/36) | Bảng tính tàu và nhập nhiều chặng | `feat/train-sheet-view` | #28, #29; JS dùng network API #27; kế thừa trang tàu #25 | Chờ phụ thuộc |
 
-Thứ tự: #19 → phần server #22 → server #23 (phiên hiện tại), tích hợp UI khi #21 sẵn sàng; #24 → #27 là nhánh công việc khác; #35 và #36 chỉ tích hợp khi có module dùng chung.
+Thứ tự đã làm: #19 → phần server #22 → server #23 → server #24; tích hợp UI/API khi #20/#21 sẵn sàng. #27 còn phụ thuộc #20/#21/#24; #35 và #36 chỉ tích hợp khi có module dùng chung.
 #19 không phải dependency bắt buộc của server #22; chọn làm trước để gỡ nền dữ liệu cho nhóm.
 Đọc lại assignee và dependency trước mỗi lần bắt đầu; không nhận thêm ticket người khác chỉ vì nó đang chặn mình.
 
@@ -193,36 +193,31 @@ Header admin cũ vẫn tên cố định và form logout. Quy tắc public khôn
 
 ## Tiếp tục session sau
 
-Người dùng yêu cầu push #23 rồi làm ticket tiếp theo, sau đó xác nhận **bắt đầu
-ticket tiếp theo trong session mới**. Phiên này chỉ push và bàn giao, chưa viết
-code #24. Ưu tiên session mới: server #24 trên `feat/route-admin`; UI #23 vẫn chờ #21.
-Đọc bản mới nhất của hồ sơ này trên `feat/auth-register` và Git history của file.
-V6/#19, server #22 và server #23 đã có trên branch đó; không reset về baseline cũ.
+Checkpoint mới nhất là server #24 trên `feat/route-admin`; xem kết quả cuối file
+và Git history để xác định commit đã có. V6/V7 và server #22/#23 đã có trên branch
+này; không reset về baseline cũ. Toàn #24 còn chờ UI và tích hợp #20/#21.
 Đây là hồ sơ bền vững duy nhất; không tạo phase plan, journal hoặc trạng thái Harness song song.
 
-1. Kiểm tra working tree, HEAD, ancestry và hồ sơ mới nhất trước khi chuyển
-   `feat/route-admin`; mang hồ sơ/dependency sang an toàn, không reset công việc khác.
-   Branch #24 lúc tạo xuất phát từ `a138d97`; không giả định đã có V6/V7/server auth.
+1. Kiểm tra working tree, HEAD và hồ sơ mới nhất trên `feat/route-admin`;
+   bảo toàn mọi thay đổi chưa commit, không reset công việc khác.
 2. Đọc trực tiếp issue #24, assignee và #20/#21. Lần đọc 23/10: #24 mở, assign
    `thanhphong97`; server làm ngay, UI/API error integration chờ #20/#21.
-3. Đọc Route/Trip repository, Route entity, StationService, AdminController/AdminService,
-   docs/product/admin.md mục Quản lý tuyến. Hiện routes vẫn là danh sách đọc cũ,
-   chưa có RouteService hoặc API quản trị tuyến.
-4. Làm server #24 theo AC: create một/hai chiều trong transaction, chặn ga trùng/
-   cặp trùng/km không dương; chiều ngược đã có thì chỉ tạo chiều còn thiếu;
-   gợi ý abs(kmMark), đổi khoảng cách, chặn xóa tuyến có chuyến; RouteRow đếm tổng/
-   sắp chạy bằng query nhóm. Không tự làm khung chung #20/#21 hoặc nhận phần người khác.
+3. Đọc RouteService/request/RouteRow và Route/Trip/Station repository,
+   docs/product/admin.md mục Quản lý tuyến. Controller/AdminService/template vẫn
+   là danh sách đọc cũ; chưa có REST quản trị tuyến. Không làm lại server đã kiểm chứng.
+4. Khi dependency sẵn sàng, nối REST/UI theo AC; đổi exception sang lớp nền chung,
+   map `differentStations` về `destinationStationId`, kiểm chứng JSON 400/404/409.
+   Không tự làm khung chung #20/#21 hoặc nhận phần người khác.
 5. Dùng MySQL Server, giữ schema V7 và dữ liệu hiện tại. Compile, startup và thử
    nghiệp vụ thật (kể cả lỗi, tranh chấp, transaction rollback); ADR 0007 không test tự động.
 6. Cập nhật docs, hồ sơ và một dòng WORKLOG cùng commit; chỉ kết luận mức đã kiểm chứng.
    UI ma trận/list/keyboard/390px và JSON lỗi chuẩn phải có bằng chứng sau tích hợp dependency.
-   Chưa có yêu cầu merge hoặc tạo PR; yêu cầu push phiên này áp dụng checkpoint #23/bàn giao.
+   Chưa có yêu cầu push #24, merge hoặc tạo PR; commit checkpoint server được cho phép.
 
-Prompt nối phiên: “Bắt đầu #24. Đọc hồ sơ docs/plans/active/tien-do-ticket-ca-nhan.md
-mới nhất trên feat/auth-register; làm trên feat/route-admin, kế thừa nền V6/V7 và
-server auth hiện có để chạy MySQL Server. Đọc lại AC #24 và #20/#21; triển khai phần
-server độc lập, ghi blocker UI/error nếu dependency chưa có, không làm thay người
-khác. Cập nhật docs và WORKLOG cùng commit theo rule.”
+Prompt nối phiên: “Tiếp tục #24. Đọc hồ sơ docs/plans/active/tien-do-ticket-ca-nhan.md
+mới nhất trên feat/route-admin và Git history. Server đã kiểm chứng trên MySQL V7;
+đọc lại AC #24 và #20/#21 trước khi tích hợp API/UI. Nếu dependency chưa có, ghi rõ
+blocker, không làm thay người khác. Cập nhật hồ sơ và WORKLOG cùng commit theo rule.”
 
 ## Giới hạn và câu hỏi còn mở
 
@@ -293,3 +288,55 @@ Kết quả đã thu:
   và scout source để bàn giao; chưa chuyển branch, chưa sửa code #24, chưa tạo PR/merge.
 - Checkpoint bàn giao này cùng dòng WORKLOG được commit và push trên `feat/auth-register`;
   tra hash mới nhất qua Git history của hồ sơ. Session mới đọc mục Tiếp tục session sau.
+
+## Kế hoạch server #24 — 23/10/2026
+
+Đã đọc hồ sơ `7c88ad0` trên `feat/auth-register`, xác nhận working tree sạch;
+chuyển `feat/route-admin` từ `a138d97` và fast-forward tới `7c88ad0`, giữ V6/V7
+và server auth. Đọc lại GitHub: #24 mở, assign `thanhphong97`; #20/#21 còn mở.
+Plan server đã được agent review trước khi viết code.
+
+- [x] Request tạo/sửa khoảng cách, validation cả ở service; RouteRow tách entity.
+- [x] Query fetch hai ga, đếm tổng và sắp chạy theo nhóm; danh sách ba query.
+- [x] Transaction tạo một/hai chiều, bỏ qua chiều ngược đã có; khóa hai ga theo
+  thứ tự ID để tuần tự hóa yêu cầu cùng cặp ga ở cả hai chiều.
+- [x] Chỉ sửa khoảng cách; khóa tuyến khi sửa/xóa, kiểm tra mọi chuyến trước xóa.
+- [x] Compile, startup MySQL Server V7; probe service thật, transaction, concurrency.
+- [x] Browser kiểm tra danh sách tuyến hiện tại; review, cập nhật docs/WORKLOG.
+- [x] Checkpoint và WORKLOG đi cùng commit code; tra hash qua Git history. Chưa push/PR/merge.
+
+Phạm vi checkpoint: repository/entity/request/response/service và exception
+nghiệp vụ độc lập. Giữ controller/danh sách cũ để không gắn UI chưa có shell.
+Chưa tạo REST controller hoặc handler lỗi riêng: chờ #21 cung cấp lớp nền và
+JSON `{message, fields}` rồi tích hợp 400/404/409. Ba exception tuyến tạm kế
+thừa RuntimeException theo mẫu hiện có; chuyển sang lớp nền tương ứng khi #21
+sẵn sàng. `differentStations` phải map về `destinationStationId` khi nối form/API.
+UI ma trận/list mới, hoàn tác, bàn phím và responsive chờ #20/#21; chưa hoàn thành
+toàn #24. Không tạo migration, test tự động, phase plan hoặc hồ sơ song song.
+
+### Kết quả checkpoint server #24
+
+- Compile cuối: `BUILD SUCCESS`, 58 file Java, 3,373 giây. Maven
+  `spring-boot:run` khởi động ở 8080 sau 9,4 giây, PID 42896; MySQL Server 8.0.46,
+  Hibernate validate qua, Flyway xác nhận đủ 7 migration ở V7, không có migration mới.
+- Probe Spring/MySQL thật exit 0: tạo/sửa/xóa, tạo hai chiều và bỏ qua chiều ngược
+  có sẵn; chặn trùng cặp, cùng ga, null, ID không tồn tại và km không dương;
+  sửa chỉ đổi khoảng cách, gợi ý abs(lý trình). Danh sách đúng ba query, thứ tự,
+  tổng/sắp chạy và cờ chiều ngược; chặn xóa với mọi trạng thái chuyến.
+- Tạo đồng thời cùng chiều và ngược chiều: một thành công, một lỗi trùng tuyến
+  nghiệp vụ, không deadlock. Lỗi được chèn sau lần repository save thứ hai thật
+  làm rollback cả hai chiều. Tranh chấp xóa/thêm chuyến: khóa tuyến chặn insert;
+  sau xóa, MySQL 1452 từ chối FK và không có chuyến mồ côi. Probe race mở rộng đạt.
+- Sau dọn dữ liệu probe, snapshot đầy đủ không đổi: 8 ga, 16 tuyến, 18 chuyến,
+  8 booking, 11 vé. Không reset DB hoặc thay lịch sử migration; probe đã dừng.
+- Chromium `/admin/routes` ở 1440px/390px trả 200, đúng 16 dòng, không pageerror,
+  không tràn ngang trang; bảng cuộn nội bộ trên mobile. Đã xem ảnh 390px.
+  Các trang admin ga/chuyến/booking/người dùng và trang chủ đều trả 200.
+  Đây là kiểm chứng hồi quy màn hình cũ, chưa chứng minh ma trận/form/API mới.
+- Review code cuối không có finding cần sửa. Không thêm test tự động/dependency.
+- Bằng chứng tạm ngoài Git:
+  `C:/Users/mrcaf/AppData/Local/Temp/traingo-issue24-proof/` gồm `probe.log`,
+  `browser-results.json` và `routes-1440.png`/`routes-390.png`; không commit file tạm.
+- Đã dừng đúng Java PID 42896 sau khi xác minh command line và classpath argfile;
+  cổng 8080 không còn listener, MySQL80 vẫn Running. Diff kiểm tra sạch.
+  Hash checkpoint tra Git history của hồ sơ; chưa push/PR/merge hoặc đóng #24.
