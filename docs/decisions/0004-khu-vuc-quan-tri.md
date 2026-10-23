@@ -4,7 +4,10 @@ Date: 2026-08-27
 
 ## Status
 
-Accepted
+Accepted. Phần "template dashboard bên ngoài" (CSS, JS, thư viện vendor và bố
+cục header, sidebar, footer của template) đã bị
+`0012-giao-dien-admin-moi.md` thay ngày 23/10/2026. Các luật namespace, vị trí
+static, `activeNav` và "không nạp `app.css` cùng `admin.css`" vẫn giữ.
 
 ## Context
 

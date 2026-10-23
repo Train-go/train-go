@@ -4,7 +4,9 @@ Date: 2026-08-27
 
 ## Status
 
-Active
+Active. Phần shell dựng từ template dashboard bên ngoài (header, sidebar,
+footer, `simple-datatables`, `apexcharts`) đã bị ADR 0012 thay ngày 23/10/2026;
+khung admin hiện tại theo `docs/plans/active/khung-giao-dien-admin-va-client.md`.
 
 ## Outcome
 
