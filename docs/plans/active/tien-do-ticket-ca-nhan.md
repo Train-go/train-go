@@ -9,7 +9,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fe
 - Project: https://github.com/orgs/Train-go/projects/1. Chưa đọc được board riêng tư vì CLI thiếu scope `read:project`; không suy diễn cột trạng thái từ trạng thái issue.
 - Đã đọc `README.md`, `AGENTS.md`, `docs/WORKFLOW.md`, các plan active và bản chia issue trong `docs/session/plan-task-chi-tiet.md`. Issue #19–#42 thay thế task cũ #4–#16; không triển khai lại task cũ.
 - Đây là file theo dõi duy nhất cho các phiên cá nhân; issue là nguồn AC, board là nguồn trạng thái nhóm. Không chép nguyên các hướng dẫn sang nhiều nơi.
-- #19 đã triển khai và kiểm chứng local; xem checkpoint lịch sử. #22 đang triển khai phần server trên branch riêng, UI chờ #20/#21. Chưa push, mở PR hoặc đóng issue; các ticket còn lại chưa triển khai.
+- #19 và phần server #22 đã triển khai, kiểm chứng; toàn #22 còn chờ UI #20/#21. #23 là việc ưu tiên session sau, chưa có code đăng ký. Xem checkpoint lịch sử và quan sát branch mới nhất bên dưới; chưa có PR/merge hoặc đóng issue trong phiên này.
 
 ## Quyết định của người dùng
 
@@ -43,13 +43,13 @@ Trạng thái thực hiện bên dưới là hồ sơ phiên, **không phải c�
 | --- | --- | --- | --- | --- |
 | [#19](https://github.com/Train-go/train-go/issues/19) | Nền dữ liệu V6, một giá, CoachLayout | `feat/data-v6-coach-layout` | Không có | Đã kiểm chứng local; chưa PR |
 | [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-login` | Server đã triển khai; UI chờ #20, #21 | Server kiểm chứng local; toàn issue chưa xong |
-| [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-register` | #19 và #22; exception dùng quy ước #21 | Chờ phụ thuộc |
+| [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-register` | Kế thừa #19 và server #22; UI/exception chờ #21 | Chưa triển khai; ưu tiên session sau |
 | [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | Server làm ngay; UI chờ #20, #21 | Chưa làm |
 | [#27](https://github.com/Train-go/train-go/issues/27) | Sơ đồ dọc Ga và tuyến | `feat/station-network-map` | #20, #21, #24 | Chờ phụ thuộc |
 | [#35](https://github.com/Train-go/train-go/issues/35) | Booking và Người dùng admin | `feat/admin-bookings-users` | #20, #29, #31; cần phone từ #23 cho chi tiết khách | Chờ phụ thuộc |
 | [#36](https://github.com/Train-go/train-go/issues/36) | Bảng tính tàu và nhập nhiều chặng | `feat/train-sheet-view` | #28, #29; JS dùng network API #27; kế thừa trang tàu #25 | Chờ phụ thuộc |
 
-Thứ tự: #19 → phần server #22 → #23 khi dependency sẵn; #24 → #27 là nhánh công việc khác; #35 và #36 chỉ tích hợp khi có module dùng chung.
+Thứ tự: #19 → phần server #22 → bắt đầu #23 trong session sau; #24 → #27 là nhánh công việc khác; #35 và #36 chỉ tích hợp khi có module dùng chung.
 #19 không phải dependency bắt buộc của server #22; chọn làm trước để gỡ nền dữ liệu cho nhóm.
 Đọc lại assignee và dependency trước mỗi lần bắt đầu; không nhận thêm ticket người khác chỉ vì nó đang chặn mình.
 
@@ -75,10 +75,13 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 
 ### #23 — đăng ký
 
-- `entity/User.java` hiện chưa có phoneNumber; thêm migration V7 sau V6, không dùng lại số migration đã có.
-- Thêm `RegisterRequest`, `UserService`, xử lý email trùng, controller và template đăng ký; cập nhật auth và ERD.
-- Luật theo issue: số điện thoại 10 chữ số bắt đầu 0; tên tối đa 100 ký tự; mật khẩu ít nhất 8 ký tự và xác nhận khớp; email lưu chữ thường, không trùng không phân biệt hoa thường; role CUSTOMER, hash BCrypt, tự đăng nhập.
-- Chấp nhận: thử từng lỗi riêng, hai yêu cầu đăng ký trùng email, giữ form trừ mật khẩu; SQL kiểm tra tài khoản mới và phone của 11 khách mẫu; admin được để phone trống.
+- Issue [#23](https://github.com/Train-go/train-go/issues/23) đã đọc lại khi bàn giao: còn mở, assign `thanhphong97`, tiêu đề “Đăng ký tài khoản và số điện thoại”; phụ thuộc server #22 (`UserDetailsService`, `PasswordEncoder`) và V6 từ #19.
+- `entity/User.java` hiện chưa có phoneNumber. Dự kiến migration `V7__user_phone_number.sql`: cột nullable `VARCHAR(15)`, điền số điện thoại cho 11 CUSTOMER seed, ADMIN được null. Kiểm tra lại số migration mới nhất trước khi tạo; không sửa V1–V6 đã chạy.
+- Thêm factory `User.newCustomer` gồm `createdAt`, repository `existsByEmailIgnoreCase`, `RegisterRequest`, `UserService`, `AuthController` và `/register` với template dùng client shell #21. `DuplicateEmailException` kế thừa `BusinessRuleException` từ #21; lớp nền này chưa có ở checkpoint hiện tại. Bắt cả tranh chấp unique ở database thành lỗi email trùng tại field.
+- Form có `fullName`, `email`, `phoneNumber`, `password`, `confirmPassword`; lỗi inline tiếng Việt. Tên bắt buộc, tối đa 100 ký tự; email hợp lệ, trim/lowercase khi lưu và unique không phân biệt hoa/thường; phone đúng 10 chữ số bắt đầu 0; mật khẩu ít nhất 8 ký tự và xác nhận khớp. Lỗi giữ mọi trường trừ hai mật khẩu.
+- Chỉ tạo CUSTOMER, hash BCrypt; không nhận role từ form hoặc cho tự cấp ADMIN. Sau đăng ký dùng `request.login`, về trang chủ với navbar hiện tên.
+- Có thể bắt đầu server #23 trên nền server #22 đã kiểm chứng; nếu shell/quy ước lỗi #21 chưa sẵn thì ghi blocker UI/error integration. Không nhận làm thay #20/#21 hoặc tuyên bố hoàn thành toàn #23 khi còn blocker.
+- Chấp nhận: compile, khởi động MySQL Server, browser đăng ký hợp lệ và từng lỗi, hai yêu cầu tranh chấp email trùng, giữ form trừ mật khẩu; logout rồi login bằng tài khoản mới; SQL xác minh phone 11 khách seed, ADMIN nullable, hash và role tài khoản mới. Đồng bộ auth, ERD, hồ sơ, RUNBOOK nếu cần và một dòng WORKLOG cùng commit.
 
 ### #24 — tuyến
 
@@ -163,8 +166,8 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 - [x] Review phần server không finding; `git diff --check` đạt; docs và một dòng WORKLOG đi cùng code. Không thêm migration, thư mục test hoặc dependency test.
 - [x] Dừng đúng instance TrainGo PID 1192 sau khi xác minh command line; cổng 8080 đã trả lại, MySQL80 vẫn Running.
 
-Commit chứa checkpoint này có tiêu đề `feat(auth): implement database login and role authorization`;
-tra hash bằng `git log -1 --format=%H --grep="feat(auth): implement database login and role authorization" feat/auth-login`.
+Commit chứa checkpoint này: `3d3d1f60132844d1cc19bed0e9729045ec59ef27`
+(`feat(auth): implement database login and role authorization`).
 Danh tính commit dùng `thanhphong97` với email GitHub noreply theo profile đã xác minh,
 chỉ áp dụng cho lệnh commit, không đổi Git/CLI toàn cục. Chưa push/PR/merge;
 toàn issue #22 vẫn chưa hoàn thành.
@@ -190,25 +193,34 @@ Header admin cũ vẫn tên cố định và form logout. Quy tắc public khôn
 
 ## Tiếp tục session sau
 
-Tiếp tục **#22 — Đăng nhập, phân quyền, đăng xuất** trên `feat/auth-login` với
-phần server hiện có; UI phụ thuộc #20/#21. Đây là hồ sơ bền vững duy nhất; không
-tạo phase plan, journal hoặc trạng thái Harness song song.
+Người dùng chọn **bắt đầu #23 — Đăng ký tài khoản và số điện thoại trong session mới**,
+trên `feat/auth-register`. Phiên bàn giao chỉ cập nhật tài liệu, chưa viết code đăng ký.
+Đây là hồ sơ bền vững duy nhất; không tạo phase plan, journal hoặc trạng thái Harness song song.
 
-Đưa câu này cho agent: “Tiếp tục issue #22 cho thanhphong97. Vào đúng git root
+Quan sát local khi bàn giao (không fetch): `feat/auth-login` và tracking ref
+`origin/feat/auth-login` cùng ở `3d3d1f6`; `feat/data-v6-coach-layout` và tracking ref
+tương ứng cùng ở `803752a`. Đây là trạng thái ref hiện có, không phải thao tác push
+của phiên này; các ghi chú “chưa push” phía trên là lịch sử tại checkpoint đó.
+`feat/auth-register` vẫn ở `a138d97`, chưa chứa V6/#19 hoặc server #22.
+
+Đưa câu này cho agent: “Bắt đầu issue #23 cho thanhphong97. Vào đúng git root
 D:/IUH/Documents/HK1-2026_2027/Web/project/train-go/train-go, đọc README.md,
-AGENTS.md, docs/WORKFLOW.md và hồ sơ mới nhất trên feat/auth-login. Dùng MySQL
-Server theo application.properties, không Docker. Đọc lại #22 và dependency
-#20/#21; giữ code #19 để tương thích DB V6 local. Server đã triển khai, xem bằng
-chứng và phần UI còn thiếu trong checkpoint. Sau kiểm chứng cập nhật tài liệu,
-hồ sơ và docs/WORKLOG.md cùng commit. Không push/merge khi chưa được yêu cầu.”
+AGENTS.md, docs/WORKFLOW.md và bản mới nhất của docs/plans/active/tien-do-ticket-ca-nhan.md
+trên feat/auth-login. Giữ mọi thay đổi hiện có; đồng bộ hồ sơ mới nhất, #19 và server
+#22 sang feat/auth-register bằng fast-forward an toàn nếu ancestry cho phép. Dùng
+MySQL Server theo application.properties, không Docker. Đọc trực tiếp #23 và
+dependency #19/#22/#20/#21, đối chiếu code thật. Làm đăng ký/phone theo AC; không
+làm thay #20/#21, ghi blocker UI/error integration nếu thiếu. Sau kiểm chứng cập
+nhật auth/ERD, RUNBOOK nếu cần, hồ sơ và một dòng docs/WORKLOG.md cùng commit.
+Không push/merge khi chưa được yêu cầu.”
 
 Checklist nối phiên:
 
-1. Kiểm tra working tree, HEAD và lịch sử hồ sơ trước khi sửa; giữ thay đổi người khác. Không fast-forward lại theo baseline cũ hoặc lùi schema.
-2. Kiểm tra lại assignee, issue/PR và #20/#21. Chỉ tích hợp UI khi khung đã có; nếu chưa, ghi blocker thật. #19 vẫn là dependency branch chưa merge, đọc lại remote trước khi mở PR.
-3. Khi shell sẵn sàng, thêm login riêng và hành vi UI theo AC #22, dùng `currentUser` ở navbar/sidebar; không làm đăng ký/phone hoặc nghiệp vụ ownership thuộc ticket sau.
-4. Compile, chạy MySQL Server, thử khách/CUSTOMER/ADMIN, saved request, API, lỗi đăng nhập, CSRF/logout; UI 1440px và 390px, bàn phím. Không thêm test tự động theo ADR 0007.
-5. Cập nhật ba tài liệu auth/RUNBOOK/hồ sơ và một dòng WORKLOG cùng commit trên branch issue. Chỉ đánh dấu hoàn thành toàn #22 khi cả server và UI có đủ bằng chứng; không dùng `Closes #22` cho checkpoint một phần.
+1. Kiểm tra working tree, HEAD và lịch sử hồ sơ trước checkout; bảo toàn công việc khác. Xác định bản hồ sơ mới nhất, kiểm tra ancestry rồi mới fast-forward branch #23; không reset hoặc giả định dependency đã merge. `origin/main=a138d97` là quan sát trước đó, phải kiểm tra lại khi cần đồng bộ.
+2. Đọc lại issue/assignee và dependency trực tiếp, xác minh `UserDetailsService`/encoder từ #22, V6 từ #19, shell/quy ước lỗi #21. Toàn #22 vẫn chưa xong vì UI #20/#21; không đổi trạng thái thành hoàn thành để bắt đầu #23.
+3. Đối chiếu AC #23 ở mục trên với source hiện tại; kiểm tra số migration, backup DB hiện có theo RUNBOOK trước migration không phá dữ liệu. Không chạy entity cũ thiếu V6 trên DB local đã V6, không xóa DB hoặc dùng Docker.
+4. Triển khai trên `feat/auth-register`; kiểm chứng compile, khởi động MySQL Server, đăng ký hợp lệ/từng lỗi, email trùng và tranh chấp unique, role/hash/phone bằng SQL, tự đăng nhập, logout rồi login. UI cần 1440px/390px và bàn phím khi shell sẵn sàng; ghi rõ blocker nếu chưa có. Không thêm test tự động, `app/src/test` hoặc dependency test theo ADR 0007.
+5. Cập nhật auth, ERD, RUNBOOK nếu cần, hồ sơ và một dòng WORKLOG cùng commit trên branch #23; ghi mức kiểm chứng thật. Chỉ hoàn thành toàn #23 khi đủ server/UI và AC; không dùng `Closes #23` cho checkpoint một phần. Không push/merge khi chưa được yêu cầu.
 
 ## Giới hạn và câu hỏi còn mở
 
