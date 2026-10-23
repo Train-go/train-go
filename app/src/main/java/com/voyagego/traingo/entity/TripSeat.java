@@ -3,6 +3,7 @@ package com.voyagego.traingo.entity;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import com.voyagego.traingo.model.dto.CoachLayout;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,10 +56,6 @@ public class TripSeat {
 	/** Beds only: four beds per cabin, so B01-B04 are cabin 1. Null for seats. */
 	private Integer cabinNumber;
 
-	/** Added to Trip.basePrice for this seat, in dong. */
-	@Column(nullable = false)
-	private long priceModifier;
-
 	@Enumerated(EnumType.STRING)
 	@JdbcTypeCode(SqlTypes.VARCHAR)
 	@Column(nullable = false, length = 20)
@@ -68,15 +65,17 @@ public class TripSeat {
 	protected TripSeat() {
 	}
 
-	public TripSeat(Trip trip, int coachNumber, CoachType coachType, String seatCode, Integer cabinNumber,
-			long priceModifier) {
+	public TripSeat(Trip trip, int coachNumber, CoachType coachType, String seatCode, Integer cabinNumber) {
 		this.trip = trip;
 		this.coachNumber = coachNumber;
 		this.coachType = coachType;
 		this.seatCode = seatCode;
 		this.cabinNumber = cabinNumber;
-		this.priceModifier = priceModifier;
 		this.status = TripSeatStatus.AVAILABLE;
+	}
+
+	public TripSeat(Trip trip, CoachLayout.Seat seat) {
+		this(trip, seat.coachNumber(), seat.type(), seat.seatCode(), seat.cabinNumber());
 	}
 
 	public Long getId() {
@@ -101,10 +100,6 @@ public class TripSeat {
 
 	public Integer getCabinNumber() {
 		return cabinNumber;
-	}
-
-	public long getPriceModifier() {
-		return priceModifier;
 	}
 
 	public TripSeatStatus getStatus() {

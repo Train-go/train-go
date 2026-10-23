@@ -48,7 +48,7 @@ public class Trip {
 	@Column(nullable = false)
 	private LocalDateTime arrivalAt;
 
-	/** In dong. A ticket costs basePrice plus its trip seat's priceModifier. */
+	/** Price of every seat on this trip, in dong. */
 	@Column(nullable = false)
 	private long basePrice;
 
