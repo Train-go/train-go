@@ -2,69 +2,36 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
 <head>
-	<title>Quản lý tuyến · Quản trị TrainGo</title>
+	<title>Tuyến · Quản trị TrainGo</title>
 </head>
 <body>
 <main>
 
-	<div class="pagetitle">
-		<h1>Quản lý tuyến</h1>
-		<nav>
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
-				<li class="breadcrumb-item active">Tuyến</li>
-			</ol>
-		</nav>
+	<div class="page-head">
+		<h1>Tuyến</h1>
+		<span class="count" th:text="|${#lists.size(routes)} tuyến|">16 tuyến</span>
 	</div>
 
-	<section class="section">
-		<div class="card table-card">
-			<div class="card-body">
-				<div class="table-card-header flex-wrap">
-					<div>
-						<h4 class="card-title mb-2">Danh sách tuyến</h4>
-						<small class="text-muted">Ga đi phải khác ga đến. Không quản lý ga trung gian.</small>
-					</div>
-					<div class="table-toolbar">
-						<button type="button" class="btn btn-primary btn-sm" disabled>
-							<i class="bi bi-plus-lg me-1"></i>Thêm tuyến
-						</button>
-					</div>
-				</div>
-				<div class="table-responsive">
-					<table class="table table-modern datatable align-middle mb-0">
-						<thead>
-							<tr>
-								<th scope="col">Mã tuyến</th>
-								<th scope="col">Ga đi</th>
-								<th scope="col">Ga đến</th>
-								<th scope="col">Khoảng cách</th>
-								<th scope="col">Thao tác</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr th:each="route : ${routes}">
-								<td th:text="${route.code}">SGN-NTR</td>
-								<td th:text="${route.origin}">Ga Sài Gòn</td>
-								<td th:text="${route.destination}">Ga Nha Trang</td>
-								<td th:text="${route.distanceKm} + ' km'">411 km</td>
-								<td>
-									<div class="table-actions">
-										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Sửa">
-											<i class="bi bi-pencil"></i>
-										</button>
-										<button type="button" class="btn btn-light btn-sm" disabled aria-label="Xóa">
-											<i class="bi bi-trash"></i>
-										</button>
-									</div>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	</section>
+	<div class="panel table-responsive">
+		<table class="table table-hover align-middle">
+			<thead>
+				<tr>
+					<th scope="col" class="shrink">Mã tuyến</th>
+					<th scope="col">Ga đi</th>
+					<th scope="col">Ga đến</th>
+					<th scope="col" class="num">Khoảng cách</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="route : ${routes}">
+					<td><span class="code" th:text="${route.code}">SGN-NTR</span></td>
+					<td th:text="${route.origin}">Ga Sài Gòn</td>
+					<td th:text="${route.destination}">Ga Nha Trang</td>
+					<td class="num text-nowrap" th:text="|${route.distanceKm} km|">411 km</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
 </main>
 </body>
