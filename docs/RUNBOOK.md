@@ -75,6 +75,13 @@ không bật `ddl-auto=update`.
 - V6 bỏ `tickets.date_of_birth`; bỏ CHECK `ck_trip_seats_price_modifier` trước
   khi bỏ `trip_seats.price_modifier`. V6 không cập nhật `ticket_price` hoặc
   `bookings.total_price`, không xóa booking/vé đã có.
+- V7 thêm `users.phone_number VARCHAR(15) NULL`, điền phone cho 11 CUSTOMER seed
+  theo email; ADMIN không bắt buộc phone. Không thay đổi booking/vé hoặc mật khẩu.
+
+Ngày 23/10/2026 đã áp V7 trên MySQL Server 8.0.46, Hibernate validate qua.
+Sau khi dọn tài khoản kiểm chứng, snapshot mọi cột cũ của 12 user, 8 booking và
+11 vé khớp trước migration; 11 khách seed có phone, ADMIN null. Không sửa V7
+để chạy lại; nếu cần điều chỉnh phone/schema, tạo migration tiếp theo.
 
 Mỗi vé mới có giá bằng `Trip.basePrice`, dù chọn ghế hay giường. Giá vé cũ,
 kể cả vé giường từng có phụ thu, vẫn giữ nguyên. Cấu hình toa bất biến trong

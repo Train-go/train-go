@@ -17,10 +17,14 @@ OAuth.
 
 ## Đăng ký
 
-Chốt ngày 12/10/2026 (D4). Form đăng ký gồm họ tên, email, mật khẩu và nhập lại
-mật khẩu:
+Chốt ngày 12/10/2026 (D4), bổ sung phone theo #23 ngày 21/10/2026.
+Form đăng ký gồm họ tên, email, số điện thoại, mật khẩu và nhập lại mật khẩu:
 
-- Mật khẩu ít nhất 8 ký tự. Hai ô mật khẩu phải giống nhau.
+- Họ tên bắt buộc, tối đa 100 ký tự.
+- Email hợp lệ, tối đa 255 ký tự; cắt khoảng trắng đầu/cuối, lưu chữ thường.
+- Số điện thoại đúng 10 chữ số ASCII, bắt đầu bằng 0. ADMIN có thể không có phone.
+- Mật khẩu ít nhất 8 ký tự, tối đa 72 byte UTF-8 theo giới hạn BCrypt hiện dùng
+  (ký tự có dấu có thể chiếm nhiều byte). Hai ô mật khẩu phải giống nhau.
 - Email không được trùng, không phân biệt chữ hoa chữ thường: đã có
   `an.nguyen@example.com` thì `An.Nguyen@Example.com` bị từ chối.
 - Tài khoản tạo qua form luôn có role `CUSTOMER`.
@@ -83,8 +87,34 @@ tố `{bcrypt}`. `admin` / `admin` không còn là tài khoản đăng nhập t�
 #22 chưa hoàn thành toàn bộ: trang login riêng (lỗi tiếng Việt, giữ email,
 ẩn/hiện mật khẩu, chuyển người đã đăng nhập), navbar khách và sidebar/admin chờ
 khung dùng chung #20/#21. Header admin cũ còn tên hiển thị cố định và form logout;
-chưa thể coi là tích hợp `currentUser` hoàn chỉnh. Đăng ký, phone và kiểm tra
-ownership thuộc các ticket sau, chưa được triển khai bởi thay đổi này.
+chưa thể coi là tích hợp `currentUser` hoàn chỉnh. Phần server đăng ký/phone
+được bổ sung ở checkpoint #23 bên dưới; ownership thuộc các ticket sau.
+
+## Checkpoint server #23
+
+`V7__user_phone_number.sql` thêm `users.phone_number VARCHAR(15) NULL` và chỉ
+điền số giả `0901000001`–`0901000011` cho 11 CUSTOMER seed theo email; ADMIN
+giữ null. Không sửa V1–V6 hoặc thông tin booking/vé.
+
+`User.newCustomer` luôn gán CUSTOMER. `RegisterRequest` kiểm tra dữ liệu bằng
+Bean Validation; `UserService.register` cũng validate ở ranh giới service,
+chuẩn hóa email bằng `Locale.ROOT`, hash BCrypt và lưu trong transaction.
+Precheck `existsByEmailIgnoreCase` cho lỗi sớm; `saveAndFlush` bắt lỗi unique
+MySQL 1062/23000 của `uk_users_email` khi hai đăng ký tranh chấp. Các lỗi toàn
+vẹn khác vẫn được ném lại. `DuplicateEmailException.getField()` trả `email`.
+
+**Chưa hoàn thành #23:** chưa có controller/template `/register`, chưa tự đăng
+nhập hoặc giữ form sau lỗi. Chờ khung client và `BusinessRuleException` của #21;
+exception email hiện tạm kế thừa `RuntimeException`, theo mẫu exception đang có.
+Khi tích hợp, đổi lớp cha sang `BusinessRuleException`, bắt lỗi email ở field
+`email`, chuyển lỗi validation `passwordConfirmed` sang `confirmPassword`,
+`passwordWithinLimit` sang `password`,
+giữ các giá trị ngoài hai mật khẩu và gọi `request.login` sau khi transaction
+đăng ký đã commit. Không đưa password vào log hoặc session riêng.
+
+Kịch bản tiếp theo: đủ AC1–AC5 của #23 qua trình duyệt, tự đăng nhập về `/`
+với navbar hiện tên; lỗi inline tiếng Việt; giữ form trừ mật khẩu; email trùng
+và hai yêu cầu đồng thời; logout rồi login; 1440px/390px và bàn phím.
 
 ## Kịch bản thử bằng tay — phần server #22
 
