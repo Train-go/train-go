@@ -193,18 +193,36 @@ Header admin cũ vẫn tên cố định và form logout. Quy tắc public khôn
 
 ## Tiếp tục session sau
 
-Tiếp tục trên `feat/auth-register`, đọc checkpoint #23 cuối file và Git history
-của chính file này để lấy bản mới nhất. V6/#19 và server #22 đã được kế thừa tại
-`914b9fb`; không chạy lại bước khởi tạo branch hoặc reset về baseline cũ.
+Người dùng yêu cầu push #23 rồi làm ticket tiếp theo, sau đó xác nhận **bắt đầu
+ticket tiếp theo trong session mới**. Phiên này chỉ push và bàn giao, chưa viết
+code #24. Ưu tiên session mới: server #24 trên `feat/route-admin`; UI #23 vẫn chờ #21.
+Đọc bản mới nhất của hồ sơ này trên `feat/auth-register` và Git history của file.
+V6/#19, server #22 và server #23 đã có trên branch đó; không reset về baseline cũ.
 Đây là hồ sơ bền vững duy nhất; không tạo phase plan, journal hoặc trạng thái Harness song song.
 
-1. Kiểm tra working tree, HEAD, issue #23 và tình trạng #21 trước khi sửa; giữ công việc khác.
-2. Khi #21 sẵn sàng, tích hợp DuplicateEmailException với BusinessRuleException,
-   thêm AuthController/template register trong khung client và request.login sau commit.
-3. Map passwordConfirmed vào confirmPassword, passwordWithinLimit vào password, email trùng vào email; giữ mọi ô trừ hai mật khẩu.
-4. Thử đủ AC1–AC5 trên MySQL Server, 1440px/390px và bàn phím; kiểm tra auto-login,
-   navbar tên, logout/login lại. Không thêm test tự động theo ADR 0007.
-5. Docs/WORKLOG cùng commit; chỉ hoàn thành toàn #23 khi đủ bằng chứng. Không push/merge khi chưa yêu cầu.
+1. Kiểm tra working tree, HEAD, ancestry và hồ sơ mới nhất trước khi chuyển
+   `feat/route-admin`; mang hồ sơ/dependency sang an toàn, không reset công việc khác.
+   Branch #24 lúc tạo xuất phát từ `a138d97`; không giả định đã có V6/V7/server auth.
+2. Đọc trực tiếp issue #24, assignee và #20/#21. Lần đọc 23/10: #24 mở, assign
+   `thanhphong97`; server làm ngay, UI/API error integration chờ #20/#21.
+3. Đọc Route/Trip repository, Route entity, StationService, AdminController/AdminService,
+   docs/product/admin.md mục Quản lý tuyến. Hiện routes vẫn là danh sách đọc cũ,
+   chưa có RouteService hoặc API quản trị tuyến.
+4. Làm server #24 theo AC: create một/hai chiều trong transaction, chặn ga trùng/
+   cặp trùng/km không dương; chiều ngược đã có thì chỉ tạo chiều còn thiếu;
+   gợi ý abs(kmMark), đổi khoảng cách, chặn xóa tuyến có chuyến; RouteRow đếm tổng/
+   sắp chạy bằng query nhóm. Không tự làm khung chung #20/#21 hoặc nhận phần người khác.
+5. Dùng MySQL Server, giữ schema V7 và dữ liệu hiện tại. Compile, startup và thử
+   nghiệp vụ thật (kể cả lỗi, tranh chấp, transaction rollback); ADR 0007 không test tự động.
+6. Cập nhật docs, hồ sơ và một dòng WORKLOG cùng commit; chỉ kết luận mức đã kiểm chứng.
+   UI ma trận/list/keyboard/390px và JSON lỗi chuẩn phải có bằng chứng sau tích hợp dependency.
+   Chưa có yêu cầu merge hoặc tạo PR; yêu cầu push phiên này áp dụng checkpoint #23/bàn giao.
+
+Prompt nối phiên: “Bắt đầu #24. Đọc hồ sơ docs/plans/active/tien-do-ticket-ca-nhan.md
+mới nhất trên feat/auth-register; làm trên feat/route-admin, kế thừa nền V6/V7 và
+server auth hiện có để chạy MySQL Server. Đọc lại AC #24 và #20/#21; triển khai phần
+server độc lập, ghi blocker UI/error nếu dependency chưa có, không làm thay người
+khác. Cập nhật docs và WORKLOG cùng commit theo rule.”
 
 ## Giới hạn và câu hỏi còn mở
 
@@ -262,3 +280,16 @@ Kết quả đã thu:
   không thay cổng/khởi động thêm, dùng đúng instance đó cho browser rồi dừng sau cùng.
 - Bằng chứng tạm ngoài Git: `C:/Users/mrcaf/AppData/Local/Temp/traingo-issue23-proof/`.
   Chưa có push/merge/PR hoặc đóng #23 trong phiên này; chỉ checkpoint server.
+
+## Bàn giao sau push #23 — 23/10/2026
+
+- Đã push commit server #23 `ec4a74a` lên `origin/feat/auth-register`; branch đã
+  tracking remote. Git xác nhận repository chuyển từ Voyage-GO sang Train-go;
+  URL hiện tại: https://github.com/Train-go/train-go/tree/feat/auth-register.
+- Push dùng credential username `thanhphong97` theo từng lệnh, không đổi tài khoản
+  toàn cục. `gh auth status` vẫn báo token `phong-vht` invalid; không dùng kết quả đó
+  để suy ra push thất bại (Git push đã thành công qua credential helper riêng).
+- Người dùng chốt bắt đầu ticket tiếp theo trong session mới. Đã đọc trực tiếp #24
+  và scout source để bàn giao; chưa chuyển branch, chưa sửa code #24, chưa tạo PR/merge.
+- Checkpoint bàn giao này cùng dòng WORKLOG được commit và push trên `feat/auth-register`;
+  tra hash mới nhất qua Git history của hồ sơ. Session mới đọc mục Tiếp tục session sau.
