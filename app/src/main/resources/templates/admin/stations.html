@@ -2,94 +2,64 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
 <head>
-	<title>Quản lý ga · Quản trị TrainGo</title>
+	<title>Ga · Quản trị TrainGo</title>
 </head>
 <body>
 <main>
 
-	<div class="pagetitle">
-		<h1>Quản lý ga</h1>
-		<nav>
-			<ol class="breadcrumb">
-				<li class="breadcrumb-item"><a th:href="@{/admin}">Quản trị</a></li>
-				<li class="breadcrumb-item active">Ga</li>
-			</ol>
-		</nav>
+	<div class="page-head">
+		<h1>Ga</h1>
+		<span class="count" th:text="|${#lists.size(stations)} ga|">8 ga</span>
+		<span class="grow"></span>
+		<a class="btn btn-primary" th:href="@{/admin/stations/new}">
+			<i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm ga
+		</a>
 	</div>
 
-	<div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-		<i class="bi bi-check-circle me-1"></i>
-		<span th:text="${successMessage}">Đã thêm Ga Sài Gòn (SGN).</span>
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-	</div>
-	<div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-		<i class="bi bi-exclamation-triangle me-1"></i>
-		<span th:text="${errorMessage}">Không xóa được ga.</span>
-		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-	</div>
-
-	<section class="section">
-		<div class="card table-card">
-			<div class="card-body">
-				<div class="table-card-header flex-wrap">
-					<div>
-						<h4 class="card-title mb-2">Danh sách ga</h4>
-						<small class="text-muted">Chỉ xóa được ga chưa là điểm đi hay điểm đến của tuyến nào.</small>
-					</div>
-					<div class="table-toolbar">
-						<a class="btn btn-primary btn-sm" th:href="@{/admin/stations/new}">
-							<i class="bi bi-plus-lg me-1"></i>Thêm ga
+	<div class="panel table-responsive">
+		<table class="table table-hover align-middle">
+			<thead>
+				<tr>
+					<th scope="col" class="num shrink">Lý trình</th>
+					<th scope="col" class="shrink">Mã ga</th>
+					<th scope="col">Tên ga</th>
+					<th scope="col">Tỉnh / Thành phố</th>
+					<th scope="col">Địa chỉ</th>
+					<th scope="col"><span class="visually-hidden">Thao tác</span></th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr th:each="station : ${stations}">
+					<td class="num text-nowrap" th:text="|Km ${station.kmMark}|">Km 1726</td>
+					<td><span class="code" th:text="${station.code}">SGN</span></td>
+					<td class="fw-bold" th:text="${station.name}">Ga Sài Gòn</td>
+					<td th:text="${station.city}">TP. Hồ Chí Minh</td>
+					<td th:text="${station.address}">1 Nguyễn Thông</td>
+					<td class="actions">
+						<a class="icon-btn" th:href="@{/admin/stations/{id}/edit(id=${station.id})}"
+							th:title="|Sửa ${station.name}|" th:aria-label="|Sửa ${station.name}|">
+							<i class="bi bi-pencil" aria-hidden="true"></i>
 						</a>
-					</div>
-				</div>
-				<div class="table-responsive">
-					<table class="table table-modern datatable align-middle mb-0">
-						<thead>
-							<tr>
-								<th scope="col">Lý trình</th>
-								<th scope="col">Mã ga</th>
-								<th scope="col">Tên ga</th>
-								<th scope="col">Tỉnh / Thành phố</th>
-								<th scope="col">Địa chỉ</th>
-								<th scope="col">Thao tác</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr th:each="station : ${stations}">
-								<td class="text-nowrap" th:text="|Km ${station.kmMark}|">Km 1726</td>
-								<td class="fw-semibold" th:text="${station.code}">SGN</td>
-								<td th:text="${station.name}">Ga Sài Gòn</td>
-								<td th:text="${station.city}">TP. Hồ Chí Minh</td>
-								<td th:text="${station.address}">1 Nguyễn Thông</td>
-								<td>
-									<div class="table-actions">
-										<a class="btn btn-light btn-sm"
-											th:href="@{/admin/stations/{id}/edit(id=${station.id})}"
-											th:title="|Sửa ${station.name}|" th:aria-label="|Sửa ${station.name}|">
-											<i class="bi bi-pencil"></i>
-										</a>
-										<!--
-											A form rather than a link: deleting must be a POST, and a
-											form carries the CSRF token Spring Security checks.
-											admin.js asks data-confirm before it submits.
-										-->
-										<form method="post" class="d-inline"
-											th:action="@{/admin/stations/{id}/delete(id=${station.id})}"
-											th:data-confirm="|Xóa ${station.name} (${station.code})? Thao tác này không hoàn tác được.|">
-											<button type="submit" class="btn btn-light btn-sm"
-												th:title="|Xóa ${station.name}|" th:aria-label="|Xóa ${station.name}|">
-												<i class="bi bi-trash"></i>
-											</button>
-										</form>
-									</div>
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-			</div>
-		</div>
-	</section>
+						<!--
+							A form rather than a link: deleting must be a POST, and a
+							form carries the CSRF token Spring Security checks.
+							admin.js asks the data-confirm question before it submits.
+						-->
+						<form method="post"
+							th:action="@{/admin/stations/{id}/delete(id=${station.id})}"
+							th:data-confirm="|Xóa ${station.name} (${station.code})?|"
+							data-confirm-body="Không hoàn tác được. Ga đang là điểm đi hoặc điểm đến của một tuyến sẽ không xóa được."
+							data-confirm-label="Xóa ga" data-confirm-danger>
+							<button type="submit" class="icon-btn danger"
+								th:title="|Xóa ${station.name}|" th:aria-label="|Xóa ${station.name}|">
+								<i class="bi bi-trash" aria-hidden="true"></i>
+							</button>
+						</form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 
 </main>
 </body>

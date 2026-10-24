@@ -8,6 +8,10 @@ không quản lý vận hành đường sắt.
 Bốn con số tổng quan: tổng booking, tổng chuyến, tổng người dùng, tổng doanh thu.
 Không cần biểu đồ phức tạp.
 
+Từ 23/10/2026 (#20) mẫu giao diện admin chưa có trang này, nên `/admin` chuyển
+hướng sang `/admin/trains`. Task "Trang Tổng quan" (#37) dựng lại trang và bỏ
+chuyển hướng.
+
 ## Quản lý ga `/admin/stations`
 
 Xem danh sách, thêm, sửa, xóa. Chỉ xóa được ga chưa là điểm đi hay điểm đến của

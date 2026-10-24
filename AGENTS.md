@@ -75,15 +75,20 @@ Dự án có **hai hệ giao diện tách rời**, không được trộn:
 | CSS | `/css/app.css` | `/css/admin/admin.css` |
 | JS | `/js/landing.js` | `/js/admin/admin.js` |
 
-**Không bao giờ nạp `app.css` và `admin.css` trên cùng một trang.** `admin.css`
-đến từ template dashboard bên ngoài và mang theo reset `*` cùng bảng màu
-`--color-*` riêng; nạp chung là landing vỡ, và triệu chứng chỉ thấy bằng mắt
-chứ không có lỗi biên dịch nào.
+**Không bao giờ nạp `app.css` và `admin.css` trên cùng một trang.** Hai khu dùng
+chung một file Bootstrap, nhưng mỗi file đặt các biến `--bs-*` theo màu và font
+riêng của khu mình; nạp chung là khu này mang màu của khu kia, và triệu chứng
+chỉ thấy bằng mắt chứ không có lỗi biên dịch nào.
 
-Thư viện của admin nằm ở `static/vendor/`, tải về sẵn. Không thêm link CDN vào
-bất kỳ trang nào — kể cả trang admin.
+Trang admin viết markup Bootstrap thường (`btn btn-primary`, `form-control`,
+`offcanvas`, `modal`) và gọi các hàm dùng chung `window.TG` trong `admin.js`.
+Bảng đối chiếu thành phần mẫu sang Bootstrap ở ADR 0012.
 
-Chi tiết và lý do: `docs/decisions/0004-khu-vuc-quan-tri.md`.
+Thư viện nằm ở `static/vendor/`, font ở `static/fonts/`, đều tải về sẵn. Không
+thêm link CDN vào bất kỳ trang nào, kể cả trang admin.
+
+Chi tiết và lý do: `docs/decisions/0004-khu-vuc-quan-tri.md`,
+`docs/decisions/0012-giao-dien-admin-moi.md`.
 
 ### Quy trình plan
 

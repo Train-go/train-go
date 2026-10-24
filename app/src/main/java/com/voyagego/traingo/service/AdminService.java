@@ -78,7 +78,7 @@ public class AdminService {
 		LocalDateTime now = LocalDateTime.now();
 		return tripRepository.findAllByOrderByDepartureAtAsc().stream()
 				.map(trip -> new AdminTrip(trip.getTrain().getCode(),
-						trip.getRoute().getOriginStation().getName() + " — "
+						trip.getRoute().getOriginStation().getName() + " → "
 								+ trip.getRoute().getDestinationStation().getName(),
 						trip.getDepartureAt().format(DATE), trip.getDepartureAt().format(TIME),
 						arrivalText(trip), trip.getBasePrice(), tripStatusLabel(trip, now)))
@@ -89,17 +89,17 @@ public class AdminService {
 		return toRows(bookingRepository.findAllByOrderByCreatedAtDesc());
 	}
 
-	/** The five newest bookings, for the dashboard. */
-	public List<AdminBooking> recentBookings() {
-		return toRows(bookingRepository.findTop5ByOrderByCreatedAtDesc());
-	}
-
 	public List<AdminUser> users() {
 		return userRepository.findAllByOrderByCreatedAtAsc().stream()
 				.map(user -> new AdminUser(user.getFullName(), user.getEmail(), user.getRole().name(),
 						user.getCreatedAt().format(DATE)))
 				.toList();
 	}
+
+	/*
+	 * The four totals below have no page while /admin redirects to the trains
+	 * screen. They stay for the overview page (#37), which builds on them.
+	 */
 
 	public long totalBookings() {
 		return bookingRepository.count();
