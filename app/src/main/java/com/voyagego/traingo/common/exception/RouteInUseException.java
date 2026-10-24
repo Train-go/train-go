@@ -1,6 +1,8 @@
 package com.voyagego.traingo.common.exception;
 
-public class RouteInUseException extends RuntimeException {
+/** The route already has trips, so it cannot be deleted. */
+public class RouteInUseException extends BusinessRuleException {
+
 	private final long tripCount;
 
 	public RouteInUseException(long tripCount) {
@@ -8,6 +10,8 @@ public class RouteInUseException extends RuntimeException {
 		this.tripCount = tripCount;
 	}
 
-	public long getTripCount() { return tripCount; }
-	public String getField() { return null; }
+	public long getTripCount() {
+		return tripCount;
+	}
+
 }

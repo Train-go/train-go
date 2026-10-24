@@ -1,11 +1,9 @@
 package com.voyagego.traingo.common.exception;
 
-public class DuplicateEmailException extends RuntimeException {
+public class DuplicateEmailException extends BusinessRuleException {
+
 	public DuplicateEmailException() {
-		super("Email này đã có tài khoản.");
+		super("Email này đã có tài khoản.", "email");
 	}
 
-	public String getField() {
-		return "email";
-	}
 }

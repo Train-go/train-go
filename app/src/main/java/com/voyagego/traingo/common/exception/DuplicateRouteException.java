@@ -1,9 +1,9 @@
 package com.voyagego.traingo.common.exception;
 
-public class DuplicateRouteException extends RuntimeException {
+public class DuplicateRouteException extends BusinessRuleException {
+
 	public DuplicateRouteException() {
-		super("Tuyến giữa hai ga này đã có.");
+		super("Tuyến giữa hai ga này đã có.", "destinationStationId");
 	}
 
-	public String getField() { return "destinationStationId"; }
 }
