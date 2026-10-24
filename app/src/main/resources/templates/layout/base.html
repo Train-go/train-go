@@ -9,24 +9,47 @@
 
 	~{::title} and ~{::main} mean "the title and main element of the calling
 	page", so a page only writes its own title and body content.
+
+	The booking pages and the error pages want the one-line footer. They pass
+	it by name, which Thymeleaf turns into a local variable here:
+
+		page(title=~{::title}, content=~{::main}, compactFooter=true)
+
+	Never link css/admin/admin.css from a page built on this shell.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, content)">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title th:replace="${title}">TrainGo</title>
+	<meta name="description" content="Đặt vé tàu Bắc - Nam trực tuyến: tìm chuyến, chọn chỗ trên sơ đồ toa và nhận vé điện tử.">
+	<link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+	<!--
+		Read by the scripts that call the JSON API. Null-safe because the error
+		pages render on this shell too, sometimes for a request that never
+		reached the CSRF filter.
+	-->
+	<meta th:if="${_csrf != null}" name="_csrf" th:content="${_csrf.token}">
+	<meta th:if="${_csrf != null}" name="_csrf_header" th:content="${_csrf.headerName}">
 	<link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}">
 	<link rel="stylesheet" th:href="@{/css/app.css}">
 </head>
-<body class="d-flex flex-column min-vh-100 bg-body">
+<body class="d-flex flex-column min-vh-100">
+
+<a class="tg-skip visually-hidden-focusable" href="#main">Bỏ qua điều hướng</a>
 
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
-<div class="flex-grow-1">
+<!--
+	A div, not a <main>: every page brings its own <main>, and one <main>
+	inside another is invalid. The skip link above lands here.
+-->
+<div class="flex-grow-1" id="main" tabindex="-1">
 	<main th:replace="${content}"></main>
 </div>
 
-<footer th:replace="~{fragments/footer :: footer}"></footer>
+<footer th:replace="${compactFooter != null and compactFooter} ? ~{fragments/footer :: compactFooter} : ~{fragments/footer :: fullFooter}"></footer>
 
 <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
 </body>

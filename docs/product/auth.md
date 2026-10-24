@@ -57,14 +57,15 @@ Ngày 23/10/2026, phần server của #22 đã nối đăng nhập với bảng 
 `spring.security.user.*`. `TrainGoUserDetails` giữ id, họ tên, email và role trong
 session; `CurrentUserModelAdvice` cung cấp `currentUser` cho template.
 
-`SecurityConfig` áp dụng:
+`SecurityConfig` áp dụng (mặc định mở, khóa theo tiền tố,
+`docs/decisions/0013-quyen-truy-cap-mac-dinh-mo.md`):
 
-- Public: `/`, `/trips/**`, `/api/trips/**`, `/login`, `/register`, `/error` và
-  tài nguyên tĩnh. Quyền public không tạo sẵn trang/API còn thiếu; đường dẫn chưa
-  triển khai vẫn có thể trả 404.
 - Chỉ ADMIN: `/admin/**`, `/api/admin/**`.
 - Chỉ CUSTOMER: `/booking/**`, `/my-trips/**`, `/tickets/**`.
-- Đường dẫn còn lại yêu cầu đăng nhập. API bị chặn trả JSON
+- Đường dẫn còn lại ai cũng vào được, gồm `/`, `/trips/**`, `/api/trips/**`,
+  `/login`, `/register`, `/error` và tài nguyên tĩnh. Người chưa đăng nhập gõ sai
+  đường dẫn thấy trang 404, không bị đẩy về trang đăng nhập.
+- API bị chặn trả JSON
   `{message, fields: {}}`: GET chưa đăng nhập trả 401, thiếu quyền trả 403;
   trang HTML dùng redirect login hoặc 403 tương ứng. CSRF vẫn bật: POST thiếu
   token có thể bị 403 trước bước kiểm tra đăng nhập.

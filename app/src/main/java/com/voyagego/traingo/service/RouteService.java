@@ -104,14 +104,14 @@ public class RouteService {
 
 	@Transactional(readOnly = true)
 	public int suggestedDistance(long originId, long destinationId) {
-		Station origin = stations.findById(originId).orElseThrow(() -> new StationNotFoundException(originId));
+		Station origin = stations.findById(originId).orElseThrow(() -> new StationNotFoundException());
 		Station destination = stations.findById(destinationId)
-				.orElseThrow(() -> new StationNotFoundException(destinationId));
+				.orElseThrow(() -> new StationNotFoundException());
 		return Math.abs(origin.getKmMark() - destination.getKmMark());
 	}
 
 	private Station lockStation(long id) {
-		return stations.findByIdForUpdate(id).orElseThrow(() -> new StationNotFoundException(id));
+		return stations.findByIdForUpdate(id).orElseThrow(() -> new StationNotFoundException());
 	}
 
 	private Route lockRoute(long id) {

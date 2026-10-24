@@ -2,35 +2,88 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<footer th:fragment="footer" class="tg-footer mt-5 py-4 border-top">
-	<div class="container">
-		<div class="row gy-3 align-items-start">
-			<div class="col-12 col-md-5">
-				<p class="fw-bold mb-1">TrainGo</p>
-				<p class="text-secondary small mb-0">
-					Website đặt vé tàu: tìm chuyến, chọn chỗ trên sơ đồ, thanh toán mô phỏng
-					và nhận vé điện tử.
-				</p>
-			</div>
-			<div class="col-6 col-md-3">
-				<p class="fw-semibold mb-2 small text-uppercase text-secondary">Đặt vé</p>
-				<ul class="list-unstyled small mb-0">
-					<li><a class="link-secondary text-decoration-none" th:href="@{/}">Tìm chuyến</a></li>
-					<li><a class="link-secondary text-decoration-none" th:href="@{/my-trips}">Chuyến của tôi</a></li>
-				</ul>
-			</div>
-			<div class="col-6 col-md-4">
-				<p class="fw-semibold mb-2 small text-uppercase text-secondary">Tài khoản</p>
-				<ul class="list-unstyled small mb-0">
-					<li><a class="link-secondary text-decoration-none" th:href="@{/login}">Đăng nhập</a></li>
-					<li><a class="link-secondary text-decoration-none" th:href="@{/register}">Đăng ký</a></li>
-				</ul>
+<!--
+	Fragment names are not "footer": a selector that matches a tag name pulls
+	in every <footer> of this file, so both footers would render.
+
+	Full footer for the homepage, after docs/reports/ui-mau/client/trang-chu-8-swiss.html.
+	Links to pages that do not exist yet point at "#" until those pages land
+	(Phi, 22/10/2026).
+-->
+<footer th:fragment="fullFooter" class="tg-foot">
+	<div class="container tg-foot-top">
+		<div class="tg-foot-brand">
+			<a class="tg-logo" th:href="@{/}">
+				<span class="tg-logo-mark" aria-hidden="true"><i class="bi bi-train-front"></i></span>TrainGo
+			</a>
+			<p>Đặt vé tàu trực tuyến, chọn chỗ ngồi ngay trên sơ đồ toa.</p>
+			<div class="tg-social">
+				<a href="#" aria-label="Facebook"><i class="bi bi-facebook" aria-hidden="true"></i></a>
+				<a href="#" aria-label="YouTube"><i class="bi bi-youtube" aria-hidden="true"></i></a>
+				<a href="#" aria-label="TikTok"><i class="bi bi-tiktok" aria-hidden="true"></i></a>
 			</div>
 		</div>
-		<hr class="my-3">
-		<p class="text-secondary small mb-0">
-			Đồ án môn học. Thanh toán trên hệ thống là mô phỏng, không có giao dịch thật.
-		</p>
+		<div>
+			<h2>Đặt vé</h2>
+			<ul>
+				<li><a th:href="@{/trips}">Tìm chuyến</a></li>
+				<li><a th:href="@{/my-trips}">Vé của tôi</a></li>
+				<li><a href="#">Hủy vé</a></li>
+			</ul>
+		</div>
+		<div>
+			<h2>Hỗ trợ</h2>
+			<ul>
+				<li><a th:href="@{/#how-it-works}">Hướng dẫn đặt vé</a></li>
+				<li><a href="#">Câu hỏi thường gặp</a></li>
+				<li><a href="#">Liên hệ</a></li>
+			</ul>
+		</div>
+		<div>
+			<h2>Chính sách</h2>
+			<ul>
+				<li><a href="#">Điều khoản sử dụng</a></li>
+				<li><a href="#">Bảo mật thông tin</a></li>
+				<li><a href="#">Quy định hủy vé</a></li>
+			</ul>
+		</div>
+		<div>
+			<h2>Ga tàu</h2>
+			<ul>
+				<li><a href="#">Ga Sài Gòn</a></li>
+				<li><a href="#">Ga Đà Nẵng</a></li>
+				<li><a href="#">Ga Hà Nội</a></li>
+			</ul>
+		</div>
+	</div>
+	<div class="container tg-foot-bottom">
+		<span>© 2026 TrainGo. Hỗ trợ đặt vé tàu trực tuyến.</span>
+		<!--
+			Credits for the homepage photos in static/images/home/, which their
+			licences require. A photo added there gets a line here.
+		-->
+		<details class="tg-credits">
+			<summary>Nguồn ảnh (Wikimedia Commons)</summary>
+			<ul>
+				<li><a href="https://commons.wikimedia.org/wiki/File:B%E1%BB%9D_bi%E1%BB%83n_%E1%BB%9F_Nha_Trang.jpg">Nha Trang</a> · Bùi Thụy Đào Nguyên · CC BY-SA 3.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Da_Nang_Dragon_Bridge_2020_IMG_3909.jpg">Đà Nẵng</a> · Kuroczynski · CC BY-SA 4.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Gate_in_Imperial_City,_Hu%E1%BA%BF_(III).jpg">Huế</a> · Supanut Arunoprayote · CC BY 4.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Hoan_Kiem_Lake_-_Hanoi,_Vietnam_-_DSC03695.JPG">Hà Nội</a> · Daderot · CC0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Ho_Chi_Minh_City_Skyline_at_Night.jpg">Sài Gòn</a> · Tran Van Ngoc · CC0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:B%C3%A3i_bi%E1%BB%83n_S%E1%BA%A7m_S%C6%A1n_ch%E1%BB%A5p_t%E1%BB%AB_h%C3%B2n_C%E1%BB%95_Gi%E1%BA%A3i.jpg">Thanh Hóa</a> · Bách Trần · CC0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Thanh_vinh_nhin_tu_nui_quyet.jpg">Vinh</a> · Nhcuong81 · CC BY-SA 3.0</li>
+				<li><a href="https://commons.wikimedia.org/wiki/File:Ga_%C4%90%E1%BB%93ng_H%E1%BB%9Bi.jpg">Đồng Hới</a> · Tttrung · CC0</li>
+				<li>Ảnh đã được thu nhỏ và nén lại, không chỉnh sửa nội dung.</li>
+			</ul>
+		</details>
+	</div>
+</footer>
+
+<!-- One line for the booking steps and the error pages. -->
+<footer th:fragment="compactFooter" class="tg-foot is-compact">
+	<div class="container tg-foot-bottom">
+		<span>© 2026 TrainGo</span>
+		<a th:href="@{/}">Trang chủ</a>
 	</div>
 </footer>
 

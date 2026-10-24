@@ -34,6 +34,10 @@ Mọi file đều có cùng thứ tự:
 3. Tạo branch đúng tên ghi trong hướng dẫn: `git checkout -b feat/t03-train-admin`.
 4. Đọc hết file hướng dẫn một lượt rồi mới viết code.
 5. Code theo "Các bước làm". Chạy ứng dụng, tự thử trên trình duyệt sau mỗi bước lớn.
+   Trang hoặc API chỉ dành cho người đã đăng nhập phải nằm dưới một tiền tố đã khóa trong
+   `SecurityConfig` (`/admin`, `/api/admin`, `/booking`, `/my-trips`, `/tickets`).
+   Đường dẫn ngoài các tiền tố này ai cũng vào được, kể cả `/api/trips`
+   (`docs/decisions/0013-quyen-truy-cap-mac-dinh-mo.md`).
 6. Trong thư mục `app`, chạy `.\mvnw.cmd compile` cho tới khi không lỗi, rồi chạy ứng
    dụng và đi hết mục "Kịch bản thử bằng tay". Dự án không có test tự động
    (`docs/decisions/0007-bo-test-tu-dong.md`).

@@ -196,8 +196,8 @@ Tạo `controller/SeatMapApiController` (`@RestController`):
 | --- | --- | --- |
 | GET | `/api/trips/{tripId}/seat-map` | JSON `SeatMap` của chuyến |
 
-`/booking/**` và `/api/trips/**` chỉ dành cho CUSTOMER (T02 đã khai quyền). Task này không cần
-biết khách là ai để dựng sơ đồ, vì sơ đồ giống nhau với mọi người.
+`/booking/**` chỉ dành cho CUSTOMER, còn `/api/trips/**` ai cũng gọi được (T02 đã khai
+quyền). Task này không cần biết khách là ai để dựng sơ đồ, vì sơ đồ giống nhau với mọi người.
 
 ### Bước 5. Giao diện và JavaScript
 
@@ -212,8 +212,8 @@ biết khách là ai để dựng sơ đồ, vì sơ đồ giống nhau với m�
   - một form `th:action` chứa ô ẩn `passengers` và nút "Tiếp tục". Nút bị khóa cho tới khi
     chọn đủ số chỗ.
 - `static/js/booking-seats.js` làm năm việc:
-  1. Gọi `fetch('/api/trips/{id}/seat-map')`, kiểm tra `response.ok`. Nhận 401 nghĩa là
-     phiên đăng nhập đã hết.
+  1. Gọi `fetch('/api/trips/{id}/seat-map')`, kiểm tra `response.ok`. Lỗi trả JSON
+     `{ message, fields }`; hiện `message` cho khách.
   2. Chỉ vẽ **toa đang chọn** bằng `TrainGoSeatMap.render(container, [coach], { onSeatClick })`
      (truyền mảng một toa). Bấm tab thì vẽ lại toa tương ứng. Tập hợp id chỗ đã chọn giữ ở một
      biến riêng của trang, không giữ trong DOM, nên chuyển toa không làm mất lựa chọn.

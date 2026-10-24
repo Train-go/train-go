@@ -38,7 +38,7 @@ public class StationService {
 
 	@Transactional(readOnly = true)
 	public Station findById(long id) {
-		return stationRepository.findById(id).orElseThrow(() -> new StationNotFoundException(id));
+		return stationRepository.findById(id).orElseThrow(StationNotFoundException::new);
 	}
 
 	/**
@@ -52,10 +52,10 @@ public class StationService {
 		String code = Station.normalizeCode(form.getCode());
 		int kmMark = form.getKmMark();
 		if (stationRepository.existsByCode(code)) {
-			throw new DuplicateStationCodeException(code);
+			throw new DuplicateStationCodeException();
 		}
 		if (stationRepository.existsByKmMark(kmMark)) {
-			throw new DuplicateStationKmMarkException(kmMark);
+			throw new DuplicateStationKmMarkException();
 		}
 		return stationRepository.save(new Station(code, form.getName(), form.getCity(), form.getAddress(), kmMark));
 	}
@@ -66,10 +66,10 @@ public class StationService {
 		String code = Station.normalizeCode(form.getCode());
 		int kmMark = form.getKmMark();
 		if (stationRepository.existsByCodeAndIdNot(code, id)) {
-			throw new DuplicateStationCodeException(code);
+			throw new DuplicateStationCodeException();
 		}
 		if (stationRepository.existsByKmMarkAndIdNot(kmMark, id)) {
-			throw new DuplicateStationKmMarkException(kmMark);
+			throw new DuplicateStationKmMarkException();
 		}
 		station.update(code, form.getName(), form.getCity(), form.getAddress(), kmMark);
 		// Write now instead of at commit, so a code or km mark taken by a

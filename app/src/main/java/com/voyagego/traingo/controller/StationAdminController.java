@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.voyagego.traingo.common.exception.BusinessRuleException;
 import com.voyagego.traingo.common.exception.DuplicateStationCodeException;
 import com.voyagego.traingo.common.exception.DuplicateStationKmMarkException;
 import com.voyagego.traingo.common.exception.StationInUseException;
@@ -82,8 +83,11 @@ public class StationAdminController {
 		Station station;
 		try {
 			station = stationService.create(form);
-		} catch (DuplicateStationCodeException | DuplicateStationKmMarkException | DataIntegrityViolationException ex) {
-			rejectDuplicate(bindingResult, ex);
+		} catch (DuplicateStationCodeException | DuplicateStationKmMarkException ex) {
+			bindingResult.rejectValue(ex.getField(), "duplicate", ex.getMessage());
+			return FORM_VIEW;
+		} catch (DataIntegrityViolationException ex) {
+			rejectConcurrentDuplicate(bindingResult, ex);
 			return FORM_VIEW;
 		}
 		redirectAttributes.addFlashAttribute("successMessage", "Đã thêm " + describe(station) + ".");
@@ -108,8 +112,11 @@ public class StationAdminController {
 		Station station;
 		try {
 			station = stationService.update(id, form);
-		} catch (DuplicateStationCodeException | DuplicateStationKmMarkException | DataIntegrityViolationException ex) {
-			rejectDuplicate(bindingResult, ex);
+		} catch (DuplicateStationCodeException | DuplicateStationKmMarkException ex) {
+			bindingResult.rejectValue(ex.getField(), "duplicate", ex.getMessage());
+			return FORM_VIEW;
+		} catch (DataIntegrityViolationException ex) {
+			rejectConcurrentDuplicate(bindingResult, ex);
 			return FORM_VIEW;
 		}
 		redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật " + describe(station) + ".");
@@ -122,26 +129,22 @@ public class StationAdminController {
 			Station station = stationService.delete(id);
 			redirectAttributes.addFlashAttribute("successMessage", "Đã xóa " + describe(station) + ".");
 		} catch (StationInUseException ex) {
-			redirectAttributes.addFlashAttribute("errorMessage", "Không xóa được " + describe(ex.getStation())
-					+ " vì ga đang là điểm đi hoặc điểm đến của một tuyến.");
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
 		return REDIRECT_TO_LIST;
 	}
 
 	/**
-	 * The service's own checks say which field is taken. A unique key that fails
-	 * under a concurrent request only says so in the database message, which
-	 * names the key (uk_stations_km_mark or uk_stations_code).
+	 * A unique key that fails under a concurrent request only says which field
+	 * is taken in the database message, which names the key
+	 * (uk_stations_km_mark or uk_stations_code). The message comes from the
+	 * same exception the service's own check throws.
 	 */
-	private static void rejectDuplicate(BindingResult bindingResult, RuntimeException ex) {
-		boolean kmMarkTaken = ex instanceof DuplicateStationKmMarkException
-				|| (ex instanceof DataIntegrityViolationException integrity
-						&& String.valueOf(integrity.getMostSpecificCause().getMessage()).contains("uk_stations_km_mark"));
-		if (kmMarkTaken) {
-			bindingResult.rejectValue("kmMark", "duplicate", "Lý trình này đã được dùng cho một ga khác.");
-		} else {
-			bindingResult.rejectValue("code", "duplicate", "Mã ga này đã được dùng cho một ga khác.");
-		}
+	private static void rejectConcurrentDuplicate(BindingResult bindingResult, DataIntegrityViolationException ex) {
+		BusinessRuleException duplicate = String.valueOf(ex.getMostSpecificCause().getMessage()).contains("uk_stations_km_mark")
+				? new DuplicateStationKmMarkException()
+				: new DuplicateStationCodeException();
+		bindingResult.rejectValue(duplicate.getField(), "duplicate", duplicate.getMessage());
 	}
 
 	private static String describe(Station station) {

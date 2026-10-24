@@ -1,9 +1,9 @@
 package com.voyagego.traingo.common.exception;
 
-public class DuplicateStationKmMarkException extends RuntimeException {
+public class DuplicateStationKmMarkException extends BusinessRuleException {
 
-	public DuplicateStationKmMarkException(int kmMark) {
-		super("Km mark " + kmMark + " is already used by another station");
+	public DuplicateStationKmMarkException() {
+		super("Lý trình này đã được dùng cho một ga khác.", "kmMark");
 	}
 
 }

@@ -399,8 +399,9 @@ Trang cũ đã dùng Bootstrap, nên chỉ bỏ class riêng của template cũ:
 
 ## Progress
 
-Cập nhật 23/10/2026. Cả hai branch đã code xong và kiểm chứng trên trình duyệt; chưa
-commit, chưa mở pull request. #21 nằm ở worktree `D:/Study/Project/VoyageGO/train-go-client-shell`.
+Cập nhật 24/10/2026. #20 đã commit và push (`feat/admin-shell`, `9dd9237`), chưa mở pull
+request. #21 đã commit trên `feat/client-shell-errors` và merge `feat/admin-shell` vào, nên
+gộp #20 vào `main` trước thì pull request #21 không còn conflict. Worktree tạm của #21 đã gỡ.
 
 #20 (`feat/admin-shell`):
 
@@ -414,7 +415,8 @@ commit, chưa mở pull request. #21 nằm ở worktree `D:/Study/Project/Voyage
 - [x] ADR 0012, ADR 0004, `AGENTS.md`, `docs/product/admin.md`, plan
       `khu-vuc-quan-tri.md`. `docs/decisions/README.md` không có mục lục nên không sửa.
 - [x] Kịch bản thử, ảnh 1440px và 390px, dòng `WORKLOG.md`.
-- [ ] Commit, pull request `Closes #20`, review.
+- [x] Commit và push (`46f2637`, `c629257`, `9dd9237`).
+- [ ] Pull request `Closes #20`, review.
 
 #21 (`feat/client-shell-errors`):
 
@@ -424,10 +426,21 @@ commit, chưa mở pull request. #21 nằm ở worktree `D:/Study/Project/Voyage
       ADR 0013; sửa T02 và `huong-dan-task/README.md`.
 - [x] Font, token, `base.html`, navbar, thanh bước, footer (`fullFooter`,
       `compactFooter`); ADR 0003.
+- [x] Trang chủ dựng lại theo `trang-chu-8-swiss.html` (Phi đưa vào #21 ngày 24/10/2026
+      vì không issue nào làm phần giao diện này); form tìm giữ nguyên ô cho #26.
+- [x] Rà theo quy trình redesign; cặp font Noto Sans và Be Vietnam Pro, giảm độ đậm.
 - [x] Kịch bản thử, ảnh trang chủ và 404 ở 1440px và 390px, dòng `WORKLOG.md`.
+- [x] Commit (`19c5f77`, `bb7ae24`, `53bd952`) và merge `feat/admin-shell` (`6e8d265`).
 - [ ] Thử 500 bằng cách dừng MySQL (cần quyền Administrator); đã thử 500 bằng
       controller ném exception tạm.
-- [ ] Commit, pull request `Closes #21`, review; báo người làm #22 về ADR 0013.
+- [ ] Xác nhận nguồn và quyền dùng ảnh hero `hero-sa-pa.jpg` (Phi gửi, chưa có tác giả,
+      giấy phép), rồi thêm dòng ghi nguồn ở footer hoặc đổi ảnh.
+- [x] Push `feat/client-shell-errors`.
+- [x] Gộp `main` sau khi #20 (PR #45) và #22 vào: giải `SecurityConfig` theo ADR 0013,
+      exception mới của `main` theo quy ước #21. AC4 phần "khách vào `/admin` ra 403"
+      đã thử được với tài khoản khách của #22.
+- [ ] Pull request `Closes #21`, review; báo người làm #22 về việc giữ mặc định mở và
+      chỗ chừa tên người dùng trong navbar khách, sidebar admin chưa nối `currentUser`.
 
 ## Decisions
 
@@ -441,6 +454,15 @@ commit, chưa mở pull request. #21 nằm ở worktree `D:/Study/Project/Voyage
   `footer`: selector trùng tên thẻ kéo cả hai thẻ `<footer>` của file vào trang.
 - 2026-10-23: `TG.api` chỉ tin `message` khi có cả `fields`, vì JSON lỗi mặc định
   của Spring Boot cũng có `message` (tiếng Anh, có nội dung khi bật devtools).
+- 2026-10-24: Trang chủ theo mẫu vào #21; #26 vẫn giữ phần chức năng của form tìm.
+- 2026-10-24: Font khu khách là Noto Sans cho chữ đọc và Be Vietnam Pro cho tiêu đề
+  (Phi chọn sau khi so bốn hướng trên trang thật); ghi ở ADR 0003.
+- 2026-10-24: Ảnh hero là ảnh tàu leo núi Sa Pa Phi gửi; chiều cao hero và vị trí ảnh
+  đặt theo từng khoảng độ rộng để tàu không chạm tiêu đề hay thanh tìm (dò 320-2560px).
+- 2026-10-24: `server.servlet.session.tracking-modes=cookie`: trang lỗi là trang đầu
+  của phiên từng mất CSS vì link bị gắn `;jsessionid` và bị firewall trả 400.
+- 2026-10-24: Khi gộp với #22 (mặc định khóa), Phi giữ mặc định mở của ADR 0013 và để
+  `/api/trips/**` công khai như #22 đã làm.
 
 ## Validation
 
@@ -484,10 +506,8 @@ Dự án không có test tự động (ADR 0007). Mỗi pull request cần:
 3. Lặp lại bước 2 khi chưa đăng nhập (cửa sổ ẩn danh): cả hai đường dẫn đều
    ra trang 404, không bị đẩy về trang đăng nhập. Rồi gõ `/admin/stations`,
    `/my-trips`, `/booking/passengers`, `/tickets/1`: cả bốn đều về trang đăng
-   nhập. Gọi `fetch('/api/admin/x')` và `fetch('/api/trips/1')`: phản hồi có
-   `res.redirected === true` và `res.url` kết thúc bằng `/login`. Trước khi #22
-   thêm mã 401 cho `/api/**`, `fetch` tự đi theo chuyển hướng nên `res.status`
-   vẫn là 200; đừng dựa vào status ở bước này.
+   nhập. Gọi `fetch('/api/admin/x')`: JSON 401 `{ message, fields }`. Gọi
+   `fetch('/api/trips/1/seat-map')`: không bị chặn (công khai), chưa có API thì 404.
 4. 403 trước khi có #22: ở trang ga, DevTools xóa ô ẩn `_csrf` trong form xóa
    rồi bấm xóa, trình duyệt hiện trang 403 tiếng Việt. Phần "khách gõ
    `/admin/stations`" của AC4 chỉ thử được sau khi #22 gộp; ghi rõ trong pull

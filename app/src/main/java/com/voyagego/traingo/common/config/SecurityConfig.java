@@ -12,6 +12,15 @@ import org.springframework.security.web.servlet.util.matcher.PathPatternRequestM
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 
+/**
+ * Open by default, closed by prefix (docs/decisions/0013-quyen-truy-cap-mac-dinh-mo.md).
+ *
+ * Every private page or API lives under one of the prefixes below. Anything
+ * else is public, so a visitor who mistypes an address sees the 404 page, not
+ * the login page. The price: a private screen added outside these prefixes is
+ * open to anyone. A new private screen goes under an existing prefix, or its
+ * prefix is added here in the same change.
+ */
 @Configuration
 public class SecurityConfig {
 	@Bean
@@ -28,13 +37,13 @@ public class SecurityConfig {
 		requestCache.setMatchingRequestParameterName(null);
 		http
 			.authorizeHttpRequests(requests -> requests
+				// The 403 page of a customer who opened /admin/** must render.
 				.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-				.requestMatchers("/", "/trips/**", "/api/trips/**", "/login", "/register", "/error").permitAll()
-				.requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/design/**",
-					"/vendor/**", "/favicon.ico").permitAll()
 				.requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
 				.requestMatchers("/booking/**", "/my-trips/**", "/tickets/**").hasRole("CUSTOMER")
-				.anyRequest().authenticated())
+				// Also opens /error, /login, /register, the trip pages, /api/trips/**
+				// (the seat map is readable before login) and the static files.
+				.anyRequest().permitAll())
 			.requestCache(cache -> cache.requestCache(requestCache))
 			.exceptionHandling(errors -> errors
 				.defaultAuthenticationEntryPointFor((request, response, exception) ->
