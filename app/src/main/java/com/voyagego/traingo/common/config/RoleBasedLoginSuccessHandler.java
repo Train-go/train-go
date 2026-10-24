@@ -7,6 +7,7 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 public class RoleBasedLoginSuccessHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 	private final RequestCache requestCache;
@@ -20,6 +21,11 @@ public class RoleBasedLoginSuccessHandler extends SavedRequestAwareAuthenticatio
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
+		// An earlier failed attempt must not reappear on the login page after a success.
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.removeAttribute(EmailRetainingLoginFailureHandler.LOGIN_EMAIL_ATTRIBUTE);
+		}
 		boolean admin = authentication.getAuthorities().stream()
 			.anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
 		if (admin) {

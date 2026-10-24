@@ -81,15 +81,36 @@ Từ 01/10/2026 đã có bảng `users` và entity `entity/User` (email không t
 | `admin@traingo.vn` | `Admin@123` | `ADMIN` |
 | `an.nguyen@example.com`, `binh.tran@example.com`, `cuong.le@example.com` | `Customer@123` | `CUSTOMER` |
 
-Trang login hiện vẫn do Spring Security sinh, gửi trường `email` và `password`;
-nhãn mặc định có thể vẫn là “Username”. Hash seed là BCrypt thuần, không có tiền
-tố `{bcrypt}`. `admin` / `admin` không còn là tài khoản đăng nhập tạm.
+Hash seed là BCrypt thuần, không có tiền tố `{bcrypt}`. `admin` / `admin` không còn
+là tài khoản đăng nhập tạm.
 
-#22 chưa hoàn thành toàn bộ: trang login riêng (lỗi tiếng Việt, giữ email,
-ẩn/hiện mật khẩu, chuyển người đã đăng nhập), navbar khách và sidebar/admin chờ
-khung dùng chung #20/#21. Header admin cũ còn tên hiển thị cố định và form logout;
-chưa thể coi là tích hợp `currentUser` hoàn chỉnh. Phần server đăng ký/phone
-được bổ sung ở checkpoint #23 bên dưới; ownership thuộc các ticket sau.
+## Trang đăng nhập và đăng ký
+
+Ngày 24/10/2026, nhánh `feat/auth-ui` (bằng chứng ở
+`docs/plans/active/tien-do-ticket-ca-nhan.md`):
+
+- `AuthController` phục vụ `GET /login`, `GET` và `POST /register`; template
+  `auth/login.html`, `auth/register.html` nằm trên khung client, chỉ dùng
+  Bootstrap. `static/js/auth.js` chỉ bật/tắt hiển thị mật khẩu.
+- `POST /login` vẫn do Spring Security xử lý. Email lạ và mật khẩu sai cùng một
+  thông báo. Email vừa nhập đi qua session đúng một lần (khóa `AUTH_LOGIN_EMAIL`,
+  tối đa 255 ký tự, xóa khi trang login đọc hoặc khi đăng nhập thành công), không
+  qua URL; mật khẩu không bao giờ được giữ lại hay hiện lại trong HTML.
+- Người đã đăng nhập mở `/login`, `/register` hoặc gửi `POST /register` được
+  chuyển về đích theo role (ADMIN `/admin/trains`, CUSTOMER `/`) và không tạo
+  thêm tài khoản.
+- Đăng ký: lỗi hiện đúng ô (`passwordConfirmed` → `confirmPassword`,
+  `passwordWithinLimit` → `password`, email trùng → `email`); họ tên, email, số
+  điện thoại được giữ, hai ô mật khẩu luôn trống. Sau khi `UserService.register`
+  commit, controller xóa request cache, đổi session id rồi gọi `request.login`
+  để tự đăng nhập và chuyển về `/`. Nếu bước này lỗi, tài khoản vẫn còn và khách
+  về `/login` với thông báo “Tài khoản đã được tạo. Vui lòng đăng nhập.”
+- Navbar: khách thấy Đăng nhập/Đăng ký; người đã đăng nhập thấy họ tên, nút
+  Quản trị (chỉ ADMIN) và Đăng xuất (POST có CSRF). Sidebar admin hiện họ tên.
+- `DuplicateEmailException` đã kế thừa `BusinessRuleException`.
+
+Chưa kiểm chứng: case tự đăng nhập lỗi sau commit (chưa tái hiện được, xem hồ sơ
+tiến độ), thao tác bằng bàn phím, chế độ tắt JavaScript.
 
 ## Checkpoint server #23
 
@@ -104,25 +125,14 @@ Precheck `existsByEmailIgnoreCase` cho lỗi sớm; `saveAndFlush` bắt lỗi u
 MySQL 1062/23000 của `uk_users_email` khi hai đăng ký tranh chấp. Các lỗi toàn
 vẹn khác vẫn được ném lại. `DuplicateEmailException.getField()` trả `email`.
 
-**Chưa hoàn thành #23:** chưa có controller/template `/register`, chưa tự đăng
-nhập hoặc giữ form sau lỗi. Chờ khung client và `BusinessRuleException` của #21;
-exception email hiện tạm kế thừa `RuntimeException`, theo mẫu exception đang có.
-Khi tích hợp, đổi lớp cha sang `BusinessRuleException`, bắt lỗi email ở field
-`email`, chuyển lỗi validation `passwordConfirmed` sang `confirmPassword`,
-`passwordWithinLimit` sang `password`,
-giữ các giá trị ngoài hai mật khẩu và gọi `request.login` sau khi transaction
-đăng ký đã commit. Không đưa password vào log hoặc session riêng.
-
-Kịch bản tiếp theo: đủ AC1–AC5 của #23 qua trình duyệt, tự đăng nhập về `/`
-với navbar hiện tên; lỗi inline tiếng Việt; giữ form trừ mật khẩu; email trùng
-và hai yêu cầu đồng thời; logout rồi login; 1440px/390px và bàn phím.
+Phần giao diện, tự đăng nhập và giữ form sau lỗi của #23 đã làm ở mục “Trang đăng nhập và đăng ký”.
 
 ## Kịch bản thử bằng tay — phần server #22
 
 1. Với MySQL Server và dữ liệu seed, đăng nhập bằng email khác hoa/thường của
    CUSTOMER và ADMIN; xác nhận đích redirect theo role.
 2. Thử email không tồn tại và mật khẩu sai: cùng lỗi đăng nhập chung, không tiết
-   lộ tài khoản tồn tại. Lỗi tiếng Việt của trang riêng chờ UI.
+   lộ tài khoản tồn tại. Lỗi hiện tiếng Việt trên trang login, email vừa nhập được giữ lại một lần.
 3. Khách mở trang admin bị yêu cầu đăng nhập; CUSTOMER gõ trực tiếp
    `/admin/stations` bị 403; ADMIN mở `/my-trips` bị 403.
 4. GET API admin ở ba trạng thái: khách 401 JSON, CUSTOMER 403 JSON, ADMIN qua
@@ -130,7 +140,7 @@ và hai yêu cầu đồng thời; logout rồi login; 1440px/390px và bàn ph�
 5. Khách mở `/my-trips?status=upcoming`, đăng nhập CUSTOMER và kiểm tra URL quay
    lại nguyên vẹn. Trang My Trips chưa có nên 404 chỉ chứng minh saved request.
 6. POST logout có CSRF về `/`; POST thiếu CSRF bị 403; sau logout không truy cập
-   được trang bảo vệ. Kiểm tra logout qua cả hai UI khi #20/#21 đã tích hợp.
+   được trang bảo vệ. Thử nút Đăng xuất ở navbar (CUSTOMER, ADMIN) và sidebar admin.
 
 Bằng chứng compile, chạy MySQL và thử trình duyệt được cập nhật trong
 `docs/plans/active/tien-do-ticket-ca-nhan.md`; không dùng checklist thay kết quả.

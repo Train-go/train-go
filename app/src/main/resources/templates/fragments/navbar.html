@@ -10,10 +10,8 @@
 	menu works, so nested pages such as /trips/12 keep "Tìm vé" marked.
 
 	Below Bootstrap's lg breakpoint the three links fold into the menu opened by
-	the round button; "Đăng nhập" stays on the bar.
-
-	The sign-in block is a placeholder until the auth feature (#22) shows the
-	signed-in user's name and "Đăng xuất" there instead.
+	the round button. A guest keeps "Đăng nhập" on the bar; a signed-in user's
+	name and "Đăng xuất" live in the menu, so a long name never crowds the logo.
 -->
 <header th:fragment="navbar">
 	<!--
@@ -28,8 +26,13 @@
 			</a>
 
 			<div class="tg-nav-end order-lg-last">
-				<a class="tg-pill-btn is-light" th:href="@{/login}">Đăng nhập</a>
-				<a class="tg-pill-btn is-dark d-none d-sm-inline-flex" th:href="@{/register}">Đăng ký</a>
+				<th:block th:if="${currentUser == null}">
+					<a class="tg-pill-btn is-light" th:href="@{/login}">Đăng nhập</a>
+					<a class="tg-pill-btn is-dark d-none d-sm-inline-flex" th:href="@{/register}">Đăng ký</a>
+				</th:block>
+				<th:block th:if="${currentUser != null}">
+					<div th:replace="~{fragments/navbar :: account('d-none d-lg-flex align-items-center gap-2')}"></div>
+				</th:block>
 				<button class="tg-toggler d-lg-none" type="button" data-bs-toggle="collapse"
 					data-bs-target="#tgNav" aria-controls="tgNav" aria-expanded="false" aria-label="Mở menu">
 					<i class="bi bi-list" aria-hidden="true"></i>
@@ -56,16 +59,33 @@
 						</a>
 					</li>
 					<!-- On a phone "Đăng ký" has no room on the bar, so it lives in the menu. -->
-					<li class="nav-item d-sm-none">
+					<li class="nav-item d-sm-none" th:if="${currentUser == null}">
 						<a class="nav-link" th:href="@{/register}">
 							<i class="bi bi-person-plus" aria-hidden="true"></i>Đăng ký
 						</a>
 					</li>
 				</ul>
+
+				<th:block th:if="${currentUser != null}">
+					<div th:replace="~{fragments/navbar :: account('d-flex d-lg-none flex-column gap-2 mt-3 px-3')}"></div>
+				</th:block>
 			</div>
 		</div>
 	</nav>
 </header>
+
+<!-- Signed-in user: name, admin entry, sign-out. The caller passes the layout classes. -->
+<div th:fragment="account(layout)" th:class="${layout}">
+	<span class="fw-semibold text-break">
+		<i class="bi bi-person-circle" aria-hidden="true"></i>
+		<span th:text="${currentUser.fullName}">Họ tên</span>
+	</span>
+	<a class="btn btn-primary rounded-pill" th:href="@{/admin/trains}"
+		th:if="${currentUser.role.name() == 'ADMIN'}">Quản trị</a>
+	<form th:action="@{/logout}" method="post" class="d-grid">
+		<button type="submit" class="btn btn-outline-primary rounded-pill">Đăng xuất</button>
+	</form>
+</div>
 
 </body>
 </html>

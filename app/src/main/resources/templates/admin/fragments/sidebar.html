@@ -9,9 +9,7 @@
 	not from the request path, so a nested route such as /admin/trains/7 still
 	highlights "Tàu".
 
-	The foot holds the clock (filled by admin.js) and the signed-in user. The
-	user's name is left empty until the auth feature (#22) fills it; sign-out
-	already works, because Spring Security's /logout exists today.
+	The foot holds the clock (filled by admin.js) and the signed-in user.
 -->
 <aside th:fragment="sidebar" class="admin-side">
 	<a class="brand" th:href="@{/admin/trains}">TrainGo</a>
@@ -52,7 +50,7 @@
 			<b data-clock-time></b>
 		</div>
 		<div class="admin-user">
-			<span class="admin-user-name" data-slot="user-name"></span>
+			<span class="admin-user-name" th:text="${currentUser?.fullName}"></span>
 			<!-- Spring Security's logout only accepts POST, so this is a form. -->
 			<form th:action="@{/logout}" method="post">
 				<button type="submit" class="btn btn-link btn-sm admin-logout" title="Đăng xuất" aria-label="Đăng xuất">
