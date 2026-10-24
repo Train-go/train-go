@@ -10,49 +10,63 @@
 	Same parameterised-fragment idiom as layout/base.html for the customer
 	pages, so the repository has one way of building a page instead of two.
 
-	This shell links css/admin/admin.css, which carries its own reset and its
-	own colour palette. Never link it and css/app.css from the same page.
+	Bootstrap is the same file the customer pages load; css/admin/admin.css
+	themes it for the admin (docs/decisions/0012-giao-dien-admin-moi.md).
+	Never link admin.css and css/app.css from the same page.
 -->
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	data-theme="light" data-bs-theme="light" th:fragment="page(title, content)">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, content)">
 <head>
 	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<title th:replace="${title}">Quản trị TrainGo</title>
+	<!-- Read by TG.api, which sends the token on every request that changes data. -->
+	<meta name="_csrf" th:content="${_csrf.token}">
+	<meta name="_csrf_header" th:content="${_csrf.headerName}">
 
 	<link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
 	<link rel="stylesheet" th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}">
-	<link rel="stylesheet" th:href="@{/vendor/simple-datatables/style.css}">
 	<link rel="stylesheet" th:href="@{/css/admin/admin.css}">
 </head>
+<body>
 
-<!--
-	menu-left is fixed here. Upstream set it from localStorage in an inline
-	script so the user could move the sidebar; that control went away with the
-	theme customizer, but admin.css still needs the class to lay the shell out.
--->
-<body class="app-body menu-left">
+<a class="visually-hidden-focusable position-absolute top-0 start-0 m-2 btn btn-primary" href="#main">Bỏ qua menu</a>
 
-<div th:replace="~{admin/fragments/header :: header}"></div>
-<div th:replace="~{admin/fragments/sidebar :: sidebar}"></div>
+<div class="admin-shell">
+	<aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
-<!--
-	A div, not a <main>, so pages can keep writing plain <main> like the
-	customer pages do without nesting one <main> inside another. admin.css
-	targets #main, so the id is what matters, not the tag.
--->
-<div id="main" class="main">
-	<main th:replace="${content}"></main>
+	<!--
+		A div, not a <main>: every page brings its own <main>, and one <main>
+		inside another is invalid. The skip link above lands here.
+	-->
+	<div id="main" class="admin-main" tabindex="-1">
+		<div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+			<i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+			<span th:text="${errorMessage}">Không xóa được ga.</span>
+		</div>
+		<!-- admin.js turns this into a toast and removes it. -->
+		<div th:if="${successMessage}" hidden data-flash-success th:text="${successMessage}">Đã thêm ga.</div>
+
+		<main th:replace="${content}"></main>
+	</div>
 </div>
 
-<div th:replace="~{admin/fragments/footer :: footer}"></div>
+<!-- Filled and opened by TG.confirm. -->
+<div class="modal fade" id="tgConfirm" tabindex="-1" aria-labelledby="tgConfirmTitle" aria-describedby="tgConfirmBody" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered">
+		<div class="modal-content modal-confirm">
+			<h2 class="modal-title" id="tgConfirmTitle"></h2>
+			<p class="modal-body-text text-body-secondary" id="tgConfirmBody"></p>
+			<div class="modal-actions">
+				<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-tg-back>Quay lại</button>
+				<button type="button" class="btn btn-primary" data-tg-confirm>Đồng ý</button>
+			</div>
+		</div>
+	</div>
+</div>
 
-<a href="#" class="back-to-top d-flex align-items-center justify-content-center"
-	aria-label="Lên đầu trang"><i class="bi bi-arrow-up-short"></i></a>
+<div class="toast-container position-fixed" id="tgToasts" aria-live="polite"></div>
 
 <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
-<script th:src="@{/vendor/apexcharts/apexcharts.min.js}"></script>
-<script th:src="@{/vendor/simple-datatables/simple-datatables.js}"></script>
 <script th:src="@{/js/admin/admin.js}"></script>
 </body>
 </html>

@@ -8,10 +8,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.voyagego.traingo.service.AdminService;
 
 /**
- * The admin dashboard, plus the admin screens of docs/product/admin.md that
- * are still read-only lists without create, edit or delete. A screen moves out
- * of here into its own controller once it gets those actions, as
- * /admin/stations did (StationAdminController).
+ * The admin screens of docs/product/admin.md that are still read-only lists
+ * without create, edit or delete. A screen moves out of here into its own
+ * controller once it gets those actions, as /admin/stations did
+ * (StationAdminController).
  */
 @Controller
 @RequestMapping("/admin")
@@ -23,15 +23,13 @@ public class AdminController {
 		this.adminService = adminService;
 	}
 
+	/**
+	 * The admin mockup has no overview page, so /admin opens the trains
+	 * screen until the overview task (#37) brings one back.
+	 */
 	@GetMapping
-	public String dashboard(Model model) {
-		model.addAttribute("activeNav", "dashboard");
-		model.addAttribute("totalBookings", adminService.totalBookings());
-		model.addAttribute("totalTrips", adminService.totalTrips());
-		model.addAttribute("totalUsers", adminService.totalUsers());
-		model.addAttribute("totalRevenue", adminService.totalRevenue());
-		model.addAttribute("recentBookings", adminService.recentBookings());
-		return "admin/dashboard";
+	public String home() {
+		return "redirect:/admin/trains";
 	}
 
 	@GetMapping("/routes")
