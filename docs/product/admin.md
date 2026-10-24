@@ -37,6 +37,25 @@ Tuyến đã có chuyến thì không xóa được, và khi sửa chỉ đượ
 Hà Nội" sẽ bỗng thành vé của một tuyến khác. Vi phạm thì màn hình báo lý do và giữ
 nguyên tuyến.
 
+Checkpoint server #24 ngày 23/10/2026: `RouteService` đã hỗ trợ tạo một chiều hoặc
+hai chiều trong cùng transaction; nếu chiều ngược đã có thì giữ nguyên chiều đó.
+Ga phải tồn tại và khác nhau, khoảng cách là số nguyên dương, không trùng cặp ga
+có hướng. Service chỉ cho sửa khoảng cách; chặn xóa khi có bất kỳ chuyến nào,
+kể cả chuyến đã hủy hoặc hoàn thành. Khóa ga theo thứ tự ID bảo vệ tạo đồng thời;
+khóa tuyến bảo vệ sửa/xóa và tranh chấp với việc thêm chuyến.
+
+`RouteRow` tách khỏi entity, gồm hai ga, khoảng cách, số chuyến tổng, số chuyến
+`SCHEDULED` có giờ đi sau hiện tại và cờ có chiều ngược. Danh sách dùng ba query
+(tuyến kèm hai ga, tổng chuyến theo tuyến, chuyến sắp chạy theo tuyến), xếp theo
+lý trình ga đi rồi ga đến; gợi ý khoảng cách là trị tuyệt đối hiệu lý trình.
+
+Đây là phần server độc lập đã kiểm chứng trên MySQL Server, chưa nối vào
+`AdminController`/`AdminService` và template danh sách hiện tại. REST API, ma trận,
+form và lỗi JSON chuẩn còn chờ #20/#21; ba exception tuyến tạm kế thừa
+`RuntimeException`, sẽ dùng `ResourceNotFoundException`/`BusinessRuleException`
+và handler chung khi #21 sẵn sàng. Lỗi validation `differentStations` cần map về
+`destinationStationId` lúc nối form/API. Chưa hoàn thành toàn issue #24.
+
 ## Quản lý tàu `/admin/trains` và `/admin/trains/:id`
 
 Danh sách tàu (mã, tên), thêm, sửa, và trang chi tiết. Trang chi tiết có hai phần:

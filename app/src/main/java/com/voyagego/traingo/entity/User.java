@@ -34,6 +34,9 @@ public class User {
 	@Column(nullable = false)
 	private String email;
 
+	@Column(length = 15)
+	private String phoneNumber;
+
 	/** BCrypt hash, never the password itself. */
 	@Column(nullable = false, length = 100)
 	private String passwordHash;
@@ -62,6 +65,18 @@ public class User {
 
 	public Long getId() {
 		return id;
+	}
+
+	public static User newCustomer(String fullName, String email, String phoneNumber,
+			String passwordHash, LocalDateTime createdAt) {
+		var user = new User(fullName, email, passwordHash, UserRole.CUSTOMER);
+		user.phoneNumber = phoneNumber;
+		user.createdAt = createdAt;
+		return user;
+	}
+
+	public String getPhoneNumber() {
+		return phoneNumber;
 	}
 
 	public String getFullName() {
