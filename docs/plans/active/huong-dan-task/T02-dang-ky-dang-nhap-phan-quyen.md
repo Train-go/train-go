@@ -146,13 +146,13 @@ file này, và không ai giẫm lên code của ai:
 | Đường dẫn | Ai được vào |
 | --- | --- |
 | `/admin/**`, `/api/admin/**` | `hasRole("ADMIN")` |
-| `/booking/**`, `/my-trips/**`, `/tickets/**`, `/api/trips/**` | `hasRole("CUSTOMER")` |
-| Mọi đường dẫn còn lại, gồm `/`, `/trips/**`, `/login`, `/register`, `/error` và file tĩnh | Ai cũng vào được |
+| `/booking/**`, `/my-trips/**`, `/tickets/**` | `hasRole("CUSTOMER")` |
+| Mọi đường dẫn còn lại, gồm `/`, `/trips/**`, `/api/trips/**`, `/login`, `/register`, `/error` và file tĩnh | Ai cũng vào được |
 
-Từ #21 (23/10/2026), dòng cuối là "Ai cũng vào được" chứ không phải "Đã đăng nhập":
-người chưa đăng nhập gõ sai đường dẫn thấy trang 404, không bị đẩy về trang đăng nhập.
-#21 đã viết sẵn hai dòng đầu bằng `authenticated()`; task này chỉ đổi chúng thành
-`hasRole(...)`. Lý do và cái giá của lựa chọn này:
+Dòng cuối là "Ai cũng vào được" chứ không phải "Đã đăng nhập": người chưa đăng nhập gõ
+sai đường dẫn thấy trang 404, không bị đẩy về trang đăng nhập. `/api/trips/**` công
+khai vì sơ đồ chỗ chỉ để xem, giống nhau với mọi người (chốt 24/10/2026, khi gộp #21 với
+#22). Lý do và cái giá của lựa chọn này:
 `docs/decisions/0013-quyen-truy-cap-mac-dinh-mo.md`.
 
 Cấu hình thêm:

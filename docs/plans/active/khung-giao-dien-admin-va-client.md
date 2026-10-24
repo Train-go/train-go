@@ -435,7 +435,12 @@ gộp #20 vào `main` trước thì pull request #21 không còn conflict. Workt
       controller ném exception tạm.
 - [ ] Xác nhận nguồn và quyền dùng ảnh hero `hero-sa-pa.jpg` (Phi gửi, chưa có tác giả,
       giấy phép), rồi thêm dòng ghi nguồn ở footer hoặc đổi ảnh.
-- [ ] Push, pull request `Closes #21`, review; báo người làm #22 về ADR 0013.
+- [x] Push `feat/client-shell-errors`.
+- [x] Gộp `main` sau khi #20 (PR #45) và #22 vào: giải `SecurityConfig` theo ADR 0013,
+      exception mới của `main` theo quy ước #21. AC4 phần "khách vào `/admin` ra 403"
+      đã thử được với tài khoản khách của #22.
+- [ ] Pull request `Closes #21`, review; báo người làm #22 về việc giữ mặc định mở và
+      chỗ chừa tên người dùng trong navbar khách, sidebar admin chưa nối `currentUser`.
 
 ## Decisions
 
@@ -456,6 +461,8 @@ gộp #20 vào `main` trước thì pull request #21 không còn conflict. Workt
   đặt theo từng khoảng độ rộng để tàu không chạm tiêu đề hay thanh tìm (dò 320-2560px).
 - 2026-10-24: `server.servlet.session.tracking-modes=cookie`: trang lỗi là trang đầu
   của phiên từng mất CSS vì link bị gắn `;jsessionid` và bị firewall trả 400.
+- 2026-10-24: Khi gộp với #22 (mặc định khóa), Phi giữ mặc định mở của ADR 0013 và để
+  `/api/trips/**` công khai như #22 đã làm.
 
 ## Validation
 
@@ -499,10 +506,8 @@ Dự án không có test tự động (ADR 0007). Mỗi pull request cần:
 3. Lặp lại bước 2 khi chưa đăng nhập (cửa sổ ẩn danh): cả hai đường dẫn đều
    ra trang 404, không bị đẩy về trang đăng nhập. Rồi gõ `/admin/stations`,
    `/my-trips`, `/booking/passengers`, `/tickets/1`: cả bốn đều về trang đăng
-   nhập. Gọi `fetch('/api/admin/x')` và `fetch('/api/trips/1')`: phản hồi có
-   `res.redirected === true` và `res.url` kết thúc bằng `/login`. Trước khi #22
-   thêm mã 401 cho `/api/**`, `fetch` tự đi theo chuyển hướng nên `res.status`
-   vẫn là 200; đừng dựa vào status ở bước này.
+   nhập. Gọi `fetch('/api/admin/x')`: JSON 401 `{ message, fields }`. Gọi
+   `fetch('/api/trips/1/seat-map')`: không bị chặn (công khai), chưa có API thì 404.
 4. 403 trước khi có #22: ở trang ga, DevTools xóa ô ẩn `_csrf` trong form xóa
    rồi bấm xóa, trình duyệt hiện trang 403 tiếng Việt. Phần "khách gõ
    `/admin/stations`" của AC4 chỉ thử được sau khi #22 gộp; ghi rõ trong pull

@@ -2,10 +2,10 @@
 
 Bản dễ nhìn hơn (sơ đồ có màu, thẻ từng bảng): mở `erd.html` bằng trình duyệt.
 
-Schema cập nhật 23/10/2026 theo V6: bỏ ngày sinh hành khách và phụ thu chỗ;
+Schema cập nhật 23/10/2026 theo V7: thêm `users.phone_number` nullable; V6 bỏ ngày sinh hành khách và phụ thu chỗ;
 vé đã đặt giữ nguyên giá. Bảng `users` không có ngày sinh hoặc cờ xóa mềm.
 Các bảng dữ liệu mẫu dưới đây là ảnh chụp lịch sử 20/10/2026, không phải kết quả
-kiểm chứng sau V6. Nền dữ liệu theo migration `V5__north_south_line.sql`: ga có lý trình
+kiểm chứng sau V7; dữ liệu mẫu cũ chưa gồm phone. Nền dữ liệu theo migration `V5__north_south_line.sql`: ga có lý trình
 `km_mark`, chuyến lưu giờ đi và giờ đến bằng ngày-giờ đầy đủ, dữ liệu mẫu là 8 ga
 trên trục Bắc - Nam và lịch của tàu SE1. Lý do: `docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`.
 
@@ -67,6 +67,7 @@ erDiagram
         bigint id PK
         varchar full_name
         varchar email UK
+        varchar phone_number "nullable; V7"
         varchar password_hash
         varchar role "CUSTOMER | ADMIN"
         datetime created_at
@@ -297,6 +298,7 @@ Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 | `id` | `bigint` (PK) | Mã ID của người dùng. |
 | `full_name` | `varchar(100)` | Họ và tên người dùng. |
 | `email` | `varchar(255)` (UK) | Email dùng để đăng nhập. |
+| `phone_number` | `varchar(15)` NULL | Số điện thoại; đăng ký khách bắt buộc 10 chữ số bắt đầu 0; ADMIN được null. |
 | `password_hash` | `varchar(100)` | Mật khẩu đã được mã hóa bằng BCrypt. |
 | `role` | `varchar(20)` | Vai trò của người dùng. |
 | `created_at` | `datetime` | Thời gian tạo tài khoản. |

@@ -7,6 +7,9 @@ Date: 2026-10-23
 Accepted. Thay dòng "Mọi đường dẫn còn lại: Đã đăng nhập" trong bảng quyền của
 `docs/plans/active/huong-dan-task/T02-dang-ky-dang-nhap-phan-quyen.md`.
 
+Cập nhật 24/10/2026, khi gộp #21 với #22 (đã ở `main`, dùng `hasRole(...)` và mặc
+định khóa): giữ mặc định mở; `/api/trips/**` chuyển sang công khai như #22 đã làm.
+
 ## Context
 
 Issue #21 yêu cầu: người chưa đăng nhập gõ một đường dẫn không tồn tại phải thấy
@@ -25,16 +28,17 @@ người lạ. Phi chọn cách thứ hai ngày 22/10/2026 (Q2 của
 
 ## Decision
 
-**Mặc định mở, khóa theo tiền tố.** `SecurityConfig` khóa đúng sáu tiền tố, mọi
+**Mặc định mở, khóa theo tiền tố.** `SecurityConfig` khóa đúng năm tiền tố, mọi
 đường dẫn khác `permitAll()`:
 
 | Tiền tố | Ai được vào |
 | --- | --- |
-| `/admin/**`, `/api/admin/**` | Admin (`hasRole("ADMIN")` từ #22) |
-| `/booking/**`, `/my-trips/**`, `/tickets/**`, `/api/trips/**` | Khách (`hasRole("CUSTOMER")` từ #22) |
-| Mọi đường dẫn còn lại | Ai cũng vào được |
+| `/admin/**`, `/api/admin/**` | Admin, `hasRole("ADMIN")` |
+| `/booking/**`, `/my-trips/**`, `/tickets/**` | Khách, `hasRole("CUSTOMER")` |
+| Mọi đường dẫn còn lại, gồm `/api/trips/**` | Ai cũng vào được |
 
-Tới khi #22 xong, hai nhóm đầu dùng `authenticated()` vì chưa có tài khoản khách.
+`/api/trips/**` công khai vì sơ đồ chỗ chỉ để xem và giống nhau với mọi người; thao
+tác đặt vé nằm dưới `/booking/**`.
 
 **Trang hoặc API riêng tư mới phải nằm dưới một tiền tố trên**, hoặc thêm tiền tố
 mới vào `SecurityConfig` trong cùng thay đổi.
@@ -56,13 +60,12 @@ Positive:
 
 Tradeoffs:
 
-- Trang riêng tư đặt ngoài sáu tiền tố sẽ mở cho người lạ. Ba lớp chặn: comment
+- Trang riêng tư đặt ngoài năm tiền tố sẽ mở cho người lạ. Ba lớp chặn: comment
   trên khối luật trong `SecurityConfig`; dòng tự kiểm trong
   `docs/plans/active/huong-dan-task/README.md`; service vẫn tự kiểm quyền sở hữu
   (booking của ai), nên lọt lớp URL thì dữ liệu người khác vẫn không lộ.
 
 ## Follow-Up
 
-- #22 đổi hai nhóm tiền tố sang `hasRole(...)` và cho `/api/**` trả 401 thay vì
-  chuyển trang. Trước đó, `fetch` của người chưa đăng nhập tới API riêng tư nhận
-  về trang đăng nhập với mã 200 sau khi đi theo chuyển hướng.
+- Xong ngày 24/10/2026: #22 đã đổi hai nhóm tiền tố sang `hasRole(...)` và cho
+  `/api/**` bị chặn trả JSON 401 hoặc 403 thay vì chuyển trang.
