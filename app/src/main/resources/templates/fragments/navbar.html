@@ -3,41 +3,66 @@
 <body>
 
 <!--
-	The Login / Register pair becomes My Trips / Profile / Logout once
-	authentication exists. That switch needs sec:authorize from
-	thymeleaf-extras-springsecurity6, which is not a dependency yet.
+	Customer navigation, after docs/reports/ui-mau/client/chon-chuyen-b-mo-rong.html.
+
+	The current page is marked by the activeNav model attribute its controller
+	sets ("search" for /trips, "my-trips" for /my-trips), the same way the admin
+	menu works, so nested pages such as /trips/12 keep "Tìm vé" marked.
+
+	Below Bootstrap's lg breakpoint the three links fold into the menu opened by
+	the round button; "Đăng nhập" stays on the bar.
+
+	The sign-in block is a placeholder until the auth feature (#22) shows the
+	signed-in user's name and "Đăng xuất" there instead.
 -->
-<header th:fragment="navbar" class="border-bottom bg-white sticky-top">
-	<nav class="navbar navbar-expand-lg container py-2" aria-label="Điều hướng chính">
-		<a class="navbar-brand fw-bold d-flex align-items-center gap-2" th:href="@{/}">
-			<span class="tg-brand-mark" aria-hidden="true">TG</span>
-			<span>TrainGo</span>
-		</a>
+<header th:fragment="navbar">
+	<!--
+		navbar and container on separate elements: on one element the navbar's
+		padding rule overrides the container's side gutter, and the logo touches
+		the edge of a phone screen.
+	-->
+	<nav class="navbar navbar-expand-lg tg-navbar" aria-label="Điều hướng chính">
+		<div class="container">
+			<a class="navbar-brand tg-logo" th:href="@{/}">
+				<span class="tg-logo-mark" aria-hidden="true"><i class="bi bi-train-front"></i></span>TrainGo
+			</a>
 
-		<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-			data-bs-target="#tgNav" aria-controls="tgNav" aria-expanded="false"
-			aria-label="Mở menu">
-			<span class="navbar-toggler-icon"></span>
-		</button>
+			<div class="tg-nav-end order-lg-last">
+				<a class="tg-pill-btn is-light" th:href="@{/login}">Đăng nhập</a>
+				<a class="tg-pill-btn is-dark d-none d-sm-inline-flex" th:href="@{/register}">Đăng ký</a>
+				<button class="tg-toggler d-lg-none" type="button" data-bs-toggle="collapse"
+					data-bs-target="#tgNav" aria-controls="tgNav" aria-expanded="false" aria-label="Mở menu">
+					<i class="bi bi-list" aria-hidden="true"></i>
+				</button>
+			</div>
 
-		<div class="collapse navbar-collapse" id="tgNav">
-			<ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/}">Trang chủ</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" href="#how-it-works">Cách đặt vé</a>
-				</li>
-				<li class="nav-item">
-					<a class="nav-link" th:href="@{/my-trips}">Chuyến của tôi</a>
-				</li>
-				<li class="nav-item mt-2 mt-lg-0 ms-lg-2">
-					<a class="btn btn-outline-primary btn-sm px-3" th:href="@{/login}">Đăng nhập</a>
-				</li>
-				<li class="nav-item mt-2 mt-lg-0">
-					<a class="btn btn-primary btn-sm px-3" th:href="@{/register}">Đăng ký</a>
-				</li>
-			</ul>
+			<div class="collapse navbar-collapse" id="tgNav">
+				<ul class="navbar-nav tg-pills">
+					<li class="nav-item">
+						<a class="nav-link" th:href="@{/trips}"
+							th:attr="aria-current=${activeNav == 'search'} ? 'page' : null">
+							<i class="bi bi-search" aria-hidden="true"></i>Tìm vé
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" th:href="@{/my-trips}"
+							th:attr="aria-current=${activeNav == 'my-trips'} ? 'page' : null">
+							<i class="bi bi-ticket-perforated" aria-hidden="true"></i>Vé của tôi
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" th:href="@{/#how-it-works}">
+							<i class="bi bi-question-circle" aria-hidden="true"></i>Hướng dẫn
+						</a>
+					</li>
+					<!-- On a phone "Đăng ký" has no room on the bar, so it lives in the menu. -->
+					<li class="nav-item d-sm-none">
+						<a class="nav-link" th:href="@{/register}">
+							<i class="bi bi-person-plus" aria-hidden="true"></i>Đăng ký
+						</a>
+					</li>
+				</ul>
+			</div>
 		</div>
 	</nav>
 </header>

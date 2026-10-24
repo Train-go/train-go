@@ -20,6 +20,7 @@ public class HomeController {
 		model.addAttribute("appName", "TrainGo");
 		model.addAttribute("stations", homeService.stations());
 		model.addAttribute("popularRoutes", homeService.popularRoutes());
+		model.addAttribute("destinations", homeService.destinations());
 		return "index";
 	}
 

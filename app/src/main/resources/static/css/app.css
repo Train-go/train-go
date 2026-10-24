@@ -8,13 +8,116 @@
  * See docs/decisions/0003-he-thong-giao-dien.md.
  */
 
+/*
+ * ---------- Fonts (SIL OFL 1.1, licence beside the files) ----------
+ *
+ * The pairing of docs/reports/ui-mau/client/: Noto Sans for reading text,
+ * Be Vietnam Pro for headings and the few large display words. Chosen by Phi
+ * on 24/10/2026 over Be Vietnam Pro alone, Inter and Manrope.
+ */
+@font-face {
+	font-family: "Noto Sans";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("../fonts/noto-sans/noto-sans-100-900-vietnamese.woff2") format("woff2");
+	unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+	font-family: "Noto Sans";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("../fonts/noto-sans/noto-sans-100-900-latin.woff2") format("woff2");
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-400-vietnamese.woff2") format("woff2");
+	unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-400-latin.woff2") format("woff2");
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-500-vietnamese.woff2") format("woff2");
+	unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-500-latin.woff2") format("woff2");
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-600-vietnamese.woff2") format("woff2");
+	unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-600-latin.woff2") format("woff2");
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-700-vietnamese.woff2") format("woff2");
+	unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+
+@font-face {
+	font-family: "Be Vietnam Pro";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("../fonts/be-vietnam-pro/be-vietnam-pro-700-latin.woff2") format("woff2");
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
-	/* Brand */
-	--traingo-primary: #0f6cbd;
-	--traingo-primary-hover: #0b558f;
-	--traingo-primary-active: #084a7f;
+	/*
+	 * Brand: deep navy ink and one cobalt action colour, from the client
+	 * mockups in docs/reports/ui-mau/client/. White on cobalt passes 4.5:1.
+	 */
+	--traingo-navy: #0b1a36;
+	--traingo-navy-2: #1c2b4a;
+	--traingo-primary: #2c4d98;
+	--traingo-primary-hover: #223f80;
+	--traingo-primary-active: #1b3468;
 	--traingo-primary-dark: var(--traingo-primary-hover);
-	--traingo-primary-soft: #eaf3fb;
+	--traingo-primary-soft: #e8eefa;
 	--traingo-secondary: #d6f23d;
 	--traingo-accent: #8b5cf6;
 
@@ -49,8 +152,8 @@
 	--traingo-info-border: #93c5fd;
 
 	/* Text roles */
-	--traingo-text-primary: var(--traingo-neutral-900);
-	--traingo-text-secondary: var(--traingo-neutral-600);
+	--traingo-text-primary: var(--traingo-navy);
+	--traingo-text-secondary: #5b6b80;
 	--traingo-text-tertiary: var(--traingo-neutral-500);
 	--traingo-text-disabled: var(--traingo-neutral-400);
 	--traingo-text-inverse: var(--traingo-neutral-50);
@@ -58,14 +161,15 @@
 
 	/* Surface roles */
 	--traingo-surface-default: #ffffff;
-	--traingo-surface-alt: var(--traingo-neutral-100);
+	--traingo-surface-alt: #edf1f5;
+	--traingo-surface-field: #f4f6f9;
 	--traingo-surface-elevated: #ffffff;
-	--traingo-surface-hover: #eef5fa;
+	--traingo-surface-hover: #e8eefa;
 	--traingo-surface-selected: var(--traingo-primary-soft);
 	--traingo-surface-disabled: var(--traingo-neutral-200);
 
 	/* Border roles */
-	--traingo-border-default: var(--traingo-neutral-300);
+	--traingo-border-default: #e0e6ed;
 	--traingo-border-subtle: #e9eef3;
 	--traingo-border-strong: var(--traingo-neutral-400);
 	--traingo-border-focus: var(--traingo-primary);
@@ -73,12 +177,12 @@
 	/* Interactive states */
 	--traingo-state-hover: var(--traingo-primary-hover);
 	--traingo-state-active: var(--traingo-primary-active);
-	--traingo-state-focus-ring: rgb(15 108 189 / 32%);
+	--traingo-state-focus-ring: rgb(44 77 152 / 32%);
 	--traingo-state-selected: var(--traingo-primary-soft);
 	--traingo-state-disabled: var(--traingo-neutral-400);
 
 	/* Data visualisation */
-	--traingo-chart-1: #0f6cbd;
+	--traingo-chart-1: #2c4d98;
 	--traingo-chart-2: #0d9488;
 	--traingo-chart-3: #f59e0b;
 	--traingo-chart-4: #7c3aed;
@@ -96,15 +200,28 @@
 	--traingo-surface: var(--traingo-surface-default);
 	--traingo-border: var(--traingo-border-default);
 	--traingo-radius: 0.75rem;
-	--traingo-shadow: 0 1px 2px rgba(22, 35, 46, 0.06), 0 8px 24px rgba(22, 35, 46, 0.06);
+	--traingo-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--traingo-font-body: "Noto Sans", system-ui, "Segoe UI", sans-serif;
+	--traingo-font-display: "Be Vietnam Pro", "Noto Sans", system-ui, sans-serif;
+	--traingo-shadow: 0 1px 2px rgb(11 26 54 / 5%), 0 16px 36px -18px rgb(11 26 54 / 22%);
 
 	/* Feed the tokens back into Bootstrap so btn-primary and friends follow. */
 	--bs-primary: var(--traingo-primary);
-	--bs-primary-rgb: 15, 108, 189;
+	--bs-primary-rgb: 44, 77, 152;
+	--bs-primary-bg-subtle: var(--traingo-primary-soft);
+	--bs-primary-text-emphasis: var(--traingo-primary-hover);
 	--bs-link-color: var(--traingo-primary);
-	--bs-link-color-rgb: 15, 108, 189;
+	--bs-link-color-rgb: 44, 77, 152;
 	--bs-link-hover-color: var(--traingo-primary-hover);
+	--bs-link-hover-color-rgb: 34, 63, 128;
+	--bs-body-font-family: var(--traingo-font-body);
 	--bs-body-color: var(--traingo-ink);
+	--bs-body-color-rgb: 11, 26, 54;
+	--bs-body-bg: var(--traingo-surface-alt);
+	--bs-body-bg-rgb: 237, 241, 245;
+	--bs-heading-color: var(--traingo-navy);
+	--bs-secondary-color: var(--traingo-muted);
+	--bs-focus-ring-color: var(--traingo-state-focus-ring);
 	--bs-border-color: var(--traingo-border);
 	--bs-success: var(--traingo-success-ink);
 	--bs-success-rgb: 21, 128, 61;
@@ -117,9 +234,63 @@
 }
 
 body {
-	font-family: system-ui, "Segoe UI", Roboto, Arial, sans-serif;
-	color: var(--traingo-ink);
 	line-height: 1.6;
+}
+
+/* Smooth jump to in-page anchors such as the navbar's "Hướng dẫn". */
+html {
+	scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+}
+
+/*
+ * Display face: headings and the large words that read as titles. Everything
+ * else (menus, labels, buttons, paragraphs) stays in the body face.
+ */
+h1, h2, h3, h4, h5, h6,
+.tg-logo,
+.tg-cell select,
+.tg-cell input,
+.tg-go,
+.tg-place strong,
+.tg-route-line,
+.tg-how-num,
+.tg-trust strong,
+.tg-steps .tg-step-dot,
+.tg-error-code {
+	font-family: var(--traingo-font-display);
+}
+
+/* No lone word on the last line of a heading or a short paragraph. */
+h1, h2, h3 {
+	text-wrap: balance;
+}
+
+p {
+	text-wrap: pretty;
+}
+
+/* "Bỏ qua điều hướng": hidden until a keyboard user tabs onto it. */
+.tg-skip:focus {
+	position: fixed;
+	top: 12px;
+	left: 12px;
+	z-index: 1080;
+	padding: 10px 18px;
+	border-radius: 999px;
+	background: var(--traingo-navy);
+	color: #fff;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+#main:focus {
+	outline: none;
 }
 
 /*
@@ -153,108 +324,1251 @@ h1, h2, h3, h4, h5, h6,
 	--bs-btn-active-border-color: var(--traingo-primary-active);
 }
 
-/* Square brand badge next to the wordmark in the navbar. */
-.tg-brand-mark {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 2rem;
-	height: 2rem;
-	border-radius: 0.5rem;
-	background: var(--traingo-primary);
-	color: #fff;
-	font-size: 0.8rem;
-	letter-spacing: 0.02em;
-}
+/* ---------- Homepage ---------- */
 
-/* ---------- Landing ---------- */
+/*
+ * After docs/reports/ui-mau/client/trang-chu-8-swiss.html: a photo hero, the
+ * search across its bottom edge, destination photos, popular routes, how it
+ * works and a navy band of promises. Photos live in static/images/home/ and
+ * are credited in the homepage footer.
+ */
 
+/* Hero: the navy veil keeps the white title readable on any part of the photo. */
 .tg-hero {
-	background: linear-gradient(135deg, var(--traingo-primary-soft) 0%, var(--traingo-surface) 100%);
-	padding: 3.5rem 0 4.5rem;
+	position: relative;
+	isolation: isolate;
+	color: #fff;
 }
 
-.tg-hero__lead {
-	color: var(--traingo-muted);
-	max-width: 34rem;
-}
-
-/* The search card overlaps the bottom of the hero on wide screens. */
-.tg-search-card {
-	background: var(--traingo-surface);
-	border: 1px solid var(--traingo-border);
-	border-radius: var(--traingo-radius);
-	box-shadow: var(--traingo-shadow);
-	padding: 1.25rem;
-}
-
-@media (min-width: 992px) {
-	.tg-search-card {
-		padding: 1.5rem;
-	}
-}
-
-/* Swaps origin and destination. Round on desktop, full width on mobile. */
-.tg-swap-btn {
-	border: 1px solid var(--traingo-border);
-	background: var(--traingo-surface-alt);
-	color: var(--traingo-primary);
-	border-radius: var(--traingo-radius);
+.tg-hero-img {
+	position: absolute;
+	inset: 0;
+	z-index: -2;
 	width: 100%;
-	height: 2.5rem;
-	line-height: 1;
-}
-
-.tg-swap-btn:hover {
-	background: var(--traingo-primary-soft);
-}
-
-@media (min-width: 768px) {
-	.tg-swap-btn {
-		width: 2.5rem;
-		border-radius: 50%;
-	}
-}
-
-.tg-route-card {
-	border: 1px solid var(--traingo-border);
-	border-radius: var(--traingo-radius);
-	background: var(--traingo-surface);
-	transition: box-shadow 0.15s ease, border-color 0.15s ease;
-	width: 100%;
-	text-align: left;
-}
-
-.tg-route-card:hover,
-.tg-route-card:focus-visible {
-	border-color: var(--traingo-primary);
-	box-shadow: var(--traingo-shadow);
+	height: 100%;
+	object-fit: cover;
+	object-position: center 42%;
 }
 
 /*
- * Station names wrap instead of stretching the card. "Ga Sài Gòn — Bến xe Miền
- * Đông mới" is a realistic worst case and must not push the price out of view.
+ * A light veil only behind the title, so the photo stays bright. Measured
+ * contrast of the white title against the brightest 5% of what is behind it
+ * stays above the 3:1 large-text minimum (WCAG AA), helped by the soft shadow.
  */
-.tg-route-card__name {
-	overflow-wrap: anywhere;
+.tg-hero::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: linear-gradient(90deg, rgb(11 26 54 / 62%) 0%, rgb(11 26 54 / 32%) 38%, rgb(11 26 54 / 0%) 68%);
 }
 
-.tg-step-number {
+/*
+ * The photo scales with the page width while the title does not, so each
+ * width range gets its own hero height and photo position. The values were
+ * found by sweeping widths 320-2560px and keeping the ones where the train
+ * clears both the title and the search bar (centre of the passing range).
+ */
+.tg-hero-text {
+	padding-block: 96px 192px;
+}
+
+@media (min-width: 1500px) {
+	.tg-hero-text {
+		padding-bottom: 220px;
+	}
+
+	.tg-hero-img {
+		object-position: center 49%;
+	}
+}
+
+@media (min-width: 2000px) {
+	.tg-hero-text {
+		padding-bottom: 255px;
+	}
+
+	.tg-hero-img {
+		object-position: center 54%;
+	}
+}
+
+.tg-hero h1 {
+	max-width: 14ch;
+	margin: 0;
+	color: #fff;
+	font-size: clamp(38px, 5.4vw, 66px);
+	font-weight: 700;
+	line-height: 1.25;
+	letter-spacing: -0.02em;
+	text-shadow: 0 2px 24px rgb(11 26 54 / 55%), 0 1px 3px rgb(11 26 54 / 35%);
+	text-wrap: balance;
+}
+
+/* Search: one bar across the hero's bottom edge. */
+.tg-search-wrap {
+	position: relative;
+	z-index: 2;
+	margin-top: -48px;
+}
+
+.tg-search {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.6fr) auto;
+	align-items: stretch;
+	overflow: hidden;
+	border: 1px solid rgb(11 26 54 / 10%);
+	border-radius: 16px;
+	background: var(--traingo-surface);
+	box-shadow: 0 1px 2px rgb(11 26 54 / 6%), 0 28px 56px -28px rgb(11 26 54 / 45%);
+}
+
+.tg-cell {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-width: 0;
+	min-height: 84px;
+	margin: 0;
+	padding: 0 20px;
+	border-right: 1px solid var(--traingo-border);
+	cursor: pointer;
+}
+
+/* Sentence case: Vietnamese capitals stack tone marks and read heavy at this size. */
+.tg-cell small {
+	color: var(--traingo-muted);
+	font-weight: 500;
+	font-size: 13.5px;
+}
+
+.tg-cell select,
+.tg-cell input {
+	width: 100%;
+	min-height: 44px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--traingo-navy);
+	font-size: 21px;
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	appearance: none;
+}
+
+.tg-cell select {
+	cursor: pointer;
+}
+
+/* The whole cell shows focus; the bare field inside has no frame of its own. */
+.tg-cell select:focus,
+.tg-cell input:focus {
+	outline: none;
+}
+
+.tg-cell:focus-within {
+	box-shadow: inset 0 0 0 3px var(--traingo-state-focus-ring);
+}
+
+.tg-swap + .tg-cell {
+	padding-left: 32px;
+}
+
+.tg-swap {
+	z-index: 1;
+	align-self: center;
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	margin: 0 -22px;
+	padding: 0;
+	border: 1px solid var(--traingo-border);
+	border-radius: 50%;
+	background: var(--traingo-surface);
+	box-shadow: 0 4px 12px -4px rgb(11 26 54 / 25%);
+	color: var(--traingo-navy);
+}
+
+.tg-swap:hover {
+	background: var(--traingo-primary-soft);
+	color: var(--traingo-primary);
+}
+
+.tg-swap i {
+	display: inline-block;
+	transition: transform 0.3s var(--traingo-ease);
+}
+
+.tg-swap:hover i {
+	transform: rotate(180deg);
+}
+
+.tg-go {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 0 32px;
+	border: 0;
+	background: var(--traingo-primary);
+	color: #fff;
+	font-size: 20px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.tg-go:hover {
+	background: var(--traingo-primary-hover);
+}
+
+.tg-go i {
+	transition: transform 0.2s var(--traingo-ease);
+}
+
+.tg-go:hover i {
+	transform: translateX(3px);
+}
+
+.tg-search-error {
+	margin: 10px 0 0;
+	color: var(--traingo-danger-ink);
+	font-weight: 600;
+}
+
+/* Section heading: big title over a navy rule. */
+.tg-section {
+	padding-top: 96px;
+	scroll-margin-top: 24px;
+}
+
+.tg-sec-head {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 28px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--traingo-navy);
+}
+
+.tg-sec-head h2 {
+	margin: 0;
+	font-size: clamp(26px, 3vw, 36px);
+	font-weight: 700;
+	letter-spacing: -0.015em;
+}
+
+/* Destinations: one large card and four small ones fill a 4 x 2 grid. */
+.tg-places {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	grid-auto-rows: 230px;
+	gap: 14px;
+}
+
+.tg-place {
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: var(--traingo-navy-2);
+	color: #fff;
+	text-align: left;
+}
+
+.tg-place img {
+	position: absolute;
+	inset: 0;
+	z-index: -2;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.5s ease;
+}
+
+.tg-place::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: linear-gradient(180deg, transparent 40%, rgb(11 26 54 / 82%));
+}
+
+.tg-place:hover img {
+	transform: scale(1.05);
+}
+
+.tg-place-text {
+	position: absolute;
+	right: 20px;
+	bottom: 18px;
+	left: 20px;
+}
+
+.tg-place small {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: rgb(255 255 255 / 85%);
+	font-weight: 600;
+	font-size: 14px;
+}
+
+.tg-place strong {
+	display: block;
+	font-size: 26px;
+	font-weight: 700;
+	line-height: 1.25;
+}
+
+.tg-place.is-big {
+	grid-column: span 2;
+	grid-row: span 2;
+}
+
+.tg-place.is-big strong {
+	font-size: 42px;
+}
+
+.tg-place:focus-visible,
+.tg-route:focus-visible {
+	outline: 3px solid var(--traingo-primary);
+	outline-offset: 3px;
+}
+
+/* Popular routes: photo of the destination on top, the trip below. */
+.tg-routes {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 16px;
+}
+
+.tg-route {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--traingo-navy);
+	text-align: left;
+}
+
+.tg-route-photo {
+	display: block;
+	aspect-ratio: 4 / 3;
+	overflow: hidden;
+	border-radius: 12px;
+	background: var(--traingo-navy-2);
+	box-shadow: 0 18px 36px -24px rgb(11 26 54 / 55%);
+}
+
+.tg-route-photo img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	transition: transform 0.5s var(--traingo-ease);
+}
+
+.tg-route:hover .tg-route-photo img {
+	transform: scale(1.05);
+}
+
+.tg-route:hover .tg-route-line b {
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 4px;
+}
+
+.tg-route-body {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: 0;
+	padding: 0 2px;
+}
+
+.tg-route-line {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 2px 8px;
+	font-weight: 600;
+	font-size: 19px;
+	letter-spacing: -0.01em;
+}
+
+.tg-route-line b {
+	font: inherit;
+	white-space: nowrap;
+}
+
+.tg-route-line i {
+	color: var(--traingo-primary);
+	font-size: 16px;
+}
+
+.tg-route-meta {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--traingo-muted);
+	font-size: 15px;
+	font-variant-numeric: tabular-nums;
+}
+
+/* How it works: five stops along one line, on a white band across the page. */
+.tg-band {
+	margin-top: 96px;
+	padding-block: 72px 80px;
+	background: var(--traingo-surface);
+}
+
+.tg-how {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	gap: 24px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tg-how li {
+	position: relative;
+}
+
+/* The track to the next stop: a dashed rail between the two circles. */
+.tg-how li:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	top: 19px;
+	left: 52px;
+	right: -12px;
+	height: 2px;
+	background: repeating-linear-gradient(90deg, var(--traingo-border-strong) 0 8px, transparent 8px 14px);
+}
+
+.tg-how-num {
+	position: relative;
+	z-index: 1;
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	border: 2px solid var(--traingo-primary);
+	border-radius: 50%;
+	background: var(--traingo-surface);
+	color: var(--traingo-primary);
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.tg-how li:first-child .tg-how-num {
+	background: var(--traingo-primary);
+	color: #fff;
+}
+
+.tg-how h3 {
+	margin: 18px 0 6px;
+	font-size: 17px;
+	font-weight: 600;
+}
+
+.tg-how p {
+	max-width: 26ch;
+	margin: 0;
+	color: var(--traingo-muted);
+	font-size: 15px;
+}
+
+/* Promises band, sitting right on top of the navy footer. */
+.tg-trust {
+	background: var(--traingo-navy);
+	color: #fff;
+}
+
+.tg-trust .container {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 24px;
+	padding-block: 40px;
+}
+
+.tg-trust .container > div {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.tg-trust i {
+	color: #b9c8ec;
+	font-size: 30px;
+}
+
+.tg-trust strong {
+	font-size: 19px;
+	font-weight: 600;
+}
+
+body:has(.tg-trust) .tg-foot {
+	margin-top: 0;
+	border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+@media (max-width: 1040px) {
+	.tg-hero-text {
+		padding-bottom: 178px;
+	}
+
+	.tg-hero-img {
+		object-position: center 30%;
+	}
+
+	.tg-search {
+		grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+	}
+
+	.tg-cell-to {
+		border-right: 0;
+	}
+
+	.tg-cell-date,
+	.tg-cell-count {
+		border-top: 1px solid var(--traingo-border);
+	}
+
+	.tg-cell-date {
+		grid-column: 1 / 3;
+	}
+
+	.tg-cell-count {
+		grid-column: 3;
+		border-right: 0;
+	}
+
+	.tg-go {
+		grid-column: 1 / -1;
+		height: 64px;
+	}
+
+	.tg-places {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		grid-auto-rows: 200px;
+	}
+
+	.tg-place.is-big {
+		grid-column: 1 / -1;
+		grid-row: span 1;
+	}
+
+	.tg-routes {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 767.98px) {
+	/* Below tablet width the five stops become a vertical line. */
+	.tg-how {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 28px;
+	}
+
+	.tg-how li {
+		padding-left: 60px;
+	}
+
+	.tg-how-num {
+		position: absolute;
+		top: -6px;
+		left: 0;
+	}
+
+	.tg-how li:not(:last-child)::after {
+		top: 40px;
+		bottom: -30px;
+		left: 19px;
+		right: auto;
+		width: 2px;
+		height: auto;
+		background: repeating-linear-gradient(180deg, var(--traingo-border-strong) 0 8px, transparent 8px 14px);
+	}
+
+	.tg-how h3 {
+		margin-top: 0;
+	}
+
+	.tg-how p {
+		max-width: 52ch;
+	}
+}
+
+@media (max-width: 640px) {
+	/* Taller than the title needs, so the train in the photo shows below it. */
+	.tg-hero-text {
+		padding-block: 48px 150px;
+	}
+
+	/* On a phone the title spans the width, so the veil runs top to bottom instead. */
+	.tg-hero::before {
+		background: linear-gradient(180deg, rgb(11 26 54 / 62%) 0%, rgb(11 26 54 / 40%) 55%, rgb(11 26 54 / 12%) 100%);
+	}
+
+	/* Stations stacked, the swap button on the line between them; date and count share a row. */
+	.tg-search {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	}
+
+	.tg-cell-from,
+	.tg-cell-to {
+		grid-column: 1 / -1;
+		border-right: 0;
+		border-bottom: 1px solid var(--traingo-border);
+	}
+
+	.tg-swap {
+		grid-column: 1 / -1;
+		justify-self: end;
+		margin: -22px 16px;
+	}
+
+	.tg-swap i {
+		transform: rotate(90deg);
+	}
+
+	.tg-swap:hover i {
+		transform: rotate(270deg);
+	}
+
+	.tg-cell,
+	.tg-swap + .tg-cell {
+		padding: 0 16px;
+	}
+
+	.tg-cell-date,
+	.tg-cell-count {
+		grid-column: auto;
+		border-top: 0;
+	}
+
+	.tg-cell-date {
+		border-right: 1px solid var(--traingo-border);
+	}
+
+	.tg-cell select,
+	.tg-cell input {
+		font-size: 18px;
+	}
+
+	.tg-places {
+		grid-auto-rows: 170px;
+		gap: 10px;
+	}
+
+	.tg-place-text {
+		right: 14px;
+		bottom: 12px;
+		left: 14px;
+	}
+
+	.tg-place strong {
+		font-size: 21px;
+	}
+
+	.tg-place.is-big strong {
+		font-size: 32px;
+	}
+
+	.tg-routes {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	/* On a phone a route card is a row: a small photo beside the trip. */
+	.tg-route {
+		flex-direction: row;
+		align-items: center;
+	}
+
+	.tg-route-photo {
+		flex: 0 0 112px;
+		border-radius: 10px;
+	}
+
+	.tg-route-line {
+		font-size: 17px;
+	}
+
+	.tg-section {
+		padding-top: 64px;
+	}
+
+	.tg-band {
+		margin-top: 64px;
+		padding-block: 56px 64px;
+	}
+
+	.tg-trust .container {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+/*
+ * Sections rise into place as they scroll into view. landing.js adds
+ * .tg-motion to <html> and .is-in to each element; without JavaScript, or with
+ * reduced motion, everything is simply there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+	.tg-motion .tg-reveal {
+		opacity: 0;
+		transform: translateY(16px);
+		transition: opacity 0.6s var(--traingo-ease), transform 0.6s var(--traingo-ease);
+	}
+
+	.tg-motion .tg-reveal.is-in {
+		opacity: 1;
+		transform: none;
+	}
+
+	/* Cards in one row follow each other by a beat. */
+	.tg-motion .tg-reveal:nth-child(2) { transition-delay: 70ms; }
+	.tg-motion .tg-reveal:nth-child(3) { transition-delay: 140ms; }
+	.tg-motion .tg-reveal:nth-child(4) { transition-delay: 210ms; }
+	.tg-motion .tg-reveal:nth-child(5) { transition-delay: 280ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tg-place img,
+	.tg-route-photo img,
+	.tg-swap i,
+	.tg-go i {
+		transition: none;
+	}
+
+	.tg-place:hover img,
+	.tg-route:hover .tg-route-photo img,
+	.tg-swap:hover i,
+	.tg-go:hover i {
+		transform: none;
+	}
+}
+
+/* Fields are tinted, not page-coloured: Bootstrap paints them with --bs-body-bg. */
+.form-control,
+.form-select {
+	background-color: var(--traingo-surface-field);
+}
+
+/* ---------- Shell: navbar ---------- */
+
+/*
+ * Logo left, pill navigation in the middle, sign-in right, as in
+ * docs/reports/ui-mau/client/chon-chuyen-b-mo-rong.html. Below Bootstrap's lg
+ * breakpoint the pills fold into the toggler's menu (navbar-expand-lg).
+ */
+.tg-navbar {
+	--bs-navbar-padding-y: 16px;
+}
+
+.tg-navbar > .container {
+	gap: 12px;
+}
+
+.tg-logo {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 48px;
+	margin: 0;
+	padding: 0;
+	font-weight: 700;
+	font-size: 22px;
+	color: var(--traingo-navy);
+}
+
+.tg-logo:hover {
+	color: var(--traingo-navy);
+}
+
+.tg-logo-mark {
+	display: grid;
+	place-items: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	background: var(--traingo-navy);
+	color: #fff;
+	font-size: 18px;
+}
+
+.tg-nav-end {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+}
+
+.tg-pill-btn {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 2.5rem;
-	height: 2.5rem;
+	gap: 8px;
+	min-height: 48px;
+	padding: 0 20px;
+	border-radius: 999px;
+	font-weight: 600;
+	white-space: nowrap;
+	text-decoration: none;
+}
+
+.tg-pill-btn.is-light {
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+	color: var(--traingo-navy);
+}
+
+.tg-pill-btn.is-light:hover {
+	background: var(--traingo-surface-hover);
+}
+
+.tg-pill-btn.is-dark {
+	background: var(--traingo-primary);
+	color: #fff;
+}
+
+.tg-pill-btn.is-dark:hover {
+	background: var(--traingo-primary-hover);
+	color: #fff;
+}
+
+.tg-toggler {
+	display: grid;
+	place-items: center;
+	width: 48px;
+	height: 48px;
+	padding: 0;
+	border: 0;
 	border-radius: 50%;
-	background: var(--traingo-primary-soft);
-	color: var(--traingo-primary);
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+	color: var(--traingo-navy);
+	font-size: 22px;
+}
+
+.tg-pills {
+	gap: 4px;
+}
+
+.tg-pills .nav-link {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 0 18px;
+	border-radius: 999px;
+	color: var(--traingo-navy);
+	font-weight: 500;
+}
+
+.tg-pills .nav-link:hover {
+	background: var(--traingo-surface-hover);
+	color: var(--traingo-navy);
+}
+
+.tg-pills .nav-link[aria-current="page"] {
+	background: var(--traingo-navy);
+	color: #fff;
+}
+
+/* Every control eases between states and gives a little when pressed. */
+.tg-pill-btn,
+.tg-toggler,
+.tg-go,
+.tg-swap,
+.tg-pills .nav-link {
+	transition: background-color 0.2s var(--traingo-ease), color 0.2s var(--traingo-ease),
+		box-shadow 0.2s var(--traingo-ease), transform 0.12s var(--traingo-ease);
+}
+
+.tg-pill-btn:active,
+.tg-toggler:active,
+.tg-go:active,
+.tg-swap:active,
+.tg-place:active,
+.tg-route:active {
+	transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tg-pill-btn:active,
+	.tg-toggler:active,
+	.tg-go:active,
+	.tg-swap:active,
+	.tg-place:active,
+	.tg-route:active {
+		transform: none;
+	}
+}
+
+/* Menu opened from the toggler: a white card under the bar. */
+.tg-navbar .navbar-collapse {
+	margin-top: 8px;
+	padding: 6px;
+	border-radius: 20px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+}
+
+/* Logo, "Đăng nhập" and the menu button share one row down to 320px. */
+@media (max-width: 399.98px) {
+	.tg-navbar > .container {
+		gap: 8px;
+	}
+
+	.tg-logo {
+		gap: 8px;
+		font-size: 20px;
+	}
+
+	.tg-logo-mark {
+		width: 36px;
+		height: 36px;
+		font-size: 16px;
+	}
+
+	.tg-pill-btn {
+		min-height: 44px;
+		padding: 0 12px;
+		font-size: 15px;
+	}
+
+	.tg-toggler {
+		width: 44px;
+		height: 44px;
+	}
+}
+
+@media (min-width: 992px) {
+	/* The pills sit centred between logo and sign-in, on one white track. */
+	.tg-navbar .navbar-collapse {
+		flex-grow: 0;
+		margin: 0 auto;
+		padding: 5px;
+		border-radius: 999px;
+	}
+
+	.tg-nav-end {
+		margin-left: 0;
+	}
+}
+
+/* ---------- Shell: booking steps ---------- */
+
+/*
+ * The four steps of a booking. A passed step is a link back to it, the
+ * current one is dark, a step not reached yet is grey and not a link. Below
+ * 640px the label goes under the dot so all four still fit at 320px.
+ */
+.tg-steps {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	margin: 4px 0 24px;
+	padding: 0;
+	list-style: none;
+}
+
+.tg-steps li {
+	position: relative;
+	display: flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.tg-steps li:not(:last-child)::after {
+	content: "";
+	flex: 1 1 auto;
+	min-width: 12px;
+	height: 2px;
+	margin: 0 10px;
+	background: #cfd8e3;
+}
+
+.tg-steps li.is-done::after {
+	background: var(--traingo-primary);
+}
+
+.tg-steps a,
+.tg-steps .tg-step {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	min-height: 44px;
+	color: inherit;
+	text-decoration: none;
+}
+
+.tg-steps .tg-step-dot {
+	flex: 0 0 auto;
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+	color: var(--traingo-muted);
 	font-weight: 700;
 }
 
-.tg-section-alt {
-	background: var(--traingo-surface-alt);
+.tg-steps .tg-step-name {
+	overflow: hidden;
+	color: var(--traingo-muted);
+	font-weight: 600;
+	font-size: 15px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
 }
 
-.tg-footer {
-	background: var(--traingo-surface-alt);
+.tg-steps li.is-done .tg-step-dot {
+	background: var(--traingo-primary);
+	box-shadow: none;
+	color: #fff;
+}
+
+.tg-steps li.is-done .tg-step-name {
+	color: var(--traingo-navy);
+}
+
+.tg-steps a:hover .tg-step-name {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.tg-steps li.is-current .tg-step-dot {
+	background: var(--traingo-navy);
+	box-shadow: 0 0 0 4px var(--traingo-primary-soft);
+	color: #fff;
+}
+
+.tg-steps li.is-current .tg-step-name {
+	color: var(--traingo-navy);
+	font-weight: 700;
+}
+
+@media (max-width: 640px) {
+	.tg-steps li {
+		justify-content: center;
+		text-align: center;
+	}
+
+	.tg-steps a,
+	.tg-steps .tg-step {
+		flex-direction: column;
+		gap: 6px;
+		max-width: 100%;
+	}
+
+	/* The connector runs from this dot to the next one, behind the labels. */
+	.tg-steps li:not(:last-child)::after {
+		position: absolute;
+		top: 16px;
+		left: calc(50% + 21px);
+		right: calc(-50% + 21px);
+		min-width: 0;
+		margin: 0;
+	}
+
+	/* Two short lines beat a cut label: "Chọn chuyến" does not fit 70px at 320px. */
+	.tg-steps .tg-step-name {
+		max-width: 100%;
+		font-size: 12.5px;
+		line-height: 1.3;
+		white-space: normal;
+	}
+}
+
+/* ---------- Shell: footer ---------- */
+
+.tg-foot {
+	margin-top: 56px;
+	background: var(--traingo-navy);
+	color: #c3cde0;
+	font-size: 15px;
+}
+
+.tg-foot a {
+	color: #e6ecf8;
+	text-decoration: none;
+}
+
+.tg-foot a:hover {
+	color: #fff;
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.tg-foot-top {
+	display: grid;
+	grid-template-columns: 1.4fr repeat(4, minmax(0, 1fr));
+	gap: 32px;
+	padding-block: 56px 40px;
+}
+
+.tg-foot .tg-logo {
+	color: #fff;
+}
+
+.tg-foot .tg-logo-mark {
+	background: var(--traingo-primary);
+}
+
+.tg-foot-brand p {
+	max-width: 30ch;
+	margin: 14px 0 18px;
+}
+
+.tg-social {
+	display: flex;
+	gap: 8px;
+}
+
+.tg-social a {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 8px;
+	background: rgb(255 255 255 / 8%);
+	font-size: 18px;
+}
+
+.tg-social a:hover {
+	background: rgb(255 255 255 / 16%);
+	text-decoration: none;
+}
+
+.tg-foot h2 {
+	margin-bottom: 12px;
+	color: #fff;
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.tg-foot ul {
+	display: grid;
+	gap: 2px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tg-foot ul a {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+}
+
+.tg-foot-bottom {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding-block: 20px 28px;
+	border-top: 1px solid rgb(255 255 255 / 12%);
+}
+
+/* One line for the booking pages, which keep the user's attention on the form. */
+.tg-foot.is-compact .tg-foot-bottom {
+	padding-block: 12px;
+	border-top: 0;
+}
+
+.tg-foot.is-compact a {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+}
+
+/* Photo credits the CC licences ask for, folded away under one line. */
+.tg-credits {
+	flex-basis: 100%;
+	font-size: 13px;
+}
+
+.tg-credits summary {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	color: #b9c8ec;
+	cursor: pointer;
+}
+
+.tg-credits ul {
+	gap: 4px;
+	margin-top: 4px;
+}
+
+.tg-credits ul a {
+	display: inline;
+	min-height: 0;
+}
+
+@media (max-width: 1040px) {
+	.tg-foot-top {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tg-foot-brand {
+		grid-column: 1 / -1;
+	}
+}
+
+/* ---------- Error pages ---------- */
+
+.tg-error {
+	display: grid;
+	justify-items: start;
+	gap: 16px;
+	max-width: 640px;
+	margin: 48px auto 0;
+	padding: 32px;
+	border-radius: 20px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+}
+
+.tg-error-code {
+	color: var(--traingo-primary);
+	font-weight: 700;
+	font-size: 15px;
+	letter-spacing: 0.06em;
+}
+
+.tg-error h1 {
+	margin: 0;
+	font-size: clamp(26px, 5vw, 34px);
+	font-weight: 700;
+}
+
+.tg-error p {
+	margin: 0;
+	color: var(--traingo-muted);
+}
+
+.tg-error-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+	.tg-error {
+		margin-top: 24px;
+		padding: 24px 20px;
+	}
 }

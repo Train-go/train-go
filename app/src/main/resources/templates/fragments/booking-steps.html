@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+	The four steps of a booking, after docs/reports/ui-mau/client/hanh-khach-2-the-ve.html.
+	A page includes it with the step it shows, 1 to 4:
+
+		<nav th:replace="~{fragments/booking-steps :: steps(3)}"></nav>
+
+	A passed step links back to its page. Steps 1 and 2 depend on the booking
+	in progress, so their addresses come from the model when the page has them:
+
+		stepsTripsUrl  step 1, the trip list with the search the user ran,
+		               e.g. /trips?from=HNI&to=HUE&date=2026-10-24
+		stepsSeatsUrl  step 2, the seat page of the trip being booked
+
+	Without them step 1 goes to /trips and step 2 to "#" until the seat page
+	exists and sets stepsSeatsUrl.
+-->
+<nav th:fragment="steps(current)" aria-label="Các bước đặt vé"
+	th:with="hrefs=${ {stepsTripsUrl != null ? stepsTripsUrl : '/trips',
+			stepsSeatsUrl != null ? stepsSeatsUrl : '#',
+			'/booking/passengers'} },
+		names=${ {'Chọn chuyến', 'Chọn chỗ', 'Hành khách', 'Thanh toán'} }">
+	<ol class="tg-steps">
+		<li th:each="name, it : ${names}"
+			th:with="step=${it.count}"
+			th:classappend="${step < current} ? 'is-done' : (${step == current} ? 'is-current' : '')"
+			th:attr="aria-current=${step == current} ? 'step' : null">
+			<a th:if="${step < current}" th:href="@{${hrefs[it.index]}}">
+				<span class="tg-step-dot"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+				<span class="tg-step-name" th:text="${name}">Chọn chuyến</span>
+			</a>
+			<span th:unless="${step < current}" class="tg-step">
+				<span class="tg-step-dot" th:text="${step}">2</span>
+				<span class="tg-step-name" th:text="${name}">Chọn chỗ</span>
+			</span>
+		</li>
+	</ol>
+</nav>
+
+</body>
+</html>

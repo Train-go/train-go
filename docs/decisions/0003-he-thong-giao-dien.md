@@ -4,7 +4,16 @@ Date: 2026-08-24
 
 ## Status
 
-Accepted
+Accepted. Ngày 23/10/2026 (#21) khu khách đổi màu chủ đạo sang navy `#0b1a36` và
+cobalt `#2c4d98` theo `docs/reports/ui-mau/client/`, và dùng cặp font của mẫu, tự phục
+vụ trong `static/fonts/`: Noto Sans cho chữ đọc (menu, nhãn, nút, đoạn văn; gán qua
+`--bs-body-font-family`), Be Vietnam Pro 400-700 cho tiêu đề và chữ hiển thị lớn (token
+`--traingo-font-display`). Phi chọn cặp này ngày 24/10/2026, sau khi so trên trang chủ thật
+với Be Vietnam Pro một mình, Inter và Manrope. Độ đậm: tiêu đề 700, thẻ và nút 600, menu và
+nhãn 500, đoạn văn 400. Các luật của ADR này giữ nguyên; màu vẫn khai bằng
+token `--traingo-` trong `:root`. Ảnh trang chủ theo mẫu `trang-chu-8-swiss.html` cũng tự phục vụ
+trong `static/images/home/` (ảnh Wikimedia Commons giấy phép CC, đã thu nhỏ), mỗi ảnh có
+một dòng ghi nguồn trong footer trang chủ; thêm ảnh là thêm dòng ghi nguồn.
 
 ## Context
 
