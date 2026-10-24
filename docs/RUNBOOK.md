@@ -75,6 +75,13 @@ không bật `ddl-auto=update`.
 - V6 bỏ `tickets.date_of_birth`; bỏ CHECK `ck_trip_seats_price_modifier` trước
   khi bỏ `trip_seats.price_modifier`. V6 không cập nhật `ticket_price` hoặc
   `bookings.total_price`, không xóa booking/vé đã có.
+- V7 thêm `users.phone_number VARCHAR(15) NULL`, điền phone cho 11 CUSTOMER seed
+  theo email; ADMIN không bắt buộc phone. Không thay đổi booking/vé hoặc mật khẩu.
+
+Ngày 23/10/2026 đã áp V7 trên MySQL Server 8.0.46, Hibernate validate qua.
+Sau khi dọn tài khoản kiểm chứng, snapshot mọi cột cũ của 12 user, 8 booking và
+11 vé khớp trước migration; 11 khách seed có phone, ADMIN null. Không sửa V7
+để chạy lại; nếu cần điều chỉnh phone/schema, tạo migration tiếp theo.
 
 Mỗi vé mới có giá bằng `Trip.basePrice`, dù chọn ghế hay giường. Giá vé cũ,
 kể cả vé giường từng có phụ thu, vẫn giữ nguyên. Cấu hình toa bất biến trong
@@ -123,8 +130,19 @@ Bắc–Nam. Số dòng seed dự kiến: 12 user, 8 ga, 16 tuyến, 3 tàu, 18 
 Ngày chuyến được tính lúc seed chạy, nên danh sách chuyến tương lai sẽ cạn dần.
 Khi module tạo chuyến (#28) sẵn sàng, tạo chuyến mới bằng luồng admin để thử;
 không xóa/reset database đang có dữ liệu
-chỉ để đổi ngày demo. Thông tin đăng nhập ứng dụng tạm lấy từ cấu hình security
-hiện hành; tài khoản demo trong bảng `users` được mô tả ở migration V2/V3.
+chỉ để đổi ngày demo. Đăng nhập hiện đọc bảng `users`, so email không phân biệt
+hoa/thường và đối chiếu BCrypt; không còn tài khoản tạm `admin` / `admin`.
+Tài khoản seed ứng dụng (không phải tài khoản database):
+
+| Email | Mật khẩu | Role |
+| --- | --- | --- |
+| `admin@traingo.vn` | `Admin@123` | ADMIN |
+| `an.nguyen@example.com`, `binh.tran@example.com`, `cuong.le@example.com` | `Customer@123` | CUSTOMER |
+
+Mở `/login`; trang hiện do Spring Security sinh nên nhãn có thể là “Username”,
+nhưng phải nhập email. ADMIN về `/admin/trains`; CUSTOMER về GET đã lưu hoặc `/`.
+POST `/logout` cần CSRF, thành công về `/`. UI đăng nhập riêng/navbar/sidebar còn
+chờ #20/#21; xem `docs/product/auth.md` để thử role, API và saved request.
 
 ## Kiểm tra trước khi báo hoàn thành
 

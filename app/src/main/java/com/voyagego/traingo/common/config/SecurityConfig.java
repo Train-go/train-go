@@ -1,38 +1,62 @@
 package com.voyagego.traingo.common.config;
 
+import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Baseline security chain. Public pages and static assets are open; everything
- * else requires an authenticated session. The user store, roles and the custom
- * login page arrive with the auth feature.
- */
 @Configuration
 public class SecurityConfig {
+	@Bean
+	PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		var api = PathPatternRequestMatcher.withDefaults().matcher("/api/**");
+		var requestCache = new HttpSessionRequestCache();
+		// API polling must not replace the page the customer was booking.
+		requestCache.setRequestMatcher(request -> "GET".equals(request.getMethod()) && !api.matches(request));
+		requestCache.setMatchingRequestParameterName(null);
 		http
 			.authorizeHttpRequests(requests -> requests
-				.requestMatchers("/", "/css/**", "/js/**", "/images/**", "/fonts/**", "/design/**").permitAll()
-				// Bootstrap is served from the application itself. Leaving /vendor/**
-				// out of this list makes Spring Security answer stylesheet requests
-				// with the login page, and the browser drops it without a warning,
-				// so the page renders completely unstyled with nothing in the log.
-				.requestMatchers("/vendor/**", "/favicon.ico").permitAll()
-				// Redundant today, since anyRequest() already demands a session. It
-				// is here so the admin area has one obvious line to tighten to
-				// hasRole("ADMIN") when the auth feature lands, and so a test can
-				// pin the rule down before then.
-				.requestMatchers("/admin/**").authenticated()
+				.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+				.requestMatchers("/", "/trips/**", "/api/trips/**", "/login", "/register", "/error").permitAll()
+				.requestMatchers("/css/**", "/js/**", "/images/**", "/fonts/**", "/design/**",
+					"/vendor/**", "/favicon.ico").permitAll()
+				.requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+				.requestMatchers("/booking/**", "/my-trips/**", "/tickets/**").hasRole("CUSTOMER")
 				.anyRequest().authenticated())
-			.formLogin(Customizer.withDefaults())
-			.logout(Customizer.withDefaults());
+			.requestCache(cache -> cache.requestCache(requestCache))
+			.exceptionHandling(errors -> errors
+				.defaultAuthenticationEntryPointFor((request, response, exception) ->
+					apiError(response, 401, "Vui lòng đăng nhập."), api)
+				.accessDeniedHandler((request, response, exception) -> {
+					if (api.matches(request)) {
+						apiError(response, 403, "Bạn không có quyền truy cập.");
+					} else {
+						response.sendError(403);
+					}
+				}))
+			// Keep the generated page until the shared client shell is available.
+			.formLogin(form -> form.usernameParameter("email")
+				.failureUrl("/login?error")
+				.successHandler(new RoleBasedLoginSuccessHandler(requestCache)))
+			.logout(logout -> logout.logoutSuccessUrl("/"));
 		return http.build();
 	}
 
+	private static void apiError(HttpServletResponse response, int status, String message) throws IOException {
+		response.setStatus(status);
+		response.setContentType("application/json;charset=UTF-8");
+		response.getWriter().write("{\"message\":\"" + message + "\",\"fields\":{}}");
+	}
 }

@@ -51,6 +51,7 @@ Train, mà phải lưu trên `TripSeat` của từng chuyến.
 | `id` | |
 | `fullName` | Bắt buộc, tối đa 100 ký tự |
 | `email` | Không được trùng, dùng để đăng nhập |
+| `phoneNumber` | `users.phone_number`, VARCHAR(15), nullable cho ADMIN; đăng ký CUSTOMER bắt buộc 10 chữ số bắt đầu 0 |
 | `passwordHash` | BCrypt hash, không bao giờ lưu mật khẩu gốc |
 | `role` | `CUSTOMER` hoặc `ADMIN` |
 | `createdAt` | |
