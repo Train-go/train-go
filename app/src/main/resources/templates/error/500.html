@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!--
+	Spring Boot renders this for an unhandled exception. Nothing about the
+	failure is printed: the stack trace stays in the server log.
+	Built on the customer shell with the one-line footer.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+<head>
+	<title>Hệ thống gặp sự cố · TrainGo</title>
+</head>
+<body>
+<main class="container">
+	<section class="tg-error">
+		<span class="tg-error-code">Lỗi 500</span>
+		<h1>Hệ thống đang gặp sự cố</h1>
+		<p>Yêu cầu của bạn chưa được xử lý. Vui lòng thử lại sau ít phút.</p>
+		<div class="tg-error-actions">
+			<a class="btn btn-primary btn-lg" th:href="@{/}">Về trang chủ</a>
+		</div>
+	</section>
+</main>
+</body>
+</html>

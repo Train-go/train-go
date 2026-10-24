@@ -3,17 +3,11 @@ package com.voyagego.traingo.common.exception;
 import com.voyagego.traingo.entity.Station;
 
 /** The station is still the origin or destination of a route. */
-public class StationInUseException extends RuntimeException {
-
-	private final transient Station station;
+public class StationInUseException extends BusinessRuleException {
 
 	public StationInUseException(Station station) {
-		super("Station " + station.getCode() + " is used by a route");
-		this.station = station;
-	}
-
-	public Station getStation() {
-		return station;
+		super("Không xóa được " + station.getName() + " (" + station.getCode()
+				+ ") vì ga đang là điểm đi hoặc điểm đến của một tuyến.");
 	}
 
 }

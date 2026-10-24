@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!--
+	Spring Boot renders this for every 404, and PageExceptionHandler for a
+	missing station, trip or booking.
+	Built on the customer shell with the one-line footer.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+<head>
+	<title>Không tìm thấy trang · TrainGo</title>
+</head>
+<body>
+<main class="container">
+	<section class="tg-error">
+		<span class="tg-error-code">Lỗi 404</span>
+		<h1>Không tìm thấy trang</h1>
+		<p>Đường dẫn có thể đã sai, hoặc trang này không còn nữa.</p>
+		<div class="tg-error-actions">
+			<a class="btn btn-primary btn-lg" th:href="@{/}">Về trang chủ</a>
+		</div>
+	</section>
+</main>
+</body>
+</html>
