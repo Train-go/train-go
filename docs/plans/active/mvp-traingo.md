@@ -121,7 +121,10 @@ là một file riêng trong từng tầng package nên ba nhánh ít đụng nha
       `static/vendor/`, layout fragment dùng chung, design token, landing đủ bốn
       khối theo `SPEC.md` mục 5. Chi tiết và bằng chứng:
       `docs/plans/active/nen-tang-giao-dien-va-landing.md`.
-- [ ] Giai đoạn 1: Auth.
+- [ ] Giai đoạn 1: Auth. Cập nhật 24/10/2026: server đăng nhập/đăng ký và shell
+      đã merge; còn controller, form riêng, trạng thái tài khoản và kiểm chứng UI.
+      Kế hoạch nháp tiếp nối trên `feat/auth-ui`:
+      [Hoàn thiện UI đăng nhập và đăng ký](auth-ui/plan.md).
 - [ ] Giai đoạn 2: Station, Route, Train, Trip, TripSeat. Đã có
       (01/10/2026): schema Flyway, entity, repository, seed demo, quản lý ga
       trên database thật; từ 19/10/2026 còn 8 bảng, không còn `coaches` và

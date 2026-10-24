@@ -139,10 +139,9 @@ Tài khoản seed ứng dụng (không phải tài khoản database):
 | `admin@traingo.vn` | `Admin@123` | ADMIN |
 | `an.nguyen@example.com`, `binh.tran@example.com`, `cuong.le@example.com` | `Customer@123` | CUSTOMER |
 
-Mở `/login`; trang hiện do Spring Security sinh nên nhãn có thể là “Username”,
-nhưng phải nhập email. ADMIN về `/admin/trains`; CUSTOMER về GET đã lưu hoặc `/`.
-POST `/logout` cần CSRF, thành công về `/`. UI đăng nhập riêng/navbar/sidebar còn
-chờ #20/#21; xem `docs/product/auth.md` để thử role, API và saved request.
+Mở `/login` và nhập email. ADMIN về `/admin/trains`; CUSTOMER về GET đã lưu hoặc `/`.
+POST `/logout` cần CSRF, thành công về `/`. Xem `docs/product/auth.md` để thử role,
+API, saved request và đăng ký.
 
 ## Kiểm tra trước khi báo hoàn thành
 

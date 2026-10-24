@@ -221,10 +221,9 @@ Thử đăng ký:
 1. Đăng ký với email `An.Nguyen@Example.com`: bị báo trùng, vì email đó đã có (chỉ khác
    hoa thường).
 2. Nhập mật khẩu và ô nhập lại khác nhau: lỗi hiện dưới ô nhập lại.
-3. Đăng ký một email mới: chuyển tới trang login, thấy "Đăng ký thành công".
-4. Kiểm tra mật khẩu được lưu ở dạng mã hóa, không phải chuỗi gốc. Mở MySQL bằng
-   `docker exec -it traingo-mysql mysql -utraingo -ptraingo --default-character-set=utf8mb4 traingo`
-   rồi chạy:
+3. Đăng ký một email mới: tự đăng nhập, về `/`, navbar hiện họ tên. Tải lại trang vẫn còn đăng nhập.
+4. Kiểm tra mật khẩu được lưu ở dạng mã hóa, không phải chuỗi gốc. Mở MySQL
+   theo `docs/RUNBOOK.md` (mục “Xem dữ liệu bằng MySQL client”), rồi chạy:
 
 ```sql
 SELECT email, password_hash, role FROM users ORDER BY id DESC LIMIT 1;

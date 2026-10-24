@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,13 +29,23 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
+	/**
+	 * A bean so the register page can discard the saved destination after it
+	 * signs the new customer in, the same cache the login success handler reads.
+	 */
 	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	RequestCache requestCache() {
 		var api = PathPatternRequestMatcher.withDefaults().matcher("/api/**");
 		var requestCache = new HttpSessionRequestCache();
 		// API polling must not replace the page the customer was booking.
 		requestCache.setRequestMatcher(request -> "GET".equals(request.getMethod()) && !api.matches(request));
 		requestCache.setMatchingRequestParameterName(null);
+		return requestCache;
+	}
+
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http, RequestCache requestCache) throws Exception {
+		var api = PathPatternRequestMatcher.withDefaults().matcher("/api/**");
 		http
 			.authorizeHttpRequests(requests -> requests
 				// The 403 page of a customer who opened /admin/** must render.
@@ -55,9 +66,9 @@ public class SecurityConfig {
 						response.sendError(403);
 					}
 				}))
-			// Keep the generated page until the shared client shell is available.
-			.formLogin(form -> form.usernameParameter("email")
-				.failureUrl("/login?error")
+			.formLogin(form -> form.loginPage("/login")
+				.usernameParameter("email")
+				.failureHandler(new EmailRetainingLoginFailureHandler())
 				.successHandler(new RoleBasedLoginSuccessHandler(requestCache)))
 			.logout(logout -> logout.logoutSuccessUrl("/"));
 		return http.build();

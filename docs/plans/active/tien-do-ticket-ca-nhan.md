@@ -1,6 +1,10 @@
 # Tiến độ ticket cá nhân và bàn giao phiên
 
-Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fetch. Branch đang làm: `feat/route-admin`, fast-forward tới hồ sơ `7c88ad0` từ `feat/auth-register`, kế thừa V6/V7 và server #22/#23. Phần server #24 đã kiểm chứng local; chưa push/PR/merge.
+Ngày cập nhật: 2026-10-24. Baseline: `main`, commit `dec1cbf` sau merge PR #48; working tree sạch trước khi tạo nhánh `feat/auth-ui`. PR #44/#47/#45/#48 đã đưa nền dữ liệu, server auth/tuyến và hai shell vào main. Phiên này chỉ lập kế hoạch hoàn thiện UI auth; chưa triển khai hoặc kiểm chứng lại ứng dụng.
+
+Kế hoạch UI duy nhất: [Hoàn thiện đăng nhập và đăng ký](auth-ui/plan.md).
+Người dùng yêu cầu form gọn, căn giữa, dùng Bootstrap, không thêm CSS riêng.
+Hồ sơ này giữ tiến độ và lịch sử; chi tiết triển khai nằm trong kế hoạch được liên kết.
 
 ## Trạng thái và nguồn
 
@@ -9,7 +13,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fe
 - Project: https://github.com/orgs/Train-go/projects/1. Chưa đọc được board riêng tư vì CLI thiếu scope `read:project`; không suy diễn cột trạng thái từ trạng thái issue.
 - Đã đọc `README.md`, `AGENTS.md`, `docs/WORKFLOW.md`, các plan active và bản chia issue trong `docs/session/plan-task-chi-tiet.md`. Issue #19–#42 thay thế task cũ #4–#16; không triển khai lại task cũ.
 - Đây là file theo dõi duy nhất cho các phiên cá nhân; issue là nguồn AC, board là nguồn trạng thái nhóm. Không chép nguyên các hướng dẫn sang nhiều nơi.
-- #19 và phần server #22/#23/#24 đã triển khai, kiểm chứng; toàn #22/#23/#24 còn chờ UI và tích hợp #20/#21. Xem checkpoint lịch sử và quan sát branch mới nhất bên dưới; chưa có PR/merge hoặc đóng issue trong phiên này.
+- GitHub được đọc ngày 24/10: #19–#23 đã đóng, #24 còn mở; không có PR mở. Source ở `dec1cbf` vẫn thiếu controller/template auth và trạng thái tài khoản trên navbar/sidebar, nên việc đóng #22/#23 chưa chứng minh hoàn tất UI. #20/#21 đã merge, không còn là blocker tích hợp. Các checkpoint bên dưới là lịch sử, không ghi đè trạng thái mới này.
 
 ## Quyết định của người dùng
 
@@ -17,6 +21,7 @@ Ngày cập nhật: 2026-10-23. Baseline: `origin/main`, commit `a138d97` sau fe
 - Dùng **MySQL Server**, không dùng Docker để chạy hoặc kiểm chứng.
 - Mỗi issue một branch riêng; hoàn thành phần việc đã kiểm chứng thì commit. Commit code và dòng `docs/WORKLOG.md` tương ứng cùng nhau. Chưa có yêu cầu push hoặc merge.
 - Lưu tiến độ vào file để session tiếp theo đọc và tiếp tục.
+- 24/10/2026: tạo nhánh mới `feat/auth-ui` cho kế hoạch hoàn thiện chung UI đăng nhập/đăng ký sau merge shell; form cơ bản căn giữa, gọn, dùng Bootstrap, không CSS riêng. Phiên này lập kế hoạch; chưa có yêu cầu triển khai, commit hoặc push nhánh mới.
 
 ## Môi trường đã kiểm tra
 
@@ -42,14 +47,14 @@ Trạng thái thực hiện bên dưới là hồ sơ phiên, **không phải c�
 | Issue | Phạm vi | Branch theo issue | Phụ thuộc / khả năng bắt đầu | Tiến độ |
 | --- | --- | --- | --- | --- |
 | [#19](https://github.com/Train-go/train-go/issues/19) | Nền dữ liệu V6, một giá, CoachLayout | `feat/data-v6-coach-layout` | Không có | Đã kiểm chứng local; issue đã đóng theo GitHub ngày 23/10/2026 |
-| [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-login` | Server đã triển khai; UI chờ #20, #21 | Server kiểm chứng local; toàn issue chưa xong |
-| [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-register` | Kế thừa #19 và server #22; UI/exception chờ #21 | Server đã kiểm chứng local; UI/error integration chờ #21 |
-| [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | Server đã triển khai; UI/API error integration chờ #20, #21 | Server kiểm chứng local, review đạt; toàn issue chưa xong |
-| [#27](https://github.com/Train-go/train-go/issues/27) | Sơ đồ dọc Ga và tuyến | `feat/station-network-map` | #20, #21, #24 | Chờ phụ thuộc |
+| [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-ui` (phần UI tiếp nối) | Shell đã có trên main | GitHub đóng; còn UI login/navbar/sidebar, kế hoạch nháp đã tạo |
+| [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-ui` (phần UI tiếp nối) | Server và exception nền đã có | GitHub đóng; còn controller/form/tự đăng nhập và kiểm chứng trình duyệt |
+| [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | #20/#21 đã merge | Server đã merge; còn API và UI; làm sau UI auth theo thứ tự phiên này |
+| [#27](https://github.com/Train-go/train-go/issues/27) | Sơ đồ dọc Ga và tuyến | `feat/station-network-map` | Còn #24; #20/#21 đã merge | Chờ ma trận/API tuyến |
 | [#35](https://github.com/Train-go/train-go/issues/35) | Booking và Người dùng admin | `feat/admin-bookings-users` | #20, #29, #31; cần phone từ #23 cho chi tiết khách | Chờ phụ thuộc |
 | [#36](https://github.com/Train-go/train-go/issues/36) | Bảng tính tàu và nhập nhiều chặng | `feat/train-sheet-view` | #28, #29; JS dùng network API #27; kế thừa trang tàu #25 | Chờ phụ thuộc |
 
-Thứ tự đã làm: #19 → phần server #22 → server #23 → server #24; tích hợp UI/API khi #20/#21 sẵn sàng. #27 còn phụ thuộc #20/#21/#24; #35 và #36 chỉ tích hợp khi có module dùng chung.
+Thứ tự tiếp theo: hoàn thiện UI #22/#23 trên `feat/auth-ui` → API/UI #24 → #27. Đây là thứ tự ưu tiên; #24 không phụ thuộc kỹ thuật vào UI auth. #35 và #36 vẫn chờ các module chuyến/booking liên quan.
 #19 không phải dependency bắt buộc của server #22; chọn làm trước để gỡ nền dữ liệu cho nhóm.
 Đọc lại assignee và dependency trước mỗi lần bắt đầu; không nhận thêm ticket người khác chỉ vì nó đang chặn mình.
 
@@ -193,6 +198,15 @@ Header admin cũ vẫn tên cố định và form logout. Quy tắc public khôn
 
 ## Tiếp tục session sau
 
+Ưu tiên hiện tại (24/10): đọc [kế hoạch UI auth](auth-ui/plan.md)
+trên nhánh `feat/auth-ui`. Kế hoạch đang chờ duyệt; chỉ triển khai khi người dùng
+yêu cầu. Giữ quyết định UI gọn, căn giữa, Bootstrap, không CSS riêng; dùng server
+auth hiện có và ADR 0013. Sau UI auth mới tiếp tục #24 rồi #27.
+
+Đoạn bàn giao #24 bên dưới là lịch sử ngày 23/10, giữ để truy vết checkpoint.
+Các điều kiện chờ #20/#21 và trạng thái chưa merge trong đoạn đó đã được thay
+bằng thông tin ngày 24/10 ở đầu hồ sơ; không dùng lại làm blocker.
+
 Checkpoint mới nhất là server #24 trên `feat/route-admin`; xem kết quả cuối file
 và Git history để xác định commit đã có. V6/V7 và server #22/#23 đã có trên branch
 này; không reset về baseline cũ. Toàn #24 còn chờ UI và tích hợp #20/#21.
@@ -222,7 +236,7 @@ blocker, không làm thay người khác. Cập nhật hồ sơ và WORKLOG cùn
 ## Giới hạn và câu hỏi còn mở
 
 - Token thiếu `read:project`. Để đọc board bằng CLI, chủ tài khoản có thể chạy `gh auth refresh -s read:project` và hoàn tất xác thực; phiên này chưa thay quyền đăng nhập.
-- `ck` và `npm` không tìm thấy trên PATH. Chưa tạo scaffold plan/phase bằng `ck plan create`; không giả lập trạng thái CLI. File này là hồ sơ tiến độ người dùng yêu cầu theo workflow repo.
+- Đã tìm thấy `ck`/Node tại `C:/nvm/nodejs` ngày 24/10; CLI đã tạo scaffold cho kế hoạch UI auth trong `docs/plans/active/auth-ui/`. Sandbox cần quyền thực thi công cụ tại thư mục này. Hồ sơ này chỉ liên kết kế hoạch, không sao chép nội dung phase.
 - Không có công cụ CBM list_projects trong session; chưa kiểm tra hoặc tạo index. Chỉ đối chiếu file và Git trực tiếp.
 
 
@@ -340,3 +354,44 @@ toàn #24. Không tạo migration, test tự động, phase plan hoặc hồ sơ
 - Đã dừng đúng Java PID 42896 sau khi xác minh command line và classpath argfile;
   cổng 8080 không còn listener, MySQL80 vẫn Running. Diff kiểm tra sạch.
   Hash checkpoint tra Git history của hồ sơ; chưa push/PR/merge hoặc đóng #24.
+
+## Checkpoint UI đăng nhập/đăng ký — 24/10/2026, nhánh `feat/auth-ui`
+
+Kế hoạch: [auth-ui](auth-ui/plan.md). Phase 1–2 đã làm; phase 3 đã kiểm chứng phần
+chức năng, còn các khoảng trống nêu dưới. Chưa commit, push hay PR.
+
+- Code: `AuthController`, `EmailRetainingLoginFailureHandler`, `RequestCache` thành bean,
+  `formLogin` dùng `/login` riêng; `auth/login.html`, `auth/register.html`, `auth.js`;
+  navbar ba trạng thái và sidebar admin hiện họ tên. Không migration, dependency, CSS,
+  test mới. Theo yêu cầu phiên này, giao diện chỉ cần chạy đúng chức năng; FE chỉnh
+  lại hình thức sau.
+- Build: `compile` thành công (66 file Java). `spring-boot:run` khởi động ở 8080 trên
+  MySQL Server local, Flyway “up to date”, Hibernate validate qua.
+- HTTP thật (curl, `Accept: text/html`): `/login`, `/register` 200, đường dẫn lạ 404;
+  login sai báo lỗi chung, email có HTML được escape và chỉ hiện một lần, URL không
+  chứa email, password không xuất hiện trong HTML; login CUSTOMER/ADMIN với email khác
+  hoa thường về `/` và `/admin/trains`; saved request giữ nguyên `?status=upcoming`,
+  API khách không ghi đè, ADMIN luôn về `/admin/trains`; người đã đăng nhập mở
+  `/login`, `/register` bị chuyển, POST register không tạo account; 403 đúng cho role
+  sai (HTML và API); POST login/register/logout thiếu hoặc sai CSRF trả 403; logout
+  có token về `/` và truy cập `/admin/trains` sau đó bị chuyển login.
+- Đăng ký: email có khoảng trắng/hoa thường lưu lowercase, CUSTOMER, hash `$2a$` dài 60
+  ký tự, phone đúng; lỗi trống/email/phone/tên 101/email 256/mật khẩu 7, 73 ASCII,
+  75 byte, lệch xác nhận, trùng email khác hoa thường đều ra đúng ô, giữ họ tên/email/
+  phone, hai ô mật khẩu trống, không lộ tên `passwordConfirmed`/`passwordWithinLimit`;
+  mật khẩu 72 byte (24 ký tự €) và 72 ASCII được chấp nhận; hai request đồng thời cùng
+  email: một thành công, một lỗi email, DB chỉ một dòng. Tự đăng nhập hoạt động, request
+  kế tiếp vẫn có principal.
+- Trình duyệt (Chrome, context cô lập): login sai, nút hiện/ẩn mật khẩu không submit
+  form, login CUSTOMER, `/login` khi đã đăng nhập chuyển về `/`, đăng ký thật với lỗi
+  inline rồi đăng ký hợp lệ (tự đăng nhập, tên hiện ở navbar), đăng xuất từ navbar,
+  tên 100 ký tự không tràn ngang ở 320px.
+- Khoảng trống: (1) case tự đăng nhập lỗi sau commit chưa tái hiện được — tài khoản DB
+  không có quyền tạo trigger tạm (cần SUPER), không đổi cấu hình hệ thống để lách;
+  nhánh `ServletException` mới được đọc code, chưa chạy. (2) Chưa thử kỹ bàn phím, chế
+  độ tắt JS, ma trận 390px cho mọi trang; sidebar admin kiểm bằng HTML trả về, chưa
+  xem bằng mắt.
+- Dọn dẹp: đã xóa đúng 10 tài khoản thử (email `authui.probe.*`, `authui.fallback.*`,
+  `ok@example.com`, không có booking), còn 12 user seed. Đã dừng instance Maven do phiên
+  khởi động, cổng 8080 trống, MySQL80 vẫn Running. Probe/ảnh tạm nằm ngoài Git trong
+  thư mục scratchpad của phiên.
