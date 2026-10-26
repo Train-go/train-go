@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!--
+	"Lịch sử": soft-deleted trains with a restore button. history.js restores
+	through POST /api/admin/trains/{id}/restore and opens the train's page.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Lịch sử · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="page-head">
+		<h1>Lịch sử</h1>
+	</div>
+
+	<section class="history-section" aria-labelledby="deleted-trains-title"
+		th:data-api-url="@{/api/admin/trains}" th:data-page-url="@{/admin/trains}">
+		<h2 id="deleted-trains-title">Tàu đã xóa</h2>
+
+		<div class="panel table-responsive" th:if="${!#lists.isEmpty(deletedTrains)}">
+			<table class="table align-middle">
+				<thead>
+					<tr>
+						<th scope="col" class="shrink">Mã tàu</th>
+						<th scope="col">Tên tàu</th>
+						<th scope="col"><span class="visually-hidden">Thao tác</span></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="deleted : ${deletedTrains}">
+						<td><span class="code" th:text="${deleted.code}">SE4</span></td>
+						<td th:text="${deleted.name}">Thống Nhất 4</td>
+						<td class="actions">
+							<button type="button" class="btn btn-outline-secondary btn-sm" data-train-restore
+								th:data-id="${deleted.id}" th:data-code="${deleted.code}">
+								<i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>Khôi phục
+							</button>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="empty" th:if="${#lists.isEmpty(deletedTrains)}">
+			<i class="bi bi-clock-history" aria-hidden="true"></i>
+			<b>Chưa có tàu nào bị xóa.</b>
+		</div>
+	</section>
+
+	<!-- defer: runs after admin.js, which the layout loads at the end of the body. -->
+	<script th:src="@{/js/admin/history.js}" defer></script>
+
+</main>
+</body>
+</html>

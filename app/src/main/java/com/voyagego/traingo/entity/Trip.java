@@ -98,4 +98,35 @@ public class Trip {
 		return status;
 	}
 
+	public boolean isCancelled() {
+		return status == TripStatus.CANCELLED;
+	}
+
+	/**
+	 * A trip counts as departed once its departure time has passed, whether or
+	 * not anyone has marked it COMPLETED (D8 in docs/product/domain-model.md).
+	 */
+	public boolean hasDeparted(LocalDateTime now) {
+		return !departureAt.isAfter(now);
+	}
+
+	/** Departed but not yet arrived, and not cancelled. */
+	public boolean isRunning(LocalDateTime now) {
+		return !isCancelled() && hasDeparted(now) && arrivalAt.isAfter(now);
+	}
+
+	/** The status tag on the admin's train page, compared with now. */
+	public String phaseLabel(LocalDateTime now) {
+		if (isCancelled()) {
+			return "Đã hủy";
+		}
+		if (!hasDeparted(now)) {
+			return "Sắp chạy";
+		}
+		if (isRunning(now)) {
+			return "Đang chạy";
+		}
+		return "Đã chạy";
+	}
+
 }
