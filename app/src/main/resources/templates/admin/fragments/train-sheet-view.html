@@ -16,7 +16,8 @@
 	th:data-chain-arrival="${end != null} ? ${#temporals.format(end.arrivalAt, 'yyyy-MM-dd''T''HH:mm')}"
 	th:data-earliest="${#temporals.format(schedule.earliestDeparture, 'yyyy-MM-dd''T''HH:mm')}"
 	th:data-network-url="@{/api/admin/network}"
-	th:data-plan-url="@{/api/admin/trains/{id}/plan(id=${train.id})}">
+	th:data-plan-url="@{/api/admin/trains/{id}/plan(id=${train.id})}"
+	th:data-trips-url="@{/api/admin/trains/{id}/trips(id=${train.id})}">
 
 	<button type="button" class="btn btn-link btn-sm past-toggle" th:if="${schedule.pastCount > 0}"
 		data-past-toggle th:data-count="${schedule.pastCount}" aria-expanded="false" aria-controls="sched-grid">
@@ -41,7 +42,8 @@
 			</thead>
 			<tbody>
 				<th:block th:each="day : ${schedule.days}">
-					<tr th:each="item : ${day.items}" th:classappend="${item.past} ? 'past'">
+					<tr th:each="item : ${day.items}" th:classappend="${item.past} ? 'past clickable' : 'clickable'"
+						tabindex="0" th:data-trip-id="${item.tripId}">
 						<td th:text="${item.departureDayLabel}">T5 22/10</td>
 						<td class="mono" th:text="${#temporals.format(item.departureAt, 'HH:mm')}">08:00</td>
 						<td th:text="${item.originName}">Ga Hà Nội</td>
@@ -90,8 +92,7 @@
 		</span>
 		<span class="grow"></span>
 		<span class="err-summary" data-err-summary hidden></span>
-		<!-- Wired when trips can be created from the sheet (POST /api/admin/trains/{id}/trips). -->
-		<button type="button" class="btn btn-primary" data-commit hidden>
+		<button type="button" class="btn btn-primary" data-commit>
 			<i class="bi bi-check2" aria-hidden="true"></i><span>Thêm chuyến</span>
 		</button>
 	</div>

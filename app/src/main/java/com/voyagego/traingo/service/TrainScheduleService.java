@@ -40,10 +40,10 @@ import com.voyagego.traingo.repository.TripSeatRepository;
  * train's trips that are not cancelled, ordered by departure, and a new trip
  * may only be added after the last one.
  *
- * The trip-creation tasks add their checks here, next to the rules they rely
- * on; they load the train through TrainService.findById, which refuses a
- * soft-deleted train. Every method takes {@code now} from its caller, so one
- * page shows one moment.
+ * TripCreationService adds trips under these rules; it loads the train through
+ * TrainRepository.findByIdForUpdate, which refuses a soft-deleted train and
+ * locks the row. Every method takes {@code now} from its caller, so one page
+ * shows one moment.
  */
 @Service
 @Transactional(readOnly = true)

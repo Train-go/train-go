@@ -182,8 +182,14 @@
 
 	/* ---------- opening ---------- */
 
+	let latestRequest = 0;
+
 	TG.openTrip = function (tripId, triggerEl) {
+		const request = ++latestRequest;
 		return TG.api(sheet.dataset.apiUrl + '/' + encodeURIComponent(tripId)).then(function (trip) {
+			if (request !== latestRequest) {
+				return;
+			}
 			render(trip);
 			TG.sheet.open('trip-sheet', triggerEl);
 		}).catch(function (error) {
@@ -200,7 +206,8 @@
 	});
 	document.addEventListener('keydown', function (event) {
 		const trigger = event.target.closest && event.target.closest('[data-trip-id]');
-		if (trigger && event.key === 'Enter' && event.target === trigger) {
+		// Buttons and links get a click from Enter themselves; this is for rows and list items.
+		if (trigger && event.key === 'Enter' && event.target === trigger && !trigger.matches('button, a')) {
 			TG.openTrip(trigger.dataset.tripId, trigger);
 		}
 	});

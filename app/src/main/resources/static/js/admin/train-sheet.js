@@ -1,7 +1,7 @@
 /*
  * The "Bảng tính" view of the train page (templates/admin/fragments/
  * train-sheet-view.html): draws the draft rows under the schedule table and
- * handles "Thêm dòng" and "Điền nhanh". The chaining rules live in
+ * handles "Thêm dòng", "Điền nhanh" and "Thêm N chuyến". The chaining rules live in
  * train-sheet-derive.js; this file keeps the drafts, asks derive() for every
  * row after each change, and writes the result into the DOM.
  *
@@ -26,6 +26,7 @@
 	const paceSelect = root.querySelector('[data-fill-pace]');
 	const fillButton = root.querySelector('[data-fill]');
 	const errSummary = root.querySelector('[data-err-summary]');
+	const commitButton = root.querySelector('[data-commit]');
 	const DAYS_OFFERED = 14;
 
 	// Stations and routes of the network; null until GET /api/admin/network answers.
@@ -39,6 +40,9 @@
 	const domRows = new Map();
 	// A plan request is on its way; "Điền" stays off until it answers.
 	let filling = false;
+	// "Thêm chuyến" was pressed, so every row shows its errors; saving is on its way.
+	let tried = false;
+	let saving = false;
 
 	/* ---------- network ---------- */
 
@@ -219,7 +223,7 @@
 
 	function updateErrors(dom, row, show) {
 		const list = field(dom, 'errors');
-		const messages = show ? row.errors : [];
+		const messages = (show ? row.errors : []).concat(row.x.serverErrors || []);
 		dom.help.hidden = messages.length === 0;
 		if (list.dataset.key === messages.join('|')) {
 			return;
@@ -271,10 +275,10 @@
 	/* ---------- the fill-in bar ---------- */
 
 	function updateFillBar(origin) {
-		addButton.disabled = !origin;
-		targetSelect.disabled = !origin;
+		addButton.disabled = saving || !origin;
+		targetSelect.disabled = saving || !origin;
 		fillSelectKeepingValue(origin);
-		fillButton.disabled = filling || !origin || !targetSelect.value;
+		fillButton.disabled = filling || saving || !origin || !targetSelect.value;
 	}
 
 	function fillSelectKeepingValue(origin) {
@@ -326,19 +330,30 @@
 			previous = dom.help;
 			// A row without a destination is ignored, except the first one of an empty sheet.
 			const counts = Boolean(row.x.to) || (index === 0 && filled.length === 0);
-			const show = counts && row.x.touched;
+			const show = counts && (row.x.touched || tried);
 			if (show) {
 				errorCount += row.errors.length;
 			}
+			errorCount += (row.x.serverErrors || []).length;
 			updateRow(dom, row, index, derived.length, show);
 		});
 
 		errSummary.hidden = errorCount === 0;
 		errSummary.textContent = 'Còn ' + errorCount + ' lỗi ở dòng nháp';
+		commitButton.querySelector('span').textContent = filled.length > 1 ? 'Thêm ' + filled.length + ' chuyến'
+				: 'Thêm chuyến';
+		commitButton.disabled = saving;
 		updateFillBar(D.lastOrigin(c, derived));
 	}
 
 	/* ---------- events ---------- */
+
+	// What the server said was about the rows as they were.
+	function forgetServerErrors() {
+		drafts.forEach(function (d) {
+			d.serverErrors = null;
+		});
+	}
 
 	function draftOf(el) {
 		const id = Number(el.closest('tr.draft').dataset.id);
@@ -349,7 +364,7 @@
 
 	function onEdit(event) {
 		const el = event.target.closest('[data-f]');
-		if (!el) {
+		if (!el || saving) {
 			return;
 		}
 		const x = draftOf(el);
@@ -389,6 +404,7 @@
 			return;
 		}
 		x.touched = true;
+		forgetServerErrors();
 		render();
 	}
 
@@ -397,9 +413,10 @@
 
 	body.addEventListener('click', function (event) {
 		const button = event.target.closest('[data-f="remove"], [data-f="arr-reset"]');
-		if (!button) {
+		if (!button || saving) {
 			return;
 		}
+		forgetServerErrors();
 		const x = draftOf(button);
 		let focusRow = x;
 		if (button.dataset.f === 'remove') {
@@ -425,6 +442,7 @@
 	});
 
 	addButton.addEventListener('click', function () {
+		forgetServerErrors();
 		drafts.push(D.blank());
 		render();
 	});
@@ -446,6 +464,7 @@
 		const kept = rows.filter(function (row) {
 			return row.x.to;
 		});
+		forgetServerErrors();
 		const pace = paceSelect.value;
 		const floor = D.nextFloor(c, kept);
 		const first = pace === 'NONSTOP' ? floor : D.nextEight(floor);
@@ -473,8 +492,104 @@
 		}
 	});
 
+	/* ---------- adding the trips ---------- */
+
+	// "legs[2].departureAt" is about the third leg that was sent.
+	const LEG_FIELD = /^legs\[(\d+)\]\./;
+
+	/*
+	 * "Thêm N chuyến": rows without a destination are left out; any row with an
+	 * error stops everything, and the errors show under their rows. The server
+	 * checks the same rules again and adds all legs or none; its message for a
+	 * leg goes under that leg's row, counted among the rows that were sent.
+	 */
+	commitButton.addEventListener('click', async function () {
+		tried = true;
+		render();
+		const sent = derived.filter(function (row) {
+			return row.x.to;
+		});
+		if (!sent.length || sent.some(function (row) {
+			return row.errors.length;
+		})) {
+			return;
+		}
+		const legs = sent.map(function (row, i) {
+			return {
+				// The server compares the first origin with where the train stands now.
+				originStationId: i === 0 ? row.origin : null,
+				destinationStationId: row.x.to,
+				departureAt: D.toIso(row.dep),
+				arrivalAt: D.toIso(row.arr),
+				basePrice: row.price
+			};
+		});
+		saving = true;
+		render();
+		try {
+			const result = await TG.api(root.dataset.tripsUrl, { method: 'POST', body: { legs: legs } });
+			const url = new URL(location.href);
+			url.searchParams.set('view', 'bang');
+			url.searchParams.set('added', result.tripIds.join(','));
+			location.assign(url);
+		} catch (error) {
+			saving = false;
+			let placed = false;
+			Object.keys(error.fields || {}).forEach(function (key) {
+				const match = LEG_FIELD.exec(key);
+				const draft = match && sent[Number(match[1])] && sent[Number(match[1])].x;
+				if (draft) {
+					draft.serverErrors = (draft.serverErrors || []).concat(error.fields[key]);
+					placed = true;
+				}
+			});
+			if (!placed) {
+				TG.toast(error.message, { error: true });
+			}
+			render();
+		}
+	});
+
+	// After saving, the page reloads with ?added=ids: flash the new trips and offer to open the first.
+	function showAdded() {
+		const params = new URLSearchParams(location.search);
+		const ids = (params.get('added') || '').split(',').filter(function (id) {
+			return /^\d+$/.test(id);
+		});
+		if (!ids.length) {
+			return;
+		}
+		let first = null;
+		ids.forEach(function (id) {
+			const row = root.querySelector('#sched-grid tr[data-trip-id="' + id + '"]');
+			if (row) {
+				row.classList.add('fresh');
+				first = first || row;
+			}
+		});
+		if (first) {
+			first.scrollIntoView({ block: 'center' });
+		}
+		TG.toast('Đã thêm ' + ids.length + ' chuyến cho ' + root.dataset.trainCode + '.',
+				{ label: 'Xem', run: function () {
+					TG.openTrip(ids[0]);
+				} });
+		params.delete('added');
+		const query = params.toString();
+		history.replaceState(null, '', location.pathname + (query ? '?' + query : ''));
+	}
+
 	/* ---------- start ---------- */
 
+	// A page restored from the back/forward cache may still think it is saving.
+	window.addEventListener('pageshow', function (event) {
+		if (event.persisted && saving) {
+			saving = false;
+			render();
+		}
+	});
+
+	showAdded();
 	TG.api(root.dataset.networkUrl).then(function (view) {
 		network = buildNetwork(view);
 		render();

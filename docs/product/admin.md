@@ -160,8 +160,17 @@ nhập nhiều chặng một lúc:
   hai ga kề nhau trên đường đi." API này cũng là phần lập kế hoạch của chế độ "Nhiều
   chặng tới một ga" ở trình hướng dẫn (#40).
 
-Nút "Thêm N chuyến" gửi cả lô qua API tạo chuyến của trình hướng dẫn (#28) trong một
-transaction; phần này nối vào sau khi #28 có trên `main`.
+Nút "Thêm N chuyến" (chỉ tính các dòng đã chọn ga đến) gửi cả lô tới
+`POST /api/admin/trains/{id}/trips` (`TripCreationService.createLegs`) trong một
+transaction, hoặc tạo hết hoặc không tạo gì. Server khóa dòng tàu (sửa và xóa tàu cũng
+khóa dòng này), kiểm lại mọi luật nối chặng (ga đi trang gửi lên phải khớp ga đến của
+chuyến cuối hiện tại, nếu không trả 409 để tải lại trang; giờ cắt về phút; giờ đi cách giờ đến ít nhất 30 phút và không ở
+quá khứ, có tuyến giữa hai ga, giờ đến sau giờ đi, giá chia hết 1.000) và sinh 96 chỗ
+`AVAILABLE` cho mỗi chuyến. Lỗi một chặng trả 409 kèm thông điệp dưới khóa
+`legs[i].departureAt` (hoặc `destinationStationId`, `arrivalAt`, `basePrice`,
+`originStationId`) và hiện ngay dưới dòng nháp thứ i trong số các dòng đã gửi. Tạo xong
+trang tải lại với `?added=` để các dòng mới chớp màu, kèm toast "Đã thêm N chuyến cho
+SE1." có nút "Xem" mở ngăn chi tiết chuyến. Bấm một dòng của bảng lịch mở ngăn đó.
 
 ## Quản lý chuyến `/admin/trips`
 

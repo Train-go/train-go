@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,5 +34,9 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 			select r from Route r join fetch r.originStation o join fetch r.destinationStation d
 			order by o.kmMark, d.kmMark""")
 	List<Route> findAllWithStations();
+
+	/** The route from one station to another, with both stations loaded. */
+	@EntityGraph(attributePaths = { "originStation", "destinationStation" })
+	Optional<Route> findByOriginStationIdAndDestinationStationId(Long originId, Long destinationId);
 
 }
