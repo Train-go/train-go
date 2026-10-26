@@ -67,7 +67,8 @@
 				th:aria-label="|${day.title} ${day.dateLabel}|">
 				<h3><b th:text="${day.title}">Hôm nay</b><span th:text="${day.dateLabel}">26/10/2026</span></h3>
 				<ul>
-					<li th:each="item : ${day.items}" th:classappend="${item.past} ? 'past'">
+					<li th:each="item : ${day.items}" th:classappend="${item.past} ? 'past clickable' : 'clickable'"
+						tabindex="0" th:data-trip-id="${item.tripId}">
 						<span class="ag-time mono">
 							<span th:text="${#temporals.format(item.departureAt, 'HH:mm')}">08:00</span>
 							<small th:text="${item.arrivalLabel}">10:35</small>
@@ -124,6 +125,8 @@
 			<button type="submit" class="btn btn-primary" form="train-form" data-train-submit>Thêm tàu</button>
 		</div>
 	</div>
+
+	<th:block th:replace="~{admin/fragments/trip-sheet :: sheet}"></th:block>
 
 	<!-- defer: runs after admin.js, which the layout loads at the end of the body. -->
 	<script th:src="@{/js/admin/train.js}" defer></script>

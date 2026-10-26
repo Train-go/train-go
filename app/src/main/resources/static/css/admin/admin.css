@@ -225,6 +225,17 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .page-head .count { color: var(--muted); font-weight: 600; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
 .toolbar .grow { flex: 1; }
+/* Segmented tabs that are links (?tab=, ?role=), each with a count. */
+.tab-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--sunk); }
+.tab-seg-link { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 12px; border-radius: var(--r-control); color: var(--muted); font-size: 13px; font-weight: 700; text-decoration: none; }
+.tab-seg-link:hover { color: var(--ink); text-decoration: none; }
+.tab-seg-link.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(12, 44, 40, 0.12); }
+.tab-seg-link .count { color: var(--muted); font-weight: 600; }
+.search { position: relative; display: flex; align-items: center; }
+.search .bi { position: absolute; left: 10px; color: var(--muted); pointer-events: none; }
+.search .form-control { min-width: 260px; padding-left: 32px; }
+/* A table row that opens a sheet. */
+.table tr.clickable { cursor: pointer; }
 
 /* ---------- buttons ---------- */
 
@@ -424,6 +435,21 @@ textarea.form-control { padding-block: 8px; }
 .ag-day h3 { display: grid; padding-top: 10px; font-size: 15px; }
 .ag-day h3 span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .ag-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+/* Trip sheet: coach tabs, the seat map and the highlighted passenger. */
+.coach-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.coach-tab { min-height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--r-control); background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; }
+.coach-tab:hover { color: var(--ink); background: var(--sunk); }
+.coach-tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.seats { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; }
+.seats.cabins { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.cabin { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px; border: 1px dashed var(--line-strong); border-radius: var(--r-control); }
+.seat { display: block; min-width: 0; height: 36px; padding: 0; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--muted); font-size: 12px; font-weight: 600; }
+.seat.sold { background: var(--accent); border-color: var(--accent); color: #fff; cursor: pointer; }
+.seat:disabled { cursor: default; }
+i.seat { display: inline-block; width: 16px; height: 16px; vertical-align: -3px; margin-right: 6px; }
+.legend { display: flex; gap: 16px; margin: 10px 0 0; color: var(--muted); font-size: 12.5px; }
+.table tr.hl > * { background: var(--accent-soft); }
+.ag-day li.clickable { cursor: pointer; }
 .ag-day li { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 10px 14px; border-radius: var(--r-control); border: 1px solid var(--line); background: var(--surface); }
 .ag-time { display: grid; font-size: 15px; font-weight: 600; }
 .ag-time small { font-size: 12px; color: var(--muted); }

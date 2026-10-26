@@ -40,18 +40,4 @@ public class AdminController {
 		return "admin/trips";
 	}
 
-	@GetMapping("/bookings")
-	public String bookings(Model model) {
-		model.addAttribute("activeNav", "bookings");
-		model.addAttribute("bookings", adminService.bookings());
-		return "admin/bookings";
-	}
-
-	@GetMapping("/users")
-	public String users(Model model) {
-		model.addAttribute("activeNav", "users");
-		model.addAttribute("users", adminService.users());
-		return "admin/users";
-	}
-
 }
