@@ -3,6 +3,7 @@ package com.voyagego.traingo.service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -14,15 +15,21 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.voyagego.traingo.common.exception.LegPlanException;
 import com.voyagego.traingo.common.exception.TrainNotFoundException;
+import com.voyagego.traingo.entity.Route;
+import com.voyagego.traingo.entity.Station;
 import com.voyagego.traingo.entity.Train;
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.dto.TrainPosition;
+import com.voyagego.traingo.model.response.PlannedLeg;
 import com.voyagego.traingo.model.response.TrainScheduleView;
 import com.voyagego.traingo.model.response.TrainScheduleView.ScheduleDay;
 import com.voyagego.traingo.model.response.TrainScheduleView.ScheduleItem;
+import com.voyagego.traingo.repository.RouteRepository;
+import com.voyagego.traingo.repository.StationRepository;
 import com.voyagego.traingo.repository.TrainRepository;
 import com.voyagego.traingo.repository.TripRepository;
 import com.voyagego.traingo.repository.TripSeatRepository;
@@ -53,15 +60,108 @@ public class TrainScheduleService {
 	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
 	private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
+	private static final LocalTime DAILY_DEPARTURE = LocalTime.of(8, 0);
+
+	/** How the legs of a plan follow each other. */
+	public enum Pace {
+		/** One leg a day: each leg leaves at the first 08:00 after the turnaround. */
+		DAILY,
+		/** Each leg leaves as soon as the turnaround is over. */
+		NONSTOP
+	}
+
 	private final TrainRepository trainRepository;
 	private final TripRepository tripRepository;
 	private final TripSeatRepository tripSeatRepository;
+	private final StationRepository stationRepository;
+	private final RouteRepository routeRepository;
 
 	public TrainScheduleService(TrainRepository trainRepository, TripRepository tripRepository,
-			TripSeatRepository tripSeatRepository) {
+			TripSeatRepository tripSeatRepository, StationRepository stationRepository,
+			RouteRepository routeRepository) {
 		this.trainRepository = trainRepository;
 		this.tripRepository = tripRepository;
 		this.tripSeatRepository = tripSeatRepository;
+		this.stationRepository = stationRepository;
+		this.routeRepository = routeRepository;
+	}
+
+	/** Running time of a route: 60 km/h, rounded to 5 minutes, at least 5. */
+	public static int suggestedMinutes(int km) {
+		return (int) Math.max(5, Math.round(km / 5.0) * 5);
+	}
+
+	/** Price of a route: about 1.000đ per km, rounded to 10.000đ, at least 10.000đ. */
+	public static long suggestedPrice(int km) {
+		return Math.max(10_000, Math.round(km * 1000 / 10_000.0) * 10_000);
+	}
+
+	/**
+	 * The routes from one station to another, one per pair of neighbouring
+	 * stations along the line (ordered by km mark), in travel order. Empty when
+	 * a station is unknown, the two are the same, or any pair on the way has no
+	 * route in that direction.
+	 */
+	public Optional<List<Route>> adjacentPath(long fromStationId, long toStationId) {
+		List<Station> line = stationRepository.findAllByOrderByKmMarkAsc();
+		int from = indexOf(line, fromStationId);
+		int to = indexOf(line, toStationId);
+		if (from < 0 || to < 0 || from == to) {
+			return Optional.empty();
+		}
+		Map<List<Long>, Route> routes = new HashMap<>();
+		for (Route route : routeRepository.findAllWithStations()) {
+			routes.put(List.of(route.getOriginStation().getId(), route.getDestinationStation().getId()), route);
+		}
+		int step = to > from ? 1 : -1;
+		List<Route> path = new ArrayList<>();
+		for (int i = from; i != to; i += step) {
+			Route route = routes.get(List.of(line.get(i).getId(), line.get(i + step).getId()));
+			if (route == null) {
+				return Optional.empty();
+			}
+			path.add(route);
+		}
+		return Optional.of(path);
+	}
+
+	/**
+	 * One leg per route of {@link #adjacentPath}, each with the suggested
+	 * running time and price. The first leaves at {@code firstDeparture}; the
+	 * next one after the turnaround, or at 08:00 for {@link Pace#DAILY}.
+	 */
+	public List<PlannedLeg> planLegs(long trainId, long fromStationId, long toStationId, Pace pace,
+			LocalDateTime firstDeparture) {
+		// A deleted train has no page, the same as an unknown id.
+		trainRepository.findByIdAndDeletedFalse(trainId).orElseThrow(TrainNotFoundException::new);
+		if (fromStationId == toStationId) {
+			throw LegPlanException.sameStation();
+		}
+		List<Route> path = adjacentPath(fromStationId, toStationId).orElseThrow(LegPlanException::missingRoute);
+		List<PlannedLeg> legs = new ArrayList<>();
+		LocalDateTime departure = firstDeparture;
+		for (Route route : path) {
+			LocalDateTime arrival = departure.plusMinutes(suggestedMinutes(route.getDistanceKm()));
+			legs.add(PlannedLeg.of(route, departure, arrival, suggestedPrice(route.getDistanceKm())));
+			LocalDateTime ready = arrival.plus(TURNAROUND);
+			departure = pace == Pace.DAILY ? firstDailyDeparture(ready) : ready;
+		}
+		return legs;
+	}
+
+	private static int indexOf(List<Station> line, long stationId) {
+		for (int i = 0; i < line.size(); i++) {
+			if (line.get(i).getId() == stationId) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	/** The first 08:00 that is not before {@code time}. */
+	private static LocalDateTime firstDailyDeparture(LocalDateTime time) {
+		LocalDateTime sameDay = time.toLocalDate().atTime(DAILY_DEPARTURE);
+		return sameDay.isBefore(time) ? sameDay.plusDays(1) : sameDay;
 	}
 
 	/**
@@ -192,9 +292,11 @@ public class TrainScheduleService {
 			arrivalLabel = dayLabel(arrival) + " " + arrivalLabel;
 		}
 		boolean past = !trip.isCancelled() && !arrival.isAfter(now);
+		int plusDays = (int) ChronoUnit.DAYS.between(departure.toLocalDate(), arrival.toLocalDate());
 		return new ScheduleItem(trip.getId(), departure, arrival, arrivalLabel,
 				trip.getRoute().getOriginStation().getName(), trip.getRoute().getDestinationStation().getName(),
-				trip.getBasePrice(), bookedSeats, trip.isCancelled(), trip.phaseLabel(now), phaseCss(trip, now), past);
+				trip.getBasePrice(), bookedSeats, trip.isCancelled(), trip.phaseLabel(now), phaseCss(trip, now), past,
+				trip.getRoute().getDistanceKm(), dayLabel(departure), plusDays);
 	}
 
 	/** The .tag modifiers in css/admin/admin.css. */
