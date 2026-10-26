@@ -13,7 +13,7 @@ public class RouteCreateRequest {
 	private int distanceKm;
 	private boolean bothWays;
 
-	// RouteAdminController maps differentStations to destinationStationId.
+	// Form and API handlers attach this cross-field error to the destination.
 	@AssertTrue(message = "Ga đến phải khác ga đi.")
 	public boolean isDifferentStations() {
 		return originStationId == null || destinationStationId == null

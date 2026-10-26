@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.voyagego.traingo.model.request.RouteCreateRequest;
 import com.voyagego.traingo.model.response.ApiError;
 
 /**
@@ -47,7 +49,12 @@ public class ApiExceptionHandler {
 		// First message per field: two failed rules on one input show one line.
 		Map<String, String> fields = new LinkedHashMap<>();
 		for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-			fields.putIfAbsent(error.getField(), error.getDefaultMessage());
+			String field = error.getField();
+			if (ex.getBindingResult().getTarget() instanceof RouteCreateRequest
+					&& "differentStations".equals(field)) {
+				field = "destinationStationId";
+			}
+			fields.putIfAbsent(field, error.getDefaultMessage());
 		}
 		return ResponseEntity.badRequest().body(new ApiError(INVALID_FORM, fields));
 	}
@@ -66,6 +73,22 @@ public class ApiExceptionHandler {
 	ResponseEntity<ApiError> ruleBroken(BusinessRuleException ex) {
 		Map<String, String> fields = ex.getField() == null ? Map.of() : Map.of(ex.getField(), ex.getMessage());
 		return ResponseEntity.status(HttpStatus.CONFLICT).body(new ApiError(ex.getMessage(), fields));
+	}
+
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	ResponseEntity<ApiError> conflictingWrite(DataIntegrityViolationException ex) {
+		// Concurrent requests can pass the service checks before a unique key
+		// rejects one write. Handle it after rollback, without exposing SQL.
+		String cause = String.valueOf(ex.getMostSpecificCause().getMessage());
+		if (cause.contains("uk_stations_code")) {
+			return ruleBroken(new DuplicateStationCodeException());
+		}
+		if (cause.contains("uk_stations_km_mark")) {
+			String message = "Lý trình đã được một ga khác sử dụng. Vui lòng tải lại và thử lại.";
+			return ResponseEntity.status(HttpStatus.CONFLICT)
+					.body(new ApiError(message, Map.of("kmMark", message)));
+		}
+		return unexpected(ex);
 	}
 
 	/**

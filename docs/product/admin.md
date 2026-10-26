@@ -12,19 +12,42 @@ Từ 23/10/2026 (#20) mẫu giao diện admin chưa có trang này, nên `/admin
 hướng sang `/admin/trains`. Task "Trang Tổng quan" (#37) dựng lại trang và bỏ
 chuyển hướng.
 
-## Quản lý ga `/admin/stations`
+## Ga và tuyến `/admin/stations`
 
-Xem danh sách, thêm, sửa, xóa. Chỉ xóa được ga chưa là điểm đi hay điểm đến của
-tuyến nào; xóa ga đang được dùng thì màn hình báo lý do và giữ nguyên ga.
+Trang "Ga và tuyến": bên trái là sơ đồ đường tàu dọc Bắc–Nam, bên phải là một
+ngăn đổi theo thứ admin bấm trên sơ đồ. Thao tác gọi REST `/api/admin/network`,
+`/api/admin/stations`, `/api/admin/routes` và vẽ lại sơ đồ, không tải lại trang.
 
-Validation: `code` không được trùng, `name` không được để trống. `code` chỉ gồm
-chữ cái không dấu và chữ số, tối đa 10 ký tự, và được tự viết hoa, nên `sgn`
-trùng với `SGN`. Lý trình (`kmMark`, số km tính từ ga Hà Nội) bắt buộc, là số
-nguyên từ 0 đến 5000, và không trùng với ga khác. Danh sách xếp theo lý trình, từ
-Bắc vào Nam (`docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`).
+- **Sơ đồ:** ga đặt theo lý trình, hai ga cách nhau ít nhất 60px. Đoạn giữa hai
+  ga kề có ba kiểu: hai chiều, một chiều, chưa có tuyến. Tuyến giữa hai ga không
+  kề (Hà Nội ⇄ Sài Gòn) là một cung bên trái. Dấu `+` giữa hai ga để chèn ga. Ga,
+  đoạn, cung và dấu `+` bấm được bằng chuột và bàn phím (`Tab`, `Enter`/`Space`),
+  mỗi thứ có `aria-label` như "Huế ⇄ Đà Nẵng, 103 km, cả hai chiều".
+- **Tổng quan** (mặc định): hướng dẫn và bộ chọn hai ga để mở ngăn cặp ga, kể cả
+  cặp chưa có tuyến.
+- **Ngăn ga:** km, tỉnh, địa chỉ; sửa ngay trong ngăn. Ga đã có tuyến thì giữ mã
+  ("Ga đã có tuyến nên giữ mã.") và không xóa được ("Không xóa được: ga đang có N
+  tuyến. Xóa các tuyến đó trước."). Km trùng báo tên ga đang giữ km đó.
+- **Ngăn cặp ga:** hai chiều A → B, B → A với km và số chuyến sắp chạy, hoặc
+  "Chưa có" kèm nút "Tạo chiều này" (km điền sẵn theo lý trình). Xóa một chiều
+  bị chặn khi tuyến đã có chuyến.
+- **Chèn ga:** km điền sẵn là km trống gần điểm giữa hai ga nhất; km ngoài khoảng
+  hai ga thì cảnh báo nhưng vẫn cho lưu. Lưu xong ngăn chuyển sang ga mới.
+- Từ 1100px sơ đồ và ngăn nằm cạnh nhau, sơ đồ dính khi cuộn; hẹp hơn thì ngăn
+  xuống dưới và trang cuộn tới ngăn khi chọn.
 
-Đã làm xong ngày 01/10/2026, chạy trên database thật:
-`controller/StationAdminController`.
+Validation ga: `code` không trùng, chỉ gồm chữ cái không dấu và chữ số, tối đa 10
+ký tự, tự viết hoa (`sgn` trùng `SGN`); `name` bắt buộc; lý trình (`kmMark`, km
+tính từ ga Hà Nội) bắt buộc, nguyên từ 0 đến 5000, không trùng ga khác
+(`docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`).
+
+Theo quyết định ngày 26/10/2026, trang **không có ma trận tuyến** (#24 không làm
+ma trận); bộ chọn cặp ga ở ngăn Tổng quan thay cho ô trống của ma trận. Chèn ga
+thông minh và tạo nhiều tuyến một lần thuộc #38, #39.
+
+Làm ngày 26/10/2026 (#27): `controller/NetworkAdminApiController`,
+`service/NetworkService`, `static/js/admin/line-map.js`, `stations.js`,
+`station-panels.js`. Form ga cũ (`/admin/stations/new`, `/{id}/edit`) đã gỡ.
 
 ## Quản lý tuyến `/admin/routes`
 
@@ -49,8 +72,8 @@ khóa tuyến bảo vệ sửa/xóa và tranh chấp với việc thêm chuyến
 (tuyến kèm hai ga, tổng chuyến theo tuyến, chuyến sắp chạy theo tuyến), xếp theo
 lý trình ga đi rồi ga đến; gợi ý khoảng cách là trị tuyệt đối hiệu lý trình.
 
-Giao diện (26/10/2026, `RouteAdminController`): trang Thymeleaf thường theo mẫu
-Quản lý ga, Post/Redirect/Get. Danh sách có cột tuyến (tên và mã hai ga), khoảng
+Giao diện (26/10/2026, `RouteAdminController`): trang Thymeleaf thường,
+Post/Redirect/Get. Danh sách có cột tuyến (tên và mã hai ga), khoảng
 cách, chiều ngược (Đã có/Chưa có), chuyến sắp chạy, tổng chuyến. Ô tìm `?q=` lọc
 theo tên hoặc mã ga, không phân biệt hoa thường và dấu ("vinh", "VIN", "hue").
 Form thêm chọn ga đi/ga đến theo lý trình, tự điền khoảng cách theo lý trình khi
@@ -60,8 +83,7 @@ khóa kèm lý do khi tuyến đã có chuyến; gửi thẳng POST xóa vẫn b
 báo "Không xóa được: tuyến đã có N chuyến.".
 
 Theo quyết định ngày 25/10/2026, trang Tuyến **không làm ma trận ga × ga**, ô bật
-ra, hoàn tác và REST `/api/admin/routes` của issue #24. Trang "Ga và tuyến" (#27)
-vì vậy không có component ma trận dùng lại; xét lại khi làm #27.
+ra và hoàn tác của issue #24. REST tạo/xóa tuyến có từ #27 (trang "Ga và tuyến").
 
 ## Quản lý tàu `/admin/trains` và `/admin/trains/:id`
 
