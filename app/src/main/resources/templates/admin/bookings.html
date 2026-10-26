@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!--
+	The Booking page (docs/product/admin.md, "Quản lý booking"). BookingListView
+	carries every label ready to print. A row opens the detail sheet, which
+	bookings.js fills from /api/admin/bookings/{code}; ?open=BK... opens it on
+	load so a link can point at one booking.
+-->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
 <head>
@@ -9,39 +15,104 @@
 
 	<div class="page-head">
 		<h1>Booking</h1>
-		<span class="count" th:text="|${#lists.size(bookings)} booking|">8 booking</span>
 	</div>
 
-	<div class="panel table-responsive">
+	<div class="toolbar">
+		<nav class="tab-seg" aria-label="Nhóm booking">
+			<a th:each="t : ${#strings.arraySplit('upcoming,past,cancelled', ',')}" class="tab-seg-link"
+				th:with="count=${t == 'upcoming' ? view.upcomingCount : (t == 'past' ? view.pastCount : view.cancelledCount)}"
+				th:href="@{/admin/bookings(tab=${t}, q=${view.searching ? view.q : null}, customer=${view.customerId})}"
+				th:classappend="${view.tab == t} ? 'active'"
+				th:attr="aria-current=${view.tab == t} ? 'page' : null">
+				<span th:text="${t == 'upcoming' ? 'Sắp đi' : (t == 'past' ? 'Đã đi' : 'Đã hủy')}">Sắp đi</span>
+				<span class="count" th:text="${count}">3</span>
+			</a>
+		</nav>
+		<span class="grow"></span>
+		<!-- bookings.js submits this 300ms after the last keystroke. -->
+		<form class="search" method="get" th:action="@{/admin/bookings}" data-booking-search>
+			<input type="hidden" name="tab" th:value="${view.tab}">
+			<input type="hidden" name="customer" th:if="${view.customerId != null}" th:value="${view.customerId}">
+			<i class="bi bi-search" aria-hidden="true"></i>
+			<label class="visually-hidden" for="booking-q">Tìm booking</label>
+			<input type="search" class="form-control" id="booking-q" name="q" th:value="${view.q}"
+				placeholder="Mã booking hoặc tên khách" autocomplete="off">
+		</form>
+	</div>
+
+	<div class="panel table-responsive" th:if="${!#lists.isEmpty(view.rows)}">
 		<table class="table table-hover align-middle">
 			<thead>
 				<tr>
-					<th scope="col" class="shrink">Mã booking</th>
-					<th scope="col">Khách hàng</th>
+					<th scope="col">Mã</th>
+					<th scope="col">Khách</th>
 					<th scope="col">Chuyến</th>
-					<th scope="col" class="num">Số vé</th>
+					<th scope="col" class="num">Vé</th>
 					<th scope="col" class="num">Tổng tiền</th>
-					<th scope="col">Trạng thái</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr th:each="booking : ${bookings}">
-					<td><span class="code" th:text="${booking.code}">TG26080001</span></td>
-					<td th:text="${booking.customer}">Nguyễn Văn An</td>
-					<td class="text-nowrap" th:text="${booking.trip}">SE1 · 01/09/2026</td>
-					<td class="num" th:text="${booking.passengers}">2</td>
-					<td class="num text-nowrap" th:text="${#numbers.formatInteger(booking.total, 0, 'POINT')} + 'đ'">500.000đ</td>
+				<tr th:each="row : ${view.rows}" class="clickable" data-booking-row th:data-code="${row.code}">
+					<!-- The link is what keyboards and screen readers use; without JavaScript it opens the sheet too. -->
+					<td><a class="code" th:text="${row.code}"
+						th:href="@{/admin/bookings(tab=${view.tab}, q=${view.searching ? view.q : null}, customer=${view.customerId}, open=${row.code})}">BK202610001</a></td>
 					<td>
-						<!-- Labels come from AdminService.bookingLabel. -->
-						<span class="tag"
-							th:classappend="${booking.paymentStatus} == 'Đã thanh toán' ? 'ok'
-								: (${booking.paymentStatus} == 'Đã hủy' ? 'cancelled' : 'running')"
-							th:text="${booking.paymentStatus}">Đã thanh toán</span>
+						<span th:text="${row.customerName}">Nguyễn Văn An</span>
+						<span class="sub" th:text="${row.customerEmail}">an.nguyen@example.com</span>
 					</td>
+					<td>
+						<span th:text="|${row.trainCode} · ${row.routeLabel}|">SE1 · Ga Hà Nội → Ga Thanh Hóa</span>
+						<span class="sub" th:text="${row.departureLabel}">T5, 22/10 08:00</span>
+					</td>
+					<td class="num" th:text="${row.ticketCount}">2</td>
+					<td class="num text-nowrap" th:text="${#numbers.formatInteger(row.totalPrice, 0, 'POINT')} + 'đ'">360.000đ</td>
 				</tr>
 			</tbody>
 		</table>
 	</div>
+
+	<div class="empty" th:if="${#lists.isEmpty(view.rows)}">
+		<i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+		<b th:text="${view.searching} ? |Không có booking nào khớp &quot;${view.q}&quot;.| : 'Không có booking nào trong nhóm này.'">Không có booking nào trong nhóm này.</b>
+		<a class="btn btn-outline-secondary btn-sm" th:if="${view.searching}"
+			th:href="@{/admin/bookings(tab=${view.tab}, q='', customer=${view.customerId})}">Bỏ tìm kiếm</a>
+	</div>
+
+	<!-- Filled and opened by bookings.js. -->
+	<div class="offcanvas offcanvas-end wide" tabindex="-1" id="booking-sheet" aria-labelledby="booking-sheet-title"
+		th:data-api-url="@{/api/admin/bookings}" th:data-open="${open}">
+		<div class="offcanvas-header">
+			<div>
+				<div class="eyebrow">Booking</div>
+				<h2 class="offcanvas-title mono" id="booking-sheet-title"></h2>
+				<div class="mt-1"><span class="tag" data-field="status"></span></div>
+			</div>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+		</div>
+		<div class="offcanvas-body">
+			<dl class="kv">
+				<dt>Khách</dt><dd data-field="customer"></dd>
+				<dt>Chuyến</dt><dd data-field="trip"></dd>
+				<dt>Khởi hành</dt><dd data-field="departure"></dd>
+				<dt>Thanh toán</dt><dd data-field="payment"></dd>
+			</dl>
+			<div class="table-responsive">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th scope="col">Mã vé</th>
+							<th scope="col">Hành khách</th>
+							<th scope="col">Chỗ</th>
+							<th scope="col" class="num">Giá</th>
+						</tr>
+					</thead>
+					<tbody data-field="tickets"></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script th:src="@{/js/admin/bookings.js}" defer></script>
 
 </main>
 </body>

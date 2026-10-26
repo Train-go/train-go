@@ -163,17 +163,37 @@ Chuyến không xóa được, chỉ hủy được (`CANCELLED`). Chỉ hủy �
 12/10/2026): hủy chuyến khách đã trả tiền thì phải hoàn tiền, mà hoàn tiền nằm
 ngoài phạm vi.
 
-## Quản lý booking `/admin/bookings` và `/admin/bookings/:id`
+## Quản lý booking `/admin/bookings`
 
-Xem danh sách, tìm theo mã booking, xem chi tiết gồm khách hàng, hành khách,
-chuyến, chỗ, trạng thái thanh toán. Admin hủy được booking.
+Ba nhóm theo D8, so giờ đi với hiện tại: Sắp đi (chưa hủy, giờ đi sau bây giờ), Đã
+đi (chưa hủy, giờ đi không sau bây giờ), Đã hủy. Mỗi nhóm có số đếm. Ô tìm "Mã
+booking hoặc tên khách" không phân biệt hoa thường và dấu, tìm cả tên người đi
+trên vé, tự gửi sau 300ms; số đếm không đổi theo ô tìm. Bảng gồm Mã, Khách (tên và
+email), Chuyến (tàu · ga đi → ga đến, giờ đi), Vé, Tổng tiền, xếp theo giờ đi tăng
+dần.
+
+Bấm một dòng mở ngăn chi tiết bên phải và đổi địa chỉ thành `?open=BK…`, nên gửi
+được link mở thẳng một booking. Ngăn có khách (tên, email, số điện thoại), chuyến,
+giờ đi, thanh toán và bảng vé (họ tên kèm 4 số cuối CCCD, "Toa n · chỗ", giá). Dữ
+liệu của ngăn lấy từ `GET /api/admin/bookings/{code}`.
+
+`/admin/bookings?customer={userId}` chỉ hiện booking của khách đó (mọi nhóm), ô tìm
+điền sẵn tên khách. Trang Người dùng link sang đây.
+
+Admin hủy được booking chưa tới giờ đi bằng `BookingCancellationService`, cùng service
+với khách tự hủy ở "Vé của tôi", nên luật hủy chỉ nằm một chỗ (#31). Nút hủy thuộc
+phần việc nối với #31 và #29, chưa có trong bản hiện tại.
 
 Admin **không** đổi chỗ sau khi đã đặt, không sửa trạng thái thanh toán thủ công,
 không hoàn tiền, không đổi hành khách.
 
 ## Danh sách người dùng `/admin/users`
 
-Chỉ xem: tên, email, role, ngày tạo. Không có CRUD người dùng đầy đủ.
+Chỉ xem, hai tab Khách hàng và Quản trị (`?role=CUSTOMER|ADMIN`, mặc định khách) kèm
+số đếm, người mới nhất lên đầu. Cột: họ tên, email, số điện thoại, ngày tạo, số
+booking (tính cả booking đã hủy). "N booking" là link sang
+`/admin/bookings?customer={id}`; khách chưa có booking ghi "Chưa có". Không có CRUD
+người dùng.
 
 Tài khoản Admin được tạo bằng seed data, không đăng ký qua giao diện.
 
