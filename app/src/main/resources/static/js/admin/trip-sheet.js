@@ -4,12 +4,17 @@
  *
  *   TG.openTrip(tripId, triggerEl)   load GET /api/admin/trips/{id}, fill and open
  *
- * After a cancel the sheet shows the trip again and fires
+ * A page needs no script of its own to use it: any element with
+ * data-trip-id and tabindex="0" opens the sheet on click or Enter, and
+ * ?open=<id> in the URL opens it on load.
+ *
+ * After a cancel the sheet fires a cancelable
  *
  *   document 'trip:cancelled'  detail { tripId, message }
  *
- * so the page can refresh its own list. A page that shows the toast itself
- * calls event.preventDefault(); otherwise the sheet shows it.
+ * By default the page then reloads with ?open=<id>, so its counts and lists
+ * come from the server and the sheet shows the cancelled trip again. A page
+ * that refreshes itself calls event.preventDefault() and shows the toast.
  *
  * Loaded with defer, after admin.js. Text from the server is placed with
  * textContent only: passenger names are typed in by customers.
@@ -18,6 +23,7 @@
 	'use strict';
 
 	const SHEET_ID = 'trip-sheet';
+	const OPEN_PARAM = 'open';
 	const sheetEl = document.getElementById(SHEET_ID);
 	if (!sheetEl) {
 		return;
@@ -246,15 +252,19 @@
 			refresh(shown.id);
 			return;
 		}
+		const message = 'Đã hủy chuyến ' + shown.trainCode + ' ' + route(shown) + '.';
+		const event = new CustomEvent('trip:cancelled', { detail: { tripId: shown.id, message: message }, cancelable: true });
+		if (document.dispatchEvent(event)) {
+			TG.toastAfterReload(message);
+			const url = new URL(location.href);
+			url.searchParams.set(OPEN_PARAM, shown.id);
+			location.replace(url);
+			return;
+		}
 		await refresh(shown.id);
 		// The focused cancel button is now hidden; keep focus inside the sheet so Esc still closes it.
 		if (cancelButton.hidden) {
 			sheetEl.focus();
-		}
-		const message = 'Đã hủy chuyến ' + shown.trainCode + ' ' + route(shown) + '.';
-		const event = new CustomEvent('trip:cancelled', { detail: { tripId: shown.id, message: message }, cancelable: true });
-		if (document.dispatchEvent(event)) {
-			TG.toast(message);
 		}
 	});
 
@@ -271,6 +281,39 @@
 		trip = null;
 		pickedSeat = null;
 	});
+
+	/* ---------- openers ---------- */
+
+	function opener(target) {
+		const el = target.closest('[data-trip-id]');
+		// Links and buttons inside a trip row keep their own job.
+		return el && !sheetEl.contains(el) && !target.closest('a, button') ? el : null;
+	}
+
+	document.addEventListener('click', function (event) {
+		const el = opener(event.target);
+		if (el) {
+			openTrip(el.dataset.tripId, el);
+		}
+	});
+
+	document.addEventListener('keydown', function (event) {
+		const el = event.key === 'Enter' && event.target === event.target.closest('[data-trip-id]')
+			? opener(event.target) : null;
+		if (el) {
+			event.preventDefault();
+			openTrip(el.dataset.tripId, el);
+		}
+	});
+
+	/* ?open=<id>: after the reload of a cancel, or from a shared link. */
+	const url = new URL(location.href);
+	const openId = url.searchParams.get(OPEN_PARAM);
+	if (openId) {
+		url.searchParams.delete(OPEN_PARAM);
+		history.replaceState(null, '', url);
+		openTrip(openId, document.querySelector('[data-trip-id="' + CSS.escape(openId) + '"]'));
+	}
 
 	TG.openTrip = openTrip;
 })();

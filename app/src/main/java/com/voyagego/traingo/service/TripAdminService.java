@@ -112,15 +112,14 @@ public class TripAdminService {
 				.toList();
 
 		long bookedCount = bookingRepository.countByTripIdAndBookingStatus(tripId, BookingStatus.CONFIRMED);
-		Phase phase = phase(trip, now);
 		return new TripDetail(trip.getId(), trip.getTrain().getId(), trip.getTrain().getCode(),
 				trip.getTrain().getName(), trip.getRoute().getOriginStation().getName(),
-				trip.getRoute().getDestinationStation().getName(), phase.cssClass, phase.label,
+				trip.getRoute().getDestinationStation().getName(), phaseCss(trip, now), trip.phaseLabel(now),
 				WEEKDAYS[trip.getDepartureAt().getDayOfWeek().getValue() - 1] + ", "
 						+ trip.getDepartureAt().format(DATE) + " · " + timeRange(trip),
 				trip.getDepartureAt().format(TIME) + " " + trip.getDepartureAt().format(DAY_MONTH),
 				trip.getRoute().getDistanceKm(), duration(trip), trip.getBasePrice(), passengers.size(), seats.size(),
-				bookedCount, trip.getStatus() == TripStatus.CANCELLED, cancelBlockReason(trip, bookedCount, now),
+				bookedCount, trip.isCancelled(), cancelBlockReason(trip, bookedCount, now),
 				coaches, passengers);
 	}
 
@@ -175,19 +174,19 @@ public class TripAdminService {
 		int totalSeats = CoachLayout.totalSeats();
 		Map<LocalDate, List<TripListView.Row>> rowsByDay = new LinkedHashMap<>();
 		for (Trip trip : trips) {
-			Phase phase = phase(trip, now);
 			rowsByDay.computeIfAbsent(trip.getDepartureAt().toLocalDate(), day -> new ArrayList<>())
 					.add(new TripListView.Row(trip.getId(), timeRange(trip), trip.getTrain().getCode(),
 							trip.getRoute().getOriginStation().getName() + " → "
 									+ trip.getRoute().getDestinationStation().getName(),
 							trip.getBasePrice(), soldByTrip.getOrDefault(trip.getId(), 0L), totalSeats,
-							phase.cssClass, phase.label));
+							phaseCss(trip, now), trip.phaseLabel(now)));
 		}
 		List<TripListView.DayGroup> days = rowsByDay.entrySet().stream()
 				.map(entry -> new TripListView.DayGroup(dayLabel(entry.getKey(), now.toLocalDate()),
 						entry.getKey().format(DATE), entry.getValue()))
 				.toList();
 
+		// Deleted trains keep their trips in the list but are not offered as a filter.
 		List<TripListView.TrainOption> trains = trainRepository.findAllByDeletedFalseOrderByCodeAsc().stream()
 				.map(train -> new TripListView.TrainOption(train.getId(), train.getCode(), train.getName()))
 				.toList();
@@ -198,10 +197,10 @@ public class TripAdminService {
 
 	/** The sentences of the sheet's footer (AC4), checked in the mockup's order. */
 	private static String cancelBlockReason(Trip trip, long bookedCount, LocalDateTime now) {
-		if (trip.getStatus() == TripStatus.CANCELLED) {
+		if (trip.isCancelled()) {
 			return "Chuyến đã hủy, chỗ không còn bán.";
 		}
-		if (trip.getStatus() != TripStatus.SCHEDULED || !trip.getDepartureAt().isAfter(now)) {
+		if (trip.getStatus() != TripStatus.SCHEDULED || trip.hasDeparted(now)) {
 			return "Không hủy được: chuyến đã khởi hành.";
 		}
 		if (bookedCount > 0) {
@@ -262,33 +261,17 @@ public class TripAdminService {
 	}
 
 	/**
-	 * A trip counts as departed once its departure time has passed, whether or
-	 * not anyone has marked it COMPLETED yet (D8). The class names are the
-	 * .tag colours in admin.css.
+	 * The .tag modifier of {@link Trip#phaseLabel}, as on the train page
+	 * (TrainScheduleService), so a trip has the same colour on both pages.
 	 */
-	private static Phase phase(Trip trip, LocalDateTime now) {
-		if (trip.getStatus() == TripStatus.CANCELLED) {
-			return Phase.CANCELLED;
+	private static String phaseCss(Trip trip, LocalDateTime now) {
+		if (trip.isCancelled()) {
+			return "cancelled";
 		}
-		if (trip.getStatus() == TripStatus.SCHEDULED && trip.getDepartureAt().isAfter(now)) {
-			return Phase.UPCOMING;
+		if (!trip.hasDeparted(now)) {
+			return "scheduled";
 		}
-		return trip.getArrivalAt().isAfter(now) ? Phase.RUNNING : Phase.DONE;
-	}
-
-	private enum Phase {
-		UPCOMING("scheduled", "Sắp chạy"),
-		RUNNING("running", "Đang chạy"),
-		DONE("done", "Đã chạy"),
-		CANCELLED("cancelled", "Đã hủy");
-
-		private final String cssClass;
-		private final String label;
-
-		Phase(String cssClass, String label) {
-			this.cssClass = cssClass;
-			this.label = label;
-		}
+		return trip.isRunning(now) ? "running" : "done";
 	}
 
 }

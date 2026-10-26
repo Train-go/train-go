@@ -385,6 +385,10 @@ textarea.form-control { padding-block: 8px; }
 /* The header row of one departure day. */
 .table > tbody > tr.group-row > td { background: var(--bg); font-weight: 700; padding-top: 14px; padding-bottom: 8px; }
 .group-row .text-body-secondary { font-weight: 500; margin-left: 6px; }
+/* A trip in the train page's schedule opens the same sheet. */
+.ag-day li[data-trip-id] { cursor: pointer; }
+.ag-day li[data-trip-id]:hover { border-color: var(--line-strong); }
+.ag-day li[data-trip-id]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* The passenger of the seat picked on the map. */
 .table > tbody > tr.picked > * { --bs-table-bg-state: var(--accent-soft); }
 .btn-group .count { font-weight: 600; color: var(--muted); }

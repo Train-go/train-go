@@ -149,7 +149,8 @@ là danh sách mọi chuyến để tra cứu (#29):
   Đã hủy (`CANCELLED`), hai nhóm sau xếp giờ giảm dần; số đếm mỗi nhóm không
   phụ thuộc bộ lọc;
 - lọc theo tàu, tìm theo tên hoặc mã ga không phân biệt dấu ("hue" ra "Huế");
-  bộ lọc nằm trên URL (`?tab=&train=&q=`);
+  bộ lọc nằm trên URL (`?tab=&train=&q=`); ô chọn tàu chỉ có tàu chưa xóa, chuyến
+  của tàu đã xóa vẫn nằm trong danh sách;
 - bảng nhóm theo ngày khởi hành.
 
 Bấm một chuyến ở trang này hoặc ở trang Tàu đều mở cùng **ngăn chi tiết chuyến**:

@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <!--
 	The trip sheet, shared by every admin page that lists trips (#29). A page
-	includes the empty sheet and its script, then calls TG.openTrip(id, row):
+	includes the empty sheet and its script, and marks each trip:
 
 		<aside th:replace="~{admin/fragments/trip-sheet :: sheet}"></aside>
 		<script defer th:src="@{/js/admin/trip-sheet.js}"></script>
 
-	defer runs the script after admin.js, which layout/base.html loads at the
-	end of the page, so window.TG exists by then. trip-sheet.js fills the
-	[data-trip] slots from GET /api/admin/trips/{id}.
+		<tr tabindex="0" th:data-trip-id="${trip.id}">...</tr>
+
+	A marked element opens the sheet on click or Enter; scripts can also call
+	TG.openTrip(id, triggerEl). defer runs the script after admin.js, which
+	layout/base.html loads at the end of the page, so window.TG exists by then.
+	trip-sheet.js fills the [data-trip] slots from GET /api/admin/trips/{id}.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>

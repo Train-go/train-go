@@ -76,7 +76,7 @@
 					<tr class="group-row">
 						<td colspan="6"><span th:text="${day.label}">Hôm nay</span><span class="text-body-secondary" th:text="${day.date}">26/10/2026</span></td>
 					</tr>
-					<!-- trips.js opens the trip sheet on click and on Enter. -->
+					<!-- trip-sheet.js opens the trip sheet on click and on Enter. -->
 					<tr th:each="row : ${day.rows}" class="clickable" tabindex="0" th:data-trip-id="${row.id}">
 						<td class="mono" th:text="${row.time}">08:00 → 11:40</td>
 						<td><span class="code" th:text="${row.trainCode}">SE1</span></td>
