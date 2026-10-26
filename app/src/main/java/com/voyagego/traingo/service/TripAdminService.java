@@ -58,7 +58,7 @@ public class TripAdminService {
 		List<TripSeat> seats = tripSeatRepository.findByTripIdOrderByCoachNumberAscSeatCodeAsc(tripId);
 		List<Ticket> tickets = ticketRepository.findConfirmedByTrip(tripId);
 		Map<Long, Ticket> ticketBySeat = tickets.stream()
-				.collect(Collectors.toMap(ticket -> ticket.getTripSeat().getId(), ticket -> ticket));
+				.collect(Collectors.toMap(ticket -> ticket.getTripSeat().getId(), ticket -> ticket, (first, second) -> first));
 
 		// The seats arrive ordered by coach, so a coach is one run of equal numbers.
 		Map<Integer, List<TripSeat>> byCoach = new LinkedHashMap<>();

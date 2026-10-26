@@ -64,17 +64,18 @@ public class BookingAdminService {
 	private static final String[] SHORT_WEEKDAYS = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
 	private static final DateTimeFormatter DAY_TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
 	private static final DateTimeFormatter FULL = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-	private static final String DEPARTED = "Không hủy được: chuyến đã khởi hành.";
 
 	private final BookingRepository bookingRepository;
 	private final TicketRepository ticketRepository;
 	private final UserRepository userRepository;
+	private final BookingCancellationService cancellationService;
 
 	public BookingAdminService(BookingRepository bookingRepository, TicketRepository ticketRepository,
-			UserRepository userRepository) {
+			UserRepository userRepository, BookingCancellationService cancellationService) {
 		this.bookingRepository = bookingRepository;
 		this.ticketRepository = ticketRepository;
 		this.userRepository = userRepository;
+		this.cancellationService = cancellationService;
 	}
 
 	/**
@@ -129,7 +130,23 @@ public class BookingAdminService {
 				booking.getCustomer().getPhoneNumber(), trip.getId(), trip.getTrain().getCode(), routeLabel(trip),
 				weekdayLabel(trip.getDepartureAt()), booking.getTotalPrice(),
 				booking.getPaidAt() == null ? null : booking.getPaidAt().format(FULL), tickets,
-				cancelled ? null : cancelBlockReason(trip, now));
+				cancelled ? null : BookingCancellationService.blockReason(booking, now));
+	}
+
+	/**
+	 * Cancels a booking on the admin's behalf, with the same rule as the
+	 * customer's own cancel, and returns how many seats went back on sale.
+	 * Throws BookingNotFoundException for an unknown code and
+	 * BookingCancelBlockedException when the booking cannot be cancelled.
+	 */
+	@Transactional
+	public int cancel(String code, LocalDateTime now) {
+		// Only the id is read here: loading the booking before the cancellation service
+		// locks it would leave a stale copy in the persistence context, and the check
+		// after the lock would not see a cancel that committed in between.
+		long id = bookingRepository.findIdByBookingCode(code).orElseThrow(BookingNotFoundException::new);
+		cancellationService.cancel(id, now);
+		return ticketRepository.findByBookingIds(List.of(id)).size();
 	}
 
 	/** The first group with a booking, so a customer's page never opens on an empty tab. */
@@ -169,11 +186,6 @@ public class BookingAdminService {
 		return new BookingRow(booking.getBookingCode(), booking.getCustomer().getFullName(),
 				booking.getCustomer().getEmail(), trip.getTrain().getCode(), routeLabel(trip),
 				weekdayLabel(trip.getDepartureAt()), ticketCount, booking.getTotalPrice());
-	}
-
-	/** Null when the booking can be cancelled. */
-	private static String cancelBlockReason(Trip trip, LocalDateTime now) {
-		return trip.hasDeparted(now) ? DEPARTED : null;
 	}
 
 	private static String routeLabel(Trip trip) {

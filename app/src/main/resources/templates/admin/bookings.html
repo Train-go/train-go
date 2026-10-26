@@ -92,7 +92,8 @@
 		<div class="offcanvas-body">
 			<dl class="kv">
 				<dt>Khách</dt><dd data-field="customer"></dd>
-				<dt>Chuyến</dt><dd data-field="trip"></dd>
+				<dt>Chuyến</dt>
+				<dd><button type="button" class="btn btn-link btn-sm" data-field="trip"></button></dd>
 				<dt>Khởi hành</dt><dd data-field="departure"></dd>
 				<dt>Thanh toán</dt><dd data-field="payment"></dd>
 			</dl>
@@ -110,7 +111,14 @@
 				</table>
 			</div>
 		</div>
+		<div class="offcanvas-footer" data-field="footer" hidden>
+			<span class="grow text-body-secondary" data-field="cancel-note"></span>
+			<button type="button" class="btn btn-outline-danger" data-field="cancel">Hủy booking</button>
+		</div>
 	</div>
+
+	<!-- The trip button of the sheet opens this one (data-trip-id). -->
+	<th:block th:replace="~{admin/fragments/trip-sheet :: sheet}"></th:block>
 
 	<script th:src="@{/js/admin/bookings.js}" defer></script>
 

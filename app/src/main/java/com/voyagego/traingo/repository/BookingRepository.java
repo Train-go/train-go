@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.voyagego.traingo.entity.Booking;
 import com.voyagego.traingo.entity.BookingStatus;
 import com.voyagego.traingo.model.dto.IdCount;
+
+import jakarta.persistence.LockModeType;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
 
@@ -56,5 +59,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 			group by b.trip.route.id
 			""")
 	List<IdCount> countByRouteExcludingStatus(@Param("excluded") BookingStatus excluded);
+
+	/** The id of the booking with this code, read without loading the booking itself. */
+	@Query("select b.id from Booking b where b.bookingCode = :code")
+	Optional<Long> findIdByBookingCode(@Param("code") String code);
+
+	/**
+	 * One booking, locked for writing. Cancelling takes this lock before it
+	 * checks the booking, so two cancels of the same booking run one after the
+	 * other and the second sees it already cancelled.
+	 */
+	@Lock(LockModeType.PESSIMISTIC_WRITE)
+	@Query("select b from Booking b where b.id = :id")
+	Optional<Booking> findByIdForUpdate(@Param("id") Long id);
 
 }

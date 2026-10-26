@@ -190,9 +190,16 @@ liệu của ngăn lấy từ `GET /api/admin/bookings/{code}`.
 `/admin/bookings?customer={userId}` chỉ hiện booking của khách đó (mọi nhóm), ô tìm
 điền sẵn tên khách. Trang Người dùng link sang đây.
 
-Admin hủy được booking chưa tới giờ đi bằng `BookingCancellationService`, cùng service
-với khách tự hủy ở "Vé của tôi", nên luật hủy chỉ nằm một chỗ (#31). Nút hủy thuộc
-phần việc nối với #31 và #29, chưa có trong bản hiện tại.
+Admin hủy được booking chưa tới giờ đi. Chân ngăn có câu "Hủy booking sẽ trả các chỗ
+về trạng thái còn trống." và nút "Hủy booking"; bấm thì có hộp xác nhận "N chỗ trên chuyến
+… sẽ mở bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền.", rồi toast "Đã hủy
+BK…. N chỗ đã mở bán lại." và danh sách tải lại. Chuyến đã khởi hành thì nút bị khóa kèm
+"Không hủy được: chuyến đã khởi hành."; booking đã hủy không có nút. Việc hủy là
+`POST /api/admin/bookings/{code}/cancel`, gọi `BookingCancellationService`, service
+duy nhất giữ luật hủy (booking `CONFIRMED` và chuyến chưa khởi hành đổi sang `CANCELLED`,
+các chỗ của booking về `AVAILABLE`, trong một transaction), để khách tự hủy ở "Vé của
+tôi" dùng lại đúng service đó; gọi cho booking đã khởi hành hoặc đã hủy trả 409. Nút
+Chuyến trong ngăn mở ngăn chi tiết chuyến (xem "Quản lý chuyến").
 
 Admin **không** đổi chỗ sau khi đã đặt, không sửa trạng thái thanh toán thủ công,
 không hoàn tiền, không đổi hành khách.
