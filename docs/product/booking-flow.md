@@ -126,9 +126,25 @@ thông tin cá nhân.
 
 ## My Trips
 
-Customer xem booking của mình, chia ba nhóm Upcoming, Completed, Cancelled. Mỗi
-dòng hiển thị tuyến, ngày đi, tàu, toa, chỗ, trạng thái booking và trạng thái
-thanh toán. Hành động: xem booking, xem vé, hủy booking.
+Customer xem booking của mình ở **Vé của tôi** `/my-trips` (#31), chia ba tab theo
+D8, mặc định mở Sắp đi:
+
+- Sắp đi: `CONFIRMED`, giờ đi sau bây giờ (xếp giờ tăng dần);
+- Đã đi: `CONFIRMED`, giờ đi không sau bây giờ (xếp giờ giảm dần);
+- Đã hủy: `CANCELLED`.
+
+Mỗi booking là một thẻ: ga đi → ga đến, thứ ngày giờ đi, mã tàu, các chỗ ("Toa 1 ·
+A05, Toa 3 · B02"), số vé, tổng tiền, mã booking, dấu "Đã thanh toán" hoặc "Đã
+hủy". Tab trống có câu gợi ý và nút "Tìm chuyến".
+
+`/my-trips/{bookingId}` là chi tiết dạng hóa đơn: mã booking, chuyến, giờ đi → giờ
+đến, tàu, bảng vé (mã vé, họ tên, CCCD chỉ hiện 4 số cuối, toa và chỗ, giá), tổng
+tiền, thời điểm thanh toán. Booking sắp đi có nút "Hủy booking" (mục dưới). Nút "Xem
+vé" thêm khi có vé điện tử (#34).
+
+Booking không phải của khách đang đăng nhập, kể cả gõ tay id hay gửi thẳng `POST`
+hủy, nhận trang 404 "Không tìm thấy booking." như booking không tồn tại, nên không lộ
+mã hay thông tin của người khác (`docs/product/auth.md`).
 
 Không cần filter hay tìm kiếm nâng cao.
 
@@ -150,6 +166,13 @@ Phiên bản đầu không tính phí hủy, không hoàn tiền, không có quy
 Vì thanh toán chỉ là mô phỏng, hủy chỉ đổi trạng thái và trả lại chỗ.
 
 Việc hủy cũng phải nằm trong transaction.
+
+Luật hủy chỉ nằm ở `BookingCancellationService`, dùng chung cho khách (Vé của tôi)
+và admin (#35). Khách bấm "Hủy booking" thấy hộp xác nhận "N chỗ trên chuyến … sẽ mở
+bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền."; hủy xong quay về trang
+chi tiết với thông báo "Đã hủy booking BK…". Gửi hủy cho booking đã đi hoặc đã hủy
+bị từ chối với "Không hủy được: chuyến đã khởi hành." hoặc "Booking đã hủy.", không
+đổi gì trong database.
 
 ## Các lỗi phải xử lý tử tế
 
