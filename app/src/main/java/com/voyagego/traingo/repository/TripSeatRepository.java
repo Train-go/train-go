@@ -19,4 +19,7 @@ public interface TripSeatRepository extends JpaRepository<TripSeat, Long> {
 			group by s.trip.id""")
 	List<IdCount> countBookedByTrain(@Param("trainId") Long trainId);
 
+	/** Every seat of one trip, in coach then seat-code order. */
+	List<TripSeat> findByTripIdOrderByCoachNumberAscSeatCodeAsc(Long tripId);
+
 }

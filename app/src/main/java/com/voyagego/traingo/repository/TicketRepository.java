@@ -23,4 +23,14 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 			order by t.ticketCode""")
 	List<Ticket> findByBookingIds(@Param("ids") Collection<Long> ids);
 
+	/** Tickets of one trip that belong to a confirmed booking, with booking and seat loaded. */
+	@Query("""
+			select t from Ticket t
+			join fetch t.booking b
+			join fetch t.tripSeat s
+			where s.trip.id = :tripId
+			and b.bookingStatus = com.voyagego.traingo.entity.BookingStatus.CONFIRMED
+			order by s.coachNumber, s.seatCode""")
+	List<Ticket> findConfirmedByTrip(@Param("tripId") Long tripId);
+
 }

@@ -158,6 +158,16 @@ của tàu và luật nối chặng"):
 Khi chuyến được tạo, hệ thống sinh 96 TripSeat từ cấu hình toa cố định, tất cả ở
 trạng thái `AVAILABLE`.
 
+**Ngăn chi tiết chuyến** mở bên phải trang khi bấm một chuyến ở bất kỳ đâu trong
+khu quản trị (phần tử có `data-trip-id`, hoặc `TG.openTrip(id)`): tàu và link về
+trang tàu, ga đi → ga đến, trạng thái, giờ đi → giờ đến, quãng đường, giá, số chỗ
+đã bán. Sơ đồ chỗ có bốn tab toa ("Toa n · Ghế ngồi/Giường nằm · đã bán/sức chứa"):
+toa ghế 8 chỗ một hàng, toa giường 4 khoang x 4 giường. Chỗ đã bán bấm được và tô
+dòng hành khách tương ứng; ngăn mở sẵn ở toa đầu tiên có chỗ đã bán. Bảng hành
+khách chỉ tính vé của booking `CONFIRMED`: họ tên kèm 4 số cuối CCCD, toa và chỗ,
+mã booking (link `/admin/bookings?open=BK…`), giá. Dữ liệu từ
+`GET /api/admin/trips/{id}`. Hủy chuyến và trang `/admin/trips` làm riêng (#29).
+
 Chuyến không xóa được, chỉ hủy được (`CANCELLED`). Chỉ hủy được chuyến
 `SCHEDULED`, chưa khởi hành, và chưa có booking `CONFIRMED` nào (D2, chốt
 12/10/2026): hủy chuyến khách đã trả tiền thì phải hoàn tiền, mà hoàn tiền nằm
