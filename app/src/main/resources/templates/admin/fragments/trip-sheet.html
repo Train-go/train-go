@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <!--
-	The trip sheet, shared by every admin page that lists trips (#29). A page
-	includes the empty sheet and its script, and marks each trip:
+	The trip sheet (#29), shared by every admin page that mentions a trip. A
+	page includes it, script and all, and marks each trip:
 
-		<aside th:replace="~{admin/fragments/trip-sheet :: sheet}"></aside>
-		<script defer th:src="@{/js/admin/trip-sheet.js}"></script>
+		<th:block th:replace="~{admin/fragments/trip-sheet :: sheet}"></th:block>
 
 		<tr tabindex="0" th:data-trip-id="${trip.id}">...</tr>
 
 	A marked element opens the sheet on click or Enter; scripts can also call
-	TG.openTrip(id, triggerEl). defer runs the script after admin.js, which
-	layout/base.html loads at the end of the page, so window.TG exists by then.
-	trip-sheet.js fills the [data-trip] slots from GET /api/admin/trips/{id}.
+	TG.openTrip(id, triggerEl). The script is deferred, so it runs after
+	admin.js, which layout/base.html loads at the end of the page. It fills the
+	[data-trip] slots from the API URL below.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<aside th:fragment="sheet" class="offcanvas offcanvas-end wide" id="trip-sheet" tabindex="-1" aria-labelledby="trip-sheet-title">
+<th:block th:fragment="sheet">
+
+<aside class="offcanvas offcanvas-end wide" id="trip-sheet" tabindex="-1" aria-labelledby="trip-sheet-title"
+	th:data-api-url="@{/api/admin/trips}" th:data-bookings-url="@{/admin/bookings}"
+	th:data-trains-url="@{/admin/trains}">
 	<div class="offcanvas-header">
 		<div class="trip-sheet-head">
 			<div class="eyebrow">
@@ -83,6 +86,10 @@
 		</tr>
 	</template>
 </aside>
+
+<script th:src="@{/js/admin/trip-sheet.js}" defer></script>
+
+</th:block>
 
 </body>
 </html>

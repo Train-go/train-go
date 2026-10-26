@@ -82,7 +82,7 @@ public class TripAdminService {
 
 	@Transactional(readOnly = true)
 	public TripDetail detail(long tripId, LocalDateTime now) {
-		Trip trip = tripRepository.findWithDetailsById(tripId).orElseThrow(() -> new TripNotFoundException(tripId));
+		Trip trip = tripRepository.findDetailById(tripId).orElseThrow(() -> new TripNotFoundException(tripId));
 		Map<Long, Ticket> ticketBySeat = ticketRepository.findConfirmedByTrip(tripId).stream()
 				.collect(Collectors.toMap(ticket -> ticket.getTripSeat().getId(), Function.identity()));
 		List<TripSeat> seats = tripSeatRepository.findByTripIdOrderByCoachNumberAscSeatCodeAsc(tripId);
@@ -106,7 +106,7 @@ public class TripAdminService {
 				.sorted(Comparator.comparingInt((Ticket ticket) -> ticket.getTripSeat().getCoachNumber())
 						.thenComparing(ticket -> ticket.getTripSeat().getSeatCode()))
 				.map(ticket -> new TripDetail.PassengerRow(ticket.getFullName(),
-						maskIdentity(ticket.getIdentityNumber()), ticket.getTripSeat().getCoachNumber(),
+						TextUtils.maskId(ticket.getIdentityNumber()), ticket.getTripSeat().getCoachNumber(),
 						ticket.getTripSeat().getSeatCode(), ticket.getBooking().getBookingCode(),
 						ticket.getTicketPrice()))
 				.toList();
@@ -250,14 +250,6 @@ public class TripAdminService {
 
 	private static String coachTypeLabel(CoachType type) {
 		return type == CoachType.SLEEPER ? "Giường nằm" : "Ghế ngồi";
-	}
-
-	/** Only the last four characters of a CCCD or passport number reach the browser. */
-	private static String maskIdentity(String identityNumber) {
-		if (identityNumber.length() <= 4) {
-			return "••••";
-		}
-		return "•••• " + identityNumber.substring(identityNumber.length() - 4);
 	}
 
 	/**

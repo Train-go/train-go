@@ -21,24 +21,25 @@
 		trips.js submits it when the train changes and shortly after typing.
 	-->
 	<form class="toolbar" method="get" th:action="@{/admin/trips}" data-trip-filters>
-		<nav class="btn-group" aria-label="Nhóm chuyến">
-			<a class="btn btn-outline-secondary"
+		<!-- The same segmented tabs as the bookings page. -->
+		<nav class="tab-seg" aria-label="Nhóm chuyến">
+			<a class="tab-seg-link"
 				th:href="@{/admin/trips(tab='upcoming', train=${view.trainId}, q=${view.query})}"
 				th:classappend="${view.tab == 'upcoming'} ? 'active'"
 				th:attr="aria-current=${view.tab == 'upcoming'} ? 'page' : null">
-				Sắp chạy<span class="count" th:text="${view.upcomingCount}">12</span>
+				<span>Sắp chạy</span><span class="count" th:text="${view.upcomingCount}">12</span>
 			</a>
-			<a class="btn btn-outline-secondary"
+			<a class="tab-seg-link"
 				th:href="@{/admin/trips(tab='departed', train=${view.trainId}, q=${view.query})}"
 				th:classappend="${view.tab == 'departed'} ? 'active'"
 				th:attr="aria-current=${view.tab == 'departed'} ? 'page' : null">
-				Đã khởi hành<span class="count" th:text="${view.departedCount}">80</span>
+				<span>Đã khởi hành</span><span class="count" th:text="${view.departedCount}">80</span>
 			</a>
-			<a class="btn btn-outline-secondary"
+			<a class="tab-seg-link"
 				th:href="@{/admin/trips(tab='cancelled', train=${view.trainId}, q=${view.query})}"
 				th:classappend="${view.tab == 'cancelled'} ? 'active'"
 				th:attr="aria-current=${view.tab == 'cancelled'} ? 'page' : null">
-				Đã hủy<span class="count" th:text="${view.cancelledCount}">2</span>
+				<span>Đã hủy</span><span class="count" th:text="${view.cancelledCount}">2</span>
 			</a>
 		</nav>
 		<input type="hidden" name="tab" th:value="${view.tab}">
@@ -50,11 +51,11 @@
 				th:selected="${train.id == view.trainId}"
 				th:text="|${train.code} · ${train.name}|">SE1 · Thống Nhất</option>
 		</select>
-		<div class="input-group trip-search">
-			<span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+		<div class="search">
+			<i class="bi bi-search" aria-hidden="true"></i>
 			<label class="visually-hidden" for="trip-q">Tìm theo ga</label>
 			<input id="trip-q" name="q" type="search" class="form-control" placeholder="Tìm theo ga"
-				th:value="${view.query}">
+				th:value="${view.query}" autocomplete="off">
 		</div>
 		<button type="submit" class="visually-hidden">Lọc</button>
 	</form>
@@ -99,8 +100,7 @@
 		<b th:unless="${view.filtered}">Chưa có chuyến nào trong nhóm này.</b>
 	</div>
 
-	<aside th:replace="~{admin/fragments/trip-sheet :: sheet}"></aside>
-	<script defer th:src="@{/js/admin/trip-sheet.js}"></script>
+	<th:block th:replace="~{admin/fragments/trip-sheet :: sheet}"></th:block>
 	<script defer th:src="@{/js/admin/trips.js}"></script>
 
 </main>

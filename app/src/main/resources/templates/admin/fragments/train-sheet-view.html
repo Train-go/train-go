@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<!--
+	The train page, view "Bảng tính" (?view=bang): the train's schedule as a
+	table, then draft rows that chain on each other for adding several legs at
+	once. TrainScheduleView carries every label ready to print; the data-*
+	attributes of the root tell train-sheet.js where the train stands. The
+	draft rows are drawn by train-sheet.js from the #draft-row template.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div class="sheet-view" th:fragment="sheet" th:with="end=${schedule.chainEnd}"
+	data-train-sheet
+	th:data-train-code="${train.code}"
+	th:data-chain-origin="${end != null} ? ${end.route.destinationStation.id}"
+	th:data-chain-arrival="${end != null} ? ${#temporals.format(end.arrivalAt, 'yyyy-MM-dd''T''HH:mm')}"
+	th:data-earliest="${#temporals.format(schedule.earliestDeparture, 'yyyy-MM-dd''T''HH:mm')}"
+	th:data-network-url="@{/api/admin/network}"
+	th:data-plan-url="@{/api/admin/trains/{id}/plan(id=${train.id})}"
+	th:data-trips-url="@{/api/admin/trains/{id}/trips(id=${train.id})}">
+
+	<button type="button" class="btn btn-link btn-sm past-toggle" th:if="${schedule.pastCount > 0}"
+		data-past-toggle th:data-count="${schedule.pastCount}" aria-expanded="false" aria-controls="sched-grid">
+		<i class="bi bi-clock-history" aria-hidden="true"></i>
+		<span th:text="|Hiện ${schedule.pastCount} chặng đã chạy|">Hiện 3 chặng đã chạy</span>
+	</button>
+
+	<div class="panel table-responsive">
+		<table class="grid sched" id="sched-grid">
+			<thead>
+				<tr>
+					<th scope="col">Ngày</th>
+					<th scope="col">Giờ đi</th>
+					<th scope="col">Từ</th>
+					<th scope="col">Đến</th>
+					<th scope="col">Giờ đến</th>
+					<th scope="col" class="num">Km</th>
+					<th scope="col" class="num">Giá</th>
+					<th scope="col" class="num">Vé</th>
+					<th scope="col">Trạng thái</th>
+				</tr>
+			</thead>
+			<tbody>
+				<th:block th:each="day : ${schedule.days}">
+					<tr th:each="item : ${day.items}" th:classappend="${item.past} ? 'past clickable' : 'clickable'"
+						tabindex="0" th:data-trip-id="${item.tripId}">
+						<td th:text="${item.departureDayLabel}">T5 22/10</td>
+						<td class="mono" th:text="${#temporals.format(item.departureAt, 'HH:mm')}">08:00</td>
+						<td th:text="${item.originName}">Ga Hà Nội</td>
+						<td class="fw-bold" th:text="${item.destinationName}">Ga Thanh Hóa</td>
+						<td class="mono">
+							<span th:text="${#temporals.format(item.arrivalAt, 'HH:mm')}">10:35</span>
+							<span class="plus-day" th:if="${item.arrivalPlusDays > 0}" th:text="|+${item.arrivalPlusDays}|">+1</span>
+						</td>
+						<td class="num mono" th:text="${item.distanceKm}">175</td>
+						<td class="num text-nowrap" th:text="${#numbers.formatInteger(item.basePrice, 0, 'POINT')} + 'đ'">180.000đ</td>
+						<td class="num" th:text="${item.cancelled} ? '' : |${item.bookedSeats}/96|">2/96</td>
+						<td><span class="tag" th:classappend="${item.phaseCss}" th:text="${item.phaseLabel}">Sắp chạy</span></td>
+					</tr>
+				</th:block>
+				<tr th:unless="${schedule.hasTrips()}">
+					<td colspan="9" class="empty-cell"
+						th:text="|${train.code} chưa có chuyến nào. Nhập chặng đầu tiên ở dòng nháp bên dưới, ga đi chọn tùy ý.|">SE2 chưa có chuyến nào. Nhập chặng đầu tiên ở dòng nháp bên dưới, ga đi chọn tùy ý.</td>
+				</tr>
+			</tbody>
+			<tbody class="drafts" id="draft-rows" aria-label="Chặng mới">
+				<tr class="drafts-h">
+					<td colspan="9">
+						<i class="bi bi-pencil-square" aria-hidden="true"></i>
+						<span th:text="${end != null} ? |Chặng mới · đi từ ${end.route.destinationStation.name}, sớm nhất ${schedule.earliestDepartureLabel}| : 'Chặng mới · đi từ ga tùy chọn'">Chặng mới · đi từ Ga Sài Gòn, sớm nhất 04/11 10:15</span>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="draft-bar">
+		<button type="button" class="btn btn-outline-secondary btn-sm" data-draft-add disabled>
+			<i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm dòng
+		</button>
+		<span class="fill">
+			<label for="fill-target">Điền nhanh tới</label>
+			<select id="fill-target" class="form-select form-select-sm" data-fill-target disabled>
+				<option value="">Chọn ga cuối</option>
+			</select>
+			<label class="visually-hidden" for="fill-pace">Nhịp chạy</label>
+			<select id="fill-pace" class="form-select form-select-sm" data-fill-pace>
+				<option value="DAILY">mỗi ngày một chặng, 08:00</option>
+				<option value="NONSTOP">chạy liên tục, nghỉ 30 phút</option>
+			</select>
+			<button type="button" class="btn btn-outline-secondary btn-sm" data-fill disabled>Điền</button>
+		</span>
+		<span class="grow"></span>
+		<span class="err-summary" data-err-summary hidden></span>
+		<button type="button" class="btn btn-primary" data-commit>
+			<i class="bi bi-check2" aria-hidden="true"></i><span>Thêm chuyến</span>
+		</button>
+	</div>
+
+	<!-- One draft row and the line of errors under it; train-sheet.js clones both. -->
+	<template id="draft-row">
+		<tr class="draft">
+			<td><select class="form-select form-select-sm" data-f="day" aria-label="Ngày đi"></select></td>
+			<td><input class="form-control form-control-sm mono" data-f="time" maxlength="5" inputmode="numeric"
+				placeholder="08:00" autocomplete="off" aria-label="Giờ đi"></td>
+			<td>
+				<span class="locked-cell" data-f="origin" title="Ga đi là ga mà chặng trước đến"></span>
+				<select class="form-select form-select-sm" data-f="origin-select" aria-label="Ga đi" hidden></select>
+			</td>
+			<td><select class="form-select form-select-sm" data-f="to" aria-label="Ga đến"></select></td>
+			<td>
+				<div class="arr-cell">
+					<input class="form-control form-control-sm mono" data-f="arr" maxlength="5" inputmode="numeric"
+						placeholder="09:45" autocomplete="off" aria-label="Giờ đến">
+					<span class="plus-day" data-f="plus" hidden></span>
+					<button type="button" class="icon-btn sm" data-f="arr-reset" hidden aria-label="Dùng giờ đến gợi ý"
+						title="Dùng giờ gợi ý"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
+				</div>
+			</td>
+			<td class="num mono" data-f="km"></td>
+			<td><input class="form-control form-control-sm" data-f="price" type="number" min="0" step="1000"
+				inputmode="numeric" aria-label="Giá cơ bản"></td>
+			<td colspan="2" class="row-act">
+				<button type="button" class="icon-btn" data-f="remove" aria-label="Bỏ dòng nháp"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+			</td>
+		</tr>
+		<tr class="draft-help" hidden>
+			<td colspan="9"><ul class="draft-errs" aria-live="polite" data-f="errors"></ul></td>
+		</tr>
+	</template>
+
+	<script th:src="@{/js/admin/train-sheet-derive.js}" defer></script>
+	<script th:src="@{/js/admin/train-sheet.js}" defer></script>
+
+</div>
+
+</body>
+</html>

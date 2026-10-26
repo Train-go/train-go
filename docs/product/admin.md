@@ -139,6 +139,39 @@ Phi chốt ngày 26/10/2026, migration `V8__train_soft_delete.sql`:
 - Danh sách chuyến và booking cũ vẫn hiện mã của tàu đã xóa. Tạo chuyến (#28)
   phải nạp tàu qua `TrainService.findById`, vốn từ chối tàu đã xóa.
 
+### View "Bảng tính" `/admin/trains/{id}?view=bang`
+
+Đầu trang Tàu có nút chia đoạn "Theo ngày / Bảng tính"; `?view=ngay|bang` giữ view khi
+đổi tàu, và trình duyệt nhớ lựa chọn gần nhất trong `localStorage` (bị chặn thì mặc
+định "Theo ngày"), nên bấm menu Tàu mở lại view đó. View Bảng tính dành cho admin
+nhập nhiều chặng một lúc:
+
+- **Bảng lịch:** Ngày, Giờ đi, Từ, Đến, Giờ đến (`+N` khi khác ngày), Km, Giá, Vé (đã
+  bán/96), Trạng thái. Chặng đã chạy ẩn sau nút "Hiện N chặng đã chạy".
+- **Dòng nháp** dưới bảng nối tiếp nhau: ga đi của dòng sau là ga đến của dòng trước,
+  giờ đi sớm nhất là giờ đến cộng 30 phút. Giờ đi, giờ đến, giá tự tính theo công
+  thức gợi ý (60 km/h làm tròn 5 phút; 1.000đ/km làm tròn 10.000đ) và sửa tay được;
+  ô đã sửa tay không bị ghi đè khi chuỗi đổi. Lỗi hiện ngay dưới dòng (chưa có tuyến,
+  đi sớm hơn quy định, giờ đến trước giờ đi, giá lẻ).
+- **Điền nhanh tới [ga cuối] [nhịp]:** tạo một dòng nháp cho mỗi đoạn giữa hai ga kề
+  trên đường đi, theo nhịp "mỗi ngày một chặng, 08:00" hoặc "chạy liên tục, nghỉ 30
+  phút". Gọi `GET /api/admin/trains/{id}/plan?from=&to=&pace=DAILY|NONSTOP&firstDeparture=`
+  (`TrainScheduleService.planLegs`); thiếu tuyến giữa hai ga kề trả 409 "Thiếu tuyến giữa
+  hai ga kề nhau trên đường đi." API này cũng là phần lập kế hoạch của chế độ "Nhiều
+  chặng tới một ga" ở trình hướng dẫn (#40).
+
+Nút "Thêm N chuyến" (chỉ tính các dòng đã chọn ga đến) gửi cả lô tới
+`POST /api/admin/trains/{id}/trips` (`TripCreationService.createLegs`) trong một
+transaction, hoặc tạo hết hoặc không tạo gì. Server khóa dòng tàu (sửa và xóa tàu cũng
+khóa dòng này), kiểm lại mọi luật nối chặng (ga đi trang gửi lên phải khớp ga đến của
+chuyến cuối hiện tại, nếu không trả 409 để tải lại trang; giờ cắt về phút; giờ đi cách giờ đến ít nhất 30 phút và không ở
+quá khứ, có tuyến giữa hai ga, giờ đến sau giờ đi, giá chia hết 1.000) và sinh 96 chỗ
+`AVAILABLE` cho mỗi chuyến. Lỗi một chặng trả 409 kèm thông điệp dưới khóa
+`legs[i].departureAt` (hoặc `destinationStationId`, `arrivalAt`, `basePrice`,
+`originStationId`) và hiện ngay dưới dòng nháp thứ i trong số các dòng đã gửi. Tạo xong
+trang tải lại với `?added=` để các dòng mới chớp màu, kèm toast "Đã thêm N chuyến cho
+SE1." có nút "Xem" mở ngăn chi tiết chuyến. Bấm một dòng của bảng lịch mở ngăn đó.
+
 ## Quản lý chuyến `/admin/trips`
 
 Chuyến thuộc về tàu, nên admin thêm chuyến ở trang chi tiết tàu. `/admin/trips`
@@ -151,12 +184,7 @@ là danh sách mọi chuyến để tra cứu (#29):
 - lọc theo tàu, tìm theo tên hoặc mã ga không phân biệt dấu ("hue" ra "Huế");
   bộ lọc nằm trên URL (`?tab=&train=&q=`); ô chọn tàu chỉ có tàu chưa xóa, chuyến
   của tàu đã xóa vẫn nằm trong danh sách;
-- bảng nhóm theo ngày khởi hành.
-
-Bấm một chuyến ở trang này hoặc ở trang Tàu đều mở cùng **ngăn chi tiết chuyến**:
-thông tin chuyến, sơ đồ 4 toa (chỗ đã bán bấm được để tô hành khách), bảng hành
-khách (CCCD chỉ hiện 4 số cuối, mã booking link sang trang Booking) và nút "Hủy
-chuyến". Chỉ vé của booking `CONFIRMED` tính là đã bán.
+- bảng nhóm theo ngày khởi hành; bấm một dòng mở ngăn chi tiết chuyến (dưới đây).
 
 Form thêm chuyến gồm: tuyến, ngày giờ khởi hành, ngày giờ đến, giá cơ bản. Tàu là
 tàu của trang đang mở. Luật nối chặng (`docs/product/domain-model.md`, mục "Lịch
@@ -172,6 +200,19 @@ của tàu và luật nối chặng"):
 Khi chuyến được tạo, hệ thống sinh 96 TripSeat từ cấu hình toa cố định, tất cả ở
 trạng thái `AVAILABLE`.
 
+**Ngăn chi tiết chuyến** mở bên phải trang khi bấm một chuyến ở bất kỳ đâu trong
+khu quản trị (phần tử có `data-trip-id`, hoặc `TG.openTrip(id)`): tàu và link về
+trang tàu, ga đi → ga đến, trạng thái, giờ đi → giờ đến, quãng đường, giá, số chỗ
+đã bán. Sơ đồ chỗ có bốn tab toa ("Toa n · Ghế ngồi/Giường nằm · đã bán/sức chứa"):
+toa ghế 8 chỗ một hàng, toa giường 4 khoang x 4 giường. Chỗ đã bán bấm được và tô
+dòng hành khách tương ứng; ngăn mở sẵn ở toa đầu tiên có chỗ đã bán. Bảng hành
+khách chỉ tính vé của booking `CONFIRMED`: họ tên kèm 4 số cuối CCCD, toa và chỗ,
+mã booking (link `/admin/bookings?open=BK…`), giá. Dữ liệu từ
+`GET /api/admin/trips/{id}`. Chân ngăn có nút "Hủy chuyến" theo luật dưới đây; hủy
+xong trang tải lại với `?trip=<id>` để danh sách và số đếm lấy từ server, ngăn mở
+lại ở trạng thái đã hủy kèm toast "Đã hủy chuyến …". `?trip=<id>` cũng dùng được
+làm link mở thẳng một chuyến.
+
 Chuyến không xóa được, chỉ hủy được (`CANCELLED`). Chỉ hủy được chuyến
 `SCHEDULED`, chưa khởi hành, và chưa có booking `CONFIRMED` nào (D2, chốt
 12/10/2026): hủy chuyến khách đã trả tiền thì phải hoàn tiền, mà hoàn tiền nằm
@@ -180,17 +221,44 @@ ngoài phạm vi. Ngăn chi tiết nêu lý do khi không hủy được ("Khôn
 trước."); service kiểm tra lại khi nhận lệnh hủy và khóa dòng chuyến, API trả 409
 nếu vi phạm.
 
-## Quản lý booking `/admin/bookings` và `/admin/bookings/:id`
+## Quản lý booking `/admin/bookings`
 
-Xem danh sách, tìm theo mã booking, xem chi tiết gồm khách hàng, hành khách,
-chuyến, chỗ, trạng thái thanh toán. Admin hủy được booking.
+Ba nhóm theo D8, so giờ đi với hiện tại: Sắp đi (chưa hủy, giờ đi sau bây giờ), Đã
+đi (chưa hủy, giờ đi không sau bây giờ), Đã hủy. Mỗi nhóm có số đếm. Ô tìm "Mã
+booking hoặc tên khách" không phân biệt hoa thường và dấu, tìm cả tên người đi
+trên vé, tự gửi sau 300ms; số đếm không đổi theo ô tìm. Bảng gồm Mã, Khách (tên và
+email), Chuyến (tàu · ga đi → ga đến, giờ đi), Vé, Tổng tiền, xếp theo giờ đi tăng
+dần.
+
+Bấm một dòng mở ngăn chi tiết bên phải và đổi địa chỉ thành `?open=BK…`, nên gửi
+được link mở thẳng một booking. Ngăn có khách (tên, email, số điện thoại), chuyến,
+giờ đi, thanh toán và bảng vé (họ tên kèm 4 số cuối CCCD, "Toa n · chỗ", giá). Dữ
+liệu của ngăn lấy từ `GET /api/admin/bookings/{code}`.
+
+`/admin/bookings?customer={userId}` chỉ hiện booking của khách đó (mọi nhóm), ô tìm
+điền sẵn tên khách. Trang Người dùng link sang đây.
+
+Admin hủy được booking chưa tới giờ đi. Chân ngăn có câu "Hủy booking sẽ trả các chỗ
+về trạng thái còn trống." và nút "Hủy booking"; bấm thì có hộp xác nhận "N chỗ trên chuyến
+… sẽ mở bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền.", rồi toast "Đã hủy
+BK…. N chỗ đã mở bán lại." và danh sách tải lại. Chuyến đã khởi hành thì nút bị khóa kèm
+"Không hủy được: chuyến đã khởi hành."; booking đã hủy không có nút. Việc hủy là
+`POST /api/admin/bookings/{code}/cancel`, gọi `BookingCancellationService`, service
+duy nhất giữ luật hủy (booking `CONFIRMED` và chuyến chưa khởi hành đổi sang `CANCELLED`,
+các chỗ của booking về `AVAILABLE`, trong một transaction), để khách tự hủy ở "Vé của
+tôi" dùng lại đúng service đó; gọi cho booking đã khởi hành hoặc đã hủy trả 409. Nút
+Chuyến trong ngăn mở ngăn chi tiết chuyến (xem "Quản lý chuyến").
 
 Admin **không** đổi chỗ sau khi đã đặt, không sửa trạng thái thanh toán thủ công,
 không hoàn tiền, không đổi hành khách.
 
 ## Danh sách người dùng `/admin/users`
 
-Chỉ xem: tên, email, role, ngày tạo. Không có CRUD người dùng đầy đủ.
+Chỉ xem, hai tab Khách hàng và Quản trị (`?role=CUSTOMER|ADMIN`, mặc định khách) kèm
+số đếm, người mới nhất lên đầu. Cột: họ tên, email, số điện thoại, ngày tạo, số
+booking (tính cả booking đã hủy). "N booking" là link sang
+`/admin/bookings?customer={id}`; khách chưa có booking ghi "Chưa có". Không có CRUD
+người dùng.
 
 Tài khoản Admin được tạo bằng seed data, không đăng ký qua giao diện.
 

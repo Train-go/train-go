@@ -36,10 +36,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	@Query("select t.route.id as id, count(t) as total from Trip t group by t.route.id")
 	List<IdCount> countByRoute();
 
-	/** One trip with its train, route and both stations loaded, for the trip sheet. */
-	@EntityGraph(attributePaths = { "train", "route", "route.originStation", "route.destinationStation" })
-	Optional<Trip> findWithDetailsById(Long id);
-
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select t from Trip t where t.id = :id")
 	Optional<Trip> findByIdForUpdate(@Param("id") Long id);
@@ -110,5 +106,15 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 			and t.status <> com.voyagego.traingo.entity.TripStatus.CANCELLED
 			and t.arrivalAt > :now""")
 	long countUnfinishedByTrain(@Param("trainId") Long trainId, @Param("now") LocalDateTime now);
+
+	/** One trip with its train, route and both stations loaded, for the admin's trip sheet. */
+	@Query("""
+			select t from Trip t
+			join fetch t.train
+			join fetch t.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where t.id = :id""")
+	Optional<Trip> findDetailById(@Param("id") Long id);
 
 }

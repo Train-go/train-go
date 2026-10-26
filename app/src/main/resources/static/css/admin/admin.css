@@ -225,6 +225,17 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 .page-head .count { color: var(--muted); font-weight: 600; }
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 14px; }
 .toolbar .grow { flex: 1; }
+/* Segmented tabs that are links (?tab=, ?role=), each with a count. */
+.tab-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--sunk); }
+.tab-seg-link { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 12px; border-radius: var(--r-control); color: var(--muted); font-size: 13px; font-weight: 700; text-decoration: none; }
+.tab-seg-link:hover { color: var(--ink); text-decoration: none; }
+.tab-seg-link.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(12, 44, 40, 0.12); }
+.tab-seg-link .count { color: var(--muted); font-weight: 600; }
+.search { position: relative; display: flex; align-items: center; }
+.search .bi { position: absolute; left: 10px; color: var(--muted); pointer-events: none; }
+.search .form-control { min-width: 260px; padding-left: 32px; }
+/* A table row that opens a sheet. */
+.table tr.clickable { cursor: pointer; }
 
 /* ---------- buttons ---------- */
 
@@ -379,22 +390,16 @@ textarea.form-control { padding-block: 8px; }
 
 /* ---------- trips: list rows and the trip sheet's seat map (#29) ---------- */
 
-/* A row that opens a sheet; it also takes Enter (tabindex="0"). */
-.table tr.clickable { cursor: pointer; }
+/* Rows that open a sheet also take Enter (tabindex="0"). */
 .table tr.clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 /* The header row of one departure day. */
 .table > tbody > tr.group-row > td { background: var(--bg); font-weight: 700; padding-top: 14px; padding-bottom: 8px; }
 .group-row .text-body-secondary { font-weight: 500; margin-left: 6px; }
 /* A trip in the train page's schedule opens the same sheet. */
-.ag-day li[data-trip-id] { cursor: pointer; }
 .ag-day li[data-trip-id]:hover { border-color: var(--line-strong); }
 .ag-day li[data-trip-id]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 /* The passenger of the seat picked on the map. */
 .table > tbody > tr.picked > * { --bs-table-bg-state: var(--accent-soft); }
-.btn-group .count { font-weight: 600; color: var(--muted); }
-.btn-group .active .count { color: inherit; }
-/* Bootstrap's .input-group is 100% wide, which would push the search onto its own line. */
-.toolbar .trip-search { width: auto; flex: 0 1 280px; min-width: 220px; }
 
 .trip-sheet-head { flex: 1; min-width: 0; display: grid; gap: 4px; }
 .trip-sheet-when { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 2px; font-size: 13px; }
@@ -456,6 +461,55 @@ textarea.form-control { padding-block: 8px; }
 .next-task > div { flex: 1 1 360px; display: grid; gap: 4px; }
 .next-task h2 { font-size: 19px; color: var(--accent-strong); }
 .past-toggle { justify-self: start; }
+
+/* The "Theo ngày / Bảng tính" switch next to the train tabs. */
+.view-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--sunk); }
+.view-seg a { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border-radius: var(--r-control); color: var(--muted); font-size: 13px; font-weight: 700; text-decoration: none; }
+.view-seg a:hover { color: var(--ink); text-decoration: none; }
+.view-seg a.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(12, 44, 40, 0.12); }
+
+/* "Bảng tính": the schedule and the draft rows share one table, so columns line up. */
+/* minmax(0, 1fr): the wide table scrolls inside its panel instead of stretching the page. */
+.sheet-view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.grid { width: 100%; margin: 0; border-collapse: collapse; font-size: 13.5px; }
+.grid > thead th { padding: 10px 12px; font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; text-align: left; border-bottom: 1px solid var(--line); }
+.grid > thead th.num { text-align: right; }
+.grid td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+.grid td.num { text-align: right; }
+.sched:not(.show-past) tr.past { display: none; }
+.sched tr.past { color: var(--muted); }
+.sched tr.clickable { cursor: pointer; }
+.sched tr.clickable:hover > td { background: var(--sunk); }
+/* The trips just added flash once, then settle. */
+.sched tr.fresh { animation: fresh-flash 1.6s ease-out; }
+@keyframes fresh-flash { from { background: var(--accent-soft); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .sched tr.fresh { animation: none; background: var(--accent-soft); } }
+.empty-cell { color: var(--muted); white-space: normal; padding: 18px 12px; }
+.plus-day { margin-left: 4px; padding: 0 4px; border-radius: 4px; background: var(--warn-soft); color: var(--warn); font-size: 11.5px; font-weight: 700; }
+
+/* Draft rows: a tinted band under the schedule. */
+.drafts-h td { padding: 10px 12px; background: var(--accent-soft); border-top: 1px solid var(--accent-line); border-bottom: 1px solid var(--accent-line); color: var(--accent-strong); font-weight: 700; }
+tr.draft td { padding: 8px 8px; background: var(--surface); }
+tr.draft .form-select, tr.draft .form-control { min-width: 84px; }
+tr.draft .form-select[data-f="to"], tr.draft .form-select[data-f="origin-select"] { min-width: 150px; }
+tr.draft [data-f="time"], tr.draft [data-f="arr"] { width: 78px; min-width: 0; }
+tr.draft [data-f="price"] { width: 118px; text-align: right; }
+.locked-cell { display: inline-block; min-width: 110px; padding: 5px 10px; border-radius: var(--r-control); background: var(--sunk); color: var(--ink-2); font-weight: 600; }
+.arr-cell { display: flex; align-items: center; gap: 4px; }
+.icon-btn.sm { width: 28px; height: 28px; }
+.draft-help td { padding: 0 12px 10px; background: var(--surface); }
+.draft-errs { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; color: var(--danger); font-size: 13px; font-weight: 600; }
+.draft-errs li { display: flex; align-items: center; gap: 6px; white-space: normal; }
+.row-act { text-align: right; }
+
+/* Add, fill and save bar: sticks to the bottom on wide screens. */
+.draft-bar { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: 0 -6px 16px rgba(12, 44, 40, 0.06); }
+.draft-bar .grow { flex: 1; }
+.draft-bar .fill { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.draft-bar .fill label { font-weight: 600; color: var(--ink-2); }
+.draft-bar .form-select { width: auto; }
+.err-summary { color: var(--danger); font-weight: 700; }
+@media (max-width: 720px) { .draft-bar { position: static; box-shadow: none; } }
 .agenda { display: grid; gap: 18px; }
 /* Trips that have already run, and days made only of them, until "Hiện N chặng đã chạy". */
 .agenda:not(.show-past) .past { display: none; }
@@ -464,6 +518,7 @@ textarea.form-control { padding-block: 8px; }
 .ag-day h3 { display: grid; padding-top: 10px; font-size: 15px; }
 .ag-day h3 span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
 .ag-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ag-day li.clickable { cursor: pointer; }
 .ag-day li { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 10px 14px; border-radius: var(--r-control); border: 1px solid var(--line); background: var(--surface); }
 .ag-time { display: grid; font-size: 15px; font-weight: 600; }
 .ag-time small { font-size: 12px; color: var(--muted); }
@@ -561,7 +616,6 @@ textarea.form-control { padding-block: 8px; }
 	.offcanvas.offcanvas-end { border-radius: 0; }
 	.offcanvas-footer { padding: 12px 16px; }
 	.offcanvas-footer .btn:not(.btn-link) { flex: 1 1 auto; }
-	.toolbar .trip-search { min-width: 0; flex-basis: 100%; }
 	.seats.cabins { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
 	/* Trains page: tabs keep only the code, the schedule becomes one column. */

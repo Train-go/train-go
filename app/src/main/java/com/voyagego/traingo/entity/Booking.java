@@ -114,4 +114,18 @@ public class Booking {
 		return createdAt;
 	}
 
+	/** A confirmed booking whose trip has not departed yet; the rule BookingCancellationService applies. */
+	public boolean isCancellable(LocalDateTime now) {
+		return bookingStatus == BookingStatus.CONFIRMED && !trip.hasDeparted(now);
+	}
+
+	/**
+	 * Marks the booking cancelled. The payment state stays as it was: payment
+	 * is simulated, there is no refund to record. Its seats are released by
+	 * BookingCancellationService in the same transaction.
+	 */
+	public void cancel() {
+		this.bookingStatus = BookingStatus.CANCELLED;
+	}
+
 }

@@ -14,8 +14,8 @@ import com.voyagego.traingo.model.response.TripDetail;
 import com.voyagego.traingo.service.TripAdminService;
 
 /**
- * JSON for the trip sheet (static/js/admin/trip-sheet.js), opened from the
- * trains and trips pages. Errors are not caught here: ApiExceptionHandler
+ * JSON for the trip sheet (static/js/admin/trip-sheet.js), which any admin
+ * page can open. Errors are not caught here: ApiExceptionHandler
  * answers a missing trip with 404 and a trip that cannot be cancelled with
  * 409, both as ApiError.
  */

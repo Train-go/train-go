@@ -1,18 +1,18 @@
 /*
  * The trip sheet (templates/admin/fragments/trip-sheet.html), shared by the
- * trains and trips pages:
+ * trains, trips and bookings pages:
  *
  *   TG.openTrip(tripId, triggerEl)   load GET /api/admin/trips/{id}, fill and open
  *
  * A page needs no script of its own to use it: any element with
  * data-trip-id and tabindex="0" opens the sheet on click or Enter, and
- * ?open=<id> in the URL opens it on load.
+ * ?trip=<id> in the URL opens it on load.
  *
  * After a cancel the sheet fires a cancelable
  *
  *   document 'trip:cancelled'  detail { tripId, message }
  *
- * By default the page then reloads with ?open=<id>, so its counts and lists
+ * By default the page then reloads with ?trip=<id>, so its counts and lists
  * come from the server and the sheet shows the cancelled trip again. A page
  * that refreshes itself calls event.preventDefault() and shows the toast.
  *
@@ -23,7 +23,7 @@
 	'use strict';
 
 	const SHEET_ID = 'trip-sheet';
-	const OPEN_PARAM = 'open';
+	const OPEN_PARAM = 'trip';
 	const sheetEl = document.getElementById(SHEET_ID);
 	if (!sheetEl) {
 		return;
@@ -62,7 +62,7 @@
 	}
 
 	function load(tripId) {
-		return TG.api('/api/admin/trips/' + encodeURIComponent(tripId));
+		return TG.api(sheetEl.dataset.apiUrl + '/' + encodeURIComponent(tripId));
 	}
 
 	/* ---------- render ---------- */
@@ -77,7 +77,7 @@
 		}
 
 		const train = slot('train');
-		train.href = '/admin/trains/' + detail.trainId;
+		train.href = sheetEl.dataset.trainsUrl + '/' + detail.trainId;
 		train.textContent = detail.trainCode + ' ' + detail.trainName;
 		slot('id').textContent = detail.id;
 		slot('title').textContent = route(detail);
@@ -199,7 +199,7 @@
 			row.querySelector('[data-cell="identity"]').textContent = 'CCCD ' + passenger.maskedIdentity;
 			row.querySelector('[data-cell="seat"]').textContent = 'Toa ' + passenger.coachNumber + ' · ' + passenger.seatCode;
 			const booking = row.querySelector('[data-cell="booking"]');
-			booking.href = '/admin/bookings?open=' + encodeURIComponent(passenger.bookingCode);
+			booking.href = sheetEl.dataset.bookingsUrl + '?open=' + encodeURIComponent(passenger.bookingCode);
 			booking.textContent = passenger.bookingCode;
 			row.querySelector('[data-cell="price"]').textContent = money(passenger.ticketPrice);
 			body.append(row);
@@ -246,7 +246,7 @@
 		}
 		cancelButton.disabled = true;
 		try {
-			await TG.api('/api/admin/trips/' + shown.id + '/cancel', { method: 'POST' });
+			await TG.api(sheetEl.dataset.apiUrl + '/' + shown.id + '/cancel', { method: 'POST' });
 		} catch (error) {
 			TG.toast(error.message, { error: true });
 			refresh(shown.id);
@@ -284,10 +284,17 @@
 
 	/* ---------- openers ---------- */
 
+	/*
+	 * The marked element itself may be a button, as in the booking sheet. A
+	 * link or button inside a marked row keeps its own job.
+	 */
 	function opener(target) {
 		const el = target.closest('[data-trip-id]');
-		// Links and buttons inside a trip row keep their own job.
-		return el && !sheetEl.contains(el) && !target.closest('a, button') ? el : null;
+		if (!el || sheetEl.contains(el)) {
+			return null;
+		}
+		const control = target.closest('a, button');
+		return control && control !== el && el.contains(control) ? null : el;
 	}
 
 	document.addEventListener('click', function (event) {
@@ -297,16 +304,23 @@
 		}
 	});
 
+	// Buttons and links turn Enter into a click themselves; this is for rows and list items.
 	document.addEventListener('keydown', function (event) {
-		const el = event.key === 'Enter' && event.target === event.target.closest('[data-trip-id]')
-			? opener(event.target) : null;
+		const target = event.target;
+		if (event.key !== 'Enter' || !target.matches('[data-trip-id]') || target.matches('a, button')) {
+			return;
+		}
+		const el = opener(target);
 		if (el) {
 			event.preventDefault();
 			openTrip(el.dataset.tripId, el);
 		}
 	});
 
-	/* ?open=<id>: after the reload of a cancel, or from a shared link. */
+	/*
+	 * ?trip=<id>: after the reload of a cancel, or from a shared link. Not
+	 * ?open=, which the bookings page uses for its own sheet.
+	 */
 	const url = new URL(location.href);
 	const openId = url.searchParams.get(OPEN_PARAM);
 	if (openId) {

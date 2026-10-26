@@ -53,6 +53,15 @@ public class TrainService {
 		return trainRepository.findByIdAndDeletedFalse(id).orElseThrow(TrainNotFoundException::new);
 	}
 
+	/**
+	 * A train that is not deleted, locked for writing. Adding trips takes the
+	 * same lock, so what update and delete count (trips, unfinished trips) is
+	 * not changed by a batch that is being added at that moment.
+	 */
+	private Train lockById(long id) {
+		return trainRepository.findByIdForUpdate(id).orElseThrow(TrainNotFoundException::new);
+	}
+
 	/** Any trip, cancelled ones included: the code is locked from the first one. */
 	@Transactional(readOnly = true)
 	public boolean hasTrips(long id) {
@@ -82,7 +91,7 @@ public class TrainService {
 
 	@Transactional
 	public Train update(long id, TrainRequest form) {
-		Train train = findById(id);
+		Train train = lockById(id);
 		String code = Train.normalizeCode(form.getCode());
 		boolean codeChanged = !code.equals(train.getCode());
 		if (codeChanged && tripRepository.existsByTrainId(id)) {
@@ -105,7 +114,7 @@ public class TrainService {
 	 */
 	@Transactional
 	public Train delete(long id, LocalDateTime now) {
-		Train train = findById(id);
+		Train train = lockById(id);
 		long unfinished = tripRepository.countUnfinishedByTrain(id, now);
 		if (unfinished > 0) {
 			throw new TrainHasUnfinishedTripsException(unfinished);
