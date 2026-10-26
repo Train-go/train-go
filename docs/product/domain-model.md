@@ -117,8 +117,9 @@ Chỉ xóa được ga khi không tuyến nào dùng nó (`docs/product/admin.md
 | Trường | Ghi chú |
 | --- | --- |
 | `id` | |
-| `code` | Không được trùng, ví dụ `SE1` |
+| `code` | Không trùng giữa các tàu chưa xóa, ví dụ `SE1`; tàu mới được dùng lại mã của tàu đã xóa |
 | `name` | Bắt buộc, ví dụ `Thống Nhất 1` |
+| `deleted` | Cờ xóa mềm, cột `is_delete` (V8, 26/10/2026). Chỉ xóa được khi tàu không còn chuyến sắp chạy hoặc đang chạy; chuyến và vé cũ giữ nguyên tàu của mình |
 
 Tàu không gắn với tuyến nào: tàu nào cũng chạy được tuyến nào (Phi chốt
 20/10/2026). Thứ tự dựng dữ liệu vì thế là ga, rồi tuyến, rồi chuyến; tàu tạo lúc

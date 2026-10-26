@@ -97,7 +97,47 @@ Danh sách tàu (mã, tên), thêm, sửa, và trang chi tiết. Trang chi tiế
   `/admin/coaches`, không có form thêm toa (`docs/decisions/0009-bo-bang-toa-va-ghe.md`).
 
 Chốt ngày 01/10/2026: phiên bản đầu không có xóa tàu (`SPEC.md` mục 36 không
-liệt kê). D2 ngày 12/10/2026 giữ nguyên luật không xóa tàu.
+liệt kê). D2 ngày 12/10/2026 giữ nguyên luật không xóa tàu. **Phi đổi ngày
+26/10/2026: tàu được xóa mềm** (xem "Xóa mềm tàu" bên dưới); issue #25 AC6 ghi
+"không có chức năng xóa tàu" là trước quyết định này.
+
+View "Theo ngày" (#25, 26/10/2026) là phần lịch chạy đã có:
+
+- `/admin/trains` mở tàu đầu tiên theo mã; mỗi tàu là một tab "mã + tên", trên
+  điện thoại chỉ còn mã.
+- Banner ghi ga đi của chặng tiếp theo, vị trí tàu lúc này ("Đang chạy A → B",
+  "Đang ở [ga]"), lịch xếp đến lúc nào và giờ sớm nhất đi lại. Giờ sớm nhất là
+  giờ đến của chuyến cuối cộng 30 phút; nếu mốc đó đã qua, hoặc tàu chưa có
+  chuyến, thì lấy giờ hiện tại làm tròn lên 5 phút, vì chuyến mới phải khởi hành
+  trong tương lai. Tàu chưa có chuyến chưa hủy: "[mã] cần chặng đầu tiên".
+- Lịch nhóm theo ngày ("Hôm nay", "Ngày mai", "Hôm qua" hoặc thứ trong tuần).
+  Mỗi chuyến ghi giờ đi, giờ đến (kèm ngày nếu đến hôm sau), hai ga, giá, số vé
+  đã bán trên 96 và trạng thái Sắp chạy / Đang chạy / Đã chạy / Đã hủy theo D8.
+  Chuyến đã đến nơi được ẩn sẵn sau nút "Hiện N chặng đã chạy".
+- Thêm và sửa tàu trong ngăn kéo, lưu qua `POST`/`PUT /api/admin/trains`. Mã gồm
+  1-4 chữ cái rồi 1-4 chữ số, lưu viết hoa, không trùng; tên bắt buộc. Tàu đã có
+  chuyến (kể cả chuyến đã hủy) thì không đổi được mã; service chặn cả khi gọi
+  API trực tiếp (409).
+
+### Xóa mềm tàu
+
+Phi chốt ngày 26/10/2026, migration `V8__train_soft_delete.sql`:
+
+- Xóa tàu chỉ bật cờ `trains.is_delete`; dòng tàu, chuyến, booking và vé giữ
+  nguyên. Tàu đã xóa không còn ở các tab, `/admin/trains/{id}` của nó trả 404.
+- Chỉ xóa được khi tàu **không còn chuyến sắp chạy hoặc đang chạy**: mọi chuyến
+  chưa hủy đã đến nơi. Nút "Xóa tàu" trong ngăn Sửa tàu chỉ hiện với tàu xóa
+  được; tàu chưa xóa được thì không có nút, cũng không có câu giải thích (Phi
+  chốt 26/10/2026: luật nghiệp vụ không đưa lên giao diện).
+  `DELETE /api/admin/trains/{id}` vẫn bị service chặn (409).
+- Xóa xong có toast "Hoàn tác". Tàu đã xóa nằm ở trang **Lịch sử**
+  (`/admin/history`, ở chân menu admin ngay trên Đăng xuất; trên điện thoại chỉ còn icon), mỗi tàu có nút "Khôi phục"
+  (`POST /api/admin/trains/{id}/restore`); khôi phục xong mở trang của tàu đó.
+- Mã của tàu đã xóa được tàu mới dùng lại. Database chỉ bắt mã không trùng giữa
+  các tàu chưa xóa (khóa duy nhất trên cột sinh `active_code`). Khôi phục bị chặn
+  (409) khi mã đã có tàu khác đang dùng; admin đổi mã tàu đó trước.
+- Danh sách chuyến và booking cũ vẫn hiện mã của tàu đã xóa. Tạo chuyến (#28)
+  phải nạp tàu qua `TrainService.findById`, vốn từ chối tàu đã xóa.
 
 ## Quản lý chuyến `/admin/trips`
 
@@ -150,7 +190,8 @@ cách làm mới dữ liệu: `docs/RUNBOOK.md`.
 ## Xóa dữ liệu đang được dùng
 
 Chốt ngày 12/10/2026 (D2): chặn xóa, không có xóa mềm. Ga và tuyến đang được dùng
-thì không xóa được; tàu không có chức năng xóa; chuyến chỉ hủy, không xóa.
+thì không xóa được; chuyến chỉ hủy, không xóa. Ngoại lệ từ 26/10/2026: tàu được
+xóa mềm khi không còn chuyến sắp chạy hoặc đang chạy (mục "Xóa mềm tàu" ở trên).
 Database không có `ON DELETE` nào, nên lệnh xóa hàng đang bị tham chiếu vẫn bị
 database chặn; service phải kiểm tra trước để báo lý do dễ hiểu thay vì để lộ lỗi
 khóa ngoại.

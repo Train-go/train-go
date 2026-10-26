@@ -384,15 +384,26 @@
 	 * page's link instead of leaving it cut off at the edge. Not
 	 * scrollIntoView(): Chrome moves the Tab starting point to the scrolled
 	 * element, so the first Tab would skip the "Bỏ qua menu" link.
+	 *
+	 * Measured once the fonts have loaded: the fallback font is narrower, so
+	 * a measure taken earlier stops short and leaves the last link, "Lịch sử",
+	 * cut off by the width the real font adds.
 	 */
-	const nav = document.querySelector('.admin-side nav');
-	const current = nav && nav.querySelector('a[aria-current="page"]');
-	if (current && nav.scrollWidth > nav.clientWidth) {
-		const navBox = nav.getBoundingClientRect();
-		const linkBox = current.getBoundingClientRect();
-		if (linkBox.left < navBox.left || linkBox.right > navBox.right) {
-			nav.scrollLeft += linkBox.left - navBox.left - (navBox.width - linkBox.width) / 2;
+	function centreCurrentLink() {
+		const nav = document.querySelector('.admin-side nav');
+		const current = nav && nav.querySelector('a[aria-current="page"]');
+		if (current && nav.scrollWidth > nav.clientWidth) {
+			const navBox = nav.getBoundingClientRect();
+			const linkBox = current.getBoundingClientRect();
+			if (linkBox.left < navBox.left || linkBox.right > navBox.right) {
+				nav.scrollLeft += linkBox.left - navBox.left - (navBox.width - linkBox.width) / 2;
+			}
 		}
+	}
+	if (document.fonts) {
+		document.fonts.ready.then(centreCurrentLink);
+	} else {
+		centreCurrentLink();
 	}
 
 	// A success flash from a redirect (Post/Redirect/Get) shows as a toast.

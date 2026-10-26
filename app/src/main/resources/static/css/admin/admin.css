@@ -389,6 +389,50 @@ textarea.form-control { padding-block: 8px; }
 .alert .bi { margin-top: 2px; }
 .alert-secondary { --bs-alert-bg: var(--sunk); --bs-alert-color: var(--ink-2); }
 
+/* ---------- trains page (admin/train.html), view "Theo ngày" ---------- */
+
+/* The mockup's segmented train tabs, as Bootstrap nav pills. */
+.train-tabs {
+	--bs-nav-link-padding-x: 12px;
+	--bs-nav-link-padding-y: 0;
+	--bs-nav-link-font-size: 13px;
+	--bs-nav-link-font-weight: 700;
+	--bs-nav-link-color: var(--muted);
+	--bs-nav-link-hover-color: var(--ink);
+	--bs-nav-pills-border-radius: var(--r-control);
+	--bs-nav-pills-link-active-bg: var(--surface);
+	--bs-nav-pills-link-active-color: var(--ink);
+	gap: 2px; padding: 3px; border-radius: 10px; background: var(--sunk);
+}
+.train-tabs .nav-link { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; }
+.train-tabs .nav-link:hover { text-decoration: none; }
+.train-tabs .nav-link.active { box-shadow: 0 1px 2px rgba(12, 44, 40, 0.12); }
+.train-tab-name { font-weight: 600; color: var(--muted); }
+/* Stays together and to the right when it drops to its own row. */
+.head-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }
+
+.day-view { display: grid; gap: 16px; }
+.next-task { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 24px; padding: 20px 22px; border-radius: var(--r-panel); background: var(--accent-soft); border: 1px solid var(--accent-line); }
+.next-task > div { flex: 1 1 360px; display: grid; gap: 4px; }
+.next-task h2 { font-size: 19px; color: var(--accent-strong); }
+.past-toggle { justify-self: start; }
+.agenda { display: grid; gap: 18px; }
+/* Trips that have already run, and days made only of them, until "Hiện N chặng đã chạy". */
+.agenda:not(.show-past) .past { display: none; }
+.agenda.show-past .agenda-all-past { display: none; }
+.ag-day { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 12px; align-items: start; }
+.ag-day h3 { display: grid; padding-top: 10px; font-size: 15px; }
+.ag-day h3 span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.ag-day ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ag-day li { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 10px 14px; border-radius: var(--r-control); border: 1px solid var(--line); background: var(--surface); }
+.ag-time { display: grid; font-size: 15px; font-weight: 600; }
+.ag-time small { font-size: 12px; color: var(--muted); }
+.ag-leg { display: grid; min-width: 0; }
+.ag-leg small { color: var(--muted); font-weight: 600; font-size: 12.5px; }
+/* The error under the code field already says what the hint says. */
+#train-form .is-invalid ~ .form-text { display: none; }
+.history-section { display: grid; gap: 10px; }
+
 /* ---------- overlays: offcanvas (sheet), modal (confirm), toast ---------- */
 
 .offcanvas-backdrop, .modal-backdrop { --bs-backdrop-bg: #14201b; --bs-backdrop-opacity: 0.36; }
@@ -460,10 +504,13 @@ textarea.form-control { padding-block: 8px; }
 	.admin-side .brand { padding: 0 8px 0 0; }
 	.admin-side nav { grid-auto-flow: column; justify-content: start; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 	.admin-side .grp { grid-auto-flow: column; }
-	.admin-side .grp > span, .admin-now, .admin-user-name, .admin-logout-label { display: none; }
+	.admin-side .grp > span, .admin-now, .admin-user-name, .admin-logout-label, .admin-history-label { display: none; }
 	.btn.admin-logout { margin-left: 0; }
 	.admin-side nav a { white-space: nowrap; }
-	.admin-side-foot { border-top: 0; padding-top: 0; }
+	/* History and sign-out side by side, icons only, so the bar keeps one row. */
+	.admin-side-foot { grid-auto-flow: column; align-items: center; gap: 2px; border-top: 0; padding-top: 0; }
+	.admin-side-extra a { justify-content: center; width: 36px; padding: 0; }
+	.admin-side-extra a[aria-current="page"] .bi { color: #9ee3d8; }
 	.admin-user { padding: 0; }
 	.admin-main { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
 	.toast-container { left: 16px; }
@@ -474,6 +521,15 @@ textarea.form-control { padding-block: 8px; }
 	.offcanvas.offcanvas-end { border-radius: 0; }
 	.offcanvas-footer { padding: 12px 16px; }
 	.offcanvas-footer .btn:not(.btn-link) { flex: 1 1 auto; }
+
+	/* Trains page: tabs keep only the code, the schedule becomes one column. */
+	.train-head h1 { width: 100%; }
+	.train-head .head-tools { width: 100%; justify-content: flex-start; margin-left: 0; }
+	.train-tab-name { display: none; }
+	.ag-day { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+	.ag-day h3 { grid-auto-flow: column; justify-content: start; gap: 8px; align-items: baseline; padding-top: 0; }
+	.ag-day li { grid-template-columns: 60px minmax(0, 1fr); }
+	.ag-day li .tag { grid-column: 2; justify-self: start; }
 }
 
 /* ---------- station network ---------- */

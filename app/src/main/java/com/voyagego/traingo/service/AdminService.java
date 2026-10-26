@@ -15,12 +15,10 @@ import com.voyagego.traingo.entity.PaymentStatus;
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.response.AdminBooking;
-import com.voyagego.traingo.model.response.AdminTrain;
 import com.voyagego.traingo.model.response.AdminTrip;
 import com.voyagego.traingo.model.response.AdminUser;
 import com.voyagego.traingo.repository.BookingRepository;
 import com.voyagego.traingo.repository.TicketRepository;
-import com.voyagego.traingo.repository.TrainRepository;
 import com.voyagego.traingo.repository.TripRepository;
 import com.voyagego.traingo.repository.UserRepository;
 
@@ -40,25 +38,17 @@ public class AdminService {
 	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
 
-	private final TrainRepository trainRepository;
 	private final TripRepository tripRepository;
 	private final BookingRepository bookingRepository;
 	private final TicketRepository ticketRepository;
 	private final UserRepository userRepository;
 
-	public AdminService(TrainRepository trainRepository,
-			TripRepository tripRepository, BookingRepository bookingRepository,
+	public AdminService(TripRepository tripRepository, BookingRepository bookingRepository,
 			TicketRepository ticketRepository, UserRepository userRepository) {
-		this.trainRepository = trainRepository;
 		this.tripRepository = tripRepository;
 		this.bookingRepository = bookingRepository;
 		this.ticketRepository = ticketRepository;
 		this.userRepository = userRepository;
-	}
-
-	public List<AdminTrain> trains() {
-		return trainRepository.findAllByOrderByCodeAsc().stream()
-				.map(train -> new AdminTrain(train.getCode(), train.getName())).toList();
 	}
 
 	public List<AdminTrip> trips() {

@@ -77,11 +77,19 @@ không bật `ddl-auto=update`.
   `bookings.total_price`, không xóa booking/vé đã có.
 - V7 thêm `users.phone_number VARCHAR(15) NULL`, điền phone cho 11 CUSTOMER seed
   theo email; ADMIN không bắt buộc phone. Không thay đổi booking/vé hoặc mật khẩu.
+- V8 thêm `trains.is_delete BOOLEAN NOT NULL DEFAULT FALSE` (xóa mềm tàu) và cột
+  sinh `active_code`; bỏ khóa `uk_trains_code`, thay bằng `uk_trains_active_code`
+  để mã chỉ không trùng giữa các tàu chưa xóa. Không xóa hoặc đổi dòng nào.
 
 Ngày 23/10/2026 đã áp V7 trên MySQL Server 8.0.46, Hibernate validate qua.
 Sau khi dọn tài khoản kiểm chứng, snapshot mọi cột cũ của 12 user, 8 booking và
 11 vé khớp trước migration; 11 khách seed có phone, ADMIN null. Không sửa V7
 để chạy lại; nếu cần điều chỉnh phone/schema, tạo migration tiếp theo.
+
+Ngày 26/10/2026 đã áp V8 trên MySQL Server 9.7.2 (service `MySQL97` trên máy của
+Phi), Hibernate validate qua; mọi tàu có sẵn nhận `is_delete = 0` và
+`active_code = code`. Flyway cảnh báo MySQL 9.7 mới hơn bản nó đã kiểm định (9.4)
+nhưng vẫn chạy.
 
 Mỗi vé mới có giá bằng `Trip.basePrice`, dù chọn ghế hay giường. Giá vé cũ,
 kể cả vé giường từng có phụ thu, vẫn giữ nguyên. Cấu hình toa bất biến trong
