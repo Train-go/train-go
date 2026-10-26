@@ -1,66 +1,96 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
-<head>
-	<title>Ga · Quản trị TrainGo</title>
-</head>
+<head><title>Ga và tuyến · Quản trị TrainGo</title></head>
 <body>
-<main>
-
+<main id="station-network">
 	<div class="page-head">
-		<h1>Ga</h1>
-		<span class="count" th:text="|${#lists.size(stations)} ga|">8 ga</span>
+		<h1>Ga và tuyến</h1>
+		<span id="net-count" class="count" aria-live="polite">Đang tải…</span>
 		<span class="grow"></span>
-		<a class="btn btn-primary" th:href="@{/admin/stations/new}">
-			<i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm ga
-		</a>
+		<button id="net-overview-btn" type="button" class="btn btn-outline-secondary" hidden>Tổng quan</button>
 	</div>
-
-	<div class="panel table-responsive">
-		<table class="table table-hover align-middle">
-			<thead>
-				<tr>
-					<th scope="col" class="num shrink">Lý trình</th>
-					<th scope="col" class="shrink">Mã ga</th>
-					<th scope="col">Tên ga</th>
-					<th scope="col">Tỉnh / Thành phố</th>
-					<th scope="col">Địa chỉ</th>
-					<th scope="col"><span class="visually-hidden">Thao tác</span></th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="station : ${stations}">
-					<td class="num text-nowrap" th:text="|Km ${station.kmMark}|">Km 1726</td>
-					<td><span class="code" th:text="${station.code}">SGN</span></td>
-					<td class="fw-bold" th:text="${station.name}">Ga Sài Gòn</td>
-					<td th:text="${station.city}">TP. Hồ Chí Minh</td>
-					<td th:text="${station.address}">1 Nguyễn Thông</td>
-					<td class="actions">
-						<a class="icon-btn" th:href="@{/admin/stations/{id}/edit(id=${station.id})}"
-							th:title="|Sửa ${station.name}|" th:aria-label="|Sửa ${station.name}|">
-							<i class="bi bi-pencil" aria-hidden="true"></i>
-						</a>
-						<!--
-							A form rather than a link: deleting must be a POST, and a
-							form carries the CSRF token Spring Security checks.
-							admin.js asks the data-confirm question before it submits.
-						-->
-						<form method="post"
-							th:action="@{/admin/stations/{id}/delete(id=${station.id})}"
-							th:data-confirm="|Xóa ${station.name} (${station.code})?|"
-							data-confirm-body="Không hoàn tác được. Ga đang là điểm đi hoặc điểm đến của một tuyến sẽ không xóa được."
-							data-confirm-label="Xóa ga" data-confirm-danger>
-							<button type="submit" class="icon-btn danger"
-								th:title="|Xóa ${station.name}|" th:aria-label="|Xóa ${station.name}|">
-								<i class="bi bi-trash" aria-hidden="true"></i>
-							</button>
-						</form>
-					</td>
-				</tr>
-			</tbody>
-		</table>
+	<noscript><p class="alert alert-secondary">Vui lòng bật JavaScript để xem và quản lý sơ đồ ga và tuyến.</p></noscript>
+	<div id="net-load-error" class="alert alert-danger" role="alert" hidden>
+		<span></span><button type="button" class="btn btn-outline-danger">Thử lại</button>
 	</div>
-
+	<div class="net-split" hidden>
+		<section class="net-map" aria-label="Sơ đồ tuyến Bắc – Nam">
+			<div class="net-map-h">Bắc</div><div id="net-map-content"></div><div class="net-map-h">Nam</div>
+			<div class="net-legend">
+				<span><i class="l-both" aria-hidden="true"></i>Hai chiều</span>
+				<span><i class="l-one" aria-hidden="true"></i>Một chiều</span>
+				<span><i class="l-none" aria-hidden="true"></i>Chưa có tuyến</span>
+				<span><i class="l-arc" aria-hidden="true"></i>Tuyến dài chạy thẳng</span>
+			</div>
+		</section>
+		<section class="net-panel panel" aria-labelledby="net-panel-h"></section>
+	</div>
+	<template id="net-overview-template">
+		<div class="panel-body">
+			<h2 id="net-panel-h" tabindex="-1">Tổng quan</h2>
+			<p class="text-body-secondary">Bấm một ga để xem thông tin, một đoạn hoặc cung để xem cặp ga. Dấu cộng trên đường để chèn ga. Bạn cũng có thể chọn hai ga bên dưới.</p>
+			<form id="pair-picker" class="d-grid gap-3" novalidate>
+				<div><label for="pair-a" class="form-label">Ga thứ nhất</label><select id="pair-a" name="a" class="form-select" required></select></div>
+				<div><label for="pair-b" class="form-label">Ga thứ hai</label><select id="pair-b" name="b" class="form-select" required></select></div>
+				<div><button type="submit" class="btn btn-primary">Xem cặp ga</button></div>
+			</form>
+		</div>
+	</template>
+	<template id="net-station-template">
+		<div class="panel-body">
+			<div class="panel-title"><h2 id="net-panel-h" tabindex="-1"></h2><span class="code" data-value="code"></span></div>
+			<p class="facts"><span>Km <b data-value="kmMark"></b></span><span data-value="city"></span><span data-value="address"></span></p>
+			<div class="pane-actions">
+				<button type="button" class="btn btn-outline-secondary" data-action="edit-station">Sửa</button>
+				<button type="button" class="btn btn-outline-danger" data-action="delete-station">Xóa</button>
+			</div>
+			<p id="station-delete-reason" class="form-text" hidden></p>
+		</div>
+	</template>
+	<template id="net-edit-template">
+		<form class="panel-body" autocomplete="off" novalidate>
+			<h2 id="net-panel-h" tabindex="-1"></h2><div class="d-grid gap-3" data-station-fields></div>
+			<div class="pane-actions"><button type="button" class="btn btn-outline-secondary" data-action="cancel">Hủy</button><button type="submit" class="btn btn-primary">Lưu</button></div>
+		</form>
+	</template>
+	<template id="net-gap-template">
+		<form class="panel-body" autocomplete="off" novalidate>
+			<h2 id="net-panel-h" tabindex="-1"></h2><div class="d-grid gap-3" data-station-fields></div>
+			<p id="km-range-warning" class="alert alert-warning" role="status" hidden></p>
+			<p data-km-error class="alert alert-danger" role="alert" hidden></p>
+			<div class="pane-actions"><button type="button" class="btn btn-outline-secondary" data-action="cancel">Hủy</button><button type="submit" class="btn btn-primary">Lưu ga</button></div>
+		</form>
+	</template>
+	<template id="net-station-fields-template">
+		<div><label for="station-name" class="form-label">Tên ga <span class="required-mark" aria-hidden="true">*</span></label>
+			<input id="station-name" name="name" class="form-control" maxlength="100" required></div>
+		<div><label for="station-code" class="form-label">Mã ga <span class="required-mark" aria-hidden="true">*</span></label>
+			<input id="station-code" name="code" class="form-control" maxlength="10" spellcheck="false" autocapitalize="characters" required>
+			<p id="station-code-help" class="form-text" hidden>Ga đã có tuyến nên giữ mã.</p></div>
+		<div><label for="station-city" class="form-label">Tỉnh / Thành phố</label><input id="station-city" name="city" class="form-control" maxlength="100"></div>
+		<div><label for="station-address" class="form-label">Địa chỉ</label><input id="station-address" name="address" class="form-control" maxlength="255"></div>
+		<div><label for="station-km" class="form-label">Lý trình (km) <span class="required-mark" aria-hidden="true">*</span></label>
+			<input id="station-km" name="kmMark" type="number" class="form-control" min="0" max="5000" step="1" inputmode="numeric" required></div>
+	</template>
+	<template id="net-pair-template">
+		<div class="panel-body">
+			<h2 id="net-panel-h" tabindex="-1"></h2><p class="text-body-secondary" data-pair-distance></p><div class="net-directions"></div>
+		</div>
+	</template>
+	<template id="net-direction-template">
+		<form class="net-direction" autocomplete="off" novalidate>
+			<h3 data-direction-name></h3><span class="code" data-direction-code></span><p data-direction-meta></p>
+			<div data-distance-field><label class="form-label">Khoảng cách (km)</label>
+				<input name="distanceKm" type="number" class="form-control" min="1" step="1" inputmode="numeric" required></div>
+			<div><button type="submit" class="btn btn-outline-secondary" data-action="create-route">Tạo chiều này</button>
+				<button type="button" class="btn btn-outline-danger" data-action="delete-route">Xóa</button></div>
+			<p class="form-text" data-delete-reason hidden></p>
+		</form>
+	</template>
+	<script defer th:src="@{/js/admin/line-map.js}"></script>
+	<script defer th:src="@{/js/admin/station-panels.js}"></script>
+	<script defer th:src="@{/js/admin/stations.js}"></script>
 </main>
 </body>
 </html>

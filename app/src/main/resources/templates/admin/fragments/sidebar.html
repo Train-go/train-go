@@ -49,6 +49,16 @@
 			<span data-clock-date></span>
 			<b data-clock-time></b>
 		</div>
+		<!--
+			Records removed from the screens above, kept apart from daily work
+			next to sign-out. On a phone only the icon shows, like sign-out.
+		-->
+		<nav class="admin-side-extra" aria-label="Khác">
+			<a th:href="@{/admin/history}" title="Lịch sử" aria-label="Lịch sử"
+				th:attr="aria-current=${activeNav == 'history'} ? 'page' : null">
+				<i class="bi bi-clock-history" aria-hidden="true"></i><span class="admin-history-label">Lịch sử</span>
+			</a>
+		</nav>
 		<div class="admin-user">
 			<span class="admin-user-name" th:text="${currentUser?.fullName}"></span>
 			<!-- Spring Security's logout only accepts POST, so this is a form. -->

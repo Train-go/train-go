@@ -25,25 +25,12 @@ public class AdminController {
 
 	/**
 	 * The admin mockup has no overview page, so /admin opens the trains
-	 * screen until the overview task (#37) brings one back.
+	 * screen (TrainAdminController) until the overview task (#37) brings one
+	 * back.
 	 */
 	@GetMapping
 	public String home() {
 		return "redirect:/admin/trains";
-	}
-
-	@GetMapping("/routes")
-	public String routes(Model model) {
-		model.addAttribute("activeNav", "routes");
-		model.addAttribute("routes", adminService.routes());
-		return "admin/routes";
-	}
-
-	@GetMapping("/trains")
-	public String trains(Model model) {
-		model.addAttribute("activeNav", "trains");
-		model.addAttribute("trains", adminService.trains());
-		return "admin/trains";
 	}
 
 	@GetMapping("/bookings")

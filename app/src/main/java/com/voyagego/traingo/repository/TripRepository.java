@@ -80,4 +80,35 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 
 	long countByStatus(TripStatus status);
 
+	/**
+	 * Every trip of one train, cancelled ones included, earliest first, with
+	 * the route and both stations loaded for the train page.
+	 */
+	@Query("""
+			select t from Trip t
+			join fetch t.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where t.train.id = :trainId
+			order by t.departureAt""")
+	List<Trip> findScheduleOfTrain(@Param("trainId") Long trainId);
+
+	/** Called with CANCELLED: the last trip of the train's schedule. */
+	@EntityGraph(attributePaths = { "route", "route.originStation", "route.destinationStation" })
+	Optional<Trip> findFirstByTrainIdAndStatusNotOrderByDepartureAtDesc(Long trainId, TripStatus status);
+
+	boolean existsByTrainId(Long trainId);
+
+	/**
+	 * Trips of the train that are not cancelled and have not arrived at
+	 * {@code now}: upcoming and running ones. A train with any cannot be
+	 * deleted; the page shows this same number next to the disabled button.
+	 */
+	@Query("""
+			select count(t) from Trip t
+			where t.train.id = :trainId
+			and t.status <> com.voyagego.traingo.entity.TripStatus.CANCELLED
+			and t.arrivalAt > :now""")
+	long countUnfinishedByTrain(@Param("trainId") Long trainId, @Param("now") LocalDateTime now);
+
 }

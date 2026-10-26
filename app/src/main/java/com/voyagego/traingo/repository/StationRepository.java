@@ -22,8 +22,11 @@ public interface StationRepository extends JpaRepository<Station, Long> {
 
 	boolean existsByCodeAndIdNot(String code, Long id);
 
-	boolean existsByKmMark(int kmMark);
+	Optional<Station> findByKmMark(int kmMark);
 
-	boolean existsByKmMarkAndIdNot(int kmMark, Long id);
+	Optional<Station> findByKmMarkAndIdNot(int kmMark, Long id);
+
+	@Query("select s.kmMark from Station s where s.kmMark > :lo and s.kmMark < :hi")
+	List<Integer> findKmMarksBetween(int lo, int hi);
 
 }

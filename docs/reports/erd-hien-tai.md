@@ -2,7 +2,8 @@
 
 Bản dễ nhìn hơn (sơ đồ có màu, thẻ từng bảng): mở `erd.html` bằng trình duyệt.
 
-Schema cập nhật 23/10/2026 theo V7: thêm `users.phone_number` nullable; V6 bỏ ngày sinh hành khách và phụ thu chỗ;
+Schema cập nhật 26/10/2026 theo V8: tàu xóa mềm bằng `trains.is_delete`, mã tàu chỉ không trùng giữa các
+tàu chưa xóa (`active_code`). V7 thêm `users.phone_number` nullable; V6 bỏ ngày sinh hành khách và phụ thu chỗ;
 vé đã đặt giữ nguyên giá. Bảng `users` không có ngày sinh hoặc cờ xóa mềm.
 Các bảng dữ liệu mẫu dưới đây là ảnh chụp lịch sử 20/10/2026, không phải kết quả
 kiểm chứng sau V7; dữ liệu mẫu cũ chưa gồm phone. Nền dữ liệu theo migration `V5__north_south_line.sql`: ga có lý trình
@@ -42,8 +43,10 @@ erDiagram
     }
     trains {
         bigint id PK
-        varchar code UK
+        varchar code
         varchar name
+        boolean is_delete "V8"
+        varchar active_code UK "generated; V8"
     }
     trips {
         bigint id PK
@@ -191,10 +194,13 @@ Dữ liệu mẫu có 16 tuyến: 7 chặng giữa hai ga kề nhau, mỗi chặ
 | Cột | Kiểu dữ liệu | Giải thích |
 | --- | --- | --- |
 | `id` | `bigint` (PK) | Mã ID của đoàn tàu. |
-| `code` | `varchar(10)` (UK) | Mã tàu, ví dụ SE1. |
+| `code` | `varchar(10)` | Mã tàu, ví dụ SE1. Tàu mới được dùng lại mã của một tàu đã xóa. |
 | `name` | `varchar(100)` | Tên của đoàn tàu. |
+| `is_delete` | `boolean` | Cờ xóa mềm (V8). Tàu đã xóa ẩn khỏi trang Tàu, chuyến và vé cũ giữ nguyên; admin khôi phục được. |
+| `active_code` | `varchar(10)` (UK) | Cột sinh tự động: bằng `code` khi tàu chưa xóa, `NULL` khi đã xóa. Khóa duy nhất trên cột này giữ mã không trùng giữa các tàu đang dùng. |
 
-**Quy tắc:** Mỗi đoàn tàu có một mã riêng, không được trùng nhau. Tàu không gắn với tuyến nào: tuyến của tàu do các chuyến của nó quyết định.
+**Quy tắc:** Các tàu chưa xóa có mã riêng, không được trùng nhau. Chỉ xóa được tàu không còn chuyến sắp
+chạy hoặc đang chạy; khôi phục bị chặn khi mã đã có tàu khác dùng. Tàu không gắn với tuyến nào: tuyến của tàu do các chuyến của nó quyết định.
 
 Trong phiên bản TrainGo hiện tại, tất cả đoàn tàu đều có cùng một cách bố trí chỗ ngồi, được quy định sẵn trong chương trình:
 
@@ -205,13 +211,13 @@ Trong phiên bản TrainGo hiện tại, tất cả đoàn tàu đều có cùng
 
 Như vậy, mỗi đoàn tàu có 4 toa với tổng cộng 96 chỗ.
 
-**Dữ liệu mẫu (cả 3 tàu trong database):**
+**Dữ liệu mẫu (3 tàu của V5, sau V8):**
 
-| id | code | name |
-| --- | --- | --- |
-| 9 | SE1 | Thống Nhất 1 |
-| 10 | SE2 | Thống Nhất 2 |
-| 11 | SE3 | Thống Nhất 3 |
+| id | code | name | is_delete | active_code |
+| --- | --- | --- | --- | --- |
+| 9 | SE1 | Thống Nhất 1 | 0 | SE1 |
+| 10 | SE2 | Thống Nhất 2 | 0 | SE2 |
+| 11 | SE3 | Thống Nhất 3 | 0 | SE3 |
 
 ### Bảng trips – Chuyến tàu
 

@@ -188,7 +188,7 @@ public class TripAdminService {
 						entry.getKey().format(DATE), entry.getValue()))
 				.toList();
 
-		List<TripListView.TrainOption> trains = trainRepository.findAllByOrderByCodeAsc().stream()
+		List<TripListView.TrainOption> trains = trainRepository.findAllByDeletedFalseOrderByCodeAsc().stream()
 				.map(train -> new TripListView.TrainOption(train.getId(), train.getCode(), train.getName()))
 				.toList();
 		return new TripListView(selected, trainId, needle.isEmpty() ? null : q.strip(),
