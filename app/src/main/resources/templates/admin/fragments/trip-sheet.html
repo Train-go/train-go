@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<!--
+	The trip sheet, shared by every admin page that lists trips (#29). A page
+	includes the empty sheet and its script, then calls TG.openTrip(id, row):
+
+		<aside th:replace="~{admin/fragments/trip-sheet :: sheet}"></aside>
+		<script defer th:src="@{/js/admin/trip-sheet.js}"></script>
+
+	defer runs the script after admin.js, which layout/base.html loads at the
+	end of the page, so window.TG exists by then. trip-sheet.js fills the
+	[data-trip] slots from GET /api/admin/trips/{id}.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<aside th:fragment="sheet" class="offcanvas offcanvas-end wide" id="trip-sheet" tabindex="-1" aria-labelledby="trip-sheet-title">
+	<div class="offcanvas-header">
+		<div class="trip-sheet-head">
+			<div class="eyebrow">
+				<a data-trip="train" href="#">SE1 Thống Nhất</a> · chuyến #<span data-trip="id">1</span>
+			</div>
+			<h2 class="h5 mb-0" id="trip-sheet-title" data-trip="title">Ga Hà Nội → Ga Thanh Hóa</h2>
+			<div class="trip-sheet-when">
+				<span class="tag" data-trip="phase">Sắp chạy</span>
+				<span class="text-body-secondary" data-trip="schedule">Thứ Hai, 26/10/2026 · 08:00 → 11:40</span>
+			</div>
+		</div>
+		<button type="button" class="icon-btn" data-bs-dismiss="offcanvas" aria-label="Đóng">
+			<i class="bi bi-x-lg" aria-hidden="true"></i>
+		</button>
+	</div>
+
+	<div class="offcanvas-body">
+		<dl class="kv">
+			<dt>Quãng đường</dt><dd data-trip="distance">175 km · 3 giờ 40 phút</dd>
+			<dt>Giá</dt><dd data-trip="price">250.000đ</dd>
+			<dt>Đã bán</dt><dd data-trip="sold">0/96 chỗ</dd>
+		</dl>
+
+		<section class="trip-sheet-section">
+			<h3 class="h6 mb-0">Sơ đồ chỗ</h3>
+			<div class="coach-tabs" role="tablist" aria-label="Toa" data-trip="coach-tabs"></div>
+			<div role="tabpanel" data-trip="seats"></div>
+			<div class="legend">
+				<span><i></i>Còn trống</span>
+				<span><i class="sold"></i>Đã bán, bấm để xem hành khách</span>
+			</div>
+		</section>
+
+		<section class="trip-sheet-section">
+			<h3 class="h6 mb-0">Hành khách</h3>
+			<div class="table-responsive" data-trip="passengers">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th scope="col">Hành khách</th>
+							<th scope="col">Chỗ</th>
+							<th scope="col">Booking</th>
+							<th scope="col" class="num">Giá vé</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+			<p class="text-body-secondary mb-0" data-trip="no-passengers">Chưa có hành khách.</p>
+		</section>
+	</div>
+
+	<div class="offcanvas-footer">
+		<span class="grow text-body-secondary" data-trip="cancel-note">Chưa có booking nào, có thể hủy chuyến.</span>
+		<button type="button" class="btn btn-outline-danger" data-trip="cancel">Hủy chuyến</button>
+	</div>
+
+	<template id="trip-sheet-passenger">
+		<tr>
+			<td><span data-cell="name"></span><span class="sub mono" data-cell="identity"></span></td>
+			<td data-cell="seat"></td>
+			<td><a class="mono" data-cell="booking"></a></td>
+			<td class="num text-nowrap" data-cell="price"></td>
+		</tr>
+	</template>
+</aside>
+
+</body>
+</html>

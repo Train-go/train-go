@@ -98,4 +98,16 @@ public class Trip {
 		return status;
 	}
 
+	/**
+	 * Trips are never deleted, only cancelled (D2). Whether this trip may be
+	 * cancelled is decided by TripAdminService, which knows the time and the
+	 * bookings.
+	 */
+	public void cancel() {
+		if (status == TripStatus.CANCELLED) {
+			throw new IllegalStateException("Trip " + id + " is already cancelled");
+		}
+		this.status = TripStatus.CANCELLED;
+	}
+
 }

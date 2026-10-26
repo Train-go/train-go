@@ -73,7 +73,20 @@ liệt kê). D2 ngày 12/10/2026 giữ nguyên luật không xóa tàu.
 ## Quản lý chuyến `/admin/trips`
 
 Chuyến thuộc về tàu, nên admin thêm chuyến ở trang chi tiết tàu. `/admin/trips`
-là danh sách mọi chuyến để tra cứu, lọc theo tàu và ngày, và để hủy chuyến.
+là danh sách mọi chuyến để tra cứu (#29):
+
+- ba nhóm theo D8, so với giờ hiện tại: Sắp chạy (`SCHEDULED`, giờ đi sau bây
+  giờ, xếp giờ tăng dần), Đã khởi hành (chưa hủy, giờ đi không sau bây giờ) và
+  Đã hủy (`CANCELLED`), hai nhóm sau xếp giờ giảm dần; số đếm mỗi nhóm không
+  phụ thuộc bộ lọc;
+- lọc theo tàu, tìm theo tên hoặc mã ga không phân biệt dấu ("hue" ra "Huế");
+  bộ lọc nằm trên URL (`?tab=&train=&q=`);
+- bảng nhóm theo ngày khởi hành.
+
+Bấm một chuyến ở trang này hoặc ở trang Tàu đều mở cùng **ngăn chi tiết chuyến**:
+thông tin chuyến, sơ đồ 4 toa (chỗ đã bán bấm được để tô hành khách), bảng hành
+khách (CCCD chỉ hiện 4 số cuối, mã booking link sang trang Booking) và nút "Hủy
+chuyến". Chỉ vé của booking `CONFIRMED` tính là đã bán.
 
 Form thêm chuyến gồm: tuyến, ngày giờ khởi hành, ngày giờ đến, giá cơ bản. Tàu là
 tàu của trang đang mở. Luật nối chặng (`docs/product/domain-model.md`, mục "Lịch
@@ -92,7 +105,10 @@ trạng thái `AVAILABLE`.
 Chuyến không xóa được, chỉ hủy được (`CANCELLED`). Chỉ hủy được chuyến
 `SCHEDULED`, chưa khởi hành, và chưa có booking `CONFIRMED` nào (D2, chốt
 12/10/2026): hủy chuyến khách đã trả tiền thì phải hoàn tiền, mà hoàn tiền nằm
-ngoài phạm vi.
+ngoài phạm vi. Ngăn chi tiết nêu lý do khi không hủy được ("Không hủy được: chuyến
+đã khởi hành." hoặc "Không hủy được: chuyến đã có N booking. Hủy các booking đó
+trước."); service kiểm tra lại khi nhận lệnh hủy và khóa dòng chuyến, API trả 409
+nếu vi phạm.
 
 ## Quản lý booking `/admin/bookings` và `/admin/bookings/:id`
 

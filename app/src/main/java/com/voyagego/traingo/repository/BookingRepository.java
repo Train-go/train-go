@@ -17,6 +17,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	@EntityGraph(attributePaths = { "customer", "trip", "trip.train" })
 	List<Booking> findAllByOrderByCreatedAtDesc();
 
+	long countByTripIdAndBookingStatus(Long tripId, BookingStatus status);
+
 	@Query("select coalesce(sum(b.totalPrice), 0) from Booking b where b.bookingStatus = :status")
 	long sumTotalPriceByBookingStatus(@Param("status") BookingStatus status);
 
