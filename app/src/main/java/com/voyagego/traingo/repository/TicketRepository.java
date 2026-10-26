@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.voyagego.traingo.entity.Ticket;
 import com.voyagego.traingo.model.dto.IdCount;
@@ -13,5 +14,15 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 	/** Number of passengers (tickets) per booking id. */
 	@Query("select t.booking.id as id, count(t) as total from Ticket t group by t.booking.id")
 	List<IdCount> countByBooking();
+
+	/** Tickets of one trip that belong to a confirmed booking, with booking and seat loaded. */
+	@Query("""
+			select t from Ticket t
+			join fetch t.booking b
+			join fetch t.tripSeat s
+			where s.trip.id = :tripId
+			and b.bookingStatus = com.voyagego.traingo.entity.BookingStatus.CONFIRMED
+			order by s.coachNumber, s.seatCode""")
+	List<Ticket> findConfirmedByTrip(@Param("tripId") Long tripId);
 
 }

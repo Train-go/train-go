@@ -96,6 +96,8 @@
 		</div>
 	</div>
 
+	<th:block th:replace="~{admin/fragments/trip-sheet :: sheet}"></th:block>
+
 	<!-- defer: runs after admin.js, which the layout loads at the end of the body. -->
 	<script th:src="@{/js/admin/train.js}" defer></script>
 

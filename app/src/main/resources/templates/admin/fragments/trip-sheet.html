@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<!--
+	The trip sheet: a right-hand sheet with the facts of one trip, a seat map
+	of its four coaches with the sold seats, and its passengers. Any admin page
+	includes it with
+
+		<th:block th:replace="~{admin/fragments/trip-sheet :: sheet}"></th:block>
+
+	and opens it by giving any element data-trip-id="..." (a click or Enter on
+	it calls TG.openTrip) or by calling TG.openTrip(tripId, triggerEl).
+	trip-sheet.js fills it from GET /api/admin/trips/{id}.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<th:block th:fragment="sheet">
+
+	<div class="offcanvas offcanvas-end wide" tabindex="-1" id="trip-sheet" aria-labelledby="trip-sheet-title"
+		th:data-api-url="@{/api/admin/trips}" th:data-bookings-url="@{/admin/bookings}"
+		th:data-trains-url="@{/admin/trains}">
+		<div class="offcanvas-header">
+			<div>
+				<div class="eyebrow"><a data-f="train-link" href="#"></a> · <span data-f="trip-id"></span></div>
+				<h2 class="offcanvas-title" id="trip-sheet-title"></h2>
+				<div class="mt-1"><span class="tag" data-f="status"></span></div>
+			</div>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
+		</div>
+		<div class="offcanvas-body">
+			<dl class="kv">
+				<dt>Khởi hành</dt><dd data-f="times"></dd>
+				<dt>Quãng đường</dt><dd data-f="distance"></dd>
+				<dt>Giá</dt><dd data-f="price"></dd>
+				<dt>Đã bán</dt><dd data-f="sold"></dd>
+			</dl>
+
+			<section aria-label="Sơ đồ chỗ">
+				<div class="coach-tabs" role="tablist" aria-label="Toa" data-f="coach-tabs"></div>
+				<div data-f="seat-map" role="tabpanel"></div>
+				<p class="legend">
+					<span><i class="seat sold" aria-hidden="true"></i>Đã bán</span>
+					<span><i class="seat" aria-hidden="true"></i>Còn trống</span>
+				</p>
+			</section>
+
+			<div class="table-responsive">
+				<table class="table align-middle">
+					<thead>
+						<tr>
+							<th scope="col">Hành khách</th>
+							<th scope="col">Chỗ</th>
+							<th scope="col">Booking</th>
+							<th scope="col" class="num">Giá</th>
+						</tr>
+					</thead>
+					<tbody data-f="passengers"></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<script th:src="@{/js/admin/trip-sheet.js}" defer></script>
+
+</th:block>
+
+</body>
+</html>
