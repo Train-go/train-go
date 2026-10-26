@@ -1,10 +1,8 @@
 package com.voyagego.traingo.service;
 
-import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 
+import com.voyagego.traingo.common.TextUtils;
 import com.voyagego.traingo.common.exception.DuplicateRouteException;
 import com.voyagego.traingo.common.exception.RouteInUseException;
 import com.voyagego.traingo.common.exception.RouteNotFoundException;
@@ -60,14 +59,14 @@ public class RouteService {
 	@Transactional(readOnly = true)
 	public List<RouteRow> search(String q) {
 		List<RouteRow> all = findAll();
-		String query = normalizeSearch(q == null ? "" : q.strip());
+		String query = TextUtils.fold(q == null ? "" : q.strip());
 		if (query.isBlank()) {
 			return all;
 		}
-		return all.stream().filter(row -> normalizeSearch(row.getOriginName()).contains(query)
-				|| normalizeSearch(row.getOriginCode()).contains(query)
-				|| normalizeSearch(row.getDestinationName()).contains(query)
-				|| normalizeSearch(row.getDestinationCode()).contains(query)).toList();
+		return all.stream().filter(row -> TextUtils.fold(row.getOriginName()).contains(query)
+				|| TextUtils.fold(row.getOriginCode()).contains(query)
+				|| TextUtils.fold(row.getDestinationName()).contains(query)
+				|| TextUtils.fold(row.getDestinationCode()).contains(query)).toList();
 	}
 
 	@Transactional(readOnly = true)
@@ -77,11 +76,6 @@ public class RouteService {
 		return new RouteRow(route, upcoming, trips.countByRouteId(id),
 				routes.existsByOriginStationIdAndDestinationStationId(
 						route.getDestinationStation().getId(), route.getOriginStation().getId()));
-	}
-
-	private static String normalizeSearch(String value) {
-		return Normalizer.normalize(value, Normalizer.Form.NFD).replaceAll("\\p{M}", "")
-				.replace('đ', 'd').replace('Đ', 'd').toLowerCase(Locale.ROOT);
 	}
 
 	@Transactional

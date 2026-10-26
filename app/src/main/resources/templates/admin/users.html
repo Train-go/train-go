@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+	Read-only: docs/product/admin.md gives this screen no create, edit or
+	delete. UserListView carries every label ready to print. A customer's
+	"N booking" links to the Booking page filtered to that customer.
+-->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
 <head>
@@ -7,10 +12,23 @@
 <body>
 <main>
 
-	<!-- Read-only: docs/product/admin.md gives this screen no create, edit or delete. -->
 	<div class="page-head">
 		<h1>Người dùng</h1>
-		<span class="count" th:text="|${#lists.size(users)} tài khoản|">12 tài khoản</span>
+	</div>
+
+	<div class="toolbar">
+		<nav class="tab-seg" aria-label="Vai trò">
+			<a class="tab-seg-link" th:href="@{/admin/users(role='CUSTOMER')}"
+				th:classappend="${view.role.name() == 'CUSTOMER'} ? 'active'"
+				th:attr="aria-current=${view.role.name() == 'CUSTOMER'} ? 'page' : null">
+				<span>Khách hàng</span><span class="count" th:text="${view.customerCount}">11</span>
+			</a>
+			<a class="tab-seg-link" th:href="@{/admin/users(role='ADMIN')}"
+				th:classappend="${view.role.name() == 'ADMIN'} ? 'active'"
+				th:attr="aria-current=${view.role.name() == 'ADMIN'} ? 'page' : null">
+				<span>Quản trị</span><span class="count" th:text="${view.adminCount}">1</span>
+			</a>
+		</nav>
 	</div>
 
 	<div class="panel table-responsive">
@@ -19,18 +37,25 @@
 				<tr>
 					<th scope="col">Họ tên</th>
 					<th scope="col">Email</th>
-					<th scope="col">Vai trò</th>
+					<th scope="col">Số điện thoại</th>
 					<th scope="col">Ngày tạo</th>
+					<th scope="col" class="num">Booking</th>
 				</tr>
 			</thead>
 			<tbody>
-				<tr th:each="user : ${users}">
-					<td class="fw-bold" th:text="${user.name}">Nguyễn Văn An</td>
+				<tr th:each="user : ${view.rows}">
+					<td class="fw-bold" th:text="${user.fullName}">Nguyễn Văn An</td>
 					<td th:text="${user.email}">an.nguyen@example.com</td>
-					<td>
-						<span class="tag plain" th:text="${user.role} == 'ADMIN' ? 'Quản trị' : 'Khách hàng'">Khách hàng</span>
+					<td class="text-nowrap" th:text="${user.phoneNumber != null} ? ${user.phoneNumber} : '—'">0901234567</td>
+					<td class="text-nowrap" th:text="${user.createdLabel}">12/08/2026</td>
+					<td class="num">
+						<a class="btn btn-link btn-sm" th:if="${user.bookingCount > 0}"
+							th:href="@{/admin/bookings(customer=${user.id})}" th:text="|${user.bookingCount} booking|">2 booking</a>
+						<span class="text-body-secondary" th:unless="${user.bookingCount > 0}">Chưa có</span>
 					</td>
-					<td class="text-nowrap" th:text="${user.createdAt}">12/08/2026</td>
+				</tr>
+				<tr th:if="${#lists.isEmpty(view.rows)}">
+					<td colspan="5" class="text-center text-body-secondary">Chưa có tài khoản nào.</td>
 				</tr>
 			</tbody>
 		</table>

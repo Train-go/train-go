@@ -3,22 +3,14 @@ package com.voyagego.traingo.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.voyagego.traingo.entity.Booking;
 import com.voyagego.traingo.entity.BookingStatus;
-import com.voyagego.traingo.entity.PaymentStatus;
 import com.voyagego.traingo.entity.Trip;
-import com.voyagego.traingo.model.dto.IdCount;
-import com.voyagego.traingo.model.response.AdminBooking;
 import com.voyagego.traingo.model.response.AdminTrip;
-import com.voyagego.traingo.model.response.AdminUser;
 import com.voyagego.traingo.repository.BookingRepository;
-import com.voyagego.traingo.repository.TicketRepository;
 import com.voyagego.traingo.repository.TripRepository;
 import com.voyagego.traingo.repository.UserRepository;
 
@@ -40,14 +32,12 @@ public class AdminService {
 
 	private final TripRepository tripRepository;
 	private final BookingRepository bookingRepository;
-	private final TicketRepository ticketRepository;
 	private final UserRepository userRepository;
 
 	public AdminService(TripRepository tripRepository, BookingRepository bookingRepository,
-			TicketRepository ticketRepository, UserRepository userRepository) {
+			UserRepository userRepository) {
 		this.tripRepository = tripRepository;
 		this.bookingRepository = bookingRepository;
-		this.ticketRepository = ticketRepository;
 		this.userRepository = userRepository;
 	}
 
@@ -59,17 +49,6 @@ public class AdminService {
 								+ trip.getRoute().getDestinationStation().getName(),
 						trip.getDepartureAt().format(DATE), trip.getDepartureAt().format(TIME),
 						arrivalText(trip), trip.getBasePrice(), tripStatusLabel(trip, now)))
-				.toList();
-	}
-
-	public List<AdminBooking> bookings() {
-		return toRows(bookingRepository.findAllByOrderByCreatedAtDesc());
-	}
-
-	public List<AdminUser> users() {
-		return userRepository.findAllByOrderByCreatedAtAsc().stream()
-				.map(user -> new AdminUser(user.getFullName(), user.getEmail(), user.getRole().name(),
-						user.getCreatedAt().format(DATE)))
 				.toList();
 	}
 
@@ -96,28 +75,6 @@ public class AdminService {
 	 */
 	public long totalRevenue() {
 		return bookingRepository.sumTotalPriceByBookingStatus(BookingStatus.CONFIRMED);
-	}
-
-	private List<AdminBooking> toRows(List<Booking> bookings) {
-		Map<Long, Long> passengersByBooking = ticketRepository.countByBooking().stream()
-				.collect(Collectors.toMap(IdCount::getId, IdCount::getTotal));
-		return bookings.stream()
-				.map(booking -> new AdminBooking(booking.getBookingCode(), booking.getCustomer().getFullName(),
-						booking.getTrip().getTrain().getCode() + " · " + booking.getTrip().getDepartureAt().format(DATE),
-						passengersByBooking.getOrDefault(booking.getId(), 0L).intValue(), booking.getTotalPrice(),
-						bookingLabel(booking)))
-				.toList();
-	}
-
-	/**
-	 * The admin tables show one status column per booking. A cancelled booking
-	 * reads as cancelled whatever its payment status says.
-	 */
-	private static String bookingLabel(Booking booking) {
-		if (booking.getBookingStatus() == BookingStatus.CANCELLED) {
-			return "Đã hủy";
-		}
-		return booking.getPaymentStatus() == PaymentStatus.PAID ? "Đã thanh toán" : "Chờ thanh toán";
 	}
 
 	/** The arrival time, with its date when the trip arrives on a later day. */
