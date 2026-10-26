@@ -13,7 +13,7 @@ public class RouteCreateRequest {
 	private int distanceKm;
 	private boolean bothWays;
 
-	// The form/API adapter must map differentStations to destinationStationId.
+	// RouteAdminController maps differentStations to destinationStationId.
 	@AssertTrue(message = "Ga đến phải khác ga đi.")
 	public boolean isDifferentStations() {
 		return originStationId == null || destinationStationId == null

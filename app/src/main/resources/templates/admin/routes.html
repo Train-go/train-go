@@ -10,24 +10,63 @@
 	<div class="page-head">
 		<h1>Tuyến</h1>
 		<span class="count" th:text="|${#lists.size(routes)} tuyến|">16 tuyến</span>
+		<span class="grow"></span>
+		<a class="btn btn-primary" th:href="@{/admin/routes/new}">
+			<i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm tuyến
+		</a>
 	</div>
+
+	<form class="d-flex flex-wrap gap-2 mb-3" method="get" th:action="@{/admin/routes}">
+		<label for="q" class="visually-hidden">Tìm theo tên hoặc mã ga</label>
+		<input type="search" class="form-control w-auto flex-grow-1" id="q" name="q" th:value="${q}"
+			placeholder="Tìm theo tên hoặc mã ga">
+		<button type="submit" class="btn btn-primary">Tìm</button>
+		<a class="btn btn-outline-secondary" th:if="${!#strings.isEmpty(q)}" th:href="@{/admin/routes}">Xóa lọc</a>
+	</form>
 
 	<div class="panel table-responsive">
 		<table class="table table-hover align-middle">
 			<thead>
 				<tr>
-					<th scope="col" class="shrink">Mã tuyến</th>
-					<th scope="col">Ga đi</th>
-					<th scope="col">Ga đến</th>
+					<th scope="col">Tuyến</th>
 					<th scope="col" class="num">Khoảng cách</th>
+					<th scope="col">Chiều ngược</th>
+					<th scope="col" class="num">Chuyến sắp chạy</th>
+					<th scope="col" class="num">Tổng chuyến</th>
+					<th scope="col"><span class="visually-hidden">Thao tác</span></th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr th:each="route : ${routes}">
-					<td><span class="code" th:text="${route.code}">SGN-NTR</span></td>
-					<td th:text="${route.origin}">Ga Sài Gòn</td>
-					<td th:text="${route.destination}">Ga Nha Trang</td>
+					<td>
+						<div class="fw-bold" th:text="|${route.originName} → ${route.destinationName}|">Ga Sài Gòn → Ga Nha Trang</div>
+						<span class="code" th:text="|${route.originCode} → ${route.destinationCode}|">SGN → NTR</span>
+					</td>
 					<td class="num text-nowrap" th:text="|${route.distanceKm} km|">411 km</td>
+					<td class="text-nowrap" th:text="${route.hasReverse} ? 'Đã có' : 'Chưa có'">Đã có</td>
+					<td class="num" th:text="${route.upcomingTrips}">0</td>
+					<td class="num" th:text="${route.totalTrips}">0</td>
+					<td class="actions">
+						<a class="icon-btn" th:href="@{/admin/routes/{id}/edit(id=${route.id})}"
+							th:title="|Sửa tuyến ${route.originName} → ${route.destinationName}|"
+							th:aria-label="|Sửa tuyến ${route.originName} → ${route.destinationName}|">
+							<i class="bi bi-pencil" aria-hidden="true"></i>
+						</a>
+						<!-- The POST carries CSRF; admin.js asks before submitting. -->
+						<form method="post" th:action="@{/admin/routes/{id}/delete(id=${route.id})}"
+							th:data-confirm="|Xóa tuyến ${route.originName} → ${route.destinationName}?|"
+							data-confirm-body="Không hoàn tác được. Chỉ xóa tuyến chưa có chuyến. Chiều ngược được giữ nguyên."
+							data-confirm-label="Xóa tuyến" data-confirm-danger>
+							<button type="submit" class="icon-btn danger" th:disabled="${route.totalTrips > 0}"
+								th:title="${route.totalTrips > 0} ? |Không xóa được: tuyến đã có ${route.totalTrips} chuyến.| : |Xóa tuyến ${route.originName} → ${route.destinationName}|"
+								th:aria-label="|Xóa tuyến ${route.originName} → ${route.destinationName}|">
+								<i class="bi bi-trash" aria-hidden="true"></i>
+							</button>
+						</form>
+					</td>
+				</tr>
+				<tr th:if="${#lists.isEmpty(routes)}">
+					<td colspan="6" class="text-center text-body-secondary">Không có tuyến khớp.</td>
 				</tr>
 			</tbody>
 		</table>

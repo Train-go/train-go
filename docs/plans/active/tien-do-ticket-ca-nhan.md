@@ -49,7 +49,7 @@ Trạng thái thực hiện bên dưới là hồ sơ phiên, **không phải c�
 | [#19](https://github.com/Train-go/train-go/issues/19) | Nền dữ liệu V6, một giá, CoachLayout | `feat/data-v6-coach-layout` | Không có | Đã kiểm chứng local; issue đã đóng theo GitHub ngày 23/10/2026 |
 | [#22](https://github.com/Train-go/train-go/issues/22) | Đăng nhập, phân quyền, đăng xuất | `feat/auth-ui` (phần UI tiếp nối) | Shell đã có trên main | GitHub đóng; còn UI login/navbar/sidebar, kế hoạch nháp đã tạo |
 | [#23](https://github.com/Train-go/train-go/issues/23) | Đăng ký và số điện thoại | `feat/auth-ui` (phần UI tiếp nối) | Server và exception nền đã có | GitHub đóng; còn controller/form/tự đăng nhập và kiểm chứng trình duyệt |
-| [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | #20/#21 đã merge | Server đã merge; còn API và UI; làm sau UI auth theo thứ tự phiên này |
+| [#24](https://github.com/Train-go/train-go/issues/24) | Ma trận và danh sách tuyến | `feat/route-admin` | #20/#21 đã merge | 26/10: trang CRUD + tìm kiếm đã kiểm chứng, commit trên `feat/route-admin`; bỏ ma trận theo quyết định 25/10 |
 | [#27](https://github.com/Train-go/train-go/issues/27) | Sơ đồ dọc Ga và tuyến | `feat/station-network-map` | Còn #24; #20/#21 đã merge | Chờ ma trận/API tuyến |
 | [#35](https://github.com/Train-go/train-go/issues/35) | Booking và Người dùng admin | `feat/admin-bookings-users` | #20, #29, #31; cần phone từ #23 cho chi tiết khách | Chờ phụ thuộc |
 | [#36](https://github.com/Train-go/train-go/issues/36) | Bảng tính tàu và nhập nhiều chặng | `feat/train-sheet-view` | #28, #29; JS dùng network API #27; kế thừa trang tàu #25 | Chờ phụ thuộc |
@@ -198,7 +198,11 @@ Header admin cũ vẫn tên cố định và form logout. Quy tắc public khôn
 
 ## Tiếp tục session sau
 
-Ưu tiên hiện tại (24/10): đọc [kế hoạch UI auth](auth-ui/plan.md)
+Ưu tiên hiện tại (26/10): #24 xong phạm vi đã cắt — xem
+[route-admin-crud](../completed/route-admin-crud.md) và checkpoint cuối file. Chưa push/PR;
+cần người dùng quyết định cách đóng #24 vì AC ma trận không làm. Tiếp theo: #27.
+
+Lịch sử 24/10: đọc [kế hoạch UI auth](auth-ui/plan.md)
 trên nhánh `feat/auth-ui`. Kế hoạch đang chờ duyệt; chỉ triển khai khi người dùng
 yêu cầu. Giữ quyết định UI gọn, căn giữa, Bootstrap, không CSS riêng; dùng server
 auth hiện có và ADR 0013. Sau UI auth mới tiếp tục #24 rồi #27.
@@ -395,3 +399,17 @@ chức năng, còn các khoảng trống nêu dưới. Chưa commit, push hay PR
   `ok@example.com`, không có booking), còn 12 user seed. Đã dừng instance Maven do phiên
   khởi động, cổng 8080 trống, MySQL80 vẫn Running. Probe/ảnh tạm nằm ngoài Git trong
   thư mục scratchpad của phiên.
+
+## Checkpoint #24 — 26/10/2026, nhánh `feat/route-admin`
+
+- Người dùng chốt 25/10: trang Tuyến chỉ thêm/sửa/xóa/tìm kiếm thường, không làm ma trận,
+  ô bật ra, hoàn tác hay REST `/api/admin/routes`. #27 không còn component ma trận từ #24.
+- Branch fast-forward từ `origin/main` `7dcce60` (đã có auth UI PR #49).
+- Phân vai: Claude lập kế hoạch, review, kiểm chứng; Codex implement bằng `ck:cook --auto
+  --no-test` (chạy từ workspace ngoài để thấy CK skill). Sandbox Codex không đọc được
+  `~/.m2` nên compile do Claude chạy lại.
+- Kết quả và bằng chứng: plan [route-admin-crud](../completed/route-admin-crud.md) và dòng
+  WORKLOG 26/10. Playwright 44/44 PASS; DB về 16 tuyến, 18 chuyến. Instance app của phiên
+  đã dừng, cổng 8080 trống, MySQL80 vẫn Running. Bằng chứng tạm (script, ảnh, JSON) nằm ở
+  scratchpad của phiên, ngoài Git.
+- Chưa push/PR/đóng issue.

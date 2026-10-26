@@ -49,12 +49,19 @@ khóa tuyến bảo vệ sửa/xóa và tranh chấp với việc thêm chuyến
 (tuyến kèm hai ga, tổng chuyến theo tuyến, chuyến sắp chạy theo tuyến), xếp theo
 lý trình ga đi rồi ga đến; gợi ý khoảng cách là trị tuyệt đối hiệu lý trình.
 
-Đây là phần server độc lập đã kiểm chứng trên MySQL Server, chưa nối vào
-`AdminController`/`AdminService` và template danh sách hiện tại. REST API, ma trận,
-form và lỗi JSON chuẩn còn chờ #20/#21; ba exception tuyến tạm kế thừa
-`RuntimeException`, sẽ dùng `ResourceNotFoundException`/`BusinessRuleException`
-và handler chung khi #21 sẵn sàng. Lỗi validation `differentStations` cần map về
-`destinationStationId` lúc nối form/API. Chưa hoàn thành toàn issue #24.
+Giao diện (26/10/2026, `RouteAdminController`): trang Thymeleaf thường theo mẫu
+Quản lý ga, Post/Redirect/Get. Danh sách có cột tuyến (tên và mã hai ga), khoảng
+cách, chiều ngược (Đã có/Chưa có), chuyến sắp chạy, tổng chuyến. Ô tìm `?q=` lọc
+theo tên hoặc mã ga, không phân biệt hoa thường và dấu ("vinh", "VIN", "hue").
+Form thêm chọn ga đi/ga đến theo lý trình, tự điền khoảng cách theo lý trình khi
+admin chưa gõ tay, tích "Tạo luôn chiều ngược" mặc định bật. Lỗi cùng ga và tuyến
+trùng hiện ở ô ga đến. Form sửa giữ nguyên hai ga, chỉ đổi khoảng cách. Nút xóa bị
+khóa kèm lý do khi tuyến đã có chuyến; gửi thẳng POST xóa vẫn bị service chặn và
+báo "Không xóa được: tuyến đã có N chuyến.".
+
+Theo quyết định ngày 25/10/2026, trang Tuyến **không làm ma trận ga × ga**, ô bật
+ra, hoàn tác và REST `/api/admin/routes` của issue #24. Trang "Ga và tuyến" (#27)
+vì vậy không có component ma trận dùng lại; xét lại khi làm #27.
 
 ## Quản lý tàu `/admin/trains` và `/admin/trains/:id`
 
