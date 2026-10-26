@@ -23,6 +23,8 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 	/** Whether any route starts or ends at the station. Pass its id twice. */
 	boolean existsByOriginStationIdOrDestinationStationId(Long originStationId, Long destinationStationId);
 
+	long countByOriginStationIdOrDestinationStationId(Long originStationId, Long destinationStationId);
+
 	/**
 	 * Every route with both stations loaded, so a view can print their names.
 	 * Sorted along the line: by where it starts, then by where it ends.
