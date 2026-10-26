@@ -1,8 +1,10 @@
 package com.voyagego.traingo.service;
 
+import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,6 +54,34 @@ public class RouteService {
 				upcoming.getOrDefault(route.getId(), 0L), totals.getOrDefault(route.getId(), 0L),
 				pairs.contains(new StationPair(route.getDestinationStation().getId(),
 						route.getOriginStation().getId())))).toList();
+	}
+
+	/** Search the display rows so filtering keeps their order and trip counts. */
+	@Transactional(readOnly = true)
+	public List<RouteRow> search(String q) {
+		List<RouteRow> all = findAll();
+		String query = normalizeSearch(q == null ? "" : q.strip());
+		if (query.isBlank()) {
+			return all;
+		}
+		return all.stream().filter(row -> normalizeSearch(row.getOriginName()).contains(query)
+				|| normalizeSearch(row.getOriginCode()).contains(query)
+				|| normalizeSearch(row.getDestinationName()).contains(query)
+				|| normalizeSearch(row.getDestinationCode()).contains(query)).toList();
+	}
+
+	@Transactional(readOnly = true)
+	public RouteRow findRow(long id) {
+		Route route = routes.findWithStationsById(id).orElseThrow(() -> new RouteNotFoundException(id));
+		long upcoming = counts(trips.countUpcomingByRoute(LocalDateTime.now())).getOrDefault(id, 0L);
+		return new RouteRow(route, upcoming, trips.countByRouteId(id),
+				routes.existsByOriginStationIdAndDestinationStationId(
+						route.getDestinationStation().getId(), route.getOriginStation().getId()));
+	}
+
+	private static String normalizeSearch(String value) {
+		return Normalizer.normalize(value, Normalizer.Form.NFD).replaceAll("\\p{M}", "")
+				.replace('đ', 'd').replace('Đ', 'd').toLowerCase(Locale.ROOT);
 	}
 
 	@Transactional

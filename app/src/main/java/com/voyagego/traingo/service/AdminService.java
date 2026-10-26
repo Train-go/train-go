@@ -15,12 +15,10 @@ import com.voyagego.traingo.entity.PaymentStatus;
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.response.AdminBooking;
-import com.voyagego.traingo.model.response.AdminRoute;
 import com.voyagego.traingo.model.response.AdminTrain;
 import com.voyagego.traingo.model.response.AdminTrip;
 import com.voyagego.traingo.model.response.AdminUser;
 import com.voyagego.traingo.repository.BookingRepository;
-import com.voyagego.traingo.repository.RouteRepository;
 import com.voyagego.traingo.repository.TicketRepository;
 import com.voyagego.traingo.repository.TrainRepository;
 import com.voyagego.traingo.repository.TripRepository;
@@ -42,31 +40,20 @@ public class AdminService {
 	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
 
-	private final RouteRepository routeRepository;
 	private final TrainRepository trainRepository;
 	private final TripRepository tripRepository;
 	private final BookingRepository bookingRepository;
 	private final TicketRepository ticketRepository;
 	private final UserRepository userRepository;
 
-	public AdminService(RouteRepository routeRepository, TrainRepository trainRepository,
+	public AdminService(TrainRepository trainRepository,
 			TripRepository tripRepository, BookingRepository bookingRepository,
 			TicketRepository ticketRepository, UserRepository userRepository) {
-		this.routeRepository = routeRepository;
 		this.trainRepository = trainRepository;
 		this.tripRepository = tripRepository;
 		this.bookingRepository = bookingRepository;
 		this.ticketRepository = ticketRepository;
 		this.userRepository = userRepository;
-	}
-
-	public List<AdminRoute> routes() {
-		return routeRepository.findAllWithStations().stream()
-				.map(route -> new AdminRoute(
-						route.getOriginStation().getCode() + "-" + route.getDestinationStation().getCode(),
-						route.getOriginStation().getName(), route.getDestinationStation().getName(),
-						route.getDistanceKm()))
-				.toList();
 	}
 
 	public List<AdminTrain> trains() {

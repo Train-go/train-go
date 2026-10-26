@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!-- routeId selects edit mode; both requests share only the distance field. -->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title th:text="${routeId == null} ? 'Thêm tuyến · Quản trị TrainGo' : 'Sửa tuyến · Quản trị TrainGo'">Thêm tuyến · Quản trị TrainGo</title>
+</head>
+<body>
+<main th:with="editing=${routeId != null}">
+
+	<div class="page-head">
+		<a class="btn btn-link" th:href="@{/admin/routes}">
+			<i class="bi bi-arrow-left" aria-hidden="true"></i>Danh sách tuyến
+		</a>
+	</div>
+
+	<div class="panel">
+		<!-- Server validation keeps messages in Vietnamese beside their fields. -->
+		<form class="panel-body" method="post" novalidate th:object="${routeForm}"
+			th:action="${editing} ? @{/admin/routes/{id}(id=${routeId})} : @{/admin/routes}">
+			<h1 th:text="${editing} ? 'Sửa tuyến' : 'Thêm tuyến'">Thêm tuyến</h1>
+
+			<div class="row g-3" th:unless="${editing}">
+				<input type="hidden" name="distanceEdited" th:value="${distanceEdited == true}">
+				<div class="col-md-6">
+					<label for="originStationId" class="form-label">Ga đi <span class="required-mark" aria-hidden="true">*</span></label>
+					<select class="form-select" th:field="*{originStationId}" th:errorclass="is-invalid" required
+						aria-describedby="originStationError">
+						<option value="">Chọn ga đi</option>
+						<option th:each="station : ${stations}" th:value="${station.id}" th:data-km-mark="${station.kmMark}"
+							th:text="|${station.name} (Km ${station.kmMark})|">Ga Hà Nội (Km 0)</option>
+					</select>
+					<div id="originStationError" class="invalid-feedback" th:errors="*{originStationId}">Vui lòng chọn ga đi.</div>
+				</div>
+				<div class="col-md-6">
+					<label for="destinationStationId" class="form-label">Ga đến <span class="required-mark" aria-hidden="true">*</span></label>
+					<select class="form-select" th:field="*{destinationStationId}" th:errorclass="is-invalid" required
+						aria-describedby="destinationStationError">
+						<option value="">Chọn ga đến</option>
+						<option th:each="station : ${stations}" th:value="${station.id}" th:data-km-mark="${station.kmMark}"
+							th:text="|${station.name} (Km ${station.kmMark})|">Ga Huế (Km 688)</option>
+					</select>
+					<div id="destinationStationError" class="invalid-feedback" th:errors="*{destinationStationId}">Vui lòng chọn ga đến.</div>
+				</div>
+			</div>
+
+			<div th:if="${editing}">
+				<dl class="row mb-0">
+					<dt class="col-sm-3">Ga đi</dt>
+					<dd class="col-sm-9" th:text="|${route.originName} (${route.originCode})|">Ga Hà Nội (HNO)</dd>
+					<dt class="col-sm-3">Ga đến</dt>
+					<dd class="col-sm-9" th:text="|${route.destinationName} (${route.destinationCode})|">Ga Huế (HUE)</dd>
+				</dl>
+				<p class="form-text">Chỉ đổi được khoảng cách.</p>
+			</div>
+
+			<div class="row g-3">
+				<div class="col-md-4">
+					<label for="distanceKm" class="form-label">Khoảng cách (km) <span class="required-mark" aria-hidden="true">*</span></label>
+					<input type="number" class="form-control" th:field="*{distanceKm}" th:errorclass="is-invalid"
+						min="1" step="1" inputmode="numeric" required aria-describedby="distanceError distanceHelp">
+					<div id="distanceError" class="invalid-feedback" th:errors="*{distanceKm}">Khoảng cách phải lớn hơn 0 km.</div>
+					<div id="distanceHelp" class="form-text" th:text="${editing} ? 'Chỉ cập nhật tuyến này, không đổi chiều ngược.' : 'Tự điền theo lý trình hai ga khi chưa nhập khoảng cách bằng tay.'">Tự điền theo lý trình hai ga.</div>
+				</div>
+			</div>
+
+			<div th:unless="${editing}" class="form-check">
+				<input type="checkbox" class="form-check-input" th:field="*{bothWays}">
+				<label th:for="${#ids.prev('bothWays')}" class="form-check-label">Tạo luôn chiều ngược</label>
+			</div>
+
+			<div class="d-flex flex-wrap gap-2">
+				<button type="submit" class="btn btn-primary">
+					<i class="bi bi-check-lg" aria-hidden="true"></i><span th:text="${editing} ? 'Lưu thay đổi' : 'Thêm tuyến'">Thêm tuyến</span>
+				</button>
+				<a class="btn btn-outline-secondary" th:href="@{/admin/routes}">Hủy</a>
+			</div>
+		</form>
+	</div>
+
+	<script defer th:if="${!editing}" th:src="@{/js/admin/route-form.js}"></script>
+</main>
+</body>
+</html>

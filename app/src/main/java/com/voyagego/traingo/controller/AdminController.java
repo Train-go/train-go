@@ -32,13 +32,6 @@ public class AdminController {
 		return "redirect:/admin/trains";
 	}
 
-	@GetMapping("/routes")
-	public String routes(Model model) {
-		model.addAttribute("activeNav", "routes");
-		model.addAttribute("routes", adminService.routes());
-		return "admin/routes";
-	}
-
 	@GetMapping("/trains")
 	public String trains(Model model) {
 		model.addAttribute("activeNav", "trains");
