@@ -101,7 +101,7 @@ Admin:
 | Đường dẫn | Nội dung |
 | --- | --- |
 | `/admin` | Dashboard: tổng booking, tổng chuyến, tổng user, tổng doanh thu |
-| `/admin/stations` | Quản lý ga |
+| `/admin/stations` | Ga và tuyến: sơ đồ dọc Bắc–Nam, sửa/xóa/chèn ga, tạo/xóa từng chiều tuyến |
 | `/admin/routes` | Quản lý tuyến |
 | `/admin/trains`, `/admin/trains/:id` | Quản lý tàu; trang chi tiết chỉ xem sơ đồ toa cố định |
 | `/admin/trips` | Quản lý chuyến |

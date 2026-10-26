@@ -97,6 +97,7 @@ Các đường dẫn Java bên dưới tính từ `app/src/main/java/com/voyageg
 
 ### #27 — mạng lưới ga
 
+- Plan: [station-network-map](../completed/station-network-map.md) (26/10: bỏ ma trận, thêm REST tuyến, testcase API/UI). Xem checkpoint #27.
 - Tận dụng `StationService`, `StationAdminController`, Station/Route repository; dùng lại RouteService và ma trận từ #24.
 - Đọc đầy đủ sub-task trong issue trước khi tạo network API, sơ đồ và ngăn ga/cặp ga/chèn ga.
 - Chấp nhận: đủ 8 ga, khoảng cách tối thiểu 60px, tuyến dài có cung; mọi đối tượng dùng bàn phím được; sửa/xóa đúng ràng buộc, chèn ga lấy km chưa dùng; 1440px cạnh nhau, dưới 1100px xếp dọc, 390px không tràn.
@@ -412,4 +413,17 @@ chức năng, còn các khoảng trống nêu dưới. Chưa commit, push hay PR
   WORKLOG 26/10. Playwright 44/44 PASS; DB về 16 tuyến, 18 chuyến. Instance app của phiên
   đã dừng, cổng 8080 trống, MySQL80 vẫn Running. Bằng chứng tạm (script, ảnh, JSON) nằm ở
   scratchpad của phiên, ngoài Git.
+- Chưa push/PR/đóng issue.
+
+## Checkpoint #27 — 26/10/2026, nhánh `feat/station-network-map`
+
+- Branch fast-forward từ `origin/main` `b8abe99` (đã có #24 PR #50).
+- Người dùng chốt 26/10: bỏ ma trận tuyến (AC6) vì #24 không có ma trận; ngăn mặc định
+  "Tổng quan" có bộ chọn cặp ga; testcase là kịch bản + Playwright ngoài repo (ADR 0007);
+  Codex dùng CK skill từ workspace ngoài.
+- Phân vai: Claude lập plan + testcase, review, compile, chạy app và Playwright; Codex
+  implement hai lượt (server, UI). Codex hết hạn mức sau lượt UI; lỗi bấm chuột vào đoạn
+  do Claude sửa theo duyệt của người dùng.
+- Kết quả: API 29/29, UI 55/55 PASS; DB về 8 ga, 16 tuyến, 18 chuyến. Chi tiết trong plan
+  completed và dòng WORKLOG 26/10.
 - Chưa push/PR/đóng issue.

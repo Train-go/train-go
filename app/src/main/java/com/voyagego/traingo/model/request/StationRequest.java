@@ -10,11 +10,11 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * What the add and edit forms post. Kept apart from the entity so a request
+ * What station creation and updates accept. Kept apart from the entity so a request
  * can only ever set these five fields, never the id.
  *
- * The controller trims every field and turns blank ones into null before
- * validation, so the rules below see "SGN" rather than "  SGN ".
+ * JSON clients trim text and send null for blank optional fields; request
+ * bodies do not pass through Spring's form StringTrimmerEditor.
  */
 public class StationRequest {
 
@@ -33,8 +33,6 @@ public class StationRequest {
 	@Size(max = Station.ADDRESS_MAX_LENGTH, message = "Địa chỉ tối đa {max} ký tự.")
 	private String address;
 
-	// Text that is not a whole number never reaches these rules: binding fails
-	// first and messages.properties words that error (typeMismatch.kmMark).
 	@NotNull(message = "Vui lòng nhập lý trình.")
 	@Min(value = 0, message = "Lý trình không được nhỏ hơn 0.")
 	@Max(value = KM_MARK_MAX, message = "Lý trình tối đa {value} km.")
