@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!--
-	The train page, view "Theo ngày" (docs/product/admin.md, "Quản lý tàu").
-	TrainScheduleView carries every label ready to print. Trips that have
-	already run carry .past and stay hidden until train.js adds .show-past to
-	the agenda. The add and edit sheet saves through /api/admin/trains.
+	The train page (docs/product/admin.md, "Quản lý tàu"): train tabs, the view
+	switch, then one of two views, "Theo ngày" (fragments/train-day-view.html)
+	or "Bảng tính" (fragments/train-sheet-view.html, ?view=bang). The tabs keep
+	the view. The add and edit sheet saves through /api/admin/trains.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
@@ -16,7 +16,7 @@
 	<div class="page-head train-head">
 		<h1>Tàu</h1>
 		<nav class="nav nav-pills train-tabs" aria-label="Chọn tàu" th:if="${!#lists.isEmpty(trains)}">
-			<a th:each="t : ${trains}" class="nav-link" th:href="@{/admin/trains/{id}(id=${t.id})}"
+			<a th:each="t : ${trains}" class="nav-link" th:href="@{/admin/trains/{id}(id=${t.id}, view=${view == 'bang' ? 'bang' : 'ngay'})}"
 				th:classappend="${train != null and t.id == train.id} ? 'active'"
 				th:attr="aria-current=${train != null and t.id == train.id} ? 'page' : null">
 				<span class="mono" th:text="${t.code}">SE1</span>
@@ -24,6 +24,19 @@
 			</a>
 		</nav>
 		<div class="head-tools">
+			<!-- train.js remembers the last choice, so the Tàu menu opens it again. -->
+			<nav class="view-seg" aria-label="Cách xem lịch tàu" th:if="${train != null}" data-view-seg>
+				<a th:href="@{/admin/trains/{id}(id=${train.id}, view='ngay')}" data-view="ngay"
+					th:classappend="${view != 'bang'} ? 'active'"
+					th:attr="aria-current=${view != 'bang'} ? 'page' : null">
+					<i class="bi bi-calendar-week" aria-hidden="true"></i>Theo ngày
+				</a>
+				<a th:href="@{/admin/trains/{id}(id=${train.id}, view='bang')}" data-view="bang"
+					th:classappend="${view == 'bang'} ? 'active'"
+					th:attr="aria-current=${view == 'bang'} ? 'page' : null">
+					<i class="bi bi-table" aria-hidden="true"></i>Bảng tính
+				</a>
+			</nav>
 			<button type="button" class="btn btn-link" th:if="${train != null}" data-train-edit
 				th:data-id="${train.id}" th:data-code="${train.code}" th:data-name="${train.name}"
 				th:data-has-trips="${hasTrips}">
@@ -40,56 +53,13 @@
 		<b>Chưa có tàu nào.</b>
 	</div>
 
-	<div class="day-view" th:if="${train != null}" th:with="end=${schedule.chainEnd}">
-		<section class="next-task" aria-labelledby="next-task-title">
-			<div>
-				<h2 id="next-task-title"
-					th:text="${end != null} ? |Chặng tiếp theo đi từ ${end.route.destinationStation.name}| : |${train.code} cần chặng đầu tiên|">
-					Chặng tiếp theo đi từ Ga Hà Nội
-				</h2>
-				<p class="text-body-secondary" th:if="${end != null}"
-					th:text="|${schedule.position.description()} Lịch xếp đến ${schedule.scheduledUntil}, sớm nhất đi lại lúc ${schedule.earliestDepartureLabel}.|">
-					Đang ở Ga Sài Gòn. Lịch xếp đến T3 04/11 09:45, sớm nhất đi lại lúc 04/11 10:15.
-				</p>
-			</div>
-		</section>
-
-		<button type="button" class="btn btn-link btn-sm past-toggle" th:if="${schedule.pastCount > 0}"
-			data-past-toggle th:data-count="${schedule.pastCount}" aria-expanded="false" aria-controls="agenda">
-			<i class="bi bi-clock-history" aria-hidden="true"></i>
-			<span th:text="|Hiện ${schedule.pastCount} chặng đã chạy|">Hiện 3 chặng đã chạy</span>
-		</button>
-
-		<div class="agenda" id="agenda" th:if="${schedule.hasTrips()}">
-			<p class="text-body-secondary agenda-all-past"
-				th:if="${#lists.size(schedule.days.?[!past]) == 0}">Mọi chặng của tàu đã chạy.</p>
-			<section class="ag-day" th:each="day : ${schedule.days}" th:classappend="${day.past} ? 'past'"
-				th:aria-label="|${day.title} ${day.dateLabel}|">
-				<h3><b th:text="${day.title}">Hôm nay</b><span th:text="${day.dateLabel}">26/10/2026</span></h3>
-				<ul>
-					<li th:each="item : ${day.items}" th:classappend="${item.past} ? 'past clickable' : 'clickable'"
-						tabindex="0" th:data-trip-id="${item.tripId}">
-						<span class="ag-time mono">
-							<span th:text="${#temporals.format(item.departureAt, 'HH:mm')}">08:00</span>
-							<small th:text="${item.arrivalLabel}">10:35</small>
-						</span>
-						<span class="ag-leg">
-							<b th:text="|${item.originName} → ${item.destinationName}|">Ga Hà Nội → Ga Thanh Hóa</b>
-							<small th:text="${item.cancelled}
-								? |${#numbers.formatInteger(item.basePrice, 0, 'POINT')}đ · đã hủy|
-								: |${#numbers.formatInteger(item.basePrice, 0, 'POINT')}đ · ${item.bookedSeats}/96 vé|">180.000đ · 2/96 vé</small>
-						</span>
-						<span class="tag" th:classappend="${item.phaseCss}" th:text="${item.phaseLabel}">Sắp chạy</span>
-					</li>
-				</ul>
-			</section>
-		</div>
-
-		<div class="empty" th:unless="${schedule.hasTrips()}">
-			<i class="bi bi-signpost-2" aria-hidden="true"></i>
-			<b th:text="|${train.code} chưa có chuyến nào.|">SE2 chưa có chuyến nào.</b>
-		</div>
-	</div>
+	<!-- th:replace outranks th:if on one element, so the condition sits on a wrapper. -->
+	<th:block th:if="${train != null and view != 'bang'}">
+		<div th:replace="~{admin/fragments/train-day-view :: day}"></div>
+	</th:block>
+	<th:block th:if="${train != null and view == 'bang'}">
+		<div th:replace="~{admin/fragments/train-sheet-view :: sheet}"></div>
+	</th:block>
 
 	<!-- One sheet for both actions; train.js fills it for "Thêm tàu" or "Sửa tàu". -->
 	<div class="offcanvas offcanvas-end" tabindex="-1" id="train-sheet" aria-labelledby="train-sheet-title">

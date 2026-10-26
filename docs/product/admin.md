@@ -139,6 +139,39 @@ Phi chốt ngày 26/10/2026, migration `V8__train_soft_delete.sql`:
 - Danh sách chuyến và booking cũ vẫn hiện mã của tàu đã xóa. Tạo chuyến (#28)
   phải nạp tàu qua `TrainService.findById`, vốn từ chối tàu đã xóa.
 
+### View "Bảng tính" `/admin/trains/{id}?view=bang`
+
+Đầu trang Tàu có nút chia đoạn "Theo ngày / Bảng tính"; `?view=ngay|bang` giữ view khi
+đổi tàu, và trình duyệt nhớ lựa chọn gần nhất trong `localStorage` (bị chặn thì mặc
+định "Theo ngày"), nên bấm menu Tàu mở lại view đó. View Bảng tính dành cho admin
+nhập nhiều chặng một lúc:
+
+- **Bảng lịch:** Ngày, Giờ đi, Từ, Đến, Giờ đến (`+N` khi khác ngày), Km, Giá, Vé (đã
+  bán/96), Trạng thái. Chặng đã chạy ẩn sau nút "Hiện N chặng đã chạy".
+- **Dòng nháp** dưới bảng nối tiếp nhau: ga đi của dòng sau là ga đến của dòng trước,
+  giờ đi sớm nhất là giờ đến cộng 30 phút. Giờ đi, giờ đến, giá tự tính theo công
+  thức gợi ý (60 km/h làm tròn 5 phút; 1.000đ/km làm tròn 10.000đ) và sửa tay được;
+  ô đã sửa tay không bị ghi đè khi chuỗi đổi. Lỗi hiện ngay dưới dòng (chưa có tuyến,
+  đi sớm hơn quy định, giờ đến trước giờ đi, giá lẻ).
+- **Điền nhanh tới [ga cuối] [nhịp]:** tạo một dòng nháp cho mỗi đoạn giữa hai ga kề
+  trên đường đi, theo nhịp "mỗi ngày một chặng, 08:00" hoặc "chạy liên tục, nghỉ 30
+  phút". Gọi `GET /api/admin/trains/{id}/plan?from=&to=&pace=DAILY|NONSTOP&firstDeparture=`
+  (`TrainScheduleService.planLegs`); thiếu tuyến giữa hai ga kề trả 409 "Thiếu tuyến giữa
+  hai ga kề nhau trên đường đi." API này cũng là phần lập kế hoạch của chế độ "Nhiều
+  chặng tới một ga" ở trình hướng dẫn (#40).
+
+Nút "Thêm N chuyến" (chỉ tính các dòng đã chọn ga đến) gửi cả lô tới
+`POST /api/admin/trains/{id}/trips` (`TripCreationService.createLegs`) trong một
+transaction, hoặc tạo hết hoặc không tạo gì. Server khóa dòng tàu (sửa và xóa tàu cũng
+khóa dòng này), kiểm lại mọi luật nối chặng (ga đi trang gửi lên phải khớp ga đến của
+chuyến cuối hiện tại, nếu không trả 409 để tải lại trang; giờ cắt về phút; giờ đi cách giờ đến ít nhất 30 phút và không ở
+quá khứ, có tuyến giữa hai ga, giờ đến sau giờ đi, giá chia hết 1.000) và sinh 96 chỗ
+`AVAILABLE` cho mỗi chuyến. Lỗi một chặng trả 409 kèm thông điệp dưới khóa
+`legs[i].departureAt` (hoặc `destinationStationId`, `arrivalAt`, `basePrice`,
+`originStationId`) và hiện ngay dưới dòng nháp thứ i trong số các dòng đã gửi. Tạo xong
+trang tải lại với `?added=` để các dòng mới chớp màu, kèm toast "Đã thêm N chuyến cho
+SE1." có nút "Xem" mở ngăn chi tiết chuyến. Bấm một dòng của bảng lịch mở ngăn đó.
+
 ## Quản lý chuyến `/admin/trips`
 
 Chuyến thuộc về tàu, nên admin thêm chuyến ở trang chi tiết tàu. `/admin/trips`

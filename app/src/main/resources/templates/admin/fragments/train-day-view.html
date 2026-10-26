@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!--
+	The train page, view "Theo ngày": the next-leg banner and the agenda of
+	trips by day. Included by train.html when the train exists and view is not
+	"bang". TrainScheduleView carries every label ready to print. Trips that
+	have already run carry .past and stay hidden until train.js adds .show-past
+	to the agenda.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div class="day-view" th:fragment="day" th:with="end=${schedule.chainEnd}">
+	<section class="next-task" aria-labelledby="next-task-title">
+		<div>
+			<h2 id="next-task-title"
+				th:text="${end != null} ? |Chặng tiếp theo đi từ ${end.route.destinationStation.name}| : |${train.code} cần chặng đầu tiên|">
+				Chặng tiếp theo đi từ Ga Hà Nội
+			</h2>
+			<p class="text-body-secondary" th:if="${end != null}"
+				th:text="|${schedule.position.description()} Lịch xếp đến ${schedule.scheduledUntil}, sớm nhất đi lại lúc ${schedule.earliestDepartureLabel}.|">
+				Đang ở Ga Sài Gòn. Lịch xếp đến T3 04/11 09:45, sớm nhất đi lại lúc 04/11 10:15.
+			</p>
+		</div>
+	</section>
+
+	<button type="button" class="btn btn-link btn-sm past-toggle" th:if="${schedule.pastCount > 0}"
+		data-past-toggle th:data-count="${schedule.pastCount}" aria-expanded="false" aria-controls="agenda">
+		<i class="bi bi-clock-history" aria-hidden="true"></i>
+		<span th:text="|Hiện ${schedule.pastCount} chặng đã chạy|">Hiện 3 chặng đã chạy</span>
+	</button>
+
+	<div class="agenda" id="agenda" th:if="${schedule.hasTrips()}">
+		<p class="text-body-secondary agenda-all-past"
+			th:if="${#lists.size(schedule.days.?[!past]) == 0}">Mọi chặng của tàu đã chạy.</p>
+		<section class="ag-day" th:each="day : ${schedule.days}" th:classappend="${day.past} ? 'past'"
+			th:aria-label="|${day.title} ${day.dateLabel}|">
+			<h3><b th:text="${day.title}">Hôm nay</b><span th:text="${day.dateLabel}">26/10/2026</span></h3>
+			<ul>
+				<li th:each="item : ${day.items}" th:classappend="${item.past} ? 'past clickable' : 'clickable'"
+					tabindex="0" th:data-trip-id="${item.tripId}">
+					<span class="ag-time mono">
+						<span th:text="${#temporals.format(item.departureAt, 'HH:mm')}">08:00</span>
+						<small th:text="${item.arrivalLabel}">10:35</small>
+					</span>
+					<span class="ag-leg">
+						<b th:text="|${item.originName} → ${item.destinationName}|">Ga Hà Nội → Ga Thanh Hóa</b>
+						<small th:text="${item.cancelled}
+							? |${#numbers.formatInteger(item.basePrice, 0, 'POINT')}đ · đã hủy|
+							: |${#numbers.formatInteger(item.basePrice, 0, 'POINT')}đ · ${item.bookedSeats}/96 vé|">180.000đ · 2/96 vé</small>
+					</span>
+					<span class="tag" th:classappend="${item.phaseCss}" th:text="${item.phaseLabel}">Sắp chạy</span>
+				</li>
+			</ul>
+		</section>
+	</div>
+
+	<div class="empty" th:unless="${schedule.hasTrips()}">
+		<i class="bi bi-signpost-2" aria-hidden="true"></i>
+		<b th:text="|${train.code} chưa có chuyến nào.|">SE2 chưa có chuyến nào.</b>
+	</div>
+</div>
+
+</body>
+</html>

@@ -46,10 +46,15 @@ public record TrainScheduleView(Train train, TrainPosition position, Trip chainE
 	 * @param phaseCss the .tag modifier of {@code phaseLabel}: scheduled,
 	 *        running, done or cancelled
 	 * @param past true once the trip has arrived; cancelled trips never are
+	 * @param distanceKm length of the trip's route
+	 * @param departureDayLabel "T5 22/10", for the spreadsheet view's date column
+	 * @param arrivalPlusDays how many days after the departure day the trip
+	 *        arrives, shown as "+1" next to the arrival time
 	 */
 	public record ScheduleItem(long tripId, LocalDateTime departureAt, LocalDateTime arrivalAt, String arrivalLabel,
 			String originName, String destinationName, long basePrice, int bookedSeats, boolean cancelled,
-			String phaseLabel, String phaseCss, boolean past) {
+			String phaseLabel, String phaseCss, boolean past, int distanceKm, String departureDayLabel,
+			int arrivalPlusDays) {
 	}
 
 }

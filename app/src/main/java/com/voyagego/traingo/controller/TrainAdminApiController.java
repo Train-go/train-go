@@ -1,26 +1,36 @@
 package com.voyagego.traingo.controller;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.voyagego.traingo.entity.Trip;
+import com.voyagego.traingo.model.request.CreateTripsRequest;
 import com.voyagego.traingo.model.request.TrainRequest;
+import com.voyagego.traingo.model.response.PlannedLeg;
+import com.voyagego.traingo.service.TrainScheduleService;
+import com.voyagego.traingo.service.TrainScheduleService.Pace;
 import com.voyagego.traingo.service.TrainService;
+import com.voyagego.traingo.service.TripCreationService;
 
 import jakarta.validation.Valid;
 
 /**
  * JSON endpoints behind the trains page, called by static/js/admin/train.js
- * through TG.api: add, edit, soft delete and restore. Errors take the ApiError
+ * through TG.api: add, edit, soft delete, restore, plan and add trips. Errors take the ApiError
  * shape of ApiExceptionHandler: 400 with one message per field, 404 for a
  * missing train, 409 for a broken rule (duplicate or locked code, unfinished
  * trips, code taken by another train).
@@ -30,9 +40,14 @@ import jakarta.validation.Valid;
 public class TrainAdminApiController {
 
 	private final TrainService trainService;
+	private final TrainScheduleService trainScheduleService;
+	private final TripCreationService tripCreationService;
 
-	public TrainAdminApiController(TrainService trainService) {
+	public TrainAdminApiController(TrainService trainService, TrainScheduleService trainScheduleService,
+			TripCreationService tripCreationService) {
 		this.trainService = trainService;
+		this.trainScheduleService = trainScheduleService;
+		this.tripCreationService = tripCreationService;
 	}
 
 	@PostMapping
@@ -54,6 +69,29 @@ public class TrainAdminApiController {
 	@PostMapping("/{id}/restore")
 	public Map<String, Long> restore(@PathVariable long id) {
 		return Map.of("id", trainService.restore(id).getId());
+	}
+
+	/**
+	 * A multi-leg plan from one station to another along neighbouring
+	 * stations, for "Điền nhanh" in the sheet view and the wizard's multi-leg
+	 * mode. 409 when a pair of neighbouring stations has no route.
+	 */
+	@GetMapping("/{id}/plan")
+	public List<PlannedLeg> plan(@PathVariable long id, @RequestParam long from, @RequestParam long to,
+			@RequestParam Pace pace, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime firstDeparture) {
+		return trainScheduleService.planLegs(id, from, to, pace, firstDeparture);
+	}
+
+	/**
+	 * Adds a batch of legs after the train's last trip, all or none. A leg that
+	 * breaks a rule answers 409 with the message under {@code legs[i].field}.
+	 */
+	@PostMapping("/{id}/trips")
+	@ResponseStatus(HttpStatus.CREATED)
+	public Map<String, List<Long>> createTrips(@PathVariable long id, @Valid @RequestBody CreateTripsRequest form) {
+		List<Long> ids = tripCreationService.createLegs(id, form.legs(), LocalDateTime.now()).stream()
+				.map(Trip::getId).toList();
+		return Map.of("tripIds", ids);
 	}
 
 }
