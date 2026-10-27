@@ -805,3 +805,34 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 	.net-split { grid-template-columns: minmax(0, 1fr); }
 	.net-map { position: static; max-height: none; }
 }
+
+/* ---------- smart station insert and route suggestions (#38) ---------- */
+
+/* Name combobox: the real stations of the line that the system lacks. */
+.combo { position: relative; }
+.combo-list { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-control); box-shadow: var(--shadow-pop); max-height: 280px; overflow-y: auto; }
+.combo-list[hidden] { display: none; }
+.combo-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: center; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.combo-list li small { grid-column: 1; color: var(--muted); font-weight: 600; font-size: 12px; }
+.combo-list li .in-range { grid-row: 1 / 3; grid-column: 2; padding: 2px 6px; border-radius: var(--r-tag); background: var(--accent-soft); color: var(--accent-strong); font-size: 11.5px; font-weight: 700; }
+.combo-list li[aria-selected="true"] { background: var(--accent-soft); }
+
+/* What the form filled in for the admin, under the km field. */
+.draft-notes { display: grid; gap: 2px; }
+.draft-notes .form-text { margin: 4px 0 0; }
+.draft-notes .btn-link { justify-self: start; min-height: 32px; padding: 0 8px; font-size: 13px; }
+
+/* "Nối [ga] vào tuyến": checklist of routes worth creating. */
+.route-sug { display: grid; gap: 10px; }
+.sug-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.sug-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border-radius: var(--r-control); background: var(--sunk); }
+.sug-list li.on { background: var(--accent-soft); }
+.sug-pair { display: flex; align-items: flex-start; gap: 10px; flex: 1 1 220px; min-width: 0; cursor: pointer; }
+.sug-pair input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+.sug-pair span { display: grid; min-width: 0; }
+.sug-pair small { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.sug-dirs { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.dir-pill { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: var(--r-tag); background: var(--surface); color: var(--ink-2); font: 600 12px var(--mono); cursor: pointer; }
+.dir-pill[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+.dir-pill.has { border-style: dashed; background: transparent; color: var(--muted); cursor: default; }
+.sug-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }

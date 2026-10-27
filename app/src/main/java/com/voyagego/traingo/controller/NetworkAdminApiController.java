@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.voyagego.traingo.entity.Route;
+import com.voyagego.traingo.model.request.RouteBatchRequest;
 import com.voyagego.traingo.model.request.RouteCreateRequest;
 import com.voyagego.traingo.model.request.StationRequest;
 import com.voyagego.traingo.model.response.NetworkView;
@@ -72,6 +73,23 @@ public class NetworkAdminApiController {
 	@ResponseStatus(HttpStatus.CREATED)
 	public List<Long> createRoutes(@Valid @RequestBody RouteCreateRequest request) {
 		return routeService.create(request).stream().map(Route::getId).toList();
+	}
+
+	/**
+	 * Creates several routes in one transaction (#38, #39). A direction that
+	 * already exists is skipped, so {@code ids} lists only the routes created.
+	 */
+	@PostMapping("/routes/batch")
+	@ResponseStatus(HttpStatus.CREATED)
+	public Map<String, List<Long>> createRoutesBatch(@Valid @RequestBody RouteBatchRequest request) {
+		return Map.of("ids", routeService.createMany(request).stream().map(Route::getId).toList());
+	}
+
+	/** "Hoàn tác" of a batch: deletes the routes in {@code ids}, all or none. */
+	@DeleteMapping("/routes/batch")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteRoutesBatch(@RequestParam List<Long> ids) {
+		routeService.deleteMany(ids);
 	}
 
 	@DeleteMapping("/routes/{id}")

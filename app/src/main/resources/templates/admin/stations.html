@@ -73,6 +73,12 @@
 		<div><label for="station-km" class="form-label">Lý trình (km) <span class="required-mark" aria-hidden="true">*</span></label>
 			<input id="station-km" name="kmMark" type="number" class="form-control" min="0" max="5000" step="1" inputmode="numeric" required></div>
 	</template>
+	<template id="net-suggest-template">
+		<div class="panel-body">
+			<h2 id="net-panel-h" tabindex="-1"></h2>
+			<div data-suggest-host></div>
+		</div>
+	</template>
 	<template id="net-pair-template">
 		<div class="panel-body">
 			<h2 id="net-panel-h" tabindex="-1"></h2><p class="text-body-secondary" data-pair-distance></p><div class="net-directions"></div>
@@ -88,6 +94,9 @@
 			<p class="form-text" data-delete-reason hidden></p>
 		</form>
 	</template>
+	<script defer th:src="@{/js/admin/station-gazetteer.js}"></script>
+	<script defer th:src="@{/js/admin/station-draft.js}"></script>
+	<script defer th:src="@{/js/admin/route-suggestions.js}"></script>
 	<script defer th:src="@{/js/admin/line-map.js}"></script>
 	<script defer th:src="@{/js/admin/station-panels.js}"></script>
 	<script defer th:src="@{/js/admin/stations.js}"></script>

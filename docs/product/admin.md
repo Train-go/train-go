@@ -42,8 +42,22 @@ tính từ ga Hà Nội) bắt buộc, nguyên từ 0 đến 5000, không trùng
 (`docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`).
 
 Theo quyết định ngày 26/10/2026, trang **không có ma trận tuyến** (#24 không làm
-ma trận); bộ chọn cặp ga ở ngăn Tổng quan thay cho ô trống của ma trận. Chèn ga
-thông minh và tạo nhiều tuyến một lần thuộc #38, #39.
+ma trận); bộ chọn cặp ga ở ngăn Tổng quan thay cho ô trống của ma trận. Tạo nhiều
+tuyến một lần thuộc #39.
+
+**Chèn ga thông minh (#38).** Form chèn ga có ô tên dạng combobox gợi ý 13 ga có thật
+của đường sắt Thống Nhất mà hệ thống chưa có (Phủ Lý, Nam Định, Ninh Bình, Đông Hà,
+Kim Liên, Tam Kỳ, Quảng Ngãi, Diêu Trì, Tuy Hòa, Tháp Chàm, Bình Thuận, Biên Hòa, Dĩ An;
+lý trình theo bảng ga Bắc - Nam, tỉnh theo tỉnh sau sáp nhập 2025), ga nằm trong khoảng
+đang chèn lên đầu. Chọn một ga thì điền tên "Ga …", mã, tỉnh và km; tên không có trong
+danh mục thì mã sinh từ tên (bỏ tiền tố "Ga", bỏ mã đã có ga dùng) và km lấy điểm giữa
+hai ga. Ô admin đã sửa tay (mã, tỉnh, km) không bị ghi đè khi gõ tiếp tên.
+
+Lưu ga xong, ngăn chuyển sang "Nối [ga] vào tuyến": tuyến hai chiều tới ga kề phía trước
+và phía sau (tích sẵn), tuyến tới hai đầu tuyến (không tích), mỗi chiều một nút. "Tạo N
+tuyến" gọi `POST /api/admin/routes/batch` (một transaction, bỏ qua chiều đã có, một cặp
+sai thì không tạo gì, tối đa 40 tuyến) và toast "Hoàn tác" gọi
+`DELETE /api/admin/routes/batch?ids=` (tất cả hoặc không gì; tuyến đã có chuyến thì từ chối).
 
 Làm ngày 26/10/2026 (#27): `controller/NetworkAdminApiController`,
 `service/NetworkService`, `static/js/admin/line-map.js`, `stations.js`,
