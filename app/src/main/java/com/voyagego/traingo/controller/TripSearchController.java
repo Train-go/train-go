@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 
 import com.voyagego.traingo.entity.Station;
 import com.voyagego.traingo.model.request.TripSearchRequest;
-import com.voyagego.traingo.model.response.DateTab;
+import com.voyagego.traingo.model.response.DateStripItem;
 import com.voyagego.traingo.model.response.PopularRoute;
 import com.voyagego.traingo.model.response.TripCard;
 import com.voyagego.traingo.model.response.TripSearchResult;
@@ -82,7 +82,7 @@ public class TripSearchController {
 
 		LocalDate day = search.getDate();
 		TripSearchResult result = tripSearchService.search(search, origin.get(), destination.get(), now);
-		List<DateTab> strip = tripSearchService.dateStrip(day, today);
+		List<DateStripItem> strip = tripSearchService.dateStrip(origin.get(), destination.get(), day, today, now);
 		boolean stripStartsToday = strip.get(0).date().equals(today);
 		LocalDate weekBack = day.minusDays(TripSearchService.STRIP_DAYS);
 
