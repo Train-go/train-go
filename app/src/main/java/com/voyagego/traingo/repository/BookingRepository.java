@@ -82,6 +82,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 			""")
 	List<IdCount> countByRouteExcludingStatus(@Param("excluded") BookingStatus excluded);
 
+	/**
+	 * The greatest booking code that starts with the prefix, such as
+	 * "BK202610", or empty when the month has none. Codes in a month end in
+	 * three digits, so string order is number order (BookingCodeGenerator).
+	 */
+	@Query("select max(b.bookingCode) from Booking b where b.bookingCode like concat(:prefix, '%')")
+	Optional<String> findMaxCodeWithPrefix(@Param("prefix") String prefix);
+
 	/** The id of the booking with this code, read without loading the booking itself. */
 	@Query("select b.id from Booking b where b.bookingCode = :code")
 	Optional<Long> findIdByBookingCode(@Param("code") String code);

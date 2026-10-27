@@ -129,10 +129,30 @@ Khi người dùng bấm thanh toán, **một** transaction (đánh dấu servic
 ```
 1. Kiểm tra chuyến còn SCHEDULED và chưa khởi hành
 2. TripSeat.status   AVAILABLE -> BOOKED  cho mọi chỗ đã chọn, bằng một câu cập nhật có điều kiện
-                     (WHERE status = 'AVAILABLE'); thiếu dòng nào so với số chỗ đã chọn thì rollback
+                     (WHERE status = 'AVAILABLE'); thiếu dòng nào so với số chỗ đã chọn thì rollback.
+                     Các dòng chỗ được khóa trước (theo thứ tự id) để biết chính xác chỗ nào đã bị đặt
 3. Tạo Booking với bookingStatus = CONFIRMED, paymentStatus = PAID, paidAt = bây giờ
 4. Tạo một Ticket cho từng hành khách, kèm ticketCode và issuedAt
 ```
+
+Trang thanh toán `GET /booking/payment` (#33) là tờ hóa đơn: tuyến và giờ, mỗi vé một
+dòng (mã chỗ, loại chỗ và toa, tên người đi, giá), tổng tiền, nút "Thanh toán" và link
+"Đổi chỗ". Không có bản nháp thì về `/trips`; bản nháp thiếu họ tên hoặc CCCD thì về
+bước Hành khách. `PaymentService.pay` kiểm tra lại mọi điều kiện (1 đến 10 chỗ, mỗi
+chỗ một người đi đủ tên và CCCD) vì bản nháp đến từ session.
+
+Sau khi thanh toán thành công, bản nháp bị xóa và khách tới `/booking/success/{id}`
+("Đặt vé thành công", dấu "ĐÃ THANH TOÁN", mã booking, danh sách vé). Kết quả các
+trường hợp:
+
+- Chỗ vừa bị người khác đặt: không tạo gì, các chỗ đó bị bỏ khỏi bản nháp, khách về
+  trang chọn chỗ với "Chỗ A05 vừa được người khác đặt. Vui lòng chọn chỗ khác.".
+- Chuyến bị hủy hoặc đã khởi hành: không tạo gì, bản nháp bị xóa, về `/trips` kèm lý do.
+- Bấm "Thanh toán" hai lần, mở hai tab, hoặc gửi lại: session được khóa suốt lượt
+  thanh toán, nên chỉ có một booking; lượt sau không còn bản nháp và được đưa tới trang
+  thành công của booking vừa tạo.
+- Hai thanh toán cùng tháng tạo cùng một mã booking: khóa duy nhất `uk_bookings_code`
+  từ chối lượt sau, `PaymentFacade` thanh toán lại tối đa 3 lần trong transaction mới.
 
 Hai trạng thái tuyệt đối không được phép tồn tại:
 

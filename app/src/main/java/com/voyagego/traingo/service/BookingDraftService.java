@@ -2,10 +2,12 @@ package com.voyagego.traingo.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -157,21 +159,28 @@ public class BookingDraftService {
 	}
 
 	/**
-	 * A seat code repeats across coaches (A05 is in coach 1 and 2), so a code
-	 * that would be ambiguous in the sentence carries its coach.
+	 * The draft without the given seats, passengers going with their seats; empty
+	 * when no seat is left. Used when payment finds some of the seats taken.
 	 */
+	public Optional<BookingDraft> withoutSeats(BookingDraft draft, Collection<Long> removed) {
+		List<Long> seatIds = new ArrayList<>();
+		List<PassengerDraft> passengers = new ArrayList<>();
+		for (int i = 0; i < draft.getTripSeatIds().size(); i++) {
+			if (!removed.contains(draft.getTripSeatIds().get(i))) {
+				seatIds.add(draft.getTripSeatIds().get(i));
+				passengers.add(draft.getPassengers().get(i));
+			}
+		}
+		return seatIds.isEmpty() ? Optional.empty()
+				: Optional.of(new BookingDraft(draft.getTripId(), seatIds, passengers));
+	}
+
 	private static void rejectTaken(List<Long> seatIds, Map<Long, TripSeat> seats) {
 		List<TripSeat> taken = seatIds.stream().map(seats::get)
 				.filter(seat -> seat.getStatus() != TripSeatStatus.AVAILABLE).toList();
-		if (taken.isEmpty()) {
-			return;
+		if (!taken.isEmpty()) {
+			throw SeatTakenException.of(taken);
 		}
-		List<String> labels = new ArrayList<>();
-		for (TripSeat seat : taken) {
-			boolean repeated = taken.stream().filter(other -> other.getSeatCode().equals(seat.getSeatCode())).count() > 1;
-			labels.add(repeated ? seat.getSeatCode() + " (toa " + seat.getCoachNumber() + ")" : seat.getSeatCode());
-		}
-		throw new SeatTakenException(labels, taken.stream().map(TripSeat::getId).toList());
 	}
 
 }
