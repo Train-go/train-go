@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<!--
+	Step 2 of a booking, the seat page (issue #30), after
+	docs/reports/ui-mau/client/dat-ve-e2-tau-ngang-tom-tat.html.
+
+	The trip header and summary come from the server. The train strip, the
+	coach map and the chosen-seat list are drawn by seat-map.js from
+	GET /api/trips/{id}/seat-map. "Tiếp tục" posts the chosen seat ids, which
+	the script copies into hidden inputs; nothing is locked until payment.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+<head>
+	<title th:text="|Chọn chỗ ${trip.originName} → ${trip.destinationName} · TrainGo|">Chọn chỗ · TrainGo</title>
+</head>
+<body>
+
+<main class="container tg-seats" id="tgSeats"
+	th:data-api-url="@{/api/trips/{id}/seat-map(id=${trip.tripId})}"
+	th:data-type="${coachType}"
+	th:data-selected="${#strings.listJoin(selectedSeatIds, ',')}"
+	data-max="10">
+
+	<nav th:replace="~{fragments/booking-steps :: steps(2)}"></nav>
+
+	<div class="tg-seats-layout">
+		<div class="tg-seats-main">
+			<div class="tg-seats-title">
+				<a class="tg-seats-back" th:href="@{${stepsTripsUrl}}" aria-label="Quay lại chọn chuyến">
+					<i class="bi bi-arrow-left" aria-hidden="true"></i>
+				</a>
+				<h1 id="tgSeatsHeading">Chọn chỗ</h1>
+			</div>
+
+			<div class="alert alert-danger" role="alert" th:if="${errorMessage}" th:text="${errorMessage}">
+				Chỗ A05 vừa được người khác đặt. Vui lòng chọn chỗ khác.</div>
+
+			<div class="tg-train" role="tablist" aria-label="Đoàn tàu" id="tgTrain"></div>
+
+			<ul class="tg-seat-legend" aria-label="Chú thích">
+				<li><i class="tg-seat-key"></i>Trống</li>
+				<li><i class="tg-seat-key is-chosen"></i>Bạn chọn</li>
+				<li><i class="tg-seat-key is-sold"></i>Đã bán</li>
+			</ul>
+
+			<section class="tg-coach" aria-labelledby="tgCoachTitle">
+				<div class="tg-coach-side">
+					<h2 id="tgCoachTitle">Toa</h2>
+					<span id="tgCoachKind"></span>
+					<strong id="tgCoachPrice"></strong>
+				</div>
+				<div class="tg-coach-map" id="tgCoachMap" aria-live="polite">
+					<p class="tg-seats-loading">Đang tải sơ đồ chỗ...</p>
+				</div>
+			</section>
+		</div>
+
+		<aside class="tg-seat-summary" aria-labelledby="tgSummaryTitle">
+			<h2 id="tgSummaryTitle">Chuyến của bạn</h2>
+			<div class="tg-sum-journey">
+				<div>
+					<b th:text="${#temporals.format(trip.departureAt, 'HH:mm')}">06:15</b>
+					<small th:text="${trip.originName}">Sài Gòn</small>
+				</div>
+				<span class="tg-sum-rail" aria-hidden="true"><i class="bi bi-train-front"></i></span>
+				<div class="tg-sum-end">
+					<b><th:block th:text="${#temporals.format(trip.arrivalAt, 'HH:mm')}">14:35</th:block><sup
+						th:if="${trip.arrivesNextDay > 0}" th:text="|+${trip.arrivesNextDay}|">+1</sup></b>
+					<small th:text="${trip.destinationName}">Nha Trang</small>
+				</div>
+			</div>
+			<div class="tg-sum-meta">
+				<span th:text="${trip.trainCode}">SNT3</span>
+				<span th:text="${dayLabel}">Thứ Ba, 20/10/2026</span>
+				<span th:text="${trip.durationLabel}">8g20</span>
+			</div>
+
+			<ul class="tg-picked" id="tgPicked" aria-label="Chỗ đã chọn"></ul>
+
+			<div class="tg-sum-total">
+				<span>Tổng tiền</span>
+				<strong id="tgTotal">0đ</strong>
+			</div>
+			<button class="tg-sum-next" id="tgNext" type="submit" form="tgSeatForm" disabled>Chọn ít nhất 1 chỗ</button>
+		</aside>
+	</div>
+
+	<form method="post" id="tgSeatForm" th:action="@{/booking/{id}/seats(id=${trip.tripId})}">
+		<input type="hidden" name="type" th:value="${coachType}" th:if="${coachType != null}">
+	</form>
+
+	<div class="tg-seats-toast" id="tgSeatsToast" role="status" hidden></div>
+
+	<script th:src="@{/js/seat-map.js}"></script>
+</main>
+
+</body>
+</html>

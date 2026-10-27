@@ -2786,3 +2786,722 @@ summary.tg-trip-head:focus-visible {
 		transition: none;
 	}
 }
+
+/* ---------- Seat page, booking step 2 (#30) ---------- */
+
+/*
+ * After docs/reports/ui-mau/client/dat-ve-e2-tau-ngang-tom-tat.html: the
+ * whole train as a strip of coaches, the map of the open coach, and a navy
+ * summary column that becomes a bar at the foot of a phone screen.
+ * seat-map.js draws the strip, the map and the chosen list.
+ */
+.tg-seats {
+	--tg-seat-size: 54px;
+	padding-block: 24px 56px;
+}
+
+.tg-seats-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 340px;
+	gap: 24px;
+	align-items: start;
+	margin-top: 22px;
+}
+
+.tg-seats-title {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-bottom: 16px;
+}
+
+.tg-seats-title h1 {
+	margin: 0;
+	font-size: clamp(26px, 3.2vw, 38px);
+	font-weight: 800;
+}
+
+.tg-seats-back {
+	display: grid;
+	flex: 0 0 48px;
+	place-items: center;
+	height: 48px;
+	border-radius: 50%;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+	color: var(--traingo-ink);
+	font-size: 20px;
+	text-decoration: none;
+}
+
+.tg-seats-back:hover {
+	background: var(--traingo-surface-hover);
+	color: var(--traingo-ink);
+}
+
+/* The whole train, side view. */
+.tg-train {
+	position: relative;
+	display: flex;
+	align-items: flex-end;
+	padding: 18px 18px 26px;
+	border-radius: 24px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.tg-train::after {
+	content: "";
+	position: absolute;
+	right: 18px;
+	bottom: 14px;
+	left: 18px;
+	height: 4px;
+	border-radius: 4px;
+	background: repeating-linear-gradient(90deg, var(--traingo-border) 0 18px, transparent 18px 26px);
+}
+
+.tg-loco {
+	display: grid;
+	flex: 0 0 84px;
+	place-items: center;
+	height: 116px;
+	margin-right: 8px;
+	border-radius: 48px 14px 14px 18px;
+	background: var(--traingo-navy);
+	color: #a9bff0;
+	font-size: 28px;
+}
+
+.tg-car {
+	position: relative;
+	display: flex;
+	flex: 1 0 150px;
+	flex-direction: column;
+	align-items: flex-start;
+	height: 116px;
+	margin-left: 10px;
+	padding: 12px 14px 0;
+	border: 0;
+	border-radius: 14px;
+	background: var(--traingo-surface-alt);
+	color: var(--traingo-ink);
+	text-align: left;
+	transition: background 0.15s, transform 0.15s;
+}
+
+.tg-car::before {
+	content: "";
+	position: absolute;
+	bottom: 30px;
+	left: -12px;
+	width: 14px;
+	height: 6px;
+	background: var(--traingo-border);
+}
+
+.tg-car:hover {
+	transform: translateY(-2px);
+}
+
+.tg-car b {
+	font-family: var(--traingo-font-display);
+	font-size: 18px;
+}
+
+.tg-car small {
+	color: var(--traingo-muted);
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.tg-car-windows {
+	position: absolute;
+	right: 14px;
+	bottom: 12px;
+	left: 14px;
+	display: flex;
+	gap: 5px;
+}
+
+.tg-car-windows i {
+	flex: 1;
+	height: 16px;
+	border-radius: 5px;
+	background: var(--traingo-surface);
+}
+
+.tg-car-windows i.is-sold {
+	background: var(--traingo-neutral-500);
+}
+
+.tg-car[aria-selected="true"] {
+	background: var(--traingo-navy);
+	color: #fff;
+}
+
+.tg-car[aria-selected="true"] small {
+	color: #a9bff0;
+}
+
+.tg-car[aria-selected="true"] .tg-car-windows i {
+	background: var(--traingo-navy-2);
+}
+
+.tg-car[aria-selected="true"] .tg-car-windows i.is-sold {
+	background: #b3bfd6;
+}
+
+.tg-car.is-full {
+	opacity: 0.55;
+}
+
+/* Legend. */
+.tg-seat-legend {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 18px;
+	margin: 12px 4px 18px;
+	padding: 0;
+	color: var(--traingo-muted);
+	font-size: 15px;
+	font-weight: 600;
+	list-style: none;
+}
+
+.tg-seat-legend li {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.tg-seat-key {
+	width: 22px;
+	height: 22px;
+	border-radius: 7px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 2px var(--traingo-border);
+}
+
+.tg-seat-key.is-chosen {
+	background: var(--traingo-primary);
+	box-shadow: inset 0 0 0 2px var(--traingo-navy);
+}
+
+.tg-seat-key.is-sold {
+	background: var(--traingo-neutral-200);
+	box-shadow: inset 0 0 0 2px var(--traingo-neutral-300);
+}
+
+/* The coach seen from above. */
+.tg-coach {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	overflow: hidden;
+	border-radius: 24px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+}
+
+.tg-coach-side {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 4px;
+	width: 170px;
+	padding: 22px;
+	background: var(--traingo-navy);
+	color: #fff;
+}
+
+.tg-coach-side h2 {
+	margin: 0;
+	color: #fff;
+	font-size: 24px;
+}
+
+.tg-coach-side span {
+	color: #b3bfd6;
+	font-weight: 600;
+}
+
+.tg-coach-side strong {
+	display: inline-flex;
+	align-items: center;
+	align-self: flex-start;
+	height: 36px;
+	margin-top: 10px;
+	padding: 0 12px;
+	border-radius: 999px;
+	background: #a9bff0;
+	color: var(--traingo-navy);
+}
+
+.tg-coach-map {
+	padding: 22px;
+	overflow-x: auto;
+}
+
+.tg-seats-loading {
+	display: grid;
+	justify-items: start;
+	gap: 12px;
+	margin: 0;
+	color: var(--traingo-muted);
+}
+
+.tg-seat-grid {
+	display: grid;
+	grid-auto-columns: minmax(var(--tg-seat-size), 1fr);
+	grid-auto-flow: column;
+	grid-template-rows: repeat(2, var(--tg-seat-size)) 26px repeat(2, var(--tg-seat-size));
+	gap: 8px;
+}
+
+.tg-aisle {
+	display: grid;
+	place-items: center;
+	color: var(--traingo-neutral-500);
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.tg-cabins {
+	display: grid;
+	grid-auto-columns: minmax(120px, 1fr);
+	grid-auto-flow: column;
+	gap: 10px;
+}
+
+.tg-cabin {
+	padding: 10px;
+	border-radius: 18px;
+	background: var(--traingo-surface-alt);
+}
+
+.tg-cabin p {
+	margin: 0 0 8px;
+	color: var(--traingo-muted);
+	font-size: 13px;
+	font-weight: 700;
+}
+
+.tg-cabin div {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+.tg-seat {
+	position: relative;
+	min-height: var(--tg-seat-size);
+	border: 0;
+	border-radius: 14px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 2px var(--traingo-border);
+	color: var(--traingo-ink);
+	font-weight: 700;
+	transition: transform 0.12s;
+}
+
+.tg-seat:hover:not(:disabled):not([aria-pressed="true"]) {
+	box-shadow: inset 0 0 0 2px var(--traingo-navy);
+}
+
+.tg-seat:active:not(:disabled) {
+	transform: scale(0.94);
+}
+
+.tg-seat[aria-pressed="true"] {
+	background: var(--traingo-primary);
+	box-shadow: inset 0 0 0 2px var(--traingo-navy);
+	color: #fff;
+}
+
+.tg-seat:disabled {
+	background: var(--traingo-neutral-200);
+	box-shadow: none;
+	color: var(--traingo-neutral-500);
+	cursor: not-allowed;
+}
+
+/* A sold seat is struck through. */
+.tg-seat:disabled::after {
+	content: "";
+	position: absolute;
+	top: 50%;
+	right: 30%;
+	left: 30%;
+	height: 2px;
+	background: var(--traingo-neutral-500);
+	transform: rotate(-35deg);
+}
+
+.tg-seat:focus-visible,
+.tg-car:focus-visible,
+.tg-seat-summary button:focus-visible {
+	outline: 3px solid var(--traingo-navy);
+	outline-offset: 3px;
+}
+
+/* Summary column. */
+.tg-seat-summary {
+	position: sticky;
+	top: 16px;
+	padding: 24px;
+	border-radius: 28px;
+	background: var(--traingo-navy);
+	box-shadow: var(--traingo-shadow);
+	color: #fff;
+}
+
+.tg-seat-summary h2 {
+	margin: 0 0 14px;
+	color: #b3bfd6;
+	font-family: var(--traingo-font-body);
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0;
+}
+
+.tg-sum-journey {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 12px;
+}
+
+.tg-sum-journey b {
+	display: block;
+	font-family: var(--traingo-font-display);
+	font-size: 30px;
+	line-height: 1.1;
+}
+
+.tg-sum-journey sup {
+	margin-left: 2px;
+	color: #a9bff0;
+	font-size: 13px;
+}
+
+.tg-sum-journey small {
+	color: #b3bfd6;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.tg-sum-end {
+	text-align: right;
+}
+
+.tg-sum-rail {
+	position: relative;
+	display: block;
+	height: 2px;
+	background: repeating-linear-gradient(90deg, #2a3b5e 0 8px, transparent 8px 14px);
+}
+
+.tg-sum-rail i {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	padding: 0 6px;
+	background: var(--traingo-navy);
+	color: #a9bff0;
+	transform: translate(-50%, -50%);
+}
+
+.tg-sum-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 14px 0 20px;
+}
+
+.tg-sum-meta span {
+	display: inline-flex;
+	align-items: center;
+	height: 32px;
+	padding: 0 12px;
+	border-radius: 999px;
+	background: var(--traingo-navy-2);
+	color: #b3bfd6;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.tg-picked {
+	display: grid;
+	gap: 8px;
+	margin: 0 0 18px;
+	padding: 0;
+	list-style: none;
+}
+
+.tg-picked li {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 12px;
+	min-height: 58px;
+	padding: 0 6px 0 8px;
+	border-radius: 16px;
+	background: var(--traingo-navy-2);
+}
+
+.tg-picked-code {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	background: #a9bff0;
+	color: var(--traingo-navy);
+	font-size: 14px;
+	font-weight: 800;
+}
+
+.tg-picked-what b {
+	display: block;
+	font-size: 15px;
+}
+
+.tg-picked-what small {
+	color: #b3bfd6;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.tg-picked button {
+	width: 44px;
+	height: 44px;
+	border: 0;
+	border-radius: 12px;
+	background: none;
+	color: #b3bfd6;
+}
+
+.tg-picked button:hover {
+	background: #2a3b5e;
+	color: #fff;
+}
+
+.tg-sum-total {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	padding-top: 16px;
+	border-top: 1px solid #2a3b5e;
+}
+
+.tg-sum-total span {
+	color: #b3bfd6;
+	font-weight: 600;
+}
+
+.tg-sum-total strong {
+	font-family: var(--traingo-font-display);
+	font-size: 30px;
+}
+
+.tg-sum-next {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 62px;
+	margin-top: 18px;
+	border: 0;
+	border-radius: 18px;
+	background: #3b63c4;
+	color: #fff;
+	font-family: var(--traingo-font-display);
+	font-size: 20px;
+	font-weight: 700;
+	transition: transform 0.15s;
+}
+
+.tg-sum-next:active:not(:disabled) {
+	transform: scale(0.98);
+}
+
+.tg-sum-next:disabled {
+	background: var(--traingo-navy-2);
+	color: #b3bfd6;
+	cursor: not-allowed;
+}
+
+.tg-seats-toast {
+	position: fixed;
+	z-index: 1080;
+	top: 16px;
+	left: 50%;
+	max-width: calc(100vw - 32px);
+	padding: 12px 18px;
+	border-radius: 14px;
+	background: var(--traingo-primary);
+	box-shadow: var(--traingo-shadow);
+	color: #fff;
+	font-weight: 700;
+	transform: translateX(-50%);
+}
+
+.tg-seats-toast[hidden] {
+	display: none;
+}
+
+/* Tablet: the summary drops under the seats. */
+@media (max-width: 1100px) {
+	.tg-seats-layout {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.tg-seat-summary {
+		position: static;
+	}
+}
+
+/* Phone: the coach turns upright and the summary becomes a bar at the bottom. */
+@media (max-width: 760px) {
+	.tg-seats {
+		padding-bottom: 260px;
+	}
+
+	.tg-loco {
+		flex-basis: 56px;
+		height: 108px;
+		font-size: 22px;
+	}
+
+	.tg-car {
+		flex-basis: 128px;
+		height: 108px;
+	}
+
+	.tg-coach {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.tg-coach-side {
+		flex-flow: row wrap;
+		align-items: center;
+		gap: 4px 12px;
+		width: auto;
+		padding: 14px 16px;
+	}
+
+	.tg-coach-side strong {
+		margin: 0 0 0 auto;
+	}
+
+	.tg-coach-map {
+		padding: 14px;
+	}
+
+	/* Scrolling a seat into view must stop above the bar, not under it. */
+	.tg-seat,
+	.tg-car {
+		scroll-margin-bottom: 260px;
+	}
+
+	.tg-seat-grid {
+		grid-auto-columns: auto;
+		grid-auto-flow: row;
+		grid-template-columns: repeat(2, minmax(0, 1fr)) 16px repeat(2, minmax(0, 1fr));
+		grid-template-rows: none;
+	}
+
+	.tg-aisle {
+		font-size: 0;
+	}
+
+	.tg-cabins {
+		grid-auto-columns: auto;
+		grid-auto-flow: row;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tg-seat-summary {
+		position: fixed;
+		z-index: 1030;
+		top: auto;
+		right: 10px;
+		bottom: 10px;
+		left: 10px;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 8px 12px;
+		padding: 12px;
+		border-radius: 24px;
+	}
+
+	.tg-seat-summary h2,
+	.tg-sum-journey,
+	.tg-sum-meta {
+		display: none;
+	}
+
+	.tg-picked {
+		grid-column: 1 / -1;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+		max-height: 150px;
+		margin: 0;
+		overflow-y: auto;
+	}
+
+	.tg-picked li {
+		grid-template-columns: auto auto;
+		min-height: 44px;
+		gap: 4px;
+		padding: 0 0 0 4px;
+	}
+
+	.tg-picked-code {
+		width: 36px;
+		height: 36px;
+	}
+
+	.tg-picked-what {
+		display: none;
+	}
+
+	.tg-picked button {
+		width: 36px;
+		height: 36px;
+	}
+
+	.tg-sum-total {
+		flex-direction: column;
+		padding: 0 0 0 6px;
+		border: 0;
+	}
+
+	.tg-sum-total span {
+		font-size: 13px;
+	}
+
+	.tg-sum-total strong {
+		font-size: 24px;
+	}
+
+	.tg-sum-next {
+		width: auto;
+		height: 56px;
+		margin: 0;
+		padding: 0 24px;
+		font-size: 18px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tg-car,
+	.tg-seat,
+	.tg-sum-next {
+		transition: none;
+	}
+}

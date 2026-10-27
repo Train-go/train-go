@@ -12,7 +12,8 @@ import org.springframework.web.servlet.ModelAndView;
  * Vietnamese 404 page (templates/error/404.html) instead of a stack trace.
  * The exception's own sentence, such as "Không tìm thấy booking.", tells the
  * user what was missing. Business rule errors stay with each controller, which
- * shows them on the form the user was filling in.
+ * shows them on the form the user was filling in; the one exception is a trip
+ * that can no longer be booked, which has its own page.
  *
  * REST controllers are handled first by {@link ApiExceptionHandler}.
  */
@@ -23,6 +24,13 @@ public class PageExceptionHandler {
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	ModelAndView notFound(ResourceNotFoundException ex) {
 		return new ModelAndView("error/404").addObject("notFoundMessage", ex.getMessage());
+	}
+
+	/** A trip that is missing, cancelled or gone is a page with a way back to the trip list, not a 404. */
+	@ExceptionHandler(TripNotBookableException.class)
+	@ResponseStatus(HttpStatus.CONFLICT)
+	ModelAndView tripNotBookable(TripNotBookableException ex) {
+		return new ModelAndView("error/trip-unavailable").addObject("reason", ex.getMessage());
 	}
 
 }
