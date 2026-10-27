@@ -21,6 +21,10 @@
 				Đang ở Ga Sài Gòn. Lịch xếp đến T3 04/11 09:45, sớm nhất đi lại lúc 04/11 10:15.
 			</p>
 		</div>
+		<a class="btn btn-primary btn-lg" th:href="@{/admin/trains/{id}/trips/new(id=${train.id})}">
+			<i class="bi bi-plus-lg" aria-hidden="true"></i>
+			<span th:text="${end != null} ? 'Thêm chuyến' : 'Thêm chuyến đầu tiên'">Thêm chuyến</span>
+		</a>
 	</section>
 
 	<button type="button" class="btn btn-link btn-sm past-toggle" th:if="${schedule.pastCount > 0}"

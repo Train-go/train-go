@@ -528,6 +528,112 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 #train-form .is-invalid ~ .form-text { display: none; }
 .history-section { display: grid; gap: 10px; }
 
+/* ---------- trip wizard (admin/trip-wizard.html) ---------- */
+
+/* Component display rules must not override hidden on the wizard's parts. */
+.wz-page [hidden] { display: none !important; }
+.wz-page { display: grid; gap: 16px; }
+.wz-back { justify-self: start; margin-left: -8px; }
+.wz { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 28px; align-items: start; }
+.wz-main { display: grid; gap: 18px; min-width: 0; }
+.wz-main h1 { font-size: 26px; }
+.wz-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 6px; }
+.wz-steps li > * { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 12px 0 6px; border-radius: 999px; font-weight: 700; font-size: 13px; color: var(--muted); border: 0; background: transparent; }
+.wz-steps li button { cursor: pointer; color: var(--accent-strong); }
+.wz-steps li button:hover { background: var(--accent-soft); }
+.wz-steps .n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--sunk); font-size: 12px; }
+.wz-steps li.done .n { background: var(--accent); color: #fff; }
+.wz-steps li.now > * { background: var(--ink); color: #fff; }
+.wz-steps li.now .n { background: rgba(255, 255, 255, .18); }
+.wz-steps li + li::before { content: ""; display: inline-block; width: 14px; height: 2px; margin-right: 6px; vertical-align: middle; background: var(--line-strong); }
+.wz-body { display: grid; gap: 16px; padding: 22px 24px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); min-width: 0; }
+.wz-q { margin: 0; font-size: 17px; font-weight: 700; color: var(--ink); }
+.wz-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.wz-actions .grow { flex: 1; }
+.wz-err { display: flex; gap: 6px; align-items: flex-start; font-size: 12.5px; font-weight: 600; color: var(--danger); }
+.wz-err .bi { margin-top: 1px; }
+.wz-page .field { display: grid; gap: 6px; min-width: 0; }
+.wz-page .field .form-label { margin-bottom: 0; }
+.wz-page .label-line { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.wz-page .form-text { margin-top: 0; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { min-height: 32px; padding: 0 12px; border-radius: var(--r-control); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); font-weight: 600; font-size: 13px; cursor: pointer; }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-strong); }
+.chip:disabled { color: #9aa7a1; border-style: dashed; border-color: var(--line-strong); background: var(--surface); cursor: not-allowed; }
+
+/* Destination cards: direction, station, distance and running time. */
+.dest-wrap { display: grid; gap: 8px; }
+.dests { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.dest { display: grid; gap: 1px; padding: 10px 12px; border-radius: var(--r-control); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); text-align: left; cursor: pointer; transition: border-color .15s, background-color .15s; }
+.dest:hover { border-color: var(--accent); }
+.dest b { font-size: 14.5px; }
+.dest small { color: var(--muted); font-weight: 600; font-size: 12px; }
+.dest .dir-hint { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.dest[aria-pressed="true"] { border: 2px solid var(--accent); background: var(--accent-soft); padding: 9px 11px; }
+.more-btn { justify-self: start; }
+.missing-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.missing-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 6px 0; border-top: 1px solid var(--line); }
+
+/* Departure day, seven of the fourteen days at a time. */
+.date-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.date-strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.date-strip button { display: grid; gap: 0; justify-items: center; padding: 6px 0; min-height: 52px; border-radius: var(--r-control); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+.date-strip button small { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.date-strip button b { font-size: 14px; }
+.date-strip button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.date-strip button[aria-pressed="true"] small { color: #d6efec; }
+.date-strip button:disabled { border-style: dashed; color: #a7b2ad; cursor: not-allowed; background: var(--bg); }
+.date-strip button:disabled small { color: #a7b2ad; }
+.time-line { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 12px; align-items: end; }
+.time-line .chips { padding-bottom: 4px; }
+.arr-fields { display: grid; gap: 8px; }
+.wz-inline-btn { justify-self: start; margin-left: -8px; }
+.offset { display: inline-flex; align-items: center; gap: 4px; min-height: 40px; }
+.offset span { min-width: 72px; text-align: center; font-weight: 700; font-size: 13px; }
+/* The suggested arrival, read-only until "Sửa". */
+.input-locked { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 0 4px 0 12px; border-radius: var(--r-control); background: var(--sunk); color: var(--ink-2); font-weight: 600; }
+.price-field { max-width: 320px; }
+
+.confirm-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.confirm-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 16px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.confirm-list li:last-child { border-bottom: 0; }
+.confirm-list .num { font-weight: 700; }
+
+/* The preview of the schedule: the last trips, then the new leg in colour. */
+.wz-preview { position: sticky; top: 16px; }
+.pv { display: grid; gap: 12px; padding: 18px; border-radius: var(--r-panel); background: var(--sunk); min-width: 0; }
+.pv h2 { font-size: 14px; color: var(--muted); }
+.pv-list { list-style: none; margin: 0; padding: 0 0 0 14px; display: grid; gap: 10px; border-left: 3px solid var(--line-strong); }
+.pv-list li { position: relative; display: grid; gap: 0; font-size: 13.5px; }
+.pv-list li::before { content: ""; position: absolute; left: -22px; top: 4px; width: 13px; height: 13px; border-radius: 50%; background: var(--surface); border: 3px solid var(--line-strong); }
+.pv-list li span { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+.pv-list li.new b { color: var(--accent-strong); }
+.pv-list li.new::before { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+
+/* The done card stands on its own, without the step frame around it. */
+.wz-body.is-done { padding: 0; border: 0; background: none; }
+.wz-done { display: grid; justify-items: start; gap: 10px; padding: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); }
+.wz-done:focus { outline: none; }
+.wz-done .tick { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 22px; }
+.wz-done h2 { font-size: 21px; }
+.wz-done-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+
+@media (max-width: 1000px) {
+	.wz { grid-template-columns: minmax(0, 1fr); }
+	.wz-preview { position: static; }
+}
+@media (max-width: 720px) {
+	.wz-main h1 { font-size: 22px; }
+	.wz-body { padding: 16px; }
+	.time-line { grid-template-columns: minmax(0, 1fr); }
+	.date-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+	.confirm-list li { grid-template-columns: minmax(0, 1fr) auto; }
+	.confirm-list li > span:not(.num) { grid-column: 1 / -1; grid-row: 2; }
+	.price-field { max-width: none; }
+}
+
 /* ---------- overlays: offcanvas (sheet), modal (confirm), toast ---------- */
 
 .offcanvas-backdrop, .modal-backdrop { --bs-backdrop-bg: #14201b; --bs-backdrop-opacity: 0.36; }

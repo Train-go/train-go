@@ -1,7 +1,7 @@
 /*
  * The rules of the train page's "Bảng tính" view, as pure functions with no
  * DOM, exported as window.TrainSheetDerive. train-sheet.js draws what
- * derive() returns.
+ * derive() returns. The trip wizard (trip-wizard.js) uses its date helpers.
  *
  * Draft rows chain: every row starts at the station where the one above ends,
  * and its earliest departure is that row's arrival plus the turnaround. Any
@@ -206,7 +206,7 @@ window.TrainSheetDerive = (function () {
 
 	return {
 		TURNAROUND_MIN: TURNAROUND_MIN, TIME_PATTERN: TIME_PATTERN,
-		parseIso: parseIso, toIso: toIso, startOfDay: startOfDay, addDays: addDays, daysBetween: daysBetween,
+		parseIso: parseIso, toIso: toIso, startOfDay: startOfDay, addDays: addDays, daysBetween: daysBetween, atTime: atTime,
 		nextEight: nextEight, fmtTime: fmtTime, fmtDayTime: fmtDayTime, dayLabel: dayLabel,
 		suggestedMinutes: suggestedMinutes, suggestedPrice: suggestedPrice,
 		blank: blank, derive: derive, lastOrigin: lastOrigin, nextFloor: nextFloor

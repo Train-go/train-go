@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.model.request.CreateTripsRequest;
 import com.voyagego.traingo.model.request.TrainRequest;
+import com.voyagego.traingo.model.response.NextLegOptions;
 import com.voyagego.traingo.model.response.PlannedLeg;
 import com.voyagego.traingo.service.TrainScheduleService;
 import com.voyagego.traingo.service.TrainScheduleService.Pace;
@@ -30,7 +31,8 @@ import jakarta.validation.Valid;
 
 /**
  * JSON endpoints behind the trains page, called by static/js/admin/train.js
- * through TG.api: add, edit, soft delete, restore, plan and add trips. Errors take the ApiError
+ * and static/js/admin/trip-wizard.js through TG.api: add, edit, soft delete,
+ * restore, plan and add trips. Errors take the ApiError
  * shape of ApiExceptionHandler: 400 with one message per field, 404 for a
  * missing train, 409 for a broken rule (duplicate or locked code, unfinished
  * trips, code taken by another train).
@@ -80,6 +82,15 @@ public class TrainAdminApiController {
 	public List<PlannedLeg> plan(@PathVariable long id, @RequestParam long from, @RequestParam long to,
 			@RequestParam Pace pace, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime firstDeparture) {
 		return trainScheduleService.planLegs(id, from, to, pace, firstDeparture);
+	}
+
+	/**
+	 * The choices of the trip wizard's next leg. {@code origin} is only read
+	 * for a train with no trip yet; 404 for an unknown station.
+	 */
+	@GetMapping("/{id}/next-leg")
+	public NextLegOptions nextLeg(@PathVariable long id, @RequestParam(required = false) Long origin) {
+		return trainScheduleService.nextLegOptions(id, origin, LocalDateTime.now());
 	}
 
 	/**

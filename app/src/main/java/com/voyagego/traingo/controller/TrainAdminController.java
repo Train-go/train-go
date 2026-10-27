@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.voyagego.traingo.entity.Train;
+import com.voyagego.traingo.model.dto.CoachLayout;
 import com.voyagego.traingo.model.response.TrainScheduleView;
 import com.voyagego.traingo.service.TrainScheduleService;
 import com.voyagego.traingo.service.TrainService;
@@ -73,6 +74,21 @@ public class TrainAdminController {
 		// "Xóa tàu" only shows when TrainService.delete would accept it.
 		model.addAttribute("canDelete", trainService.countUnfinishedTrips(id, now) == 0);
 		return VIEW;
+	}
+
+	/**
+	 * The trip wizard: one leg after the train's last trip, in four steps. The
+	 * page loads its choices from GET /api/admin/trains/{id}/next-leg and adds
+	 * the leg through POST /api/admin/trains/{id}/trips.
+	 */
+	@GetMapping("/{id}/trips/new")
+	public String newTrip(@PathVariable long id, Model model) {
+		// Throws TrainNotFoundException, shown as the 404 page, for an unknown
+		// or deleted train.
+		model.addAttribute("train", trainService.findById(id));
+		model.addAttribute("chained", trainScheduleService.chainEnd(id).isPresent());
+		model.addAttribute("seatsPerTrip", CoachLayout.totalSeats());
+		return "admin/trip-wizard";
 	}
 
 }
