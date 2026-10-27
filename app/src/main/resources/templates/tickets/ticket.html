@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<!--
+	One e-ticket (issue #34), /tickets/{id}. The card is the shared fragment
+	fragments/ticket-card; this page adds the way back to the booking.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+<head>
+	<title th:text="|Vé ${ticket.ticketCode} · TrainGo|">Vé TK202610001-01 · TrainGo</title>
+</head>
+<body>
+
+<main class="container tg-pass">
+	<div class="tg-pass-col">
+		<h1 class="tg-pass-title">Vé điện tử</h1>
+
+		<div th:replace="~{fragments/ticket-card :: card(${ticket}, null, null)}"></div>
+
+		<div class="tg-pay-after">
+			<a th:href="@{/my-trips/{id}/tickets(id=${ticket.bookingId})}"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Các vé của booking</a>
+			<a th:href="@{/my-trips/{id}(id=${ticket.bookingId})}"><i class="bi bi-arrow-left" aria-hidden="true"></i>Chi tiết booking</a>
+		</div>
+	</div>
+</main>
+
+</body>
+</html>

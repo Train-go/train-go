@@ -2,8 +2,7 @@
 <!--
 	The page after a paid booking (issue #33). It reads the booking the same
 	way "Vé của tôi" does, so another customer's booking id is the 404 page.
-	"Xem các vé" lists the tickets with <details>; #34 turns each line into a
-	link to its e-ticket.
+	"Xem các vé" opens the e-tickets of the booking (#34).
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
@@ -49,16 +48,9 @@
 			</article>
 		</div>
 
-		<details class="tg-pay-tickets">
-			<summary><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Xem các vé<i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
-			<ul>
-				<li th:each="ticket : ${booking.tickets}">
-					<span class="tg-mono" th:text="${ticket.ticketCode}">TK202610009-01</span>
-					<span th:text="${ticket.fullName}">Nguyễn Văn An</span>
-					<span th:text="${ticket.seatLabel}">Toa 1 · A05</span>
-				</li>
-			</ul>
-		</details>
+		<a class="tg-bill-pay tg-bill-tickets" th:href="@{/my-trips/{id}/tickets(id=${booking.id})}">
+			<i class="bi bi-ticket-perforated" aria-hidden="true"></i>Xem các vé
+		</a>
 
 		<div class="tg-pay-after">
 			<a th:href="@{/my-trips}"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Vé của tôi</a>

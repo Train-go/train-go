@@ -168,6 +168,17 @@ Sau khi booking thành công, mỗi hành khách có một vé riêng gồm mã 
 tên hành khách, tuyến, tàu, ngày giờ khởi hành, toa và chỗ. Vé xem trực tiếp trên
 web.
 
+Vé xem trên web (#34), chỉ chủ booking xem được:
+
+- `/tickets/{ticketId}` là một vé: mã vé (chữ đơn cách), mã booking, tên người đi,
+  CCCD che còn 4 số cuối, tuyến, tàu, giờ đi và đến, toa, chỗ, loại chỗ, giá.
+- `/my-trips/{bookingId}/tickets` liệt kê mọi vé của booking theo thứ tự `-01`, `-02`.
+  Nút "Xem các vé" ở trang thành công và "Xem vé" ở chi tiết booking dẫn tới đây; mỗi
+  mã vé trong bảng vé của chi tiết booking là link tới vé đó.
+- Booking đã hủy thì vé vẫn mở được, màu xám kèm dấu "ĐÃ HỦY".
+- Vé hoặc booking của người khác, hoặc không tồn tại, là trang 404 "Không tìm thấy vé."
+  như nhau, nên không lộ mã vé. Admin không vào được hai đường dẫn này (khu khách hàng).
+
 Cách tạo mã (D5, chốt 12/10/2026), giống dữ liệu mẫu:
 
 - Mã booking: `BK` + năm tháng + số thứ tự 3 chữ số trong tháng, lấy số tiếp
