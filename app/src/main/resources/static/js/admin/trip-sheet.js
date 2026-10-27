@@ -1,214 +1,333 @@
 /*
- * The trip sheet (templates/admin/fragments/trip-sheet.html), shared by every
- * admin page that mentions a trip. It adds TG.openTrip(tripId, triggerEl),
- * which reads GET /api/admin/trips/{id} and opens the sheet; any element with
- * data-trip-id opens it on a click or Enter, so a page only marks its rows.
+ * The trip sheet (templates/admin/fragments/trip-sheet.html), shared by the
+ * trains, trips and bookings pages:
  *
- * The sheet draws the four coaches as tabs with a seat map: sold seats can be
- * pressed and highlight their passenger's row; free seats are disabled. It
- * opens on the first coach that has a sold seat, so the map never looks
- * empty by accident.
+ *   TG.openTrip(tripId, triggerEl)   load GET /api/admin/trips/{id}, fill and open
+ *
+ * A page needs no script of its own to use it: any element with
+ * data-trip-id and tabindex="0" opens the sheet on click or Enter, and
+ * ?trip=<id> in the URL opens it on load.
+ *
+ * After a cancel the sheet fires a cancelable
+ *
+ *   document 'trip:cancelled'  detail { tripId, message }
+ *
+ * By default the page then reloads with ?trip=<id>, so its counts and lists
+ * come from the server and the sheet shows the cancelled trip again. A page
+ * that refreshes itself calls event.preventDefault() and shows the toast.
+ *
+ * Loaded with defer, after admin.js. Text from the server is placed with
+ * textContent only: passenger names are typed in by customers.
  */
 (function () {
 	'use strict';
 
-	const sheet = document.getElementById('trip-sheet');
-	if (!sheet) {
+	const SHEET_ID = 'trip-sheet';
+	const OPEN_PARAM = 'trip';
+	const sheetEl = document.getElementById(SHEET_ID);
+	if (!sheetEl) {
 		return;
 	}
-	const money = new Intl.NumberFormat('vi-VN');
-	// The trip on show and its coach tab; render() fills them.
-	let current = null;
-	let openCoach = 1;
+	const rowTemplate = document.getElementById('trip-sheet-passenger');
+	const cancelButton = slot('cancel');
 
-	function field(name) {
-		return sheet.querySelector('[data-f="' + name + '"]');
+	let trip = null;
+	let coachNumber = null;
+	let pickedSeat = null;
+
+	function slot(name) {
+		return sheetEl.querySelector('[data-trip="' + name + '"]');
 	}
 
-	function element(tag, className, text) {
-		const el = document.createElement(tag);
-		if (className) {
-			el.className = className;
+	function money(amount) {
+		return amount.toLocaleString('vi-VN') + 'đ';
+	}
+
+	function seatKey(coach, code) {
+		return coach + '-' + code;
+	}
+
+	function route(detail) {
+		return detail.originName + ' → ' + detail.destinationName;
+	}
+
+	async function openTrip(tripId, triggerEl) {
+		try {
+			show(await load(tripId), true);
+		} catch (error) {
+			TG.toast(error.message, { error: true });
+			return;
 		}
-		if (text !== undefined) {
-			el.textContent = text;
+		TG.sheet.open(SHEET_ID, triggerEl);
+	}
+
+	function load(tripId) {
+		return TG.api(sheetEl.dataset.apiUrl + '/' + encodeURIComponent(tripId));
+	}
+
+	/* ---------- render ---------- */
+
+	function show(detail, fresh) {
+		trip = detail;
+		if (fresh) {
+			// Open on the first coach with sold seats, so the map never looks empty by accident.
+			const withSold = detail.coaches.find(function (coach) { return coach.sold > 0; });
+			coachNumber = (withSold || detail.coaches[0] || {}).number;
+			pickedSeat = null;
 		}
-		return el;
+
+		const train = slot('train');
+		train.href = sheetEl.dataset.trainsUrl + '/' + detail.trainId;
+		train.textContent = detail.trainCode + ' ' + detail.trainName;
+		slot('id').textContent = detail.id;
+		slot('title').textContent = route(detail);
+		slot('phase').className = 'tag ' + detail.phase;
+		slot('phase').textContent = detail.phaseLabel;
+		slot('schedule').textContent = detail.schedule;
+		slot('distance').textContent = detail.distanceKm + ' km · ' + detail.duration;
+		slot('price').textContent = money(detail.basePrice);
+		slot('sold').textContent = detail.soldSeats + '/' + detail.totalSeats + ' chỗ';
+
+		renderCoachTabs();
+		renderSeats();
+		renderPassengers();
+		renderFooter();
 	}
 
-	function cell(text, className) {
-		return element('td', className, text);
+	function renderCoachTabs() {
+		const tabs = slot('coach-tabs');
+		tabs.replaceChildren();
+		trip.coaches.forEach(function (coach) {
+			const button = document.createElement('button');
+			button.type = 'button';
+			button.setAttribute('role', 'tab');
+			button.setAttribute('aria-selected', String(coach.number === coachNumber));
+			const name = document.createElement('b');
+			name.textContent = 'Toa ' + coach.number;
+			const info = document.createElement('small');
+			info.textContent = coach.typeLabel + ' · ' + coach.sold + '/' + coach.capacity;
+			button.append(name, info);
+			button.addEventListener('click', function () {
+				selectCoach(coach.number);
+			});
+			tabs.append(button);
+		});
 	}
 
-	/* ---------- seat map ---------- */
+	/*
+	 * Updates the tabs in place instead of rebuilding them: a rebuilt tab would
+	 * drop keyboard focus to <body>, where Esc no longer reaches the sheet.
+	 */
+	function selectCoach(number) {
+		coachNumber = number;
+		slot('coach-tabs').querySelectorAll('[role="tab"]').forEach(function (tab, index) {
+			tab.setAttribute('aria-selected', String(trip.coaches[index].number === number));
+		});
+		renderSeats();
+	}
+
+	/* Seat coaches: 8 seats a row. Sleeper coaches: cabins of 4 beds. */
+	function renderSeats() {
+		const panel = slot('seats');
+		panel.replaceChildren();
+		const coach = trip.coaches.find(function (c) { return c.number === coachNumber; });
+		if (!coach) {
+			return;
+		}
+		const grid = document.createElement('div');
+		if (coach.type === 'SLEEPER') {
+			grid.className = 'seats cabins';
+			const cabins = new Map();
+			coach.seats.forEach(function (seat) {
+				if (!cabins.has(seat.cabin)) {
+					const cabin = document.createElement('div');
+					cabin.className = 'cabin';
+					const label = document.createElement('small');
+					label.textContent = 'Khoang ' + seat.cabin;
+					cabin.append(label);
+					cabins.set(seat.cabin, cabin);
+					grid.append(cabin);
+				}
+				cabins.get(seat.cabin).append(seatButton(coach, seat));
+			});
+		} else {
+			grid.className = 'seats';
+			coach.seats.forEach(function (seat) {
+				grid.append(seatButton(coach, seat));
+			});
+		}
+		panel.append(grid);
+	}
 
 	function seatButton(coach, seat) {
-		const button = element('button', 'seat' + (seat.sold ? ' sold' : ''), seat.code);
+		const key = seatKey(coach.number, seat.code);
+		const button = document.createElement('button');
 		button.type = 'button';
+		button.className = 'seat' + (seat.sold ? ' sold' : '');
 		button.disabled = !seat.sold;
-		button.dataset.key = coach.number + '-' + seat.code;
-		button.setAttribute('aria-label', 'Toa ' + coach.number + ' chỗ ' + seat.code
-				+ (seat.sold ? ', đã bán' + (seat.passengerName ? ' cho ' + seat.passengerName : '') : ', còn trống'));
+		button.textContent = seat.code;
+		button.setAttribute('aria-label', seat.sold
+			? seat.code + ', đã bán cho ' + seat.passengerName
+			: seat.code + ', còn trống');
+		if (seat.sold) {
+			button.dataset.key = key;
+			button.setAttribute('aria-pressed', String(pickedSeat === key));
+			button.addEventListener('click', function () {
+				pickedSeat = pickedSeat === key ? null : key;
+				markPickedSeat();
+				markPickedPassenger();
+			});
+		}
 		return button;
 	}
 
-	// Beds sit four to a cabin; seats are one run of eight to a row.
-	function drawSeats(coach) {
-		const map = field('seat-map');
-		map.replaceChildren();
-		if (!coach.sleeper) {
-			const grid = element('div', 'seats');
-			coach.seats.forEach(function (seat) {
-				grid.appendChild(seatButton(coach, seat));
-			});
-			map.appendChild(grid);
-			return;
-		}
-		const grid = element('div', 'seats cabins');
-		const cabins = new Map();
-		coach.seats.forEach(function (seat) {
-			if (!cabins.has(seat.cabin)) {
-				const cabin = element('div', 'cabin');
-				cabin.setAttribute('role', 'group');
-				cabin.setAttribute('aria-label', 'Khoang ' + seat.cabin);
-				cabins.set(seat.cabin, cabin);
-				grid.appendChild(cabin);
-			}
-			cabins.get(seat.cabin).appendChild(seatButton(coach, seat));
-		});
-		map.appendChild(grid);
-	}
-
-	function showCoach(number) {
-		openCoach = number;
-		field('coach-tabs').querySelectorAll('[role="tab"]').forEach(function (tab) {
-			tab.setAttribute('aria-selected', String(Number(tab.dataset.coach) === number));
-		});
-		drawSeats(current.coaches.find(function (coach) {
-			return coach.number === number;
-		}));
-		clearHighlight();
-	}
-
-	function clearHighlight() {
-		field('passengers').querySelectorAll('tr.hl').forEach(function (row) {
-			row.classList.remove('hl');
+	/* In place, like selectCoach, so the pressed seat keeps focus. */
+	function markPickedSeat() {
+		slot('seats').querySelectorAll('.seat.sold').forEach(function (button) {
+			button.setAttribute('aria-pressed', String(button.dataset.key === pickedSeat));
 		});
 	}
 
-	/* ---------- the rest of the sheet ---------- */
-
-	function passengerRow(passenger) {
-		const tr = element('tr');
-		tr.dataset.key = passenger.coachNumber + '-' + passenger.seatCode;
-		const name = cell(passenger.fullName);
-		name.appendChild(element('span', 'sub mono', passenger.idMask));
-		tr.appendChild(name);
-		tr.appendChild(cell('Toa ' + passenger.coachNumber + ' · ' + passenger.seatCode));
-		const booking = element('td');
-		const link = element('a', 'code', passenger.bookingCode);
-		link.href = sheet.dataset.bookingsUrl + '?open=' + encodeURIComponent(passenger.bookingCode);
-		booking.appendChild(link);
-		tr.appendChild(booking);
-		tr.appendChild(cell(money.format(passenger.price) + 'đ', 'num'));
-		return tr;
-	}
-
-	function render(trip) {
-		current = trip;
-		document.getElementById('trip-sheet-title').textContent = trip.routeLabel;
-		const trainLink = field('train-link');
-		trainLink.textContent = trip.trainCode + ' ' + trip.trainName;
-		trainLink.href = sheet.dataset.trainsUrl + '/' + trip.trainId;
-		field('trip-id').textContent = 'chuyến #' + trip.id;
-		const status = field('status');
-		status.textContent = trip.statusLabel;
-		status.className = 'tag ' + trip.statusCss;
-		field('times').textContent = trip.departureLabel + ' → ' + trip.arrivalLabel;
-		field('distance').textContent = trip.distanceKm + ' km';
-		field('price').textContent = money.format(trip.basePrice) + 'đ';
-		field('sold').textContent = trip.bookedCount + '/' + trip.totalSeats + ' chỗ';
-
-		const tabs = field('coach-tabs');
-		tabs.replaceChildren();
-		trip.coaches.forEach(function (coach) {
-			const tab = element('button', 'coach-tab', 'Toa ' + coach.number + ' · ' + coach.typeLabel + ' · '
-					+ coach.sold + '/' + coach.capacity);
-			tab.type = 'button';
-			tab.setAttribute('role', 'tab');
-			tab.dataset.coach = coach.number;
-			tabs.appendChild(tab);
-		});
-
-		const body = field('passengers');
+	function renderPassengers() {
+		const table = slot('passengers');
+		const body = table.querySelector('tbody');
 		body.replaceChildren();
 		trip.passengers.forEach(function (passenger) {
-			body.appendChild(passengerRow(passenger));
+			const row = rowTemplate.content.firstElementChild.cloneNode(true);
+			row.dataset.seat = seatKey(passenger.coachNumber, passenger.seatCode);
+			row.querySelector('[data-cell="name"]').textContent = passenger.fullName;
+			row.querySelector('[data-cell="identity"]').textContent = 'CCCD ' + passenger.maskedIdentity;
+			row.querySelector('[data-cell="seat"]').textContent = 'Toa ' + passenger.coachNumber + ' · ' + passenger.seatCode;
+			const booking = row.querySelector('[data-cell="booking"]');
+			booking.href = sheetEl.dataset.bookingsUrl + '?open=' + encodeURIComponent(passenger.bookingCode);
+			booking.textContent = passenger.bookingCode;
+			row.querySelector('[data-cell="price"]').textContent = money(passenger.ticketPrice);
+			body.append(row);
 		});
-		if (!trip.passengers.length) {
-			const empty = element('tr');
-			const td = cell('Chưa có booking nào.', 'text-body-secondary');
-			td.colSpan = 4;
-			empty.appendChild(td);
-			body.appendChild(empty);
-		}
-
-		const firstSold = trip.coaches.find(function (coach) {
-			return coach.sold > 0;
-		});
-		showCoach((firstSold || trip.coaches[0]).number);
+		const empty = trip.passengers.length === 0;
+		table.hidden = empty;
+		slot('no-passengers').hidden = !empty;
+		markPickedPassenger();
 	}
 
-	field('coach-tabs').addEventListener('click', function (event) {
-		const tab = event.target.closest('[role="tab"]');
-		if (tab) {
-			showCoach(Number(tab.dataset.coach));
-		}
-	});
+	function markPickedPassenger() {
+		slot('passengers').querySelectorAll('tbody tr').forEach(function (row) {
+			const picked = row.dataset.seat === pickedSeat;
+			row.classList.toggle('picked', picked);
+			if (picked) {
+				row.scrollIntoView({ block: 'nearest' });
+			}
+		});
+	}
 
-	// Pressing a sold seat highlights its passenger.
-	field('seat-map').addEventListener('click', function (event) {
-		const seat = event.target.closest('.seat.sold');
-		if (!seat) {
+	function renderFooter() {
+		const reason = trip.cancelBlockReason;
+		slot('cancel-note').textContent = reason || 'Chưa có booking nào, có thể hủy chuyến.';
+		cancelButton.hidden = trip.cancelled;
+		cancelButton.disabled = reason !== null;
+	}
+
+	/* ---------- cancel ---------- */
+
+	cancelButton.addEventListener('click', async function () {
+		if (!trip || trip.cancelBlockReason !== null) {
 			return;
 		}
-		clearHighlight();
-		const row = field('passengers').querySelector('tr[data-key="' + seat.dataset.key + '"]');
-		if (row) {
-			row.classList.add('hl');
-			row.scrollIntoView({ block: 'nearest' });
-		}
-	});
-
-	/* ---------- opening ---------- */
-
-	let latestRequest = 0;
-
-	TG.openTrip = function (tripId, triggerEl) {
-		const request = ++latestRequest;
-		return TG.api(sheet.dataset.apiUrl + '/' + encodeURIComponent(tripId)).then(function (trip) {
-			if (request !== latestRequest) {
-				return;
-			}
-			render(trip);
-			TG.sheet.open('trip-sheet', triggerEl);
-		}).catch(function (error) {
-			TG.toast(error.message, { error: true });
+		const shown = trip;
+		const yes = await TG.confirm({
+			title: 'Hủy chuyến này?',
+			body: shown.trainCode + ' ' + route(shown) + ', ' + shown.departureShort
+				+ '. Khách sẽ không đặt được chuyến này nữa. Lịch của tàu bị đứt ở chặng này.',
+			confirmLabel: 'Hủy chuyến',
+			danger: true
 		});
-	};
+		if (!yes) {
+			return;
+		}
+		cancelButton.disabled = true;
+		try {
+			await TG.api(sheetEl.dataset.apiUrl + '/' + shown.id + '/cancel', { method: 'POST' });
+		} catch (error) {
+			TG.toast(error.message, { error: true });
+			refresh(shown.id);
+			return;
+		}
+		const message = 'Đã hủy chuyến ' + shown.trainCode + ' ' + route(shown) + '.';
+		const event = new CustomEvent('trip:cancelled', { detail: { tripId: shown.id, message: message }, cancelable: true });
+		if (document.dispatchEvent(event)) {
+			TG.toastAfterReload(message);
+			const url = new URL(location.href);
+			url.searchParams.set(OPEN_PARAM, shown.id);
+			location.replace(url);
+			return;
+		}
+		await refresh(shown.id);
+		// The focused cancel button is now hidden; keep focus inside the sheet so Esc still closes it.
+		if (cancelButton.hidden) {
+			sheetEl.focus();
+		}
+	});
 
-	// Any element marked data-trip-id opens its trip.
+	/* Shows the trip as the server has it now; keeps the coach and the picked seat. */
+	async function refresh(tripId) {
+		try {
+			show(await load(tripId), false);
+		} catch (error) {
+			TG.toast(error.message, { error: true });
+		}
+	}
+
+	sheetEl.addEventListener('hidden.bs.offcanvas', function () {
+		trip = null;
+		pickedSeat = null;
+	});
+
+	/* ---------- openers ---------- */
+
+	/*
+	 * The marked element itself may be a button, as in the booking sheet. A
+	 * link or button inside a marked row keeps its own job.
+	 */
+	function opener(target) {
+		const el = target.closest('[data-trip-id]');
+		if (!el || sheetEl.contains(el)) {
+			return null;
+		}
+		const control = target.closest('a, button');
+		return control && control !== el && el.contains(control) ? null : el;
+	}
+
 	document.addEventListener('click', function (event) {
-		const trigger = event.target.closest('[data-trip-id]');
-		if (trigger) {
-			TG.openTrip(trigger.dataset.tripId, trigger);
+		const el = opener(event.target);
+		if (el) {
+			openTrip(el.dataset.tripId, el);
 		}
 	});
+
+	// Buttons and links turn Enter into a click themselves; this is for rows and list items.
 	document.addEventListener('keydown', function (event) {
-		const trigger = event.target.closest && event.target.closest('[data-trip-id]');
-		// Buttons and links get a click from Enter themselves; this is for rows and list items.
-		if (trigger && event.key === 'Enter' && event.target === trigger && !trigger.matches('button, a')) {
-			TG.openTrip(trigger.dataset.tripId, trigger);
+		const target = event.target;
+		if (event.key !== 'Enter' || !target.matches('[data-trip-id]') || target.matches('a, button')) {
+			return;
+		}
+		const el = opener(target);
+		if (el) {
+			event.preventDefault();
+			openTrip(el.dataset.tripId, el);
 		}
 	});
-}());
+
+	/*
+	 * ?trip=<id>: after the reload of a cancel, or from a shared link. Not
+	 * ?open=, which the bookings page uses for its own sheet.
+	 */
+	const url = new URL(location.href);
+	const openId = url.searchParams.get(OPEN_PARAM);
+	if (openId) {
+		url.searchParams.delete(OPEN_PARAM);
+		history.replaceState(null, '', url);
+		openTrip(openId, document.querySelector('[data-trip-id="' + CSS.escape(openId) + '"]'));
+	}
+
+	TG.openTrip = openTrip;
+})();

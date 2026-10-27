@@ -1,27 +1,16 @@
 package com.voyagego.traingo.controller;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.voyagego.traingo.service.AdminService;
-
 /**
- * The admin screens of docs/product/admin.md that are still read-only lists
- * without create, edit or delete. A screen moves out of here into its own
- * controller once it gets those actions, as /admin/stations did
- * (StationAdminController).
+ * The admin area's entry point. Every admin screen has its own controller
+ * now; /admin/trips moved to TripAdminController.
  */
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-
-	private final AdminService adminService;
-
-	public AdminController(AdminService adminService) {
-		this.adminService = adminService;
-	}
 
 	/**
 	 * The admin mockup has no overview page, so /admin opens the trains
@@ -31,13 +20,6 @@ public class AdminController {
 	@GetMapping
 	public String home() {
 		return "redirect:/admin/trains";
-	}
-
-	@GetMapping("/trips")
-	public String trips(Model model) {
-		model.addAttribute("activeNav", "trips");
-		model.addAttribute("trips", adminService.trips());
-		return "admin/trips";
 	}
 
 }

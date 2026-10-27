@@ -10,6 +10,10 @@ import org.springframework.data.repository.query.Param;
 import com.voyagego.traingo.entity.Ticket;
 import com.voyagego.traingo.model.dto.IdCount;
 
+/**
+ * A seat counts as sold when a ticket of a CONFIRMED booking sits on it. The
+ * trip sheet and the trip list both count that way, so their numbers agree.
+ */
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
 	/** Number of passengers (tickets) per booking id. */
@@ -32,5 +36,12 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 			and b.bookingStatus = com.voyagego.traingo.entity.BookingStatus.CONFIRMED
 			order by s.coachNumber, s.seatCode""")
 	List<Ticket> findConfirmedByTrip(@Param("tripId") Long tripId);
+
+	/** Sold seats per trip id, for trips that have at least one. */
+	@Query("""
+			select t.tripSeat.trip.id as id, count(t) as total from Ticket t
+			where t.booking.bookingStatus = com.voyagego.traingo.entity.BookingStatus.CONFIRMED
+			group by t.tripSeat.trip.id""")
+	List<IdCount> countConfirmedByTrip();
 
 }
