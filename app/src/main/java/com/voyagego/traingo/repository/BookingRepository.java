@@ -70,6 +70,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
 	long countByTripIdAndBookingStatus(Long tripId, BookingStatus status);
 
+	/** Bookings in one status, for the overview's totals. */
+	long countByBookingStatus(BookingStatus status);
+
 	@Query("select coalesce(sum(b.totalPrice), 0) from Booking b where b.bookingStatus = :status")
 	long sumTotalPriceByBookingStatus(@Param("status") BookingStatus status);
 

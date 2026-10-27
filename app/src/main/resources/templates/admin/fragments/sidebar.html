@@ -12,9 +12,14 @@
 	The foot holds the clock (filled by admin.js) and the signed-in user.
 -->
 <aside th:fragment="sidebar" class="admin-side">
-	<a class="brand" th:href="@{/admin/trains}">TrainGo</a>
+	<a class="brand" th:href="@{/admin}">TrainGo</a>
 
 	<nav aria-label="Điều hướng quản trị">
+		<div class="grp">
+			<a th:href="@{/admin}" th:attr="aria-current=${activeNav == 'overview'} ? 'page' : null">
+				<i class="bi bi-speedometer2" aria-hidden="true"></i>Tổng quan
+			</a>
+		</div>
 		<div class="grp">
 			<span>Vận hành</span>
 			<a th:href="@{/admin/trains}" th:attr="aria-current=${activeNav == 'trains'} ? 'page' : null">

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!--
+	The admin overview (#37), /admin: four totals read from the database.
+	OverviewService decides what each one counts; this page only prints them.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title>Tổng quan · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="page-head">
+		<h1>Tổng quan</h1>
+	</div>
+
+	<section class="kpis" aria-label="Các số liệu chính">
+		<article class="panel kpi">
+			<h2>Booking</h2>
+			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.bookings, 0, 'POINT')}">128</p>
+			<p class="kpi-note" th:text="|${#numbers.formatInteger(overview.cancelledBookings, 0, 'POINT')} đã hủy|">9 đã hủy</p>
+		</article>
+		<article class="panel kpi">
+			<h2>Chuyến</h2>
+			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.trips, 0, 'POINT')}">24</p>
+			<p class="kpi-note" th:text="|${#numbers.formatInteger(overview.upcomingTrips, 0, 'POINT')} sắp chạy|">6 sắp chạy</p>
+		</article>
+		<article class="panel kpi">
+			<h2>Người dùng</h2>
+			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.customers, 0, 'POINT')}">56</p>
+			<p class="kpi-note" aria-hidden="true">&nbsp;</p>
+		</article>
+		<article class="panel kpi">
+			<h2>Doanh thu</h2>
+			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.revenue, 0, 'POINT')} + 'đ'">52.340.000đ</p>
+			<p class="kpi-note" aria-hidden="true">&nbsp;</p>
+		</article>
+	</section>
+
+</main>
+</body>
+</html>

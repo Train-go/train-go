@@ -26,6 +26,12 @@ import jakarta.persistence.LockModeType;
 public interface TripRepository extends JpaRepository<Trip, Long> {
 	long countByRouteId(Long routeId);
 
+	/** Trips that are not cancelled, past ones included (the overview's "Chuyến"). */
+	long countByStatusNot(TripStatus status);
+
+	/** Trips of one status that leave after {@code after}; with SCHEDULED these are the upcoming ones (D8). */
+	long countByStatusAndDepartureAtAfter(TripStatus status, LocalDateTime after);
+
 	@Query("""
 			select t.route.id as id, count(t) as total from Trip t
 			where t.status = com.voyagego.traingo.entity.TripStatus.SCHEDULED

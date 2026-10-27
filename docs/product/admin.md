@@ -5,12 +5,18 @@ không quản lý vận hành đường sắt.
 
 ## Dashboard `/admin`
 
-Bốn con số tổng quan: tổng booking, tổng chuyến, tổng người dùng, tổng doanh thu.
-Không cần biểu đồ phức tạp.
+Trang Tổng quan (#37) là trang đầu của khu quản trị và là nơi admin vào sau khi đăng
+nhập. Bốn ô số đọc thật từ database, không có biểu đồ:
 
-Từ 23/10/2026 (#20) mẫu giao diện admin chưa có trang này, nên `/admin` chuyển
-hướng sang `/admin/trains`. Task "Trang Tổng quan" (#37) dựng lại trang và bỏ
-chuyển hướng.
+- **Booking:** số booking `CONFIRMED`, ghi chú số booking đã hủy;
+- **Chuyến:** số chuyến chưa hủy, ghi chú số chuyến sắp chạy (`SCHEDULED`, chưa khởi hành);
+- **Người dùng:** số tài khoản `CUSTOMER`;
+- **Doanh thu:** tổng `total_price` của booking `CONFIRMED`. Booking đã hủy không tính vì
+  dự án không có hoàn tiền.
+
+Menu có "Tổng quan" ở đầu và chữ TrainGo dẫn về `/admin`. Bố cục chỉ gồm bốn ô số, một
+hàng ở màn hình rộng, hai cột ở 1100px trở xuống, một cột ở 400px trở xuống (Phi duyệt
+27/10/2026).
 
 ## Ga và tuyến `/admin/stations`
 
