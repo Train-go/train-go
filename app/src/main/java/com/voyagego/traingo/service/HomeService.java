@@ -14,6 +14,7 @@ import com.voyagego.traingo.entity.Station;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.response.Destination;
 import com.voyagego.traingo.model.response.PopularRoute;
+import com.voyagego.traingo.model.response.StationOption;
 import com.voyagego.traingo.model.response.StationPhoto;
 import com.voyagego.traingo.repository.BookingRepository;
 import com.voyagego.traingo.repository.RouteRepository;
@@ -21,10 +22,9 @@ import com.voyagego.traingo.repository.StationRepository;
 import com.voyagego.traingo.repository.TripRepository;
 
 /**
- * Data for the landing page: the station names of the search form, the
- * destination cards and the popular route cards. The form still submits a station name; trip search
- * (stage 3 of docs/plans/active/mvp-traingo.md) decides whether it submits an
- * id or a code instead.
+ * Data for the landing page: the stations of the search form, the destination
+ * cards and the popular route cards. The form and the cards hand station
+ * codes to the trip list, /trips (issue #26).
  */
 @Service
 @Transactional(readOnly = true)
@@ -64,8 +64,10 @@ public class HomeService {
 	}
 
 	/** North to south along the line, the order a traveller reads a map in. */
-	public List<String> stations() {
-		return stationRepository.findAllByOrderByKmMarkAsc().stream().map(Station::getName).toList();
+	public List<StationOption> stations() {
+		return stationRepository.findAllByOrderByKmMarkAsc().stream()
+				.map(station -> new StationOption(station.getCode(), station.getName()))
+				.toList();
 	}
 
 	/** The destination cards, skipping any station no longer in the database. */
@@ -73,8 +75,8 @@ public class HomeService {
 		Map<String, Station> byCode = stationRepository.findAll().stream()
 				.collect(Collectors.toMap(Station::getCode, station -> station));
 		return DESTINATION_CODES.stream().filter(byCode::containsKey).map(byCode::get)
-				.map(station -> new Destination(station.getName(), PopularRoute.placeName(station.getName()),
-						PHOTOS.get(station.getCode())))
+				.map(station -> new Destination(station.getCode(), station.getName(),
+						PopularRoute.placeName(station.getName()), PHOTOS.get(station.getCode())))
 				.toList();
 	}
 
@@ -93,9 +95,9 @@ public class HomeService {
 						.reversed())
 				.thenComparing(Route::getId);
 		return routeRepository.findAllWithStations().stream().sorted(mostPopularFirst).limit(POPULAR_ROUTE_COUNT)
-				.map(route -> new PopularRoute(route.getOriginStation().getName(),
-						route.getDestinationStation().getName(), route.getDistanceKm() + " km",
-						PHOTOS.get(route.getDestinationStation().getCode())))
+				.map(route -> new PopularRoute(route.getOriginStation().getCode(), route.getOriginStation().getName(),
+						route.getDestinationStation().getCode(), route.getDestinationStation().getName(),
+						route.getDistanceKm() + " km", PHOTOS.get(route.getDestinationStation().getCode())))
 				.toList();
 	}
 

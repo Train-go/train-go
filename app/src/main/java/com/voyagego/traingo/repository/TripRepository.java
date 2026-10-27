@@ -117,4 +117,24 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 			where t.id = :id""")
 	Optional<Trip> findDetailById(@Param("id") Long id);
 
+	/**
+	 * Trips a customer can book from one station to another, leaving within
+	 * [{@code dayStart}, {@code dayEnd}) and after {@code now} (D8), earliest
+	 * first, with the train, route and both stations loaded for the trip cards.
+	 */
+	@Query("""
+			select t from Trip t
+			join fetch t.train
+			join fetch t.route r
+			join fetch r.originStation o
+			join fetch r.destinationStation d
+			where o.id = :originId and d.id = :destinationId
+			and t.status = com.voyagego.traingo.entity.TripStatus.SCHEDULED
+			and t.departureAt >= :dayStart and t.departureAt < :dayEnd
+			and t.departureAt > :now
+			order by t.departureAt""")
+	List<Trip> findBookable(@Param("originId") Long originId, @Param("destinationId") Long destinationId,
+			@Param("dayStart") LocalDateTime dayStart, @Param("dayEnd") LocalDateTime dayEnd,
+			@Param("now") LocalDateTime now);
+
 }

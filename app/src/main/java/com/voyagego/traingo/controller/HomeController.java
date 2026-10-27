@@ -1,5 +1,7 @@
 package com.voyagego.traingo.controller;
 
+import java.time.LocalDate;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ public class HomeController {
 	public String home(Model model) {
 		model.addAttribute("appName", "TrainGo");
 		model.addAttribute("stations", homeService.stations());
+		model.addAttribute("today", LocalDate.now());
 		model.addAttribute("popularRoutes", homeService.popularRoutes());
 		model.addAttribute("destinations", homeService.destinations());
 		return "index";
