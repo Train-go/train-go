@@ -12,10 +12,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.voyagego.traingo.common.exception.SeatSelectionException;
 import com.voyagego.traingo.common.exception.SeatTakenException;
+import com.voyagego.traingo.common.TextUtils;
 import com.voyagego.traingo.entity.TripSeat;
 import com.voyagego.traingo.entity.TripSeatStatus;
 import com.voyagego.traingo.model.dto.BookingDraft;
 import com.voyagego.traingo.model.dto.BookingDraft.PassengerDraft;
+import com.voyagego.traingo.model.request.PassengerRequest;
+import com.voyagego.traingo.model.request.PassengersForm;
+import com.voyagego.traingo.model.response.PassengerPage;
+import com.voyagego.traingo.model.response.PassengerPage.Slot;
 import com.voyagego.traingo.repository.TripSeatRepository;
 
 /**
@@ -79,6 +84,76 @@ public class BookingDraftService {
 				.map(id -> kept.getOrDefault(id, new PassengerDraft(user.getFullName(), "")))
 				.toList();
 		return new BookingDraft(tripId, seatIds, passengers);
+	}
+
+	/**
+	 * The passenger page for a draft: the trip, a slot per chosen seat in the
+	 * order they were chosen, and the account holder's name and masked phone.
+	 *
+	 * @throws com.voyagego.traingo.common.exception.TripNotBookableException the trip can no longer be booked
+	 */
+	@Transactional(readOnly = true)
+	public PassengerPage passengerPage(BookingDraft draft, TrainGoUserDetails user, LocalDateTime now) {
+		var trip = seatMapService.seatMap(draft.getTripId(), now).trip();
+		Map<Long, TripSeat> seats = new HashMap<>();
+		tripSeatRepository.findAllById(draft.getTripSeatIds()).forEach(seat -> seats.put(seat.getId(), seat));
+		List<Slot> slots = new ArrayList<>();
+		for (Long id : draft.getTripSeatIds()) {
+			TripSeat seat = seats.get(id);
+			slots.add(new Slot(slots.size() + 1, id, seat.getCoachNumber(), seat.getSeatCode(),
+					SeatMapService.label(seat.getCoachType()), trip.price()));
+		}
+		return new PassengerPage(trip, slots, trip.price() * slots.size(), user.getFullName(),
+				TextUtils.maskPhone(user.getPhoneNumber()));
+	}
+
+	/** The form as the draft has it, to fill the page the first time it opens. */
+	public PassengersForm formOf(BookingDraft draft) {
+		PassengersForm form = new PassengersForm();
+		for (PassengerDraft passenger : draft.getPassengers()) {
+			PassengerRequest line = new PassengerRequest();
+			line.setFullName(passenger.fullName());
+			line.setIdentityNumber(passenger.identityNumber());
+			form.getPassengers().add(line);
+		}
+		return form;
+	}
+
+	/**
+	 * A draft with the passengers of a validated form, line i for seat i.
+	 *
+	 * @throws SeatSelectionException the form has a different number of lines than the draft has seats
+	 */
+	public BookingDraft updatePassengers(BookingDraft draft, PassengersForm form) {
+		if (form.getPassengers().size() != draft.getTripSeatIds().size()) {
+			throw new SeatSelectionException("Số hành khách phải bằng số chỗ đã chọn.");
+		}
+		List<PassengerDraft> passengers = form.getPassengers().stream()
+				.map(line -> new PassengerDraft(line.getFullName(), line.getIdentityNumber()))
+				.toList();
+		return new BookingDraft(draft.getTripId(), draft.getTripSeatIds(), passengers);
+	}
+
+	/**
+	 * Keeps what the customer typed so far when they leave to choose seats
+	 * again. Nothing is checked: a blank name keeps the old one and the CCCD
+	 * keeps only its digits. A form of another size is ignored.
+	 */
+	public BookingDraft keepEdits(BookingDraft draft, PassengersForm form) {
+		if (form.getPassengers().size() != draft.getTripSeatIds().size()) {
+			return draft;
+		}
+		List<PassengerDraft> passengers = new ArrayList<>();
+		for (int i = 0; i < draft.getPassengers().size(); i++) {
+			PassengerDraft old = draft.getPassengers().get(i);
+			PassengerRequest line = form.getPassengers().get(i);
+			String name = line.getFullName();
+			String digits = line.getIdentityNumber() == null ? "" : line.getIdentityNumber().replaceAll("\\D", "");
+			passengers.add(new PassengerDraft(
+					name == null || name.isBlank() || name.length() > 100 ? old.fullName() : name,
+					digits.length() > 12 ? digits.substring(0, 12) : digits));
+		}
+		return new BookingDraft(draft.getTripId(), draft.getTripSeatIds(), passengers);
 	}
 
 	/**

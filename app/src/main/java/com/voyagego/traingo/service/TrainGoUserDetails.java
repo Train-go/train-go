@@ -14,6 +14,7 @@ public final class TrainGoUserDetails implements UserDetails {
 	private final Long userId;
 	private final String fullName;
 	private final String email;
+	private final String phoneNumber;
 	private final String passwordHash;
 	private final UserRole role;
 
@@ -21,6 +22,7 @@ public final class TrainGoUserDetails implements UserDetails {
 		this.userId = user.getId();
 		this.fullName = user.getFullName();
 		this.email = user.getEmail();
+		this.phoneNumber = user.getPhoneNumber();
 		this.passwordHash = user.getPasswordHash();
 		this.role = user.getRole();
 	}
@@ -28,6 +30,7 @@ public final class TrainGoUserDetails implements UserDetails {
 	public Long getUserId() { return userId; }
 	public String getFullName() { return fullName; }
 	public String getEmail() { return email; }
+	public String getPhoneNumber() { return phoneNumber; }
 	public UserRole getRole() { return role; }
 
 	@Override

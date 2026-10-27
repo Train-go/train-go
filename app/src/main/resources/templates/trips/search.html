@@ -19,6 +19,12 @@
 
 	<nav th:replace="~{fragments/booking-steps :: steps(1)}"></nav>
 
+	<!-- A booking page that has no booking in progress sends the customer here with its reason. -->
+	<div th:if="${errorMessage}" class="alert alert-warning d-flex gap-2 mt-3" role="alert">
+		<i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+		<span th:text="${errorMessage}">Hãy chọn chuyến và chỗ trước.</span>
+	</div>
+
 	<form class="tg-find" method="get" th:action="@{/trips}" id="tgFind" novalidate>
 		<div class="tg-find-field">
 			<label for="tgFindFrom">Ga đi</label>
