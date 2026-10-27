@@ -175,7 +175,16 @@ SE1." có nút "Xem" mở ngăn chi tiết chuyến. Bấm một dòng của b�
 ## Quản lý chuyến `/admin/trips`
 
 Chuyến thuộc về tàu, nên admin thêm chuyến ở trang chi tiết tàu. `/admin/trips`
-là danh sách mọi chuyến để tra cứu, lọc theo tàu và ngày, và để hủy chuyến.
+là danh sách mọi chuyến để tra cứu (#29):
+
+- ba nhóm theo D8, so với giờ hiện tại: Sắp chạy (`SCHEDULED`, giờ đi sau bây
+  giờ, xếp giờ tăng dần), Đã khởi hành (chưa hủy, giờ đi không sau bây giờ) và
+  Đã hủy (`CANCELLED`), hai nhóm sau xếp giờ giảm dần; số đếm mỗi nhóm không
+  phụ thuộc bộ lọc;
+- lọc theo tàu, tìm theo tên hoặc mã ga không phân biệt dấu ("hue" ra "Huế");
+  bộ lọc nằm trên URL (`?tab=&train=&q=`); ô chọn tàu chỉ có tàu chưa xóa, chuyến
+  của tàu đã xóa vẫn nằm trong danh sách;
+- bảng nhóm theo ngày khởi hành; bấm một dòng mở ngăn chi tiết chuyến (dưới đây).
 
 Form thêm chuyến gồm: tuyến, ngày giờ khởi hành, ngày giờ đến, giá cơ bản. Tàu là
 tàu của trang đang mở. Luật nối chặng (`docs/product/domain-model.md`, mục "Lịch
@@ -199,12 +208,18 @@ toa ghế 8 chỗ một hàng, toa giường 4 khoang x 4 giường. Chỗ đã 
 dòng hành khách tương ứng; ngăn mở sẵn ở toa đầu tiên có chỗ đã bán. Bảng hành
 khách chỉ tính vé của booking `CONFIRMED`: họ tên kèm 4 số cuối CCCD, toa và chỗ,
 mã booking (link `/admin/bookings?open=BK…`), giá. Dữ liệu từ
-`GET /api/admin/trips/{id}`. Hủy chuyến và trang `/admin/trips` làm riêng (#29).
+`GET /api/admin/trips/{id}`. Chân ngăn có nút "Hủy chuyến" theo luật dưới đây; hủy
+xong trang tải lại với `?trip=<id>` để danh sách và số đếm lấy từ server, ngăn mở
+lại ở trạng thái đã hủy kèm toast "Đã hủy chuyến …". `?trip=<id>` cũng dùng được
+làm link mở thẳng một chuyến.
 
 Chuyến không xóa được, chỉ hủy được (`CANCELLED`). Chỉ hủy được chuyến
 `SCHEDULED`, chưa khởi hành, và chưa có booking `CONFIRMED` nào (D2, chốt
 12/10/2026): hủy chuyến khách đã trả tiền thì phải hoàn tiền, mà hoàn tiền nằm
-ngoài phạm vi.
+ngoài phạm vi. Ngăn chi tiết nêu lý do khi không hủy được ("Không hủy được: chuyến
+đã khởi hành." hoặc "Không hủy được: chuyến đã có N booking. Hủy các booking đó
+trước."); service kiểm tra lại khi nhận lệnh hủy và khóa dòng chuyến, API trả 409
+nếu vi phạm.
 
 ## Quản lý booking `/admin/bookings`
 
