@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<!--
+	The trip wizard (docs/product/admin.md, "Trình hướng dẫn thêm chuyến"): one
+	leg after the train's last trip in four steps, Đi đâu, Khi nào, Giá, Xác
+	nhận, with the schedule preview beside them. trip-wizard.js loads the
+	choices from GET /api/admin/trains/{id}/next-leg, draws each step from the
+	templates below and adds the leg through POST /api/admin/trains/{id}/trips.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+<head>
+	<title th:text="|Thêm chuyến ${train.code} · Quản trị TrainGo|">Thêm chuyến SE1 · Quản trị TrainGo</title>
+</head>
+<body>
+<main>
+
+	<div class="wz-page" data-trip-wizard
+		th:data-next-leg-url="@{/api/admin/trains/{id}/next-leg(id=${train.id})}"
+		th:data-trips-url="@{/api/admin/trains/{id}/trips(id=${train.id})}"
+		th:data-train-code="${train.code}" th:data-seats-per-trip="${seatsPerTrip}">
+		<a class="btn btn-link btn-sm wz-back" th:href="@{/admin/trains/{id}(id=${train.id}, view='ngay')}" data-wz-back>
+			<i class="bi bi-arrow-left" aria-hidden="true"></i><span th:text="|Tàu ${train.code}|">Tàu SE1</span>
+		</a>
+		<div class="wz">
+			<section class="wz-main" aria-labelledby="wz-title">
+				<h1 id="wz-title" data-wz-title
+					th:text="${chained} ? |Thêm chuyến cho ${train.code}| : |Chuyến đầu tiên của ${train.code}|">Thêm chuyến cho SE1</h1>
+				<ol class="wz-steps" aria-label="Các bước" data-wz-steps>
+					<li th:each="label : ${ {'Đi đâu', 'Khi nào', 'Giá', 'Xác nhận'} }" th:text="${label}">Đi đâu</li>
+				</ol>
+				<div class="wz-body" data-wz-body>
+					<p class="text-body-secondary mb-0">Đang tải lịch tàu…</p>
+				</div>
+			</section>
+			<aside class="wz-preview" aria-label="Xem trước" data-wz-preview hidden>
+				<div class="pv">
+					<h2 th:text="|Lịch ${train.code} sau khi thêm|">Lịch SE1 sau khi thêm</h2>
+					<ol class="pv-list" data-pv-list></ol>
+					<p class="text-body-secondary mb-0" data-pv-after hidden></p>
+				</div>
+			</aside>
+		</div>
+	</div>
+
+	<!-- Step 1, Đi đâu. -->
+	<template id="wz-step-where">
+		<div class="field" data-origin-field hidden>
+			<span class="form-label">Xuất phát từ ga nào?</span>
+			<div class="chips" role="group" aria-label="Ga xuất phát" data-origins></div>
+		</div>
+		<p class="wz-q" data-standing hidden>Tàu đang ở <b data-standing-name></b>. Chuyến mới đi tới đâu?</p>
+		<div class="dest-wrap" data-dest-wrap hidden>
+			<span class="form-label mb-0" id="wz-dests-label" data-dests-label hidden>Đi tới ga nào?</span>
+			<div class="dests" role="group" aria-label="Ga đến" data-dests></div>
+			<div class="alert alert-warning mb-0" data-no-route hidden>
+				<i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span data-no-route-text></span>
+			</div>
+			<button type="button" class="btn btn-link btn-sm more-btn" aria-expanded="false" aria-controls="wz-missing"
+				data-more hidden>
+				<i class="bi bi-chevron-down" aria-hidden="true"></i><span data-more-label></span>
+			</button>
+			<ul class="missing-list" id="wz-missing" data-missing hidden></ul>
+		</div>
+		<div class="wz-err" role="alert" id="wz-where-err" data-err="where" hidden></div>
+	</template>
+
+	<!-- Step 2, Khi nào. -->
+	<template id="wz-step-when">
+		<p class="wz-q" data-question></p>
+		<div class="field">
+			<div class="date-nav">
+				<span class="form-label mb-0" id="wz-day-label">Ngày khởi hành</span>
+				<span>
+					<button type="button" class="icon-btn" aria-label="7 ngày trước" data-day-prev>
+						<i class="bi bi-chevron-left" aria-hidden="true"></i>
+					</button>
+					<button type="button" class="icon-btn" aria-label="7 ngày sau" data-day-next>
+						<i class="bi bi-chevron-right" aria-hidden="true"></i>
+					</button>
+				</span>
+			</div>
+			<div class="date-strip" role="group" aria-labelledby="wz-day-label" data-days></div>
+		</div>
+		<div class="time-line">
+			<div class="field">
+				<label class="form-label" for="wz-dep">Giờ đi</label>
+				<input class="form-control mono" id="wz-dep" inputmode="numeric" autocomplete="off" placeholder="hh:mm"
+					maxlength="5" data-dep>
+			</div>
+			<div class="chips" role="group" aria-label="Giờ chọn nhanh" data-dep-chips></div>
+		</div>
+		<div class="wz-err" role="alert" id="wz-dep-err" data-err="dep" hidden></div>
+
+		<div class="field" data-arr-locked>
+			<span class="form-label" data-arr-label></span>
+			<div class="input-locked">
+				<span data-arr-text></span>
+				<button type="button" class="btn btn-link btn-sm" data-arr-edit>Sửa</button>
+			</div>
+			<div class="form-text" data-arr-hint></div>
+		</div>
+		<div class="arr-fields" data-arr-open hidden>
+			<div class="time-line">
+				<div class="field">
+					<label class="form-label" for="wz-arr" data-arr-label></label>
+					<input class="form-control mono" id="wz-arr" inputmode="numeric" autocomplete="off" placeholder="hh:mm"
+						maxlength="5" data-arr>
+				</div>
+				<div class="field">
+					<span class="form-label" id="wz-arr-day-label">Ngày đến</span>
+					<div class="offset" role="group" aria-labelledby="wz-arr-day-label">
+						<button type="button" class="icon-btn" aria-label="Lùi một ngày" data-arr-minus>
+							<i class="bi bi-dash-lg" aria-hidden="true"></i>
+						</button>
+						<span aria-live="polite" data-arr-offset></span>
+						<button type="button" class="icon-btn" aria-label="Thêm một ngày" data-arr-plus>
+							<i class="bi bi-plus-lg" aria-hidden="true"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="wz-err" role="alert" id="wz-arr-err" data-err="arr" hidden></div>
+			<div class="form-text" data-arr-open-hint hidden></div>
+			<button type="button" class="btn btn-link btn-sm wz-inline-btn" data-arr-reset></button>
+		</div>
+	</template>
+
+	<!-- Step 3, Giá. -->
+	<template id="wz-step-price">
+		<p class="wz-q">Giá cơ bản của chặng này?</p>
+		<div class="field price-field">
+			<div class="label-line">
+				<label class="form-label" for="wz-price">Giá cơ bản</label>
+				<button type="button" class="btn btn-link btn-sm" data-price-reset hidden>Dùng giá gợi ý</button>
+			</div>
+			<div class="input-group">
+				<input class="form-control" id="wz-price" inputmode="numeric" autocomplete="off" maxlength="13"
+					aria-describedby="wz-price-hint" data-price>
+				<span class="input-group-text">đ</span>
+			</div>
+			<div class="form-text" id="wz-price-hint" data-price-hint></div>
+		</div>
+		<div class="wz-err" role="alert" id="wz-price-err" data-err="price" hidden></div>
+	</template>
+
+	<!-- Step 4, Xác nhận. -->
+	<template id="wz-step-confirm">
+		<p class="wz-q">Kiểm tra lại rồi thêm.</p>
+		<ul class="confirm-list">
+			<li>
+				<b data-confirm-route></b>
+				<span data-confirm-time></span>
+				<span class="num" data-confirm-price></span>
+			</li>
+		</ul>
+		<p class="text-body-secondary mb-0" data-confirm-sum></p>
+		<div class="wz-err" role="alert" data-err="confirm" hidden></div>
+	</template>
+
+	<!-- Under every step. -->
+	<template id="wz-actions">
+		<div class="wz-actions">
+			<span class="grow"></span>
+			<button type="button" class="btn btn-outline-secondary" data-wz-prev>Quay lại</button>
+			<button type="button" class="btn btn-primary" data-wz-next></button>
+		</div>
+	</template>
+
+	<!-- After the leg is added. -->
+	<template id="wz-done">
+		<div class="wz-done" tabindex="-1" role="status">
+			<span class="tick"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+			<h2 data-done-title></h2>
+			<p class="text-body-secondary mb-0" data-done-text></p>
+			<div class="wz-done-act">
+				<button type="button" class="btn btn-primary" data-done-again>
+					<i class="bi bi-plus-lg" aria-hidden="true"></i><span data-done-again-label></span>
+				</button>
+				<a class="btn btn-outline-secondary" data-done-back></a>
+			</div>
+		</div>
+	</template>
+
+	<!-- defer: run after admin.js, which the layout loads at the end of the body. -->
+	<script th:src="@{/js/admin/train-sheet-derive.js}" defer></script>
+	<script th:src="@{/js/admin/trip-wizard.js}" defer></script>
+
+</main>
+</body>
+</html>

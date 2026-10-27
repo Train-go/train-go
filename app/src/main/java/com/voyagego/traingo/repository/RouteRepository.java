@@ -35,6 +35,13 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 			order by o.kmMark, d.kmMark""")
 	List<Route> findAllWithStations();
 
+	/** The routes that start at a station, with their destinations loaded, north to south. */
+	@Query("""
+			select r from Route r join fetch r.destinationStation d
+			where r.originStation.id = :stationId
+			order by d.kmMark""")
+	List<Route> findFromStation(Long stationId);
+
 	/** The route from one station to another, with both stations loaded. */
 	@EntityGraph(attributePaths = { "originStation", "destinationStation" })
 	Optional<Route> findByOriginStationIdAndDestinationStationId(Long originId, Long destinationId);

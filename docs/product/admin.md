@@ -172,6 +172,42 @@ quá khứ, có tuyến giữa hai ga, giờ đến sau giờ đi, giá chia h�
 trang tải lại với `?added=` để các dòng mới chớp màu, kèm toast "Đã thêm N chuyến cho
 SE1." có nút "Xem" mở ngăn chi tiết chuyến. Bấm một dòng của bảng lịch mở ngăn đó.
 
+### Trình hướng dẫn thêm chuyến `/admin/trains/{id}/trips/new` (#28)
+
+Banner của view "Theo ngày" có nút "Thêm chuyến", hoặc "Thêm chuyến đầu tiên" khi tàu chưa
+có chuyến chưa hủy (Phi chốt 27/10/2026, thay chữ "Nối chặng" của issue #28 AC1: hành động
+tạo ra một chuyến, còn nối chặng là tên luật mà trình hướng dẫn tự áp). Nút mở trình hướng dẫn thêm **một** chặng vào cuối lịch, gồm 4 bước;
+bấm một bước đã qua trên thanh bước để quay lại sửa. Tàu đã xóa trả trang 404.
+
+- **Đi đâu:** tàu đã có chuyến thì ghi "Tàu đang ở [ga]. Chuyến mới đi tới đâu?"; tàu chưa
+  có chuyến thì chọn ga xuất phát trước ("Xuất phát từ ga nào?"). Mỗi tuyến đi ra từ ga
+  xuất phát là một thẻ: "Ra Bắc" hoặc "Vào Nam" theo lý trình, tên ga, "km · thời gian chạy".
+  Bấm thẻ thì sang bước sau. Các ga chưa có tuyến nằm trong mục gập "N ga chưa có tuyến từ
+  [ga]", chỉ để xem (tạo tuyến ngay tại đây thuộc #40).
+- **Khi nào:** dải 14 ngày tính từ ngày của giờ sớm nhất, hiện 7 ngày mỗi lần với ‹ ›;
+  ngày trước giờ sớm nhất bị khóa. Giờ đi mặc định là 08:00 đầu tiên không sớm hơn giờ
+  sớm nhất. Ô giờ đi nhận dạng 24 giờ ("8", "845", "8h45" đều thành "08:45"), kèm nút
+  "Sớm nhất hh:mm" (khi giờ sớm nhất rơi vào ngày đang chọn và khác 08:00), 06:00, 08:00,
+  13:00, 20:00; nút trước giờ sớm nhất bị khóa. Đi sớm hơn thì báo ngay dưới ô, ví dụ "Sớm
+  nhất 05/11 10:15: tàu đến Ga Đà Nẵng lúc 09:45 và cần 30 phút quay đầu." Giờ đến tự tính
+  theo 60 km/h (làm tròn 5 phút), hiện khóa dạng "T5 05/11 · 09:45" với nút "Sửa"; khi sửa
+  có ô giờ, nút −/+ số ngày và "Dùng giờ gợi ý hh:mm".
+- **Giá:** gợi ý 1.000đ/km làm tròn 10.000đ, tối thiểu 10.000đ; sửa được, có "Dùng giá gợi
+  ý". Giá phải chia hết 1.000đ.
+- **Xác nhận:** "Ga đi → Ga đến · ngày giờ đi → giờ đến · giá", câu "1 chuyến, N km. Mỗi
+  chuyến mở bán 96 chỗ." và nút "Thêm chuyến".
+
+Cột bên phải xem trước 2 chuyến chưa hủy cuối của tàu, chặng mới tô màu, và câu "Sau đó tàu
+ở [ga] từ [ngày giờ]". Dưới 1000px cột này xuống dưới.
+
+Dữ liệu lấy từ `GET /api/admin/trains/{id}/next-leg?origin=` (`TrainScheduleService.nextLegOptions`;
+`origin` chỉ đọc khi tàu chưa có chuyến). Giờ sớm nhất là con số banner đang hiện. Thêm
+chuyến dùng chung `POST /api/admin/trains/{id}/trips` với View Bảng tính, gửi một chặng và
+luôn kèm `originStationId`, nên lịch bị admin khác đổi trong lúc đó trả 409 "Tàu đã ở [ga].
+Tải lại trang rồi thử lại." Lỗi `legs[0].x` từ server đưa admin về bước chứa ô x. Thêm xong
+hiện "Đã thêm chuyến A → B", "Tàu ở B từ …", nút "Thêm chuyến từ B" (tải lại lựa chọn và về
+bước 1) và "Về tàu SE1".
+
 ## Quản lý chuyến `/admin/trips`
 
 Chuyến thuộc về tàu, nên admin thêm chuyến ở trang chi tiết tàu. `/admin/trips`

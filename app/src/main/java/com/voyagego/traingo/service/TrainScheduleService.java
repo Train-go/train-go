@@ -8,14 +8,17 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.voyagego.traingo.common.exception.LegPlanException;
+import com.voyagego.traingo.common.exception.StationNotFoundException;
 import com.voyagego.traingo.common.exception.TrainNotFoundException;
 import com.voyagego.traingo.entity.Route;
 import com.voyagego.traingo.entity.Station;
@@ -24,6 +27,7 @@ import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.dto.TrainPosition;
+import com.voyagego.traingo.model.response.NextLegOptions;
 import com.voyagego.traingo.model.response.PlannedLeg;
 import com.voyagego.traingo.model.response.TrainScheduleView;
 import com.voyagego.traingo.model.response.TrainScheduleView.ScheduleDay;
@@ -144,7 +148,7 @@ public class TrainScheduleService {
 			LocalDateTime arrival = departure.plusMinutes(suggestedMinutes(route.getDistanceKm()));
 			legs.add(PlannedLeg.of(route, departure, arrival, suggestedPrice(route.getDistanceKm())));
 			LocalDateTime ready = arrival.plus(TURNAROUND);
-			departure = pace == Pace.DAILY ? firstDailyDeparture(ready) : ready;
+			departure = pace == Pace.DAILY ? defaultDeparture(ready) : ready;
 		}
 		return legs;
 	}
@@ -158,10 +162,66 @@ public class TrainScheduleService {
 		return -1;
 	}
 
-	/** The first 08:00 that is not before {@code time}. */
-	private static LocalDateTime firstDailyDeparture(LocalDateTime time) {
+	/** The first 08:00 that is not before {@code time}: where a new leg's departure starts. */
+	public static LocalDateTime defaultDeparture(LocalDateTime time) {
 		LocalDateTime sameDay = time.toLocalDate().atTime(DAILY_DEPARTURE);
 		return sameDay.isBefore(time) ? sameDay.plusDays(1) : sameDay;
+	}
+
+	/**
+	 * The choices of the trip wizard's next leg. A train with trips continues
+	 * from the end of its chain, and {@code originId} is ignored; a train with
+	 * none starts at {@code originId}, and until one is picked the options only
+	 * list the stations to start from.
+	 */
+	public NextLegOptions nextLegOptions(long trainId, Long originId, LocalDateTime now) {
+		// A deleted train has no page, the same as an unknown id.
+		Train train = trainRepository.findByIdAndDeletedFalse(trainId).orElseThrow(TrainNotFoundException::new);
+		Trip end = chainEnd(trainId).orElse(null);
+		LocalDateTime earliest = earliestDeparture(end, now);
+		List<Station> line = stationRepository.findAllByOrderByKmMarkAsc();
+
+		Station origin = null;
+		if (end != null) {
+			origin = end.getRoute().getDestinationStation();
+		} else if (originId != null) {
+			origin = line.stream().filter(station -> station.getId().equals(originId)).findFirst()
+					.orElseThrow(StationNotFoundException::new);
+		}
+
+		List<NextLegOptions.Destination> destinations = new ArrayList<>();
+		List<NextLegOptions.Unrouted> withoutRoute = new ArrayList<>();
+		if (origin != null) {
+			Set<Long> reached = new HashSet<>();
+			for (Route route : routeRepository.findFromStation(origin.getId())) {
+				Station to = route.getDestinationStation();
+				int km = route.getDistanceKm();
+				reached.add(to.getId());
+				destinations.add(new NextLegOptions.Destination(to.getId(), to.getName(),
+						to.getKmMark() > origin.getKmMark() ? "Vào Nam" : "Ra Bắc", km, suggestedMinutes(km),
+						suggestedPrice(km)));
+			}
+			for (Station station : line) {
+				if (!station.getId().equals(origin.getId()) && !reached.contains(station.getId())) {
+					withoutRoute.add(new NextLegOptions.Unrouted(station.getId(), station.getName(),
+							Math.abs(station.getKmMark() - origin.getKmMark())));
+				}
+			}
+		}
+
+		List<Trip> live = tripRepository.findScheduleOfTrain(trainId).stream().filter(trip -> !trip.isCancelled())
+				.toList();
+		List<NextLegOptions.TripSummary> lastTrips = live.subList(Math.max(0, live.size() - 2), live.size()).stream()
+				.map(trip -> new NextLegOptions.TripSummary(trip.getId(), trip.getDepartureAt(), trip.getArrivalAt(),
+						trip.getRoute().getOriginStation().getName(),
+						trip.getRoute().getDestinationStation().getName()))
+				.toList();
+
+		return new NextLegOptions(train.getId(), train.getCode(), end != null,
+				origin == null ? null : new NextLegOptions.Origin(origin.getId(), origin.getName()), earliest,
+				defaultDeparture(earliest),
+				line.stream().map(station -> new NextLegOptions.Origin(station.getId(), station.getName())).toList(),
+				destinations, withoutRoute, lastTrips);
 	}
 
 	/**
