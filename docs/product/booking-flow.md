@@ -63,9 +63,10 @@ và cho phép sửa để đặt cho người khác. Không thu thập ngày sin
 
 Số hành khách phải bằng số chỗ đã chọn. Mỗi hành khách gán đúng một chỗ.
 
-Mỗi booking có từ 1 đến 10 hành khách (D6, chốt 12/10/2026), khớp ô "Hành khách"
-ở trang chủ. Backend kiểm tra giới hạn này ở form tìm chuyến và khi thanh toán,
-không chỉ dựa vào ô nhập trên trình duyệt. Giới hạn trên ngăn một người đặt cả
+Mỗi booking có từ 1 đến 10 hành khách (D6, chốt 12/10/2026, sửa chữ 21/10/2026).
+Số chỗ khách chọn ở bước chọn chỗ là số vé, tối đa 10; trang chủ và trang Chọn
+chuyến không có ô "Hành khách". Backend kiểm tra giới hạn này ở bước chọn chỗ và
+khi thanh toán, không chỉ dựa vào giao diện. Giới hạn trên ngăn một người đặt cả
 toa trong một lần.
 
 Phiên bản đầu không có giá theo người lớn / trẻ em, người cao tuổi, sinh viên,

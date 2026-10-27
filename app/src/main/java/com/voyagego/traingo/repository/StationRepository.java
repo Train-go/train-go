@@ -18,6 +18,8 @@ public interface StationRepository extends JpaRepository<Station, Long> {
 	/** North to south along the line. */
 	List<Station> findAllByOrderByKmMarkAsc();
 
+	Optional<Station> findByCode(String code);
+
 	boolean existsByCode(String code);
 
 	boolean existsByCodeAndIdNot(String code, Long id);

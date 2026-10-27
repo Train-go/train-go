@@ -414,7 +414,7 @@ h1, h2, h3, h4, h5, h6,
 
 .tg-search {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.6fr) auto;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr) auto;
 	align-items: stretch;
 	overflow: hidden;
 	border: 1px solid rgb(11 26 54 / 10%);
@@ -655,6 +655,7 @@ h1, h2, h3, h4, h5, h6,
 	background: none;
 	color: var(--traingo-navy);
 	text-align: left;
+	text-decoration: none;
 }
 
 .tg-route-photo {
@@ -836,17 +837,9 @@ body:has(.tg-trust) .tg-foot {
 		border-right: 0;
 	}
 
-	.tg-cell-date,
-	.tg-cell-count {
-		border-top: 1px solid var(--traingo-border);
-	}
-
 	.tg-cell-date {
-		grid-column: 1 / 3;
-	}
-
-	.tg-cell-count {
-		grid-column: 3;
+		grid-column: 1 / -1;
+		border-top: 1px solid var(--traingo-border);
 		border-right: 0;
 	}
 
@@ -917,7 +910,7 @@ body:has(.tg-trust) .tg-foot {
 		background: linear-gradient(180deg, rgb(11 26 54 / 62%) 0%, rgb(11 26 54 / 40%) 55%, rgb(11 26 54 / 12%) 100%);
 	}
 
-	/* Stations stacked, the swap button on the line between them; date and count share a row. */
+	/* Stations stacked, the swap button on the line between them, the day below. */
 	.tg-search {
 		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	}
@@ -948,14 +941,8 @@ body:has(.tg-trust) .tg-foot {
 		padding: 0 16px;
 	}
 
-	.tg-cell-date,
-	.tg-cell-count {
-		grid-column: auto;
-		border-top: 0;
-	}
-
 	.tg-cell-date {
-		border-right: 1px solid var(--traingo-border);
+		border-top: 0;
 	}
 
 	.tg-cell select,
@@ -1971,5 +1958,831 @@ body:has(.tg-trust) .tg-foot {
 
 	.tg-dialog-actions .btn {
 		flex: 1 1 auto;
+	}
+}
+
+/* ---------- Trip list, booking step 1 (#26) ---------- */
+
+/*
+ * After docs/reports/ui-mau/client/chon-chuyen-b-mo-rong.html: the page's own
+ * station search, the route title with the day, a strip of seven days, then
+ * filters beside the trip cards. A card opens on its seat types with
+ * <details>, so it needs no script.
+ */
+.tg-trips {
+	padding-block: 24px 8px;
+}
+
+/* Station search. Fields align at the top so an error under one never shifts the other. */
+.tg-find {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+	align-items: start;
+	gap: 12px;
+	padding: 20px;
+	border-radius: 22px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+}
+
+.tg-find-field {
+	display: grid;
+	gap: 6px;
+	min-width: 0;
+}
+
+.tg-find-field > label {
+	color: var(--traingo-muted);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 21px;
+}
+
+.tg-find-box {
+	position: relative;
+	display: flex;
+	align-items: center;
+	height: 56px;
+	border-radius: 14px;
+	background: var(--traingo-surface-field);
+}
+
+.tg-find-box > .bi {
+	position: absolute;
+	left: 16px;
+	color: var(--traingo-muted);
+	pointer-events: none;
+}
+
+.tg-find-box select {
+	width: 100%;
+	height: 100%;
+	padding: 0 36px 0 44px;
+	border: 0;
+	border-radius: 14px;
+	background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16'%3E%3Cpath fill='%235b6b80' d='M1.6 4.6 8 11l6.4-6.4-1-1L8 9 2.6 3.6z'/%3E%3C/svg%3E") no-repeat right 14px center;
+	color: var(--traingo-navy);
+	font-family: var(--traingo-font-display);
+	font-weight: 700;
+	text-overflow: ellipsis;
+	appearance: none;
+	cursor: pointer;
+}
+
+.tg-find-box select:focus {
+	outline: none;
+}
+
+.tg-find-box:focus-within {
+	box-shadow: inset 0 0 0 2px var(--traingo-border-focus);
+}
+
+.tg-find-box.is-invalid {
+	background: var(--traingo-danger-soft);
+	box-shadow: inset 0 0 0 2px var(--traingo-danger-ink);
+}
+
+.tg-find-error {
+	margin: 0;
+	color: var(--traingo-danger-ink);
+	font-size: 15px;
+	font-weight: 600;
+}
+
+/* Label line (21px) plus the field gap (6px) puts both buttons level with the boxes. */
+.tg-find-swap {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	margin-top: 33px;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: var(--traingo-surface-field);
+	color: var(--traingo-navy);
+}
+
+.tg-find-swap:hover {
+	background: var(--traingo-primary-soft);
+	color: var(--traingo-primary);
+}
+
+.tg-find-go {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	height: 56px;
+	margin-top: 27px;
+	padding: 0 26px;
+	border: 0;
+	border-radius: 14px;
+	background: var(--traingo-primary);
+	color: #fff;
+	font-family: var(--traingo-font-display);
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.tg-find-go:hover {
+	background: var(--traingo-primary-hover);
+}
+
+/* Route title and the day, which opens the calendar. */
+.tg-trips-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 16px;
+	margin: 28px 0 14px;
+}
+
+.tg-trips-head h1 {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 12px;
+	margin: 0;
+	font-size: clamp(26px, 3.4vw, 36px);
+	font-weight: 800;
+}
+
+.tg-trips-head h1 .bi {
+	color: var(--traingo-primary);
+	font-size: 0.7em;
+}
+
+.tg-pick-date {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 0 16px;
+	border-radius: 999px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.tg-pick-date .bi {
+	color: var(--traingo-primary);
+}
+
+.tg-pick-date:focus-within {
+	box-shadow: inset 0 0 0 2px var(--traingo-border-focus);
+}
+
+/* The real date field covers the label, invisible, so a tap anywhere opens it. */
+.tg-pick-date input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.tg-dates {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	gap: 8px;
+	padding: 8px;
+	border-radius: 20px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+}
+
+.tg-dates-arrow {
+	display: grid;
+	place-items: center;
+	width: 48px;
+	border-radius: 14px;
+	background: var(--traingo-surface-field);
+	color: var(--traingo-navy);
+	font-size: 18px;
+	text-decoration: none;
+}
+
+.tg-dates-arrow:hover {
+	background: var(--traingo-primary-soft);
+	color: var(--traingo-primary);
+}
+
+.tg-dates-arrow.is-disabled {
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+.tg-days {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 6px;
+}
+
+.tg-day {
+	display: grid;
+	justify-items: center;
+	align-content: center;
+	min-height: 64px;
+	padding: 6px 4px;
+	border-radius: 14px;
+	color: var(--traingo-navy);
+	line-height: 1.3;
+	text-align: center;
+	text-decoration: none;
+}
+
+.tg-day small {
+	color: var(--traingo-muted);
+	font-size: 13px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.tg-day b {
+	font-family: var(--traingo-font-display);
+	font-size: 18px;
+	font-variant-numeric: tabular-nums;
+}
+
+.tg-day:hover {
+	background: var(--traingo-surface-field);
+	color: var(--traingo-navy);
+}
+
+.tg-day[aria-current="date"] {
+	background: var(--traingo-navy);
+	color: #fff;
+}
+
+.tg-day[aria-current="date"] small {
+	color: #b9c8ec;
+}
+
+/* Filters beside the results: the panel spans the bar row and the list row. */
+.tg-trips-layout {
+	display: grid;
+	grid-template-columns: 270px minmax(0, 1fr);
+	grid-template-rows: auto 1fr;
+	grid-template-areas: "filters bar" "filters list";
+	align-items: start;
+	gap: 14px 24px;
+	margin-top: 20px;
+}
+
+.tg-results-bar {
+	grid-area: bar;
+}
+
+.tg-results {
+	grid-area: list;
+}
+
+.tg-filters {
+	grid-area: filters;
+	position: sticky;
+	top: 16px;
+	padding: 20px;
+	border-radius: 20px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+}
+
+.tg-filters form {
+	display: grid;
+	gap: 18px;
+}
+
+.tg-filters-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 44px;
+}
+
+.tg-filters-top h2 {
+	margin: 0;
+	font-size: 19px;
+	font-weight: 700;
+}
+
+.tg-filters-clear {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 4px;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.tg-filter-group {
+	display: grid;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+}
+
+.tg-filter-group legend {
+	margin: 0 0 8px;
+	padding: 0;
+	color: var(--traingo-muted);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.tg-chips {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 8px;
+}
+
+/* A checkbox drawn as a chip: the box itself is hidden but still takes focus and clicks. */
+.tg-chip {
+	position: relative;
+	display: grid;
+	justify-items: start;
+	align-content: center;
+	min-height: 64px;
+	padding: 10px 12px;
+	border-radius: 12px;
+	background: var(--traingo-surface-field);
+	line-height: 1.3;
+	cursor: pointer;
+}
+
+.tg-chip input {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.tg-chip .bi {
+	color: var(--traingo-primary);
+}
+
+.tg-chip b {
+	font-size: 15px;
+	white-space: nowrap;
+}
+
+.tg-chip small {
+	color: var(--traingo-muted);
+	font-size: 13px;
+}
+
+.tg-chip:hover {
+	background: var(--traingo-surface-hover);
+}
+
+.tg-chip:has(input:checked) {
+	background: var(--traingo-primary-soft);
+	box-shadow: inset 0 0 0 2px var(--traingo-primary);
+}
+
+.tg-chip:has(input:focus-visible) {
+	outline: 3px solid var(--traingo-state-focus-ring);
+	outline-offset: 2px;
+}
+
+.tg-check {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 44px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.tg-check input {
+	width: 22px;
+	height: 22px;
+	accent-color: var(--traingo-primary);
+}
+
+.tg-results-bar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.tg-results-bar h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 700;
+}
+
+.tg-filters-toggle {
+	display: none;
+}
+
+.tg-sort {
+	display: flex;
+	gap: 4px;
+	padding: 4px;
+	border-radius: 999px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+}
+
+.tg-sort a {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 44px;
+	padding: 0 16px;
+	border-radius: 999px;
+	color: var(--traingo-muted);
+	font-weight: 600;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.tg-sort a:hover {
+	color: var(--traingo-navy);
+}
+
+.tg-sort a[aria-current="true"] {
+	background: var(--traingo-navy);
+	color: #fff;
+}
+
+/* Trip cards. */
+.tg-trip-list {
+	display: grid;
+	gap: 12px;
+}
+
+.tg-trip {
+	overflow: hidden;
+	border-radius: 16px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+}
+
+.tg-trip[open] {
+	box-shadow: inset 0 0 0 2px var(--traingo-primary), var(--traingo-shadow);
+}
+
+.tg-trip-head {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+	gap: 20px;
+	padding: 18px 20px;
+	list-style: none;
+}
+
+summary.tg-trip-head {
+	cursor: pointer;
+}
+
+summary.tg-trip-head::-webkit-details-marker {
+	display: none;
+}
+
+summary.tg-trip-head:focus-visible {
+	outline: 3px solid var(--traingo-state-focus-ring);
+	outline-offset: -3px;
+	border-radius: 16px;
+}
+
+.tg-trip-times {
+	display: grid;
+	grid-template-columns: auto minmax(40px, 1fr) auto;
+	align-items: center;
+	gap: 14px;
+}
+
+.tg-trip-times b {
+	display: block;
+	font-family: var(--traingo-font-display);
+	font-size: 28px;
+	font-weight: 800;
+	line-height: 1.15;
+	font-variant-numeric: tabular-nums;
+}
+
+.tg-trip-times small {
+	display: block;
+	color: var(--traingo-muted);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.tg-trip-times sup {
+	margin-left: 2px;
+	color: var(--traingo-warning-ink);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.tg-trip-end {
+	text-align: right;
+}
+
+.tg-trip-rail {
+	color: var(--traingo-muted);
+	font-size: 13px;
+	font-weight: 600;
+	text-align: center;
+}
+
+/* Dashed track between the two times. */
+.tg-trip-rail::before {
+	content: "";
+	display: block;
+	height: 2px;
+	margin-bottom: 6px;
+	background: repeating-linear-gradient(90deg, #c9d3df 0 8px, transparent 8px 13px);
+}
+
+.tg-trip-rail span {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	white-space: nowrap;
+}
+
+.tg-trip-price {
+	min-width: 118px;
+	line-height: 1.25;
+	text-align: right;
+}
+
+.tg-trip-price strong {
+	display: block;
+	font-family: var(--traingo-font-display);
+	font-size: 22px;
+	font-weight: 800;
+	font-variant-numeric: tabular-nums;
+}
+
+.tg-trip-price em {
+	display: block;
+	color: var(--traingo-success-ink);
+	font-size: 13px;
+	font-style: normal;
+	font-weight: 700;
+}
+
+.tg-trip-price em.is-low {
+	color: var(--traingo-warning-ink);
+}
+
+.tg-trip-chev {
+	display: grid;
+	place-items: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: var(--traingo-surface-field);
+	transition: transform 0.2s var(--traingo-ease);
+}
+
+.tg-trip[open] .tg-trip-chev {
+	transform: rotate(180deg);
+	background: var(--traingo-navy);
+	color: #fff;
+}
+
+/* A sold-out trip cannot open: an empty arrow slot, and the price column says "Hết vé". */
+.tg-trip.is-sold-out {
+	opacity: 0.6;
+}
+
+.tg-trip-chev.is-empty {
+	visibility: hidden;
+}
+
+.tg-trip-opts {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 12px;
+	padding: 0 20px 20px;
+}
+
+.tg-opt {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 14px;
+	padding: 14px;
+	border-radius: 12px;
+	background: var(--traingo-surface-field);
+}
+
+.tg-opt-icon {
+	display: grid;
+	place-items: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 12px;
+	background: var(--traingo-primary-soft);
+	color: var(--traingo-primary);
+	font-size: 22px;
+}
+
+.tg-opt-text b {
+	display: block;
+	font-family: var(--traingo-font-display);
+	font-size: 17px;
+}
+
+.tg-opt-text small {
+	display: block;
+	color: var(--traingo-muted);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.tg-opt-text small.is-low {
+	color: var(--traingo-warning-ink);
+}
+
+.tg-opt-go {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 52px;
+	padding: 0 22px;
+	border-radius: 14px;
+	background: var(--traingo-primary);
+	color: #fff;
+	font-family: var(--traingo-font-display);
+	font-weight: 700;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.tg-opt-go:hover {
+	background: var(--traingo-primary-hover);
+	color: #fff;
+}
+
+.tg-opt.is-none .tg-opt-icon {
+	background: var(--traingo-surface-disabled);
+	color: var(--traingo-text-tertiary);
+}
+
+.tg-opt-go.is-disabled {
+	background: var(--traingo-surface-disabled);
+	color: var(--traingo-muted);
+	cursor: not-allowed;
+}
+
+/* Empty states reuse the My trips panel, with a title line above the hint. */
+.tg-trips-none {
+	margin-top: 20px;
+}
+
+.tg-trips-layout .tg-trips-none {
+	margin-top: 0;
+}
+
+.tg-trips-none strong {
+	font-family: var(--traingo-font-display);
+	font-size: 18px;
+}
+
+@media (max-width: 900px) {
+	.tg-trips-layout {
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: none;
+		grid-template-areas: "bar" "filters" "list";
+	}
+
+	.tg-filters {
+		position: static;
+	}
+
+	/* trip-search.js marks the panel foldable; without it the filters stay open. */
+	.tg-filters.is-foldable:not(.is-open) {
+		display: none;
+	}
+
+	.tg-filters-toggle:not([hidden]) {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		min-height: 48px;
+		padding: 0 18px;
+		border: 0;
+		border-radius: 999px;
+		background: var(--traingo-surface);
+		box-shadow: inset 0 0 0 1px var(--traingo-border);
+		color: var(--traingo-navy);
+		font-weight: 700;
+	}
+
+	.tg-filters-toggle b {
+		display: grid;
+		place-items: center;
+		min-width: 24px;
+		height: 24px;
+		padding: 0 6px;
+		border-radius: 999px;
+		background: var(--traingo-primary);
+		color: #fff;
+		font-size: 13px;
+	}
+
+	.tg-chips {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+	}
+
+	.tg-chips.is-two {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+@media (max-width: 640px) {
+	.tg-trips {
+		padding-top: 16px;
+	}
+
+	/* Stations stacked, the swap button between them on the right. */
+	.tg-find {
+		grid-template-columns: minmax(0, 1fr) auto;
+		padding: 16px;
+	}
+
+	.tg-find-field {
+		grid-column: 1;
+	}
+
+	.tg-find-swap {
+		grid-column: 2;
+		grid-row: 1 / 3;
+		align-self: center;
+		margin-top: 0;
+		transform: rotate(90deg);
+	}
+
+	.tg-find-go {
+		grid-column: 1 / -1;
+		margin-top: 4px;
+	}
+
+	.tg-days {
+		grid-template-columns: none;
+		grid-auto-flow: column;
+		grid-auto-columns: 74px;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
+	.tg-dates-arrow {
+		width: 44px;
+	}
+
+	.tg-chips {
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.tg-results-bar .tg-sort {
+		width: 100%;
+	}
+
+	.tg-sort a {
+		flex: 1;
+		padding: 0 6px;
+	}
+
+	.tg-trip-head {
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 12px 14px;
+		padding: 16px;
+	}
+
+	.tg-trip-times {
+		grid-column: 1 / -1;
+	}
+
+	.tg-trip-times b {
+		font-size: 25px;
+	}
+
+	.tg-trip-price {
+		text-align: left;
+	}
+
+	.tg-trip-opts {
+		grid-template-columns: minmax(0, 1fr);
+		padding: 0 16px 16px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tg-trip-chev {
+		transition: none;
 	}
 }

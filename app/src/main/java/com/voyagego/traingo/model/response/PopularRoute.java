@@ -3,25 +3,39 @@ package com.voyagego.traingo.model.response;
 /**
  * A route shown on the landing page. Carries no price or duration: those
  * come from a real Trip, and inventing them here would put numbers on screen
- * that no one can trace back to data.
+ * that no one can trace back to data. The two station codes build the card's
+ * link to the trip list.
  */
 public class PopularRoute {
 
+	private final String originCode;
 	private final String origin;
+	private final String destinationCode;
 	private final String destination;
 	private final String note;
 	private final StationPhoto photo;
 
 	/** {@code photo} is the destination's, or null when there is none. */
-	public PopularRoute(String origin, String destination, String note, StationPhoto photo) {
+	public PopularRoute(String originCode, String origin, String destinationCode, String destination, String note,
+			StationPhoto photo) {
+		this.originCode = originCode;
 		this.origin = origin;
+		this.destinationCode = destinationCode;
 		this.destination = destination;
 		this.note = note;
 		this.photo = photo;
 	}
 
+	public String getOriginCode() {
+		return originCode;
+	}
+
 	public String getOrigin() {
 		return origin;
+	}
+
+	public String getDestinationCode() {
+		return destinationCode;
 	}
 
 	public String getDestination() {

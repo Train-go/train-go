@@ -1,6 +1,6 @@
 /*
  * Landing page interactions: default date, swap stations, prefill from a
- * popular route card, and a client-side guard for same-origin-and-destination.
+ * destination card, and a client-side guard for same-origin-and-destination.
  *
  * The backend must repeat every check here — SPEC.md 45.2. Nothing in this file
  * is a substitute for server-side validation.
@@ -71,12 +71,9 @@
 		clearError();
 	});
 
-	// A route card fills both stations, a destination card only "Đến".
-	document.querySelectorAll('.tg-route, .tg-place').forEach(function (card) {
+	// A destination card fills "Đến"; route cards are plain links to /trips.
+	document.querySelectorAll('.tg-place').forEach(function (card) {
 		card.addEventListener('click', function () {
-			if (card.dataset.from) {
-				fromField.value = card.dataset.from;
-			}
 			toField.value = card.dataset.to;
 			clearError();
 			form.scrollIntoView({ behavior: 'smooth', block: 'center' });

@@ -2,9 +2,8 @@
 <!--
 	Homepage, after docs/reports/ui-mau/client/trang-chu-8-swiss.html.
 
-	The search form keeps its field names and ids (tgFrom, tgTo, tgDate,
-	tgPassengers, tgSwap, tgSearchForm, tgSearchError): landing.js reads them,
-	and the trip search task (#26) changes the fields themselves.
+	The search form's ids (tgFrom, tgTo, tgDate, tgSwap, tgSearchForm,
+	tgSearchError) are read by landing.js.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{layout/base :: page(~{::title}, ~{::main})}">
@@ -26,15 +25,16 @@
 
 	<div class="container tg-search-wrap">
 		<!--
-			Submits to /trips, which the trip search task (#26) builds. Until
-			then the search ends on the 404 page.
+			A shortcut into the trip list: it opens /trips with the two station
+			codes and the day filled in. The ticket count is the number of seats
+			picked later, so there is no passenger field (D6).
 		-->
 		<form class="tg-search" method="get" th:action="@{/trips}" id="tgSearchForm" novalidate>
 			<label class="tg-cell tg-cell-from" for="tgFrom">
 				<small>Đi từ</small>
 				<select id="tgFrom" name="from" required>
 					<option value="">Chọn ga đi</option>
-					<option th:each="station : ${stations}" th:value="${station}" th:text="${station}">Ga Sài Gòn</option>
+					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${station.name}">Ga Sài Gòn</option>
 				</select>
 			</label>
 			<button class="tg-swap" type="button" id="tgSwap" aria-label="Đổi ga đi và ga đến" title="Đổi chiều">
@@ -44,16 +44,12 @@
 				<small>Đến</small>
 				<select id="tgTo" name="to" required>
 					<option value="">Chọn ga đến</option>
-					<option th:each="station : ${stations}" th:value="${station}" th:text="${station}">Ga Nha Trang</option>
+					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${station.name}">Ga Nha Trang</option>
 				</select>
 			</label>
 			<label class="tg-cell tg-cell-date" for="tgDate">
 				<small>Ngày đi</small>
-				<input type="date" id="tgDate" name="date" required>
-			</label>
-			<label class="tg-cell tg-cell-count" for="tgPassengers">
-				<small>Hành khách</small>
-				<input type="number" id="tgPassengers" name="passengers" value="1" min="1" max="10" required>
+				<input type="date" id="tgDate" name="date" th:value="${today}" th:min="${today}" required>
 			</label>
 			<button class="tg-go" type="submit">Tìm chuyến <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
 		</form>
@@ -67,7 +63,7 @@
 		</div>
 		<div class="tg-places">
 			<button type="button" class="tg-place tg-reveal" th:each="place, it : ${destinations}"
-				th:classappend="${it.first} ? 'is-big'" th:attr="data-to=${place.stationName}">
+				th:classappend="${it.first} ? 'is-big'" th:attr="data-to=${place.stationCode}">
 				<img th:if="${place.photo != null}" th:src="@{${place.photo.path}}" th:alt="${place.photo.alt}" loading="lazy">
 				<span class="tg-place-text">
 					<small><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span th:text="${place.stationName}">Ga Nha Trang</span></small>
@@ -77,14 +73,14 @@
 		</div>
 	</section>
 
-	<!-- Popular routes (SPEC.md 5.3): picking one fills both stations. -->
+	<!-- Popular routes (SPEC.md 5.3): each opens the trip list for today on that route. -->
 	<section class="container tg-section" id="popular-routes">
 		<div class="tg-sec-head tg-reveal">
 			<h2>Tuyến phổ biến</h2>
 		</div>
 		<div class="tg-routes">
-			<button type="button" class="tg-route tg-reveal" th:each="route : ${popularRoutes}"
-				th:attr="data-from=${route.origin}, data-to=${route.destination}">
+			<a class="tg-route tg-reveal" th:each="route : ${popularRoutes}"
+				th:href="@{/trips(from=${route.originCode}, to=${route.destinationCode})}">
 				<span class="tg-route-photo">
 					<img th:if="${route.photo != null}" th:src="@{${route.photo.path}}" alt="" loading="lazy">
 				</span>
@@ -96,7 +92,7 @@
 					</span>
 					<span class="tg-route-meta"><i class="bi bi-signpost-split" aria-hidden="true"></i><span th:text="${route.note}">791 km</span></span>
 				</span>
-			</button>
+			</a>
 		</div>
 	</section>
 
