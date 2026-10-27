@@ -836,3 +836,19 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 .dir-pill[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
 .dir-pill.has { border-style: dashed; background: transparent; color: var(--muted); cursor: default; }
 .sug-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+/* ---------- routes from one station to many (#39) ---------- */
+
+.fan { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.fan-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.fan-h h3 { margin: 0; font-size: 16px; font-weight: 700; }
+/* A long network scrolls inside the list instead of stretching the panel. */
+.fan-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; max-height: 340px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.fan-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 8px; padding: 8px 10px; border-radius: var(--r-control); background: var(--sunk); }
+.fan-list li:has(input:checked:not(:disabled)) { background: var(--accent-soft); }
+.fan-check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.fan-check input { flex: none; width: 18px; height: 18px; accent-color: var(--accent); }
+.fan-check.done { color: var(--muted); cursor: default; }
+.fan-name { display: grid; line-height: 1.25; }
+.fan-name small { color: var(--muted); font-size: 12px; font-weight: 600; }
+.fan-st { color: var(--muted); font-size: 12px; font-weight: 600; }

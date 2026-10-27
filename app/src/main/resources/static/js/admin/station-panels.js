@@ -37,6 +37,7 @@
 		const remove = panel.querySelector('[data-action=delete-station]');
 		blockDelete(remove, panel.querySelector('#station-delete-reason'), station.routeCount
 			? `Không xóa được: ga đang có ${station.routeCount} tuyến. Xóa các tuyến đó trước.` : '');
+		TG.fanOut(panel.querySelector('[data-fan-host]'), { station, network: ctx.network, commit: ctx.commit });
 		panel.querySelector('[data-action=edit-station]').onclick = () => ctx.select({ type: 'station', id: station.id, edit: true });
 		remove.onclick = () => ctx.remove(`/api/admin/stations/${station.id}`, `Xóa ${station.name}?`,
 			'Ga sẽ không còn trong danh sách chọn ga khi tạo tuyến.', 'Xóa ga', 'Đã xóa ga.', { type: 'overview' }, remove);
