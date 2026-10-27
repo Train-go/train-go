@@ -19,7 +19,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	/**
 	 * Every booking for the admin list, with customer, trip, train, route and
 	 * both stations loaded. A null {@code customerId} means every customer.
-	 * Grouping and searching happen in BookingAdminService.
+	 * Grouping and searching happen in BookingAdminService; MyTripsService
+	 * reads one customer's bookings through the same query.
 	 */
 	@Query("""
 			select b from Booking b
@@ -43,6 +44,25 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 			join fetch r.destinationStation
 			where b.bookingCode = :code""")
 	Optional<Booking> findByBookingCode(@Param("code") String code);
+
+	/**
+	 * One booking of one customer, with the same relations as
+	 * {@link #findAllForAdmin}. Empty for another customer's booking, so My
+	 * Trips cannot tell it apart from one that does not exist.
+	 */
+	@Query("""
+			select b from Booking b
+			join fetch b.customer
+			join fetch b.trip t
+			join fetch t.train
+			join fetch t.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where b.id = :id and b.customer.id = :customerId""")
+	Optional<Booking> findOwnedById(@Param("id") Long id, @Param("customerId") Long customerId);
+
+	/** Ownership check that loads nothing; see MyTripsService.cancel for why. */
+	boolean existsByIdAndCustomerId(Long id, Long customerId);
 
 	/** Number of bookings per customer id, cancelled ones included. */
 	@Query("select b.customer.id as id, count(b) as total from Booking b group by b.customer.id")

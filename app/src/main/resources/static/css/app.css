@@ -1572,3 +1572,404 @@ body:has(.tg-trust) .tg-foot {
 		padding: 24px 20px;
 	}
 }
+
+/* ---------- My trips (#31) ---------- */
+
+/*
+ * Cards and the receipt follow docs/reports/ui-mau/client/thanh-toan.html:
+ * white panels on the grey page, the route in the display face, a tilted
+ * stamp for the payment state.
+ */
+.tg-trips-page {
+	max-width: 880px;
+	padding-block: 32px 56px;
+}
+
+.tg-trips-title {
+	margin: 0 0 20px;
+	font-family: var(--traingo-font-display);
+	font-size: clamp(28px, 4vw, 36px);
+	font-weight: 800;
+}
+
+.tg-trips-tabs {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 20px;
+	padding: 5px;
+	border-radius: 999px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+}
+
+.tg-trips-tabs a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	padding: 0 18px;
+	border-radius: 999px;
+	color: var(--traingo-ink);
+	font-weight: 600;
+	text-decoration: none;
+}
+
+.tg-trips-tabs a:hover {
+	background: var(--traingo-surface-hover);
+}
+
+.tg-trips-tabs a[aria-current="page"] {
+	background: var(--traingo-navy);
+	color: var(--traingo-text-inverse);
+}
+
+.tg-trips-count {
+	min-width: 24px;
+	padding: 0 7px;
+	border-radius: 999px;
+	background: var(--traingo-surface-field);
+	color: var(--traingo-muted);
+	font-size: 13px;
+	font-weight: 700;
+	text-align: center;
+}
+
+.tg-trips-tabs a[aria-current="page"] .tg-trips-count {
+	background: rgb(255 255 255 / 18%);
+	color: inherit;
+}
+
+.tg-trip-cards {
+	display: grid;
+	gap: 14px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tg-trip-card {
+	display: grid;
+	gap: 8px;
+	padding: 20px 24px;
+	border-radius: 24px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+	color: var(--traingo-ink);
+	text-decoration: none;
+	transition: box-shadow 0.2s var(--traingo-ease);
+}
+
+.tg-trip-card:hover {
+	box-shadow: 0 0 0 2px var(--traingo-primary-soft), var(--traingo-shadow);
+	color: var(--traingo-ink);
+}
+
+.tg-trip-card-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px 14px;
+}
+
+.tg-trip-route {
+	font-family: var(--traingo-font-display);
+	font-size: 20px;
+	font-weight: 800;
+}
+
+.tg-trip-when,
+.tg-trip-seats {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 10px;
+	color: var(--traingo-muted);
+	font-weight: 600;
+}
+
+.tg-trip-when .bi,
+.tg-trip-seats .bi {
+	color: var(--traingo-primary);
+}
+
+.tg-train-code {
+	padding: 1px 10px;
+	border-radius: 999px;
+	background: var(--traingo-surface-field);
+	color: var(--traingo-ink);
+	font-weight: 700;
+}
+
+.tg-trip-card-foot {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 4px 14px;
+	padding-top: 10px;
+	border-top: 2px dashed var(--traingo-border);
+	font-weight: 700;
+}
+
+.tg-booking-code,
+.tg-mono {
+	font-family: var(--bs-font-monospace);
+	font-size: 0.92em;
+	letter-spacing: 0.02em;
+}
+
+/* The payment state as a small stamp; colour says paid or cancelled. */
+.tg-status {
+	padding: 2px 12px;
+	border: 2px solid currentColor;
+	border-radius: 10px;
+	font-family: var(--traingo-font-display);
+	font-size: 13px;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.tg-status.paid {
+	color: var(--traingo-success-ink);
+}
+
+.tg-status.cancelled {
+	color: var(--traingo-danger-ink);
+}
+
+.tg-stamp {
+	transform: rotate(-4deg);
+	border-width: 3px;
+	font-size: 15px;
+}
+
+.tg-trips-empty {
+	display: grid;
+	justify-items: center;
+	gap: 12px;
+	padding: 40px 24px;
+	border-radius: 24px;
+	background: var(--traingo-surface);
+	box-shadow: var(--traingo-shadow);
+	text-align: center;
+}
+
+.tg-trips-empty > .bi {
+	display: grid;
+	place-items: center;
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	background: var(--traingo-primary-soft);
+	color: var(--traingo-primary);
+	font-size: 30px;
+}
+
+.tg-trips-empty p {
+	max-width: 420px;
+	margin: 0;
+	color: var(--traingo-muted);
+}
+
+.tg-booking-page {
+	max-width: 640px;
+}
+
+.tg-back {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	margin-bottom: 12px;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+/* The receipt: zig-zag top and bottom edges, as on the payment page. */
+.tg-receipt {
+	padding: 30px 28px 34px;
+	background: var(--traingo-surface);
+	filter: drop-shadow(0 1px 1px rgb(11 26 54 / 10%)) drop-shadow(0 8px 14px rgb(11 26 54 / 8%));
+	-webkit-mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 18px 51% repeat-x,
+		conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 18px 51% repeat-x;
+	mask: conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 18px 51% repeat-x,
+		conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 18px 51% repeat-x;
+}
+
+.tg-receipt-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.tg-receipt-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--traingo-font-display);
+	font-weight: 800;
+}
+
+.tg-receipt-label {
+	margin: 0;
+	color: var(--traingo-muted);
+	font-weight: 600;
+}
+
+.tg-receipt h1 {
+	margin: 0;
+	font-family: var(--bs-font-monospace);
+	font-size: clamp(24px, 4vw, 30px);
+	font-weight: 700;
+}
+
+.tg-receipt-trip {
+	display: grid;
+	gap: 4px;
+	margin: 16px 0 20px;
+	padding: 14px 0;
+	border-block: 2px dashed var(--traingo-border);
+	color: var(--traingo-muted);
+	font-weight: 600;
+}
+
+.tg-receipt-trip .tg-trip-route {
+	color: var(--traingo-ink);
+}
+
+.tg-receipt-sub {
+	margin: 0 0 6px;
+	font-size: 17px;
+	font-weight: 700;
+}
+
+.tg-ticket-table {
+	--bs-table-bg: transparent;
+	margin-bottom: 0;
+}
+
+.tg-receipt-sum {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 14px 0 4px;
+}
+
+.tg-receipt-sum span {
+	color: var(--traingo-muted);
+	font-weight: 600;
+}
+
+.tg-receipt-sum strong {
+	font-family: var(--traingo-font-display);
+	font-size: 28px;
+	font-weight: 800;
+}
+
+.tg-receipt-paid {
+	margin: 0;
+	color: var(--traingo-muted);
+	font-size: 14px;
+}
+
+/* The dialog has no padding of its own, so a click on it is a click on the backdrop. */
+.tg-dialog {
+	width: min(440px, calc(100vw - 32px));
+	padding: 0;
+	border: 0;
+	border-radius: 20px;
+	box-shadow: var(--traingo-shadow);
+}
+
+.tg-dialog::backdrop {
+	background: var(--traingo-overlay-modal);
+}
+
+.tg-dialog form {
+	display: grid;
+	gap: 14px;
+	padding: 24px;
+}
+
+.tg-dialog h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 800;
+}
+
+.tg-dialog p {
+	margin: 0;
+	color: var(--traingo-muted);
+}
+
+.tg-dialog-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 10px;
+}
+
+@media (max-width: 640px) {
+	.tg-trips-page {
+		padding-block: 20px 40px;
+	}
+
+	.tg-trips-tabs {
+		display: flex;
+		width: 100%;
+	}
+
+	.tg-trips-tabs a {
+		flex: 1 1 auto;
+		justify-content: center;
+		padding: 0 10px;
+	}
+
+	.tg-trip-card {
+		padding: 18px;
+		border-radius: 20px;
+	}
+
+	.tg-receipt {
+		padding: 24px 18px 30px;
+	}
+
+	/* Four columns do not fit a phone: each ticket becomes two lines,
+	   name and price, then ticket code and seat. */
+	.tg-ticket-table thead {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+	}
+
+	.tg-ticket-table tbody tr {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas: "name price" "code seat";
+		gap: 2px 12px;
+		padding: 12px 0;
+		border-bottom: 1px solid var(--traingo-border);
+	}
+
+	.tg-ticket-table tbody td {
+		padding: 0;
+		border: 0;
+	}
+
+	.tg-ticket-table td:nth-child(1) { grid-area: code; color: var(--traingo-muted); }
+	.tg-ticket-table td:nth-child(2) { grid-area: name; }
+	.tg-ticket-table td:nth-child(3) { grid-area: seat; text-align: end; color: var(--traingo-muted); }
+	.tg-ticket-table td:nth-child(4) { grid-area: price; font-weight: 700; }
+
+	.tg-dialog-actions .btn {
+		flex: 1 1 auto;
+	}
+}
