@@ -102,7 +102,7 @@ public class MyTripsService {
 				.orElseThrow(BookingNotFoundException::new);
 		Trip trip = booking.getTrip();
 		List<TicketLine> tickets = ticketRepository.findByBookingIds(List.of(bookingId)).stream()
-				.map(ticket -> new TicketLine(ticket.getTicketCode(), ticket.getFullName(),
+				.map(ticket -> new TicketLine(ticket.getId(), ticket.getTicketCode(), ticket.getFullName(),
 						TextUtils.maskId(ticket.getIdentityNumber()), seatLabel(ticket), ticket.getTicketPrice()))
 				.toList();
 		boolean cancellable = BookingCancellationService.blockReason(booking, now) == null;

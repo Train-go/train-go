@@ -2,6 +2,7 @@ package com.voyagego.traingo.repository;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,5 +44,37 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 			where t.booking.bookingStatus = com.voyagego.traingo.entity.BookingStatus.CONFIRMED
 			group by t.tripSeat.trip.id""")
 	List<IdCount> countConfirmedByTrip();
+
+	/**
+	 * One ticket with everything the e-ticket prints loaded: booking, customer,
+	 * seat, trip, train, route and both stations.
+	 */
+	@Query("""
+			select t from Ticket t
+			join fetch t.booking b
+			join fetch b.customer
+			join fetch t.tripSeat s
+			join fetch s.trip trip
+			join fetch trip.train
+			join fetch trip.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where t.id = :id""")
+	Optional<Ticket> findDetailById(@Param("id") Long id);
+
+	/** The tickets of one booking, loaded like {@link #findDetailById}, in code order (-01, -02 ...). */
+	@Query("""
+			select t from Ticket t
+			join fetch t.booking b
+			join fetch b.customer
+			join fetch t.tripSeat s
+			join fetch s.trip trip
+			join fetch trip.train
+			join fetch trip.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where b.id = :bookingId
+			order by t.ticketCode""")
+	List<Ticket> findDetailsByBookingId(@Param("bookingId") Long bookingId);
 
 }

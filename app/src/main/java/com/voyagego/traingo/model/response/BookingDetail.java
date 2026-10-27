@@ -17,7 +17,7 @@ public record BookingDetail(long id, String code, String routeLabel, String depa
 		String statusCss, boolean cancellable, String cancelQuestion) {
 
 	/** @param seatLabel "Toa 3 · B02" */
-	public record TicketLine(String ticketCode, String fullName, String idMask, String seatLabel, long price) {
+	public record TicketLine(long id, String ticketCode, String fullName, String idMask, String seatLabel, long price) {
 	}
 
 }

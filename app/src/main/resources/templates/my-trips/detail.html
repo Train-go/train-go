@@ -52,7 +52,7 @@
 				</thead>
 				<tbody>
 					<tr th:each="ticket : ${booking.tickets}">
-						<td class="tg-mono" th:text="${ticket.ticketCode}">TK202610001-01</td>
+						<td class="tg-mono"><a th:href="@{/tickets/{id}(id=${ticket.id})}" th:text="${ticket.ticketCode}">TK202610001-01</a></td>
 						<td>
 							<span th:text="${ticket.fullName}">Nguyễn Văn An</span>
 							<small class="d-block text-body-secondary tg-mono" th:text="|CCCD ${ticket.idMask}|">CCCD •••• 1234</small>
@@ -70,6 +70,10 @@
 		</div>
 		<p class="tg-receipt-paid" th:if="${booking.paidLabel != null}"
 			th:text="|Thanh toán lúc ${booking.paidLabel}|">Thanh toán lúc 20/10/2026 14:05</p>
+
+		<a class="btn btn-primary btn-lg w-100 mt-3" th:href="@{/my-trips/{id}/tickets(id=${booking.id})}">
+			<i class="bi bi-ticket-perforated" aria-hidden="true"></i> Xem vé
+		</a>
 
 		<button type="button" class="btn btn-outline-danger btn-lg w-100 mt-3" th:if="${booking.cancellable}"
 			data-cancel-open="cancel-dialog">
