@@ -88,6 +88,16 @@ và cho phép sửa để đặt cho người khác. Không thu thập ngày sin
 
 Số hành khách phải bằng số chỗ đã chọn. Mỗi hành khách gán đúng một chỗ.
 
+Trang Hành khách là `GET /booking/passengers` (#32): mỗi chỗ trong bản nháp là một
+tấm vé gồm giờ đi và đến, người đi, ô CCCD và cuống ghi toa, chỗ, loại chỗ, giá.
+Họ tên mặc định là tên tài khoản, kèm số điện thoại che dạng `SĐT •••• 4567`;
+"Đổi người đi" cho ghi tên người khác, khi đó vé không hiện số điện thoại của tài
+khoản. CCCD gồm đúng 12 chữ số, bắt buộc cho mọi vé kể cả vé đứng tên chủ tài khoản
+vì tài khoản không lưu CCCD. Họ tên không để trống và tối đa 100 ký tự. Server
+kiểm tra, lỗi hiện dưới ô của đúng vé. Trang chỉ sửa bản nháp trong session; không
+có bản nháp thì chuyển về `/trips` với "Hãy chọn chuyến và chỗ trước.". "Chọn lại
+chỗ" lưu những gì đã gõ (không kiểm tra) rồi mở lại trang chọn chỗ của chuyến đó.
+
 Mỗi booking có từ 1 đến 10 hành khách (D6, chốt 12/10/2026, sửa chữ 21/10/2026).
 Số chỗ khách chọn ở bước chọn chỗ là số vé, tối đa 10; trang chủ và trang Chọn
 chuyến không có ô "Hành khách". Backend kiểm tra giới hạn này ở bước chọn chỗ và

@@ -32,4 +32,32 @@ public final class TextUtils {
 		return "•••• " + idNumber.substring(idNumber.length() - 4);
 	}
 
+
+	/**
+	 * Hides a phone number except its last four digits: "0901000001" becomes
+	 * "•••• 0001". Null when there is no number to show.
+	 */
+	public static String maskPhone(String phone) {
+		if (phone == null || phone.isBlank()) {
+			return null;
+		}
+		String digits = phone.trim();
+		return digits.length() <= 4 ? "••••" : "•••• " + digits.substring(digits.length() - 4);
+	}
+
+	/**
+	 * The letters shown in a name's avatar: the first letter of the last two
+	 * words, so "Nguyễn Văn An" gives "VA" and "An" gives "A".
+	 */
+	public static String initials(String name) {
+		if (name == null || name.isBlank()) {
+			return "?";
+		}
+		String[] words = name.trim().split("\\s+");
+		String last = words[words.length - 1];
+		String initials = words.length > 1 ? words[words.length - 2].substring(0, 1) + last.substring(0, 1)
+				: last.substring(0, 1);
+		return initials.toUpperCase(Locale.ROOT);
+	}
+
 }
