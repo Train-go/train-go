@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<!--
+	The page after a paid booking (issue #33). It reads the booking the same
+	way "Vé của tôi" does, so another customer's booking id is the 404 page.
+	"Xem các vé" lists the tickets with <details>; #34 turns each line into a
+	link to its e-ticket.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+<head>
+	<title>Đặt vé thành công · TrainGo</title>
+</head>
+<body>
+
+<main class="container tg-pay">
+
+	<div class="tg-pay-col">
+		<h1 class="tg-pay-title">Đặt vé thành công</h1>
+
+		<div class="tg-receipt-wrap">
+			<article class="tg-bill" aria-labelledby="tgDoneCode">
+				<header class="tg-bill-head">
+					<span class="tg-bill-brand"><i class="bi bi-train-front" aria-hidden="true"></i>TrainGo</span>
+					<span class="tg-bill-stamp" th:text="${#strings.toUpperCase(booking.statusLabel)}">ĐÃ THANH TOÁN</span>
+				</header>
+
+				<div class="tg-bill-trip">
+					<span class="tg-bill-route" th:text="${booking.routeLabel}">Huế → Đồng Hới</span>
+					<small th:text="|${booking.trainLabel} · ${booking.departureLabel}|">SE1 · Thứ Tư, 28/10/2026 · 08:00</small>
+				</div>
+
+				<p class="tg-bill-code">Mã booking <b id="tgDoneCode" th:text="${booking.code}">BK202610009</b></p>
+
+				<ul class="tg-bill-lines">
+					<li th:each="ticket : ${booking.tickets}">
+						<span class="tg-bill-seat" th:text="${#strings.substringAfter(ticket.seatLabel, '· ')}">A05</span>
+						<span>
+							<b th:text="${ticket.seatLabel}">Toa 1 · A05</b>
+							<small th:text="${ticket.fullName}">Nguyễn Văn An</small>
+						</span>
+						<strong th:text="${#numbers.formatInteger(ticket.price, 0, 'POINT')} + 'đ'">170.000đ</strong>
+					</li>
+				</ul>
+
+				<div class="tg-bill-sum">
+					<span>Tổng tiền</span>
+					<strong th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + 'đ'">340.000đ</strong>
+				</div>
+			</article>
+		</div>
+
+		<details class="tg-pay-tickets">
+			<summary><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Xem các vé<i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+			<ul>
+				<li th:each="ticket : ${booking.tickets}">
+					<span class="tg-mono" th:text="${ticket.ticketCode}">TK202610009-01</span>
+					<span th:text="${ticket.fullName}">Nguyễn Văn An</span>
+					<span th:text="${ticket.seatLabel}">Toa 1 · A05</span>
+				</li>
+			</ul>
+		</details>
+
+		<div class="tg-pay-after">
+			<a th:href="@{/my-trips}"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Vé của tôi</a>
+		</div>
+	</div>
+</main>
+
+</body>
+</html>

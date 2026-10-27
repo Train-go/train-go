@@ -4039,3 +4039,364 @@ summary.tg-trip-head:focus-visible {
 		margin-top: 4px;
 	}
 }
+
+/* ---------- Payment and booking success, booking step 4 (#33) ---------- */
+
+/*
+ * After docs/reports/ui-mau/client/thanh-toan.html: the bill is one paper
+ * receipt with serrated top and bottom edges (a mask, so the shadow follows
+ * the teeth), used both to pay and, with a stamp, once paid.
+ */
+.tg-pay {
+	padding-block: 24px 40px;
+}
+
+.tg-pay-col {
+	max-width: 580px;
+	margin: 0 auto;
+}
+
+.tg-pay-title {
+	margin: 6px 0 22px;
+	font-size: clamp(28px, 3.6vw, 36px);
+	font-weight: 800;
+}
+
+.tg-receipt-wrap {
+	margin-top: 26px;
+	filter: drop-shadow(0 1px 1px rgb(11 26 54 / 10%)) drop-shadow(0 8px 14px rgb(11 26 54 / 8%));
+}
+
+.tg-pay-title + .tg-receipt-wrap {
+	margin-top: 0;
+}
+
+.tg-bill {
+	padding: 30px 28px 34px;
+	background: var(--traingo-surface);
+	-webkit-mask:
+		conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 18px 51% repeat-x,
+		conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 18px 51% repeat-x;
+	mask:
+		conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / 18px 51% repeat-x,
+		conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 18px 51% repeat-x;
+}
+
+.tg-bill-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	margin-bottom: 18px;
+}
+
+.tg-bill-brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: var(--traingo-muted);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.tg-bill-brand i {
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	background: var(--traingo-navy);
+	color: #fff;
+	font-size: 13px;
+}
+
+.tg-bill-tag {
+	margin: 0;
+	padding: 4px 12px;
+	border-radius: 999px;
+	background: var(--traingo-surface-field);
+	color: var(--traingo-muted);
+	font-family: var(--traingo-font-body);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+
+.tg-bill-stamp {
+	padding: 3px 12px;
+	border: 3px solid var(--traingo-success-ink);
+	border-radius: 10px;
+	color: var(--traingo-success-ink);
+	font-family: var(--traingo-font-display);
+	font-size: 15px;
+	font-weight: 800;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	transform: rotate(-4deg);
+}
+
+.tg-bill-trip {
+	display: grid;
+	gap: 4px;
+	padding: 14px 0;
+	border-block: 2px dashed #d3dbe6;
+}
+
+.tg-bill-route {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 10px;
+	font-family: var(--traingo-font-display);
+	font-size: 20px;
+	font-weight: 800;
+}
+
+.tg-bill-route i {
+	color: var(--traingo-primary);
+}
+
+.tg-bill-trip small {
+	color: var(--traingo-muted);
+	font-weight: 600;
+}
+
+.tg-bill-code {
+	margin: 16px 0 0;
+	color: var(--traingo-muted);
+	font-weight: 600;
+}
+
+.tg-bill-code b {
+	margin-left: 6px;
+	color: var(--traingo-ink);
+	font-family: var(--traingo-font-display);
+	font-size: 22px;
+	font-weight: 800;
+}
+
+.tg-bill-lines {
+	display: grid;
+	gap: 4px;
+	margin: 6px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tg-bill-lines li {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	gap: 14px;
+	padding: 12px 0;
+	border-bottom: 1px dashed #d3dbe6;
+}
+
+.tg-bill-lines b {
+	display: block;
+	font-size: 16px;
+	line-height: 1.35;
+}
+
+.tg-bill-lines small {
+	display: block;
+	overflow-wrap: anywhere;
+	color: var(--traingo-muted);
+	font-size: 14px;
+}
+
+.tg-bill-lines strong {
+	font-family: var(--traingo-font-display);
+	font-size: 17px;
+	white-space: nowrap;
+}
+
+.tg-bill-seat {
+	display: grid;
+	place-items: center;
+	min-width: 50px;
+	height: 46px;
+	padding: 0 6px;
+	border-radius: 12px;
+	background: var(--traingo-primary);
+	color: #fff;
+	font-family: var(--traingo-font-display);
+	font-weight: 800;
+}
+
+.tg-bill-sum {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 14px 0 4px;
+}
+
+.tg-bill-sum span {
+	color: var(--traingo-muted);
+	font-weight: 600;
+}
+
+.tg-bill-sum strong {
+	font-family: var(--traingo-font-display);
+	font-size: 30px;
+	font-weight: 800;
+}
+
+.tg-bill-pay {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 100%;
+	height: 62px;
+	margin-top: 14px;
+	border: 0;
+	border-radius: 14px;
+	background: var(--traingo-primary);
+	color: #fff;
+	font-family: var(--traingo-font-display);
+	font-size: 20px;
+	font-weight: 700;
+	transition: background 0.2s;
+}
+
+.tg-bill-pay:hover {
+	background: var(--traingo-primary-hover);
+}
+
+.tg-bill-pay:disabled {
+	cursor: progress;
+	opacity: 0.85;
+}
+
+.tg-bill-pay.is-busy::before {
+	content: "";
+	width: 20px;
+	height: 20px;
+	border: 3px solid rgb(255 255 255 / 35%);
+	border-top-color: #fff;
+	border-radius: 50%;
+	animation: tg-spin 0.8s linear infinite;
+}
+
+@keyframes tg-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.tg-bill-fine {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 12px 0 0;
+	color: var(--traingo-muted);
+	font-size: 14px;
+}
+
+.tg-bill-fine i {
+	margin-top: 2px;
+}
+
+.tg-pay-after {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 18px;
+	margin-top: 14px;
+}
+
+.tg-pay-after a {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 44px;
+	font-weight: 700;
+	text-decoration: none;
+}
+
+.tg-pay-tickets {
+	margin-top: 22px;
+}
+
+.tg-pay-tickets summary {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-height: 48px;
+	padding: 0 18px;
+	border-radius: 999px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+	font-weight: 700;
+	list-style: none;
+	cursor: pointer;
+}
+
+.tg-pay-tickets summary::-webkit-details-marker {
+	display: none;
+}
+
+.tg-pay-tickets summary i:first-child {
+	color: var(--traingo-primary);
+}
+
+.tg-pay-tickets[open] summary i:last-child {
+	transform: rotate(180deg);
+}
+
+.tg-pay-tickets ul {
+	display: grid;
+	gap: 8px;
+	margin: 14px 0 0;
+	padding: 0;
+	list-style: none;
+}
+
+.tg-pay-tickets li {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	gap: 2px 12px;
+	padding: 12px 14px;
+	border-radius: 14px;
+	background: var(--traingo-surface);
+	box-shadow: inset 0 0 0 1px var(--traingo-border);
+}
+
+.tg-pay-tickets li > :first-child {
+	grid-column: 1 / -1;
+	font-weight: 700;
+}
+
+.tg-pay :focus-visible {
+	outline: 3px solid var(--traingo-primary);
+	outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+	.tg-bill {
+		padding: 24px 18px 30px;
+	}
+
+	.tg-bill-stamp {
+		font-size: 13px;
+	}
+
+	.tg-bill-lines li {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.tg-bill-lines strong {
+		grid-column: 2;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.tg-bill-pay.is-busy::before {
+		animation-duration: 3s;
+	}
+}

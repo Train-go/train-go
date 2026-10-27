@@ -78,6 +78,20 @@ public class Booking {
 		this.createdAt = LocalDateTime.now();
 	}
 
+	/**
+	 * The booking the mock payment creates: already CONFIRMED and PAID, with
+	 * paidAt set. The project has no pending booking (docs/product/booking-flow.md);
+	 * PaymentService calls this inside the transaction that books the seats.
+	 */
+	public static Booking paid(String bookingCode, User customer, Trip trip, long totalPrice, LocalDateTime now) {
+		Booking booking = new Booking(bookingCode, customer, trip, totalPrice);
+		booking.bookingStatus = BookingStatus.CONFIRMED;
+		booking.paymentStatus = PaymentStatus.PAID;
+		booking.paidAt = now;
+		booking.createdAt = now;
+		return booking;
+	}
+
 	public Long getId() {
 		return id;
 	}

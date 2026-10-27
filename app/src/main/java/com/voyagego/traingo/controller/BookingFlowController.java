@@ -16,15 +16,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.WebUtils;
 
 import com.voyagego.traingo.common.exception.SeatSelectionException;
 import com.voyagego.traingo.common.exception.SeatTakenException;
+import com.voyagego.traingo.common.exception.TripNotBookableException;
+import com.voyagego.traingo.entity.Booking;
 import com.voyagego.traingo.entity.CoachType;
 import com.voyagego.traingo.model.dto.BookingDraft;
 import com.voyagego.traingo.model.request.PassengersForm;
 import com.voyagego.traingo.model.response.SeatMap.TripSummary;
 import com.voyagego.traingo.service.BookingDraftService;
 import com.voyagego.traingo.service.BookingDraftStore;
+import com.voyagego.traingo.service.MyTripsService;
+import com.voyagego.traingo.service.PaymentFacade;
+import com.voyagego.traingo.service.PaymentService;
 import com.voyagego.traingo.service.SeatMapService;
 import com.voyagego.traingo.service.TrainGoUserDetails;
 import com.voyagego.traingo.service.TripSearchService;
@@ -48,18 +54,29 @@ public class BookingFlowController {
 
 	private static final String SEATS_VIEW = "booking/seats";
 	private static final String PASSENGERS_VIEW = "booking/passengers";
+	private static final String PAYMENT_VIEW = "booking/payment";
+	private static final String SUCCESS_VIEW = "booking/success";
 	private static final String NO_DRAFT = "Hãy chọn chuyến và chỗ trước.";
+	/** Session attribute: the booking this session paid last, so a repeated payment finds it. */
+	private static final String LAST_BOOKING = "lastBookingId";
 	private static final DateTimeFormatter DAY = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
 	private final SeatMapService seatMapService;
 	private final BookingDraftService bookingDraftService;
 	private final BookingDraftStore bookingDraftStore;
+	private final PaymentService paymentService;
+	private final PaymentFacade paymentFacade;
+	private final MyTripsService myTripsService;
 
 	public BookingFlowController(SeatMapService seatMapService, BookingDraftService bookingDraftService,
-			BookingDraftStore bookingDraftStore) {
+			BookingDraftStore bookingDraftStore, PaymentService paymentService, PaymentFacade paymentFacade,
+			MyTripsService myTripsService) {
 		this.seatMapService = seatMapService;
 		this.bookingDraftService = bookingDraftService;
 		this.bookingDraftStore = bookingDraftStore;
+		this.paymentService = paymentService;
+		this.paymentFacade = paymentFacade;
+		this.myTripsService = myTripsService;
 	}
 
 	/** Every booking page highlights the search item of the navbar. */
@@ -147,6 +164,72 @@ public class BookingFlowController {
 		}
 		bookingDraftStore.save(session, bookingDraftService.keepEdits(draft, form));
 		return "redirect:/booking/" + draft.getTripId() + "/seats";
+	}
+
+	/** Step 4: the bill. A draft that is not ready to pay goes back to the passenger step. */
+	@GetMapping("/payment")
+	public String payment(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+		BookingDraft draft = bookingDraftStore.get(session).orElse(null);
+		if (draft == null) {
+			redirectAttributes.addFlashAttribute("errorMessage", NO_DRAFT);
+			return "redirect:/trips";
+		}
+		try {
+			var invoice = paymentService.invoice(draft, LocalDateTime.now());
+			model.addAttribute("invoice", invoice);
+			addTripLinks(model, invoice.trip());
+			return PAYMENT_VIEW;
+		} catch (SeatSelectionException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			return "redirect:/booking/passengers";
+		}
+	}
+
+	/**
+	 * Pays the draft. The session is locked for the whole call, so a second
+	 * press of the button, or a second tab, waits for the first and then finds
+	 * no draft: it is sent to the booking the first one made instead of
+	 * answering "seat taken" for seats that are now the customer's own.
+	 */
+	@PostMapping("/payment")
+	public String pay(@AuthenticationPrincipal TrainGoUserDetails user, HttpSession session,
+			RedirectAttributes redirectAttributes) {
+		synchronized (WebUtils.getSessionMutex(session)) {
+			BookingDraft draft = bookingDraftStore.get(session).orElse(null);
+			if (draft == null) {
+				if (session.getAttribute(LAST_BOOKING) instanceof Long lastId) {
+					return "redirect:/booking/success/" + lastId;
+				}
+				redirectAttributes.addFlashAttribute("errorMessage", NO_DRAFT);
+				return "redirect:/trips";
+			}
+			try {
+				Booking booking = paymentFacade.pay(draft, user.getUserId(), LocalDateTime.now());
+				bookingDraftStore.clear(session);
+				session.setAttribute(LAST_BOOKING, booking.getId());
+				return "redirect:/booking/success/" + booking.getId();
+			} catch (SeatTakenException ex) {
+				bookingDraftService.withoutSeats(draft, ex.getSeatIds()).ifPresentOrElse(
+						rest -> bookingDraftStore.save(session, rest), () -> bookingDraftStore.clear(session));
+				redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+				return "redirect:/booking/" + draft.getTripId() + "/seats";
+			} catch (TripNotBookableException ex) {
+				bookingDraftStore.clear(session);
+				redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+				return "redirect:/trips";
+			} catch (SeatSelectionException ex) {
+				redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+				return "redirect:/booking/passengers";
+			}
+		}
+	}
+
+	/** The paid booking. Someone else's booking is the 404 page, as in "Vé của tôi". */
+	@GetMapping("/success/{bookingId}")
+	public String success(@PathVariable long bookingId, @AuthenticationPrincipal TrainGoUserDetails user,
+			Model model) {
+		model.addAttribute("booking", myTripsService.detail(user.getUserId(), bookingId, LocalDateTime.now()));
+		return SUCCESS_VIEW;
 	}
 
 	private String passengerPage(BookingDraft draft, TrainGoUserDetails user, Model model) {

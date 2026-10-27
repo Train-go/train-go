@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!--
+	Step 4 of a booking, the payment page (issue #33), after
+	docs/reports/ui-mau/client/thanh-toan.html: the bill as a paper receipt
+	with serrated top and bottom edges. The button posts to /booking/payment,
+	which books the seats and creates the booking and tickets in one
+	transaction. payment.js only locks the button once pressed.
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+<head>
+	<title>Thanh toán · TrainGo</title>
+</head>
+<body>
+
+<main class="container tg-pay">
+
+	<nav th:replace="~{fragments/booking-steps :: steps(4)}"></nav>
+
+	<div class="tg-pay-col">
+		<div class="tg-receipt-wrap">
+			<article class="tg-bill" aria-labelledby="tgBillTitle">
+				<header class="tg-bill-head">
+					<span class="tg-bill-brand"><i class="bi bi-train-front" aria-hidden="true"></i>TrainGo</span>
+					<h1 class="tg-bill-tag" id="tgBillTitle">Hóa đơn</h1>
+				</header>
+
+				<div class="tg-bill-trip">
+					<span class="tg-bill-route">
+						<th:block th:text="|${invoice.trip.originName} ${#temporals.format(invoice.trip.departureAt, 'HH:mm')}|">Huế 08:00</th:block>
+						<i class="bi bi-arrow-right" aria-hidden="true"></i>
+						<th:block th:text="|${invoice.trip.destinationName} ${#temporals.format(invoice.trip.arrivalAt, 'HH:mm')}|">Đồng Hới 10:45</th:block>
+					</span>
+					<small th:text="|${invoice.trip.trainCode} · ${dayLabel} · ${invoice.trip.durationLabel}|">SE1 · Thứ Tư, 28/10/2026 · 2g45</small>
+				</div>
+
+				<ul class="tg-bill-lines">
+					<li th:each="line : ${invoice.lines}">
+						<span class="tg-bill-seat" th:text="${line.seatCode}">A05</span>
+						<span>
+							<b th:text="|${line.typeLabel} · Toa ${line.coachNumber}|">Ghế ngồi · Toa 1</b>
+							<small th:text="${line.passengerName}">Nguyễn Văn An</small>
+						</span>
+						<strong th:text="${#numbers.formatInteger(line.price, 0, 'POINT')} + 'đ'">170.000đ</strong>
+					</li>
+				</ul>
+
+				<div class="tg-bill-sum">
+					<span>Tổng tiền</span>
+					<strong th:text="${#numbers.formatInteger(invoice.total, 0, 'POINT')} + 'đ'">340.000đ</strong>
+				</div>
+
+				<form method="post" id="tgPayForm" th:action="@{/booking/payment}">
+					<button class="tg-bill-pay" type="submit" id="tgPayButton">
+						<span th:text="|Thanh toán ${#numbers.formatInteger(invoice.total, 0, 'POINT')}đ|">Thanh toán 340.000đ</span>
+					</button>
+				</form>
+				<p class="tg-bill-fine"><i class="bi bi-shield-check" aria-hidden="true"></i>Hủy được trước giờ tàu chạy, không mất phí.</p>
+			</article>
+		</div>
+
+		<div class="tg-pay-after">
+			<a th:href="@{${stepsSeatsUrl}}"><i class="bi bi-arrow-left-right" aria-hidden="true"></i>Đổi chỗ</a>
+		</div>
+	</div>
+
+	<script th:src="@{/js/payment.js}"></script>
+</main>
+
+</body>
+</html>
