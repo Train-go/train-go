@@ -55,6 +55,31 @@ Bỏ dở giữa chừng thì không có gì trong database cần dọn. Booking
 trạng thái chờ: nó được tạo thẳng `CONFIRMED` / `PAID`, nên My Trips không có
 booking chưa thanh toán.
 
+## Trang chọn chỗ
+
+`GET /booking/{tripId}/seats?type=SEAT|SLEEPER` là bước 2 (#30). Chỉ chuyến
+`SCHEDULED` và chưa khởi hành mở được; chuyến không có, đã hủy hoặc đã khởi hành
+hiện trang `error/trip-unavailable` với câu lý do và nút "Chọn chuyến khác".
+
+- Sơ đồ đọc từ `GET /api/trips/{tripId}/seat-map`: bốn toa, mỗi toa có số chỗ còn
+  và từng chỗ (`id`, mã, khoang, còn trống hay không). Giá nằm ở tóm tắt chuyến vì
+  mọi chỗ cùng giá. `type` chỉ quyết định toa mở sẵn: toa đầu tiên còn chỗ của
+  loại đó; không có `type` thì mở toa có chỗ đã chọn, rồi toa đầu còn chỗ.
+- Chọn 1 đến 10 chỗ, ở nhiều toa được. Chỗ thứ 11 bị chặn bằng câu "Mỗi lần đặt
+  tối đa 10 chỗ."; server kiểm tra lại giới hạn này.
+- Bấm "Tiếp tục" gửi `POST /booking/{tripId}/seats`. `BookingDraftService` đọc
+  lại trạng thái từng chỗ nhưng **không khóa và không ghi database**: mọi chỗ còn
+  `AVAILABLE` thì lưu `BookingDraft` vào session (thuộc tính `bookingDraft`) rồi
+  chuyển tới `/booking/passengers`. Có chỗ vừa bị đặt thì ở lại trang với câu
+  "Chỗ A05 vừa được người khác đặt. Vui lòng chọn chỗ khác.", sơ đồ vẽ lại và các
+  chỗ còn lại vẫn được chọn.
+- `BookingDraft` giữ `tripId`, `tripSeatIds` theo thứ tự chọn và danh sách hành
+  khách cùng thứ tự (họ tên điền sẵn từ tài khoản, CCCD để trống cho bước Hành
+  khách). Chọn lại đúng chỗ của cùng chuyến thì giữ tên đã sửa. Mở trang của chuyến
+  khác thì bản nháp cũ bị thay khi bấm "Tiếp tục".
+- Khách chưa đăng nhập bấm "Chọn" ở trang tìm chuyến được đưa tới `/login`, đăng
+  nhập xong quay lại đúng trang (`/booking/**` cần role `CUSTOMER`).
+
 ## Thông tin hành khách
 
 Mỗi hành khách chỉ nhập họ tên (`fullName`) và số CCCD (`identityNumber`),
