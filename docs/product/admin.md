@@ -26,7 +26,7 @@ Từ 28/10/2026 trang có thêm các khối để quản trị chủ động hơ
   này, Tháng trước, Năm nay), chọn từ ngày đến ngày bất kỳ (không quá 366 ngày, không sau
   hôm nay) và gộp theo ngày, tuần hoặc tháng; để "Tự động" thì khoảng đến 31 ngày gộp theo
   ngày, đến 180 ngày theo tuần, dài hơn theo tháng. Tuần bắt đầu từ thứ Hai, tuần và tháng ở
-  hai đầu được cắt theo khoảng. Khoảng đang chọn nằm trên địa chỉ (`?from=&to=&group=`) nên
+  hai đầu được cắt theo khoảng. Mọi điều khiển áp dụng ngay khi đổi, không có nút xác nhận. Khoảng đang chọn nằm trên địa chỉ (`?from=&to=&group=`) nên
   tải lại hoặc gửi link vẫn thấy đúng biểu đồ.
 - **Doanh thu và booking đã bán** (cột là doanh thu, đường là số booking), tính theo ngày
   thanh toán của booking `CONFIRMED`.

@@ -1,7 +1,8 @@
 /*
  * The two charts of the admin overview (templates/admin/overview.html) and
  * the filter they share: quick ranges (7, 30, 90 days, this month, last
- * month, this year), any from-to dates, and day / week / month grouping.
+ * month, this year), any from-to dates, and day / week / month grouping, all
+ * applied the moment they change.
  * Each chart fetches its own numbers for the chosen range; the rest of the
  * page is printed by the server. The range is kept in the address (?from=
  * &to=&group=), so a reload or a shared link shows the same charts.
@@ -159,8 +160,11 @@
 		event.preventDefault();
 		apply(form.elements.from.value, form.elements.to.value, form.elements.group.value);
 	});
-	form.elements.group.addEventListener('change', () => {
-		apply(form.elements.from.value, form.elements.to.value, form.elements.group.value);
+	// Every control applies as soon as it changes; Enter in a date box does the same.
+	['from', 'to', 'group'].forEach(name => {
+		form.elements[name].addEventListener('change', () => {
+			apply(form.elements.from.value, form.elements.to.value, form.elements.group.value);
+		});
 	});
 	form.elements.from.max = ymd(today);
 	form.elements.to.max = ymd(today);
