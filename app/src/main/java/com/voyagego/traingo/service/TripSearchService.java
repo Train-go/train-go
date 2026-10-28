@@ -3,10 +3,13 @@ package com.voyagego.traingo.service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.text.NumberFormat;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -17,9 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.voyagego.traingo.entity.CoachType;
 import com.voyagego.traingo.entity.Station;
 import com.voyagego.traingo.entity.Trip;
+import com.voyagego.traingo.model.dto.DayPrice;
 import com.voyagego.traingo.model.dto.SeatAvailability;
 import com.voyagego.traingo.model.request.TripSearchRequest;
-import com.voyagego.traingo.model.response.DateTab;
+import com.voyagego.traingo.model.response.DateStripItem;
 import com.voyagego.traingo.model.response.TripCard;
 import com.voyagego.traingo.model.response.TripSearchResult;
 import com.voyagego.traingo.repository.StationRepository;
@@ -38,6 +42,8 @@ public class TripSearchService {
 
 	/** Length of the date strip, and how far its arrows move. */
 	public static final int STRIP_DAYS = 7;
+	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
+	private static final NumberFormat MONEY = NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN"));
 
 	private static final String[] WEEKDAYS = { "Thứ hai", "Thứ ba", "Thứ tư", "Thứ năm", "Thứ sáu", "Thứ bảy",
 			"Chủ nhật" };
@@ -88,16 +94,29 @@ public class TripSearchService {
 	}
 
 	/**
-	 * The seven days shown around {@code day}. The strip moves in whole weeks
-	 * counted from today, so picking a day inside it never shifts it, and it
-	 * never shows a day before today.
+	 * The seven days shown around {@code day}, each with the lowest price of its
+	 * trips that still have a free seat. The strip moves in whole weeks counted
+	 * from today, so picking a day inside it never shifts it, and it never shows
+	 * a day before today. All seven days come from one query.
 	 */
-	public List<DateTab> dateStrip(LocalDate day, LocalDate today) {
+	public List<DateStripItem> dateStrip(Station origin, Station destination, LocalDate day, LocalDate today,
+			LocalDateTime now) {
 		long weeks = Math.max(0, ChronoUnit.DAYS.between(today, day)) / STRIP_DAYS;
 		LocalDate start = today.plusDays(weeks * STRIP_DAYS);
-		return start.datesUntil(start.plusDays(STRIP_DAYS))
-				.map(date -> new DateTab(date, dayLabel(date, today)))
-				.toList();
+		Map<LocalDate, DayPrice> prices = new HashMap<>();
+		for (DayPrice price : tripRepository.findDayPrices(origin.getId(), destination.getId(), start.atStartOfDay(),
+				start.plusDays(STRIP_DAYS).atStartOfDay(), now)) {
+			prices.put(price.getDay(), price);
+		}
+		return start.datesUntil(start.plusDays(STRIP_DAYS)).map(date -> {
+			DayPrice price = prices.get(date);
+			boolean hasTrips = price != null;
+			boolean soldOut = hasTrips && price.getMinPrice() == null;
+			Long minPrice = hasTrips ? price.getMinPrice() : null;
+			return new DateStripItem(date, dayLabel(date, today), minPrice, soldOut, hasTrips,
+					weekday(date) + " " + date.format(DAY_MONTH) + (!hasTrips ? ", không có chuyến"
+							: soldOut ? ", hết vé" : ", giá từ " + MONEY.format(minPrice) + "đ"));
+		}).toList();
 	}
 
 	public static String dayLabel(LocalDate date, LocalDate today) {

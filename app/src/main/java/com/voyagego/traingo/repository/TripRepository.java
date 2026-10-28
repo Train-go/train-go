@@ -13,9 +13,8 @@ import org.springframework.data.repository.query.Param;
 
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
+import com.voyagego.traingo.model.dto.DayPrice;
 import com.voyagego.traingo.model.dto.IdCount;
-import com.voyagego.traingo.model.dto.TrainDayCount;
-import com.voyagego.traingo.model.dto.TrainSchedule;
 import com.voyagego.traingo.model.dto.TrainDayCount;
 import com.voyagego.traingo.model.dto.TrainSchedule;
 
@@ -144,6 +143,38 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 			and t.departureAt > :now
 			order by t.departureAt""")
 	List<Trip> findBookable(@Param("originId") Long originId, @Param("destinationId") Long destinationId,
+			@Param("dayStart") LocalDateTime dayStart, @Param("dayEnd") LocalDateTime dayEnd,
+			@Param("now") LocalDateTime now);
+
+	/**
+	 * For each day in [dayStart, dayEnd): the lowest price among the trips that
+	 * still have a free seat, the number of trips and the free seats, for one
+	 * pair of stations, in ONE query. Only SCHEDULED trips that have not left
+	 * count, so today shows only what can still be booked.
+	 *
+	 * Native SQL on purpose: JPQL cannot group by the date of a timestamp and
+	 * also aggregate a per-trip count of free seats. The inner query counts free
+	 * seats once per trip; the outer one groups the trips by day.
+	 */
+	@Query(value = """
+			select x.day as day,
+			       min(case when x.free > 0 then x.price end) as minPrice,
+			       count(*) as tripCount,
+			       coalesce(sum(x.free), 0) as availableSeats
+			from (
+			  select date(t.departure_at) as day, t.base_price as price,
+			         (select count(*) from trip_seats s
+			           where s.trip_id = t.id and s.status = 'AVAILABLE') as free
+			  from trips t
+			  join routes r on r.id = t.route_id
+			  where r.origin_station_id = :originId and r.destination_station_id = :destinationId
+			    and t.status = 'SCHEDULED'
+			    and t.departure_at >= :dayStart and t.departure_at < :dayEnd
+			    and t.departure_at > :now
+			) x
+			group by x.day
+			order by x.day""", nativeQuery = true)
+	List<DayPrice> findDayPrices(@Param("originId") Long originId, @Param("destinationId") Long destinationId,
 			@Param("dayStart") LocalDateTime dayStart, @Param("dayEnd") LocalDateTime dayEnd,
 			@Param("now") LocalDateTime now);
 
