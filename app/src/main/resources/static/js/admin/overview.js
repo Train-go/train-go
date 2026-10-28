@@ -1,7 +1,7 @@
 /*
  * The two charts of the admin overview (templates/admin/overview.html) and
- * the filter they share: quick ranges (7, 30, 90 days, this month, last
- * month, this year), any from-to dates, and day / week / month grouping, all
+ * the filter they share: quick ranges (7 days, 30 days, this month,
+ * last month), any from-to dates, and day / week / month grouping, all
  * applied the moment they change.
  * Each chart fetches its own numbers for the chosen range; the rest of the
  * page is printed by the server. The range is kept in the address (?from=
@@ -32,10 +32,8 @@
 	const PRESETS = {
 		'7d': () => [addDays(today, -6), today],
 		'30d': () => [addDays(today, -29), today],
-		'90d': () => [addDays(today, -89), today],
 		month: () => [new Date(today.getFullYear(), today.getMonth(), 1), today],
-		lastmonth: () => [new Date(today.getFullYear(), today.getMonth() - 1, 1), new Date(today.getFullYear(), today.getMonth(), 0)],
-		year: () => [new Date(today.getFullYear(), 0, 1), today]
+		lastmonth: () => [new Date(today.getFullYear(), today.getMonth() - 1, 1), new Date(today.getFullYear(), today.getMonth(), 0)]
 	};
 
 	const charts = {

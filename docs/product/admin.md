@@ -22,8 +22,8 @@ Từ 28/10/2026 trang có thêm các khối để quản trị chủ động hơ
   tới trang chi tiết (Booking, Chuyến, Người dùng; Doanh thu mở Booking). Các dòng nhỏ của ô
   nằm sát đáy ô: ghi chú ("đã hủy" mở tab Đã hủy của Booking, "sắp chạy" mở trang Chuyến) và
   xu hướng 7 ngày qua so với 7 ngày trước (Doanh thu, Booking, Người dùng).
-- **Bộ lọc biểu đồ**, dùng chung cho hai biểu đồ ngay dưới: mốc nhanh (7, 30, 90 ngày, Tháng
-  này, Tháng trước, Năm nay), chọn từ ngày đến ngày bất kỳ (không quá 366 ngày, không sau
+- **Bộ lọc biểu đồ**, dùng chung cho hai biểu đồ ngay dưới: mốc nhanh (7 ngày, 30 ngày, Tháng
+  này, Tháng trước), chọn từ ngày đến ngày bất kỳ (không quá 366 ngày, không sau
   hôm nay) và gộp theo ngày, tuần hoặc tháng; để "Tự động" thì khoảng đến 31 ngày gộp theo
   ngày, đến 180 ngày theo tuần, dài hơn theo tháng. Tuần bắt đầu từ thứ Hai, tuần và tháng ở
   hai đầu được cắt theo khoảng. Mọi điều khiển áp dụng ngay khi đổi, không có nút xác nhận. Khoảng đang chọn nằm trên địa chỉ (`?from=&to=&group=`) nên
