@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.voyagego.traingo.model.response.ForecastSeries;
 import com.voyagego.traingo.model.response.SalesSeries;
+import com.voyagego.traingo.model.response.UsersSeries;
 import com.voyagego.traingo.service.OverviewService;
 
 /** The two charts of the admin overview, drawn by overview.js. */
@@ -28,10 +28,10 @@ public class OverviewAdminApiController {
 		return overviewService.sales(days, LocalDateTime.now());
 	}
 
-	/** What the confirmed bookings already hold for the trips of the next seven days. */
-	@GetMapping("/forecast")
-	public ForecastSeries forecast() {
-		return overviewService.forecast(LocalDateTime.now());
+	/** Customers registered per day over the last {@code days} days: 7, 14 or 30. */
+	@GetMapping("/users")
+	public UsersSeries users(@RequestParam(defaultValue = "14") int days) {
+		return overviewService.users(days, LocalDateTime.now());
 	}
 
 }

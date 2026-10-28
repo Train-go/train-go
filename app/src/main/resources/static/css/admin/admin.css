@@ -813,6 +813,13 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 .kpi h2 { margin: 0; color: var(--muted); font-size: 14px; font-weight: 700; }
 .kpi-value { margin: 0; color: var(--ink); font-size: clamp(26px, 2.4vw, 34px); font-variant-numeric: tabular-nums; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
 .kpi-note { margin: 0; color: var(--muted); font-size: 14px; font-weight: 600; }
+/* The tile's name and its note lead to the page that holds the detail. */
+.kpi h2 a { display: inline-flex; align-items: center; gap: 2px; color: inherit; text-decoration: none; }
+.kpi h2 a .bi { font-size: 18px; line-height: 1; transition: transform 0.15s; }
+.kpi h2 a:hover { color: var(--accent-strong); }
+.kpi h2 a:hover .bi { transform: translateX(3px); }
+.kpi-note a { color: inherit; text-decoration: none; }
+.kpi-note a:hover { color: var(--accent-strong); text-decoration: underline; }
 
 @media (max-width: 1100px) {
 	.kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }

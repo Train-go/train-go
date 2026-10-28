@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * Everything the admin overview page prints (#37): the four totals with their
  * 7-day trend, what needs attention, and the week ahead of each train. The two
- * charts are drawn from {@link SalesSeries} and {@link ForecastSeries}.
+ * charts are drawn from {@link SalesSeries} and {@link UsersSeries}.
  *
  * @param bookings          CONFIRMED bookings
  * @param cancelledBookings CANCELLED bookings, the note under "Booking"
@@ -16,6 +16,7 @@ import java.util.List;
  * @param revenue           total_price of CONFIRMED bookings, in dong
  * @param bookingTrend      bookings paid in the last 7 days against the 7 days before
  * @param revenueTrend      the same for revenue, in dong
+ * @param usersTrend        customers registered in the last 7 days against the 7 days before
  * @param alerts            the most urgent first, at most {@link #MAX_ALERTS}
  * @param alertTotal        how many alerts there are, shown ones included
  * @param week              the seven days from today, the columns of the train grid
@@ -23,7 +24,7 @@ import java.util.List;
  * @param trainTotal        how many trains there are, shown ones included
  */
 public record Overview(long bookings, long cancelledBookings, long trips, long upcomingTrips, long customers,
-		long revenue, Trend bookingTrend, Trend revenueTrend, List<Alert> alerts, int alertTotal,
+		long revenue, Trend bookingTrend, Trend revenueTrend, Trend usersTrend, List<Alert> alerts, int alertTotal,
 		List<WeekDay> week, List<TrainWeek> trains, int trainTotal) {
 
 	public static final int MAX_ALERTS = 8;

@@ -6,13 +6,13 @@
  *   TG.chart(container, {
  *     label,                              what a screen reader hears for the whole chart
  *     labels: ['29/10', ...],             one per column (a space makes two lines)
- *     bars:  { name, values, format, tick },
+ *     bars:  { name, values, format, tick, integer? },
  *     line:  { name, values, format, tick, max?, integer? },
  *     empty:                              text shown when every value is zero
  *   })
  *
  * `format` writes a value in a tooltip, `tick` writes it on an axis. A line
- * with `integer` keeps whole numbers on its axis; `max` fixes its top (100
+ * or bars with `integer` keep whole numbers on their axis; `max` fixes its top (100
  * for a percentage).
  */
 (function () {
@@ -53,7 +53,8 @@
 		const width = Math.max(container.clientWidth, 280);
 		const plotW = width - MARGIN.left - MARGIN.right;
 		const plotH = HEIGHT - MARGIN.top - MARGIN.bottom;
-		const barsMax = niceMax(Math.max(0, ...spec.bars.values));
+		const barsTop = Math.max(0, ...spec.bars.values);
+		const barsMax = spec.bars.integer ? Math.max(DIVISIONS, Math.ceil(barsTop / DIVISIONS) * DIVISIONS) : niceMax(barsTop);
 		let lineMax;
 		if (spec.line.max) lineMax = spec.line.max;
 		else if (spec.line.integer) lineMax = Math.max(DIVISIONS, Math.ceil(Math.max(0, ...spec.line.values) / DIVISIONS) * DIVISIONS);
@@ -115,9 +116,12 @@
 		});
 		container.append(legend);
 
-		// The same numbers as a table, for a screen reader.
+		// The same numbers as a table, for a screen reader. The class goes on a wrapper: on the
+		// table itself its rows are not clipped and stretch the page.
+		const hidden = document.createElement('div');
+		hidden.className = 'visually-hidden';
 		const table = document.createElement('table');
-		table.className = 'visually-hidden';
+		hidden.append(table);
 		const head = table.createTHead().insertRow();
 		['Ngày', spec.bars.name, spec.line.name].forEach(title => { const th = document.createElement('th'); th.scope = 'col'; th.textContent = title; head.append(th); });
 		const body = table.createTBody();
@@ -125,6 +129,6 @@
 			const row = body.insertRow();
 			[label, spec.bars.format(spec.bars.values[i]), spec.line.format(spec.line.values[i])].forEach(cell => { row.insertCell().textContent = cell; });
 		});
-		container.append(table);
+		container.append(hidden);
 	};
 })();

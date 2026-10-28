@@ -13,7 +13,6 @@ import org.springframework.data.repository.query.Param;
 
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
-import com.voyagego.traingo.model.dto.DayForecast;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.dto.TrainDayCount;
 import com.voyagego.traingo.model.dto.TrainSchedule;
@@ -147,29 +146,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	List<Trip> findBookable(@Param("originId") Long originId, @Param("destinationId") Long destinationId,
 			@Param("dayStart") LocalDateTime dayStart, @Param("dayEnd") LocalDateTime dayEnd,
 			@Param("now") LocalDateTime now);
-
-	/**
-	 * Per day the trips leave in (now, to): how many, and what confirmed
-	 * bookings already hold (seats and money). The inner query only reads the
-	 * tickets of trips in that window.
-	 */
-	@Query(value = """
-			select date(t.departure_at) as day, count(*) as trips,
-			       coalesce(sum(x.sold), 0) as soldSeats, coalesce(sum(x.revenue), 0) as revenue
-			from trips t
-			left join (
-			  select s.trip_id as trip_id, count(*) as sold, sum(k.ticket_price) as revenue
-			  from tickets k
-			  join bookings b on b.id = k.booking_id and b.booking_status = 'CONFIRMED'
-			  join trip_seats s on s.id = k.trip_seat_id
-			  where s.trip_id in (select i.id from trips i where i.status = 'SCHEDULED'
-			                      and i.departure_at > :now and i.departure_at < :to)
-			  group by s.trip_id
-			) x on x.trip_id = t.id
-			where t.status = 'SCHEDULED' and t.departure_at > :now and t.departure_at < :to
-			group by date(t.departure_at)
-			order by day""", nativeQuery = true)
-	List<DayForecast> findForecastByDay(@Param("now") LocalDateTime now, @Param("to") LocalDateTime to);
 
 	/** Trips per train and day in [from, to), cancelled ones left out. */
 	@Query(value = """

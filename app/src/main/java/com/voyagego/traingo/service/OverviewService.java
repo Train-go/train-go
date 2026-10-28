@@ -21,12 +21,11 @@ import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
 import com.voyagego.traingo.entity.UserRole;
 import com.voyagego.traingo.model.dto.CoachLayout;
-import com.voyagego.traingo.model.dto.DayForecast;
+import com.voyagego.traingo.model.dto.DayCount;
 import com.voyagego.traingo.model.dto.DayTotal;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.dto.TrainDayCount;
 import com.voyagego.traingo.model.dto.TrainSchedule;
-import com.voyagego.traingo.model.response.ForecastSeries;
 import com.voyagego.traingo.model.response.Overview;
 import com.voyagego.traingo.model.response.Overview.Alert;
 import com.voyagego.traingo.model.response.Overview.Trend;
@@ -34,6 +33,7 @@ import com.voyagego.traingo.model.response.Overview.TrainWeek;
 import com.voyagego.traingo.model.response.Overview.WeekDay;
 import com.voyagego.traingo.model.response.PopularRoute;
 import com.voyagego.traingo.model.response.SalesSeries;
+import com.voyagego.traingo.model.response.UsersSeries;
 import com.voyagego.traingo.repository.BookingRepository;
 import com.voyagego.traingo.repository.TicketRepository;
 import com.voyagego.traingo.repository.TrainRepository;
@@ -57,8 +57,8 @@ public class OverviewService {
 
 	/** Days the train grid and the forecast look ahead, today included. */
 	public static final int WEEK = 7;
-	static final int[] SALES_RANGES = { 7, 14, 30 };
-	static final int DEFAULT_SALES_DAYS = 14;
+	static final int[] RANGES = { 7, 14, 30 };
+	static final int DEFAULT_RANGE = 14;
 	/** Trips leaving within this many hours are checked for how full they are. */
 	static final int FILL_WINDOW_HOURS = 48;
 	/** Under this share of seats sold a trip about to leave is flagged. */
@@ -106,13 +106,14 @@ public class OverviewService {
 				userRepository.countByRole(UserRole.CUSTOMER),
 				bookingRepository.sumTotalPriceByBookingStatus(BookingStatus.CONFIRMED),
 				trend(lastTwoWeeks, today, DayTotal::getBookings), trend(lastTwoWeeks, today, DayTotal::getRevenue),
+				usersTrend(today),
 				alerts.stream().limit(Overview.MAX_ALERTS).toList(), alerts.size(),
 				week, trains.stream().limit(Overview.MAX_TRAINS).toList(), trains.size());
 	}
 
 	/** Bookings and revenue per day for the last {@code days} days (7, 14 or 30; anything else is 14). */
 	public SalesSeries sales(int days, LocalDateTime now) {
-		int range = Arrays.stream(SALES_RANGES).anyMatch(allowed -> allowed == days) ? days : DEFAULT_SALES_DAYS;
+		int range = rangeOf(days);
 		LocalDate today = now.toLocalDate();
 		LocalDate first = today.minusDays(range - 1L);
 		Map<LocalDate, DayTotal> byDay = bookingRepository
@@ -132,30 +133,24 @@ public class OverviewService {
 		return new SalesSeries(range, points, bookings, revenue);
 	}
 
-	/** What the confirmed bookings already hold for each of the next seven days of trips. */
-	public ForecastSeries forecast(LocalDateTime now) {
+	/** Customers registered per day for the last {@code days} days (7, 14 or 30; anything else is 14). */
+	public UsersSeries users(int days, LocalDateTime now) {
+		int range = rangeOf(days);
 		LocalDate today = now.toLocalDate();
-		Map<LocalDate, DayForecast> byDay = tripRepository
-				.findForecastByDay(now, today.plusDays(WEEK).atStartOfDay()).stream()
-				.collect(Collectors.toMap(DayForecast::getDay, forecast -> forecast));
-		List<ForecastSeries.Point> points = new ArrayList<>();
-		long revenue = 0;
-		long sold = 0;
-		long capacity = 0;
-		for (int i = 0; i < WEEK; i++) {
-			LocalDate day = today.plusDays(i);
-			DayForecast forecast = byDay.get(day);
-			long trips = forecast == null ? 0 : forecast.getTrips();
-			long daySold = forecast == null ? 0 : forecast.getSoldSeats();
-			long dayCapacity = trips * CoachLayout.totalSeats();
-			long dayRevenue = forecast == null ? 0 : forecast.getRevenue();
-			revenue += dayRevenue;
-			sold += daySold;
-			capacity += dayCapacity;
-			points.add(new ForecastSeries.Point(day.toString(), shortWeekday(day) + " " + day.format(DAY_MONTH),
-					trips, daySold, dayCapacity, percent(daySold, dayCapacity), dayRevenue));
+		LocalDate first = today.minusDays(range - 1L);
+		Map<LocalDate, Long> byDay = userRepository
+				.findSignupsByDay(first.atStartOfDay(), today.plusDays(1).atStartOfDay()).stream()
+				.collect(Collectors.toMap(DayCount::getDay, DayCount::getTotal));
+		long total = userRepository.countByRoleAndCreatedAtBefore(UserRole.CUSTOMER, first.atStartOfDay());
+		long newUsers = 0;
+		List<UsersSeries.Point> points = new ArrayList<>();
+		for (LocalDate day = first; !day.isAfter(today); day = day.plusDays(1)) {
+			long created = byDay.getOrDefault(day, 0L);
+			newUsers += created;
+			total += created;
+			points.add(new UsersSeries.Point(day.toString(), day.format(DAY_MONTH), created, total));
 		}
-		return new ForecastSeries(points, revenue, sold, capacity);
+		return new UsersSeries(range, points, newUsers, total);
 	}
 
 	/**
@@ -244,6 +239,22 @@ public class OverviewService {
 			else previous += figure.applyAsLong(total);
 		}
 		return new Trend(current, previous);
+	}
+
+	/** Customers registered in the last 7 days against the 7 days before. */
+	private Trend usersTrend(LocalDate today) {
+		long current = 0;
+		long previous = 0;
+		LocalDate from = today.minusDays(2L * WEEK - 1);
+		for (DayCount count : userRepository.findSignupsByDay(from.atStartOfDay(), today.plusDays(1).atStartOfDay())) {
+			if (count.getDay().isAfter(today.minusDays(WEEK))) current += count.getTotal();
+			else previous += count.getTotal();
+		}
+		return new Trend(current, previous);
+	}
+
+	private static int rangeOf(int days) {
+		return Arrays.stream(RANGES).anyMatch(allowed -> allowed == days) ? days : DEFAULT_RANGE;
 	}
 
 	private static List<WeekDay> week(LocalDate today) {

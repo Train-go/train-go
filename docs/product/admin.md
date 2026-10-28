@@ -18,7 +18,10 @@ Menu có "Tổng quan" ở đầu và chữ TrainGo dẫn về `/admin`.
 
 Từ 28/10/2026 trang có thêm các khối để quản trị chủ động hơn (Phi yêu cầu), từ trên xuống:
 
-- **Bốn ô số** có thêm xu hướng: booking và doanh thu của 7 ngày qua so với 7 ngày trước.
+- **Bốn ô số**, theo thứ tự Doanh thu, Booking, Chuyến, Người dùng. Tên mỗi ô là liên kết
+  tới trang chi tiết (Booking, Chuyến, Người dùng; Doanh thu mở Booking); ghi chú "đã hủy"
+  mở tab Đã hủy của Booking và "sắp chạy" mở trang Chuyến. Doanh thu, Booking và Người dùng
+  có thêm xu hướng: số của 7 ngày qua so với 7 ngày trước.
 - **Cần chú ý:** tàu hết lịch chạy (không còn chuyến sắp chạy), tàu sắp hết chuyến (chuyến
   cuối nằm trong 7 ngày tới), tàu có ngày chưa có chuyến trong 7 ngày tới, chuyến khởi hành
   trong 48 giờ tới bán dưới 30% chỗ hoặc trên 90% chỗ. Nặng xếp trước, hiện tối đa 8 và ghi
@@ -27,12 +30,11 @@ Từ 28/10/2026 trang có thêm các khối để quản trị chủ động hơ
   bật. Tàu cần chú ý xếp trước, hiện tối đa 8 tàu và có liên kết sang trang Tàu.
 - **Doanh thu và booking đã bán** (cột là doanh thu, đường là số booking) trong 7, 14 hoặc
   30 ngày qua, tính theo ngày thanh toán của booking `CONFIRMED`.
-- **Dự báo 7 ngày tới:** doanh thu và số chỗ các booking `CONFIRMED` đã giữ cho chuyến của
-  từng ngày khởi hành, cùng tỷ lệ lấp đầy. Đây là số đã đặt, không phải ước đoán: nó là mức
-  tối thiểu của tuần và tăng khi khách tiếp tục đặt.
+- **Người dùng mới** (cột là khách đăng ký mới mỗi ngày, đường là tổng số khách) trong 7, 14
+  hoặc 30 ngày qua.
 
 Biểu đồ vẽ bằng SVG (`static/js/admin/charts.js`), lấy số từ `GET /api/admin/overview/sales`
-và `/forecast`. Mỗi khối dùng một câu truy vấn gom nhóm nên chi phí không tăng theo số booking.
+và `/users`. Mỗi khối dùng một câu truy vấn gom nhóm nên chi phí không tăng theo số booking.
 Bố cục: hai cột ở màn hình rộng, một cột ở 1100px trở xuống.
 
 ## Ga và tuyến `/admin/stations`
