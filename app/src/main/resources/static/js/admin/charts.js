@@ -6,6 +6,7 @@
  *   TG.chart(container, {
  *     label,                              what a screen reader hears for the whole chart
  *     labels: ['29/10', ...],             one per column (a space makes two lines)
+ *     titles?: ['Tuần 26/10 - 01/11', ...]  what a tooltip and the screen reader table say instead
  *     bars:  { name, values, format, tick, integer? },
  *     line:  { name, values, format, tick, max?, integer? },
  *     empty:                              text shown when every value is zero
@@ -87,7 +88,7 @@
 		const barW = Math.min(36, band * 0.58);
 		spec.labels.forEach((label, i) => {
 			const group = node('g', { class: 'ch-col' });
-			group.append(node('title', {}, `${label.replace(' ', ' ')}: ${spec.bars.name} ${spec.bars.format(spec.bars.values[i])}, ${spec.line.name} ${spec.line.format(spec.line.values[i])}`));
+			group.append(node('title', {}, `${(spec.titles || spec.labels)[i]}: ${spec.bars.name} ${spec.bars.format(spec.bars.values[i])}, ${spec.line.name} ${spec.line.format(spec.line.values[i])}`));
 			group.append(node('rect', { class: 'ch-hit', x: x(i) - band / 2, y: MARGIN.top, width: band, height: plotH }));
 			if (spec.bars.values[i] > 0) {
 				const top = yBars(spec.bars.values[i]);
@@ -98,7 +99,10 @@
 
 		const points = spec.line.values.map((v, i) => `${x(i)},${yLine(v)}`).join(' ');
 		svg.append(node('polyline', { class: 'ch-line', points }));
-		spec.line.values.forEach((v, i) => svg.append(node('circle', { class: 'ch-dot', cx: x(i), cy: yLine(v), r: 3.5 })));
+		// A long range has too many points for dots: the line alone reads better.
+		if (count <= 45) {
+			spec.line.values.forEach((v, i) => svg.append(node('circle', { class: 'ch-dot', cx: x(i), cy: yLine(v), r: 3.5 })));
+		}
 		if (allZero) {
 			svg.append(node('text', { class: 'ch-empty', x: MARGIN.left + plotW / 2, y: MARGIN.top + plotH / 2, 'text-anchor': 'middle' }, spec.empty || 'Chưa có dữ liệu.'));
 		}
@@ -127,7 +131,7 @@
 		const body = table.createTBody();
 		spec.labels.forEach((label, i) => {
 			const row = body.insertRow();
-			[label, spec.bars.format(spec.bars.values[i]), spec.line.format(spec.line.values[i])].forEach(cell => { row.insertCell().textContent = cell; });
+			[(spec.titles || spec.labels)[i], spec.bars.format(spec.bars.values[i]), spec.line.format(spec.line.values[i])].forEach(cell => { row.insertCell().textContent = cell; });
 		});
 		container.append(hidden);
 	};

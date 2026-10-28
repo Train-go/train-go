@@ -1,20 +1,24 @@
 package com.voyagego.traingo.model.response;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Customers registered per day over the last {@code days} days, today
- * included, as JSON from GET /api/admin/overview/users. Every day has a
- * point; {@code total} on a point is how many customers exist at the end of
- * that day.
+ * Customers registered over a date range, grouped by day, week or month, as
+ * JSON from GET /api/admin/overview/users. {@code total} on a point is how
+ * many customers exist at the end of that bucket.
  *
  * @param newUsers customers registered in the whole range
- * @param total    customers today
+ * @param total    customers at the end of the range
  */
-public record UsersSeries(int days, List<Point> points, long newUsers, long total) {
+public record UsersSeries(LocalDate from, LocalDate to, String group, List<Point> points, long newUsers,
+		long total) {
 
-	/** @param label "29/10" */
-	public record Point(String date, String label, long newUsers, long total) {
+	/**
+	 * @param label what an axis prints
+	 * @param title what a tooltip prints
+	 */
+	public record Point(String date, String label, String title, long newUsers, long total) {
 	}
 
 }

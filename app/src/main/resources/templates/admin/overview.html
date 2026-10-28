@@ -2,10 +2,11 @@
 <!--
 	The admin overview (#37), /admin.
 
-	Top to bottom: the four totals with their 7-day trend, what needs attention
-	(trains running out of trips, trips selling badly or nearly full), the week
-	ahead of each train, then two charts drawn by overview.js from
-	/api/admin/overview/sales and /users. OverviewService decides what each
+	Top to bottom: the four totals with their 7-day trend, a filter (quick ranges,
+	any from-to dates, day/week/month grouping) and two charts drawn by overview.js
+	from /api/admin/overview/sales and /users, then what needs
+	attention (trains running out of trips, trips selling badly or nearly full)
+	and the week ahead of each train. OverviewService decides what each
 	figure counts; this page only prints them.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
@@ -24,37 +25,88 @@
 		<article class="panel kpi">
 			<h2><a th:href="@{/admin/bookings}">Doanh thu<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
 			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.revenue, 0, 'POINT')} + 'đ'">52.340.000đ</p>
-			<p class="kpi-trend" th:with="t=${overview.revenueTrend}">
-				<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}đ|">7 ngày qua: 1.200.000đ</span>
-				<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
-					th:text="${t.delta() > 0} ? |▲ ${#numbers.formatInteger(t.delta(), 0, 'POINT')}đ| : (${t.delta() < 0} ? |▼ ${#numbers.formatInteger(-t.delta(), 0, 'POINT')}đ| : 'Bằng tuần trước')">▲ 300.000đ</b>
-			</p>
+			<div class="kpi-foot">
+				<p class="kpi-trend" th:with="t=${overview.revenueTrend}">
+					<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}đ|">7 ngày qua: 1.200.000đ</span>
+					<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
+						th:text="${t.delta() > 0} ? |▲ ${#numbers.formatInteger(t.delta(), 0, 'POINT')}đ| : (${t.delta() < 0} ? |▼ ${#numbers.formatInteger(-t.delta(), 0, 'POINT')}đ| : 'Bằng tuần trước')">▲ 300.000đ</b>
+				</p>
+			</div>
 		</article>
 		<article class="panel kpi">
 			<h2><a th:href="@{/admin/bookings}">Booking<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
 			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.bookings, 0, 'POINT')}">128</p>
-			<p class="kpi-note"><a th:href="@{/admin/bookings(tab='cancelled')}" th:text="|${#numbers.formatInteger(overview.cancelledBookings, 0, 'POINT')} đã hủy|">9 đã hủy</a></p>
-			<p class="kpi-trend" th:with="t=${overview.bookingTrend}">
-				<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}|">7 ngày qua: 5</span>
-				<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
-					th:text="${t.delta() > 0} ? |▲ ${t.delta()}| : (${t.delta() < 0} ? |▼ ${-t.delta()}| : 'Bằng tuần trước')">▲ 2</b>
-			</p>
+			<div class="kpi-foot">
+				<p class="kpi-note"><a th:href="@{/admin/bookings(tab='cancelled')}" th:text="|${#numbers.formatInteger(overview.cancelledBookings, 0, 'POINT')} đã hủy|">9 đã hủy</a></p>
+				<p class="kpi-trend" th:with="t=${overview.bookingTrend}">
+					<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}|">7 ngày qua: 5</span>
+					<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
+						th:text="${t.delta() > 0} ? |▲ ${t.delta()}| : (${t.delta() < 0} ? |▼ ${-t.delta()}| : 'Bằng tuần trước')">▲ 2</b>
+				</p>
+			</div>
 		</article>
 		<article class="panel kpi">
 			<h2><a th:href="@{/admin/trips}">Chuyến<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
 			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.trips, 0, 'POINT')}">24</p>
-			<p class="kpi-note"><a th:href="@{/admin/trips(tab='upcoming')}" th:text="|${#numbers.formatInteger(overview.upcomingTrips, 0, 'POINT')} sắp chạy|">6 sắp chạy</a></p>
+			<div class="kpi-foot">
+				<p class="kpi-note"><a th:href="@{/admin/trips(tab='upcoming')}" th:text="|${#numbers.formatInteger(overview.upcomingTrips, 0, 'POINT')} sắp chạy|">6 sắp chạy</a></p>
+			</div>
 		</article>
 		<article class="panel kpi">
 			<h2><a th:href="@{/admin/users}">Người dùng<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
 			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.customers, 0, 'POINT')}">56</p>
-			<p class="kpi-trend" th:with="t=${overview.usersTrend}">
-				<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')} mới|">7 ngày qua: 3 mới</span>
-				<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
-					th:text="${t.delta() > 0} ? |▲ ${t.delta()}| : (${t.delta() < 0} ? |▼ ${-t.delta()}| : 'Bằng tuần trước')">▲ 1</b>
-			</p>
+			<div class="kpi-foot">
+				<p class="kpi-trend" th:with="t=${overview.usersTrend}">
+					<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')} mới|">7 ngày qua: 3 mới</span>
+					<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
+						th:text="${t.delta() > 0} ? |▲ ${t.delta()}| : (${t.delta() < 0} ? |▼ ${-t.delta()}| : 'Bằng tuần trước')">▲ 1</b>
+				</p>
+			</div>
 		</article>
 	</section>
+
+	<form class="panel ov-filter" data-filter novalidate aria-label="Lọc biểu đồ" th:data-today="${today}">
+		<div class="tab-seg" role="group" aria-label="Khoảng nhanh">
+			<button type="button" class="tab-seg-link" data-preset="7d">7 ngày</button>
+			<button type="button" class="tab-seg-link" data-preset="30d">30 ngày</button>
+			<button type="button" class="tab-seg-link" data-preset="90d">90 ngày</button>
+			<button type="button" class="tab-seg-link" data-preset="month">Tháng này</button>
+			<button type="button" class="tab-seg-link" data-preset="lastmonth">Tháng trước</button>
+			<button type="button" class="tab-seg-link" data-preset="year">Năm nay</button>
+		</div>
+		<div class="ov-custom">
+			<label>Từ ngày<input type="date" class="form-control form-control-sm" name="from" required></label>
+			<label>Đến ngày<input type="date" class="form-control form-control-sm" name="to" required></label>
+			<label>Gộp theo
+				<select class="form-select form-select-sm" name="group">
+					<option value="">Tự động</option>
+					<option value="day">Ngày</option>
+					<option value="week">Tuần</option>
+					<option value="month">Tháng</option>
+				</select>
+			</label>
+			<button type="submit" class="btn btn-primary btn-sm">Áp dụng</button>
+		</div>
+		<p class="ov-filter-error" data-filter-error role="alert" hidden></p>
+	</form>
+
+	<div class="ov-row ov-row-charts">
+		<section class="panel ov-panel" aria-labelledby="ov-sales-h" data-chart="sales">
+			<header class="ov-head">
+				<h2 id="ov-sales-h">Doanh thu và booking đã bán</h2>
+			</header>
+			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
+			<div class="ov-chart" data-plot></div>
+		</section>
+
+		<section class="panel ov-panel" aria-labelledby="ov-users-h" data-chart="users">
+			<header class="ov-head">
+				<h2 id="ov-users-h">Người dùng mới</h2>
+			</header>
+			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
+			<div class="ov-chart" data-plot></div>
+		</section>
+	</div>
 
 	<div class="ov-row ov-row-attention">
 		<section class="panel ov-panel" aria-labelledby="ov-alerts-h">
@@ -115,36 +167,6 @@
 				<span th:text="|Đang hiện ${overview.trains.size()} trên ${overview.trainTotal} tàu, tàu cần chú ý xếp trước.|">Đang hiện 8 trên 20 tàu.</span>
 				<a th:href="@{/admin/trains}">Xem tất cả tàu</a>
 			</p>
-		</section>
-	</div>
-
-	<div class="ov-row ov-row-charts">
-		<section class="panel ov-panel" aria-labelledby="ov-sales-h" data-chart="sales">
-			<header class="ov-head">
-				<h2 id="ov-sales-h">Doanh thu và booking đã bán</h2>
-				<span class="grow"></span>
-				<div class="tab-seg" role="group" aria-label="Khoảng thời gian">
-					<button type="button" class="tab-seg-link" data-days="7" aria-pressed="false">7 ngày</button>
-					<button type="button" class="tab-seg-link active" data-days="14" aria-pressed="true">14 ngày</button>
-					<button type="button" class="tab-seg-link" data-days="30" aria-pressed="false">30 ngày</button>
-				</div>
-			</header>
-			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
-			<div class="ov-chart" data-plot></div>
-		</section>
-
-		<section class="panel ov-panel" aria-labelledby="ov-users-h" data-chart="users">
-			<header class="ov-head">
-				<h2 id="ov-users-h">Người dùng mới</h2>
-				<span class="grow"></span>
-				<div class="tab-seg" role="group" aria-label="Khoảng thời gian">
-					<button type="button" class="tab-seg-link" data-days="7" aria-pressed="false">7 ngày</button>
-					<button type="button" class="tab-seg-link active" data-days="14" aria-pressed="true">14 ngày</button>
-					<button type="button" class="tab-seg-link" data-days="30" aria-pressed="false">30 ngày</button>
-				</div>
-			</header>
-			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
-			<div class="ov-chart" data-plot></div>
 		</section>
 	</div>
 

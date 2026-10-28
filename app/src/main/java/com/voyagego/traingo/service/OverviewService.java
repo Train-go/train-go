@@ -1,20 +1,25 @@
 package com.voyagego.traingo.service;
 
 import java.time.LocalDate;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.ToLongFunction;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.voyagego.traingo.common.exception.InvalidRangeException;
 import com.voyagego.traingo.entity.BookingStatus;
 import com.voyagego.traingo.entity.Train;
 import com.voyagego.traingo.entity.Trip;
@@ -57,8 +62,8 @@ public class OverviewService {
 
 	/** Days the train grid and the forecast look ahead, today included. */
 	public static final int WEEK = 7;
-	static final int[] RANGES = { 7, 14, 30 };
-	static final int DEFAULT_RANGE = 14;
+	/** The longest range a chart may cover, a year. */
+	public static final int MAX_RANGE_DAYS = 366;
 	/** Trips leaving within this many hours are checked for how full they are. */
 	static final int FILL_WINDOW_HOURS = 48;
 	/** Under this share of seats sold a trip about to leave is flagged. */
@@ -68,6 +73,8 @@ public class OverviewService {
 	private static final String[] SHORT_WEEKDAYS = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
 	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
 	private static final DateTimeFormatter DAY_TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
+	private static final DateTimeFormatter DAY_MONTH_YEAR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	private static final DateTimeFormatter MONTH_YEAR = DateTimeFormatter.ofPattern("MM/yyyy");
 
 	private final BookingRepository bookingRepository;
 	private final TripRepository tripRepository;
@@ -111,46 +118,115 @@ public class OverviewService {
 				week, trains.stream().limit(Overview.MAX_TRAINS).toList(), trains.size());
 	}
 
-	/** Bookings and revenue per day for the last {@code days} days (7, 14 or 30; anything else is 14). */
-	public SalesSeries sales(int days, LocalDateTime now) {
-		int range = rangeOf(days);
-		LocalDate today = now.toLocalDate();
-		LocalDate first = today.minusDays(range - 1L);
+	/** Bookings and revenue over a date range, grouped as asked ({@link Range}). */
+	public SalesSeries sales(LocalDate from, LocalDate to, String group, LocalDateTime now) {
+		Range range = Range.of(from, to, group, now.toLocalDate());
 		Map<LocalDate, DayTotal> byDay = bookingRepository
-				.findSalesByDay(first.atStartOfDay(), today.plusDays(1).atStartOfDay()).stream()
+				.findSalesByDay(range.from().atStartOfDay(), range.to().plusDays(1).atStartOfDay()).stream()
 				.collect(Collectors.toMap(DayTotal::getDay, total -> total));
+		Map<LocalDate, long[]> sums = new LinkedHashMap<>();
+		range.forEachBucket(sums, (acc, day) -> {
+			DayTotal total = byDay.get(day);
+			if (total != null) {
+				acc[0] += total.getBookings();
+				acc[1] += total.getRevenue();
+			}
+		});
 		List<SalesSeries.Point> points = new ArrayList<>();
 		long bookings = 0;
 		long revenue = 0;
-		for (LocalDate day = first; !day.isAfter(today); day = day.plusDays(1)) {
-			DayTotal total = byDay.get(day);
-			long b = total == null ? 0 : total.getBookings();
-			long r = total == null ? 0 : total.getRevenue();
-			bookings += b;
-			revenue += r;
-			points.add(new SalesSeries.Point(day.toString(), day.format(DAY_MONTH), b, r));
+		for (Map.Entry<LocalDate, long[]> entry : sums.entrySet()) {
+			long[] acc = entry.getValue();
+			bookings += acc[0];
+			revenue += acc[1];
+			points.add(new SalesSeries.Point(entry.getKey().toString(), range.label(entry.getKey()),
+					range.title(entry.getKey()), acc[0], acc[1]));
 		}
-		return new SalesSeries(range, points, bookings, revenue);
+		return new SalesSeries(range.from(), range.to(), range.group(), points, bookings, revenue);
 	}
 
-	/** Customers registered per day for the last {@code days} days (7, 14 or 30; anything else is 14). */
-	public UsersSeries users(int days, LocalDateTime now) {
-		int range = rangeOf(days);
-		LocalDate today = now.toLocalDate();
-		LocalDate first = today.minusDays(range - 1L);
+	/** Customers registered over a date range, grouped as asked, with the running total. */
+	public UsersSeries users(LocalDate from, LocalDate to, String group, LocalDateTime now) {
+		Range range = Range.of(from, to, group, now.toLocalDate());
 		Map<LocalDate, Long> byDay = userRepository
-				.findSignupsByDay(first.atStartOfDay(), today.plusDays(1).atStartOfDay()).stream()
+				.findSignupsByDay(range.from().atStartOfDay(), range.to().plusDays(1).atStartOfDay()).stream()
 				.collect(Collectors.toMap(DayCount::getDay, DayCount::getTotal));
-		long total = userRepository.countByRoleAndCreatedAtBefore(UserRole.CUSTOMER, first.atStartOfDay());
+		Map<LocalDate, long[]> sums = new LinkedHashMap<>();
+		range.forEachBucket(sums, (acc, day) -> acc[0] += byDay.getOrDefault(day, 0L));
+		long total = userRepository.countByRoleAndCreatedAtBefore(UserRole.CUSTOMER, range.from().atStartOfDay());
 		long newUsers = 0;
 		List<UsersSeries.Point> points = new ArrayList<>();
-		for (LocalDate day = first; !day.isAfter(today); day = day.plusDays(1)) {
-			long created = byDay.getOrDefault(day, 0L);
-			newUsers += created;
-			total += created;
-			points.add(new UsersSeries.Point(day.toString(), day.format(DAY_MONTH), created, total));
+		for (Map.Entry<LocalDate, long[]> entry : sums.entrySet()) {
+			newUsers += entry.getValue()[0];
+			total += entry.getValue()[0];
+			points.add(new UsersSeries.Point(entry.getKey().toString(), range.label(entry.getKey()),
+					range.title(entry.getKey()), entry.getValue()[0], total));
 		}
-		return new UsersSeries(range, points, newUsers, total);
+		return new UsersSeries(range.from(), range.to(), range.group(), points, newUsers, total);
+	}
+
+	/**
+	 * The date range of a chart, settled: an empty end is today, an empty start
+	 * is 29 days before the end, the end is never after today, the range is at
+	 * most {@link #MAX_RANGE_DAYS} days, and the grouping is day, week or month
+	 * (anything else picks one that keeps the chart readable). A week starts on
+	 * Monday; the first and last bucket are cut at the range.
+	 */
+	record Range(LocalDate from, LocalDate to, String group) {
+
+		static Range of(LocalDate from, LocalDate to, String group, LocalDate today) {
+			LocalDate end = to == null || to.isAfter(today) ? today : to;
+			LocalDate start = from == null ? end.minusDays(29) : from;
+			if (start.isAfter(end)) {
+				throw new InvalidRangeException("Ngày bắt đầu phải trước hoặc cùng ngày kết thúc.");
+			}
+			long days = ChronoUnit.DAYS.between(start, end) + 1;
+			if (days > MAX_RANGE_DAYS) {
+				throw new InvalidRangeException("Chọn tối đa " + MAX_RANGE_DAYS + " ngày.");
+			}
+			String grouping = "day".equals(group) || "week".equals(group) || "month".equals(group) ? group
+					: days <= 31 ? "day" : days <= 180 ? "week" : "month";
+			return new Range(start, end, grouping);
+		}
+
+		LocalDate bucketOf(LocalDate day) {
+			return switch (group) {
+				case "week" -> day.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+				case "month" -> day.withDayOfMonth(1);
+				default -> day;
+			};
+		}
+
+		/** Walks every day of the range, in order, handing each to {@code add} with its bucket's accumulator. */
+		void forEachBucket(Map<LocalDate, long[]> buckets, BiConsumer<long[], LocalDate> add) {
+			for (LocalDate day = from; !day.isAfter(to); day = day.plusDays(1)) {
+				add.accept(buckets.computeIfAbsent(bucketOf(day), key -> new long[2]), day);
+			}
+		}
+
+		/** First and last day of a bucket inside the range. */
+		private LocalDate[] span(LocalDate bucket) {
+			LocalDate last = switch (group) {
+				case "week" -> bucket.plusDays(6);
+				case "month" -> bucket.withDayOfMonth(bucket.lengthOfMonth());
+				default -> bucket;
+			};
+			return new LocalDate[] { bucket.isBefore(from) ? from : bucket, last.isAfter(to) ? to : last };
+		}
+
+		String label(LocalDate bucket) {
+			return "month".equals(group) ? bucket.format(MONTH_YEAR) : span(bucket)[0].format(DAY_MONTH);
+		}
+
+		String title(LocalDate bucket) {
+			LocalDate[] span = span(bucket);
+			return switch (group) {
+				case "week" -> "Tuần " + span[0].format(DAY_MONTH) + " - " + span[1].format(DAY_MONTH);
+				case "month" -> "Tháng " + bucket.format(MONTH_YEAR);
+				default -> span[0].format(DAY_MONTH_YEAR);
+			};
+		}
+
 	}
 
 	/**
@@ -251,10 +327,6 @@ public class OverviewService {
 			else previous += count.getTotal();
 		}
 		return new Trend(current, previous);
-	}
-
-	private static int rangeOf(int days) {
-		return Arrays.stream(RANGES).anyMatch(allowed -> allowed == days) ? days : DEFAULT_RANGE;
 	}
 
 	private static List<WeekDay> week(LocalDate today) {

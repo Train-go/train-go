@@ -1,5 +1,6 @@
 package com.voyagego.traingo.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Controller;
@@ -32,6 +33,7 @@ public class OverviewAdminController {
 	@GetMapping
 	public String overview(Model model) {
 		model.addAttribute("overview", overviewService.overview(LocalDateTime.now()));
+		model.addAttribute("today", LocalDate.now());
 		return "admin/overview";
 	}
 

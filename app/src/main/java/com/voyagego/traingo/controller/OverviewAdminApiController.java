@@ -1,7 +1,10 @@
 package com.voyagego.traingo.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,16 +25,24 @@ public class OverviewAdminApiController {
 		this.overviewService = overviewService;
 	}
 
-	/** Bookings and revenue per day over the last {@code days} days: 7, 14 or 30. */
+	/**
+	 * Bookings and revenue from {@code from} to {@code to} (ISO dates; the end
+	 * defaults to today and the start to 29 days before it), grouped by
+	 * {@code group}: day, week or month, or left out to pick one that reads well.
+	 */
 	@GetMapping("/sales")
-	public SalesSeries sales(@RequestParam(defaultValue = "14") int days) {
-		return overviewService.sales(days, LocalDateTime.now());
+	public SalesSeries sales(@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate from,
+			@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate to,
+			@RequestParam(required = false) String group) {
+		return overviewService.sales(from, to, group, LocalDateTime.now());
 	}
 
-	/** Customers registered per day over the last {@code days} days: 7, 14 or 30. */
+	/** Customers registered over the same kind of range. */
 	@GetMapping("/users")
-	public UsersSeries users(@RequestParam(defaultValue = "14") int days) {
-		return overviewService.users(days, LocalDateTime.now());
+	public UsersSeries users(@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate from,
+			@RequestParam(required = false) @DateTimeFormat(iso = ISO.DATE) LocalDate to,
+			@RequestParam(required = false) String group) {
+		return overviewService.users(from, to, group, LocalDateTime.now());
 	}
 
 }
