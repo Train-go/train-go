@@ -5,12 +5,42 @@ không quản lý vận hành đường sắt.
 
 ## Dashboard `/admin`
 
-Bốn con số tổng quan: tổng booking, tổng chuyến, tổng người dùng, tổng doanh thu.
-Không cần biểu đồ phức tạp.
+Trang Tổng quan (#37) là trang đầu của khu quản trị và là nơi admin vào sau khi đăng
+nhập. Bốn ô số đọc thật từ database, không có biểu đồ:
 
-Từ 23/10/2026 (#20) mẫu giao diện admin chưa có trang này, nên `/admin` chuyển
-hướng sang `/admin/trains`. Task "Trang Tổng quan" (#37) dựng lại trang và bỏ
-chuyển hướng.
+- **Booking:** số booking `CONFIRMED`, ghi chú số booking đã hủy;
+- **Chuyến:** số chuyến chưa hủy, ghi chú số chuyến sắp chạy (`SCHEDULED`, chưa khởi hành);
+- **Người dùng:** số tài khoản `CUSTOMER`;
+- **Doanh thu:** tổng `total_price` của booking `CONFIRMED`. Booking đã hủy không tính vì
+  dự án không có hoàn tiền.
+
+Menu có "Tổng quan" ở đầu và chữ TrainGo dẫn về `/admin`.
+
+Từ 28/10/2026 trang có thêm các khối để quản trị chủ động hơn (Phi yêu cầu), từ trên xuống:
+
+- **Bốn ô số**, theo thứ tự Doanh thu, Booking, Chuyến, Người dùng. Tên mỗi ô là liên kết
+  tới trang chi tiết (Booking, Chuyến, Người dùng; Doanh thu mở Booking). Các dòng nhỏ của ô
+  nằm sát đáy ô: ghi chú ("đã hủy" mở tab Đã hủy của Booking, "sắp chạy" mở trang Chuyến) và
+  xu hướng 7 ngày qua so với 7 ngày trước (Doanh thu, Booking, Người dùng).
+- **Bộ lọc biểu đồ**, dùng chung cho hai biểu đồ ngay dưới: mốc nhanh (7 ngày, 30 ngày, Tháng
+  này, Tháng trước), chọn từ ngày đến ngày bất kỳ (không quá 366 ngày, không sau
+  hôm nay) và gộp theo ngày, tuần hoặc tháng; để "Tự động" thì khoảng đến 31 ngày gộp theo
+  ngày, đến 180 ngày theo tuần, dài hơn theo tháng. Tuần bắt đầu từ thứ Hai, tuần và tháng ở
+  hai đầu được cắt theo khoảng. Mọi điều khiển áp dụng ngay khi đổi, không có nút xác nhận. Khoảng đang chọn nằm trên địa chỉ (`?from=&to=&group=`) nên
+  tải lại hoặc gửi link vẫn thấy đúng biểu đồ.
+- **Doanh thu và booking đã bán** (cột là doanh thu, đường là số booking), tính theo ngày
+  thanh toán của booking `CONFIRMED`.
+- **Người dùng mới** (cột là khách đăng ký mới, đường là tổng số khách).
+- **Cần chú ý:** tàu hết lịch chạy (không còn chuyến sắp chạy), tàu sắp hết chuyến (chuyến
+  cuối nằm trong 7 ngày tới), tàu có ngày chưa có chuyến trong 7 ngày tới, chuyến khởi hành
+  trong 48 giờ tới bán dưới 30% chỗ hoặc trên 90% chỗ. Nặng xếp trước, hiện tối đa 8 và ghi
+  rõ khi còn nhiều hơn.
+- **Lịch tàu 7 ngày tới:** mỗi tàu một hàng, mỗi ngày số chuyến; ngày chưa có chuyến nổi
+  bật. Tàu cần chú ý xếp trước, hiện tối đa 8 tàu và có liên kết sang trang Tàu.
+
+Biểu đồ vẽ bằng SVG (`static/js/admin/charts.js`), lấy số từ `GET /api/admin/overview/sales`
+và `/users` (tham số `from`, `to`, `group`). Mỗi khối dùng một câu truy vấn gom nhóm nên chi phí không tăng theo số booking.
+Bố cục: hai cột ở màn hình rộng, một cột ở 1100px trở xuống.
 
 ## Ga và tuyến `/admin/stations`
 
