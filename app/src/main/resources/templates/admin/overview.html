@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <!--
-	The admin overview (#37), /admin: four totals read from the database.
-	OverviewService decides what each one counts; this page only prints them.
+	The admin overview (#37), /admin.
+
+	Top to bottom: the four totals with their 7-day trend, what needs attention
+	(trains running out of trips, trips selling badly or nearly full), the week
+	ahead of each train, then two charts drawn by overview.js from
+	/api/admin/overview/sales and /forecast. OverviewService decides what each
+	figure counts; this page only prints them.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
 	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
@@ -9,7 +14,7 @@
 	<title>Tổng quan · Quản trị TrainGo</title>
 </head>
 <body>
-<main>
+<main data-overview>
 
 	<div class="page-head">
 		<h1>Tổng quan</h1>
@@ -20,6 +25,11 @@
 			<h2>Booking</h2>
 			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.bookings, 0, 'POINT')}">128</p>
 			<p class="kpi-note" th:text="|${#numbers.formatInteger(overview.cancelledBookings, 0, 'POINT')} đã hủy|">9 đã hủy</p>
+			<p class="kpi-trend" th:with="t=${overview.bookingTrend}">
+				<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}|">7 ngày qua: 5</span>
+				<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
+					th:text="${t.delta() > 0} ? |▲ ${t.delta()}| : (${t.delta() < 0} ? |▼ ${-t.delta()}| : 'Bằng tuần trước')">▲ 2</b>
+			</p>
 		</article>
 		<article class="panel kpi">
 			<h2>Chuyến</h2>
@@ -29,15 +39,106 @@
 		<article class="panel kpi">
 			<h2>Người dùng</h2>
 			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.customers, 0, 'POINT')}">56</p>
-			<p class="kpi-note" aria-hidden="true">&nbsp;</p>
 		</article>
 		<article class="panel kpi">
 			<h2>Doanh thu</h2>
 			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.revenue, 0, 'POINT')} + 'đ'">52.340.000đ</p>
-			<p class="kpi-note" aria-hidden="true">&nbsp;</p>
+			<p class="kpi-trend" th:with="t=${overview.revenueTrend}">
+				<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}đ|">7 ngày qua: 1.200.000đ</span>
+				<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
+					th:text="${t.delta() > 0} ? |▲ ${#numbers.formatInteger(t.delta(), 0, 'POINT')}đ| : (${t.delta() < 0} ? |▼ ${#numbers.formatInteger(-t.delta(), 0, 'POINT')}đ| : 'Bằng tuần trước')">▲ 300.000đ</b>
+			</p>
 		</article>
 	</section>
 
+	<div class="ov-row ov-row-attention">
+		<section class="panel ov-panel" aria-labelledby="ov-alerts-h">
+			<header class="ov-head">
+				<h2 id="ov-alerts-h">Cần chú ý</h2>
+				<span class="ov-count" th:if="${overview.alertTotal > 0}" th:text="${overview.alertTotal}">3</span>
+			</header>
+			<ul class="ov-alerts" th:if="${!overview.alerts.isEmpty()}">
+				<li class="ov-alert" th:each="alert : ${overview.alerts}" th:classappend="|is-${alert.level}|">
+					<i class="bi" th:classappend="${alert.icon}" aria-hidden="true"></i>
+					<div>
+						<b th:text="${alert.title}">SE1 sắp hết chuyến</b>
+						<small th:text="${alert.detail}">Chuyến cuối khởi hành 02/11 08:00, lịch còn 3 chuyến.</small>
+					</div>
+					<a class="btn btn-outline-secondary btn-sm" th:if="${alert.href != null}" th:href="@{${alert.href}}"
+						th:aria-label="|Xem: ${alert.title}|">Xem</a>
+				</li>
+			</ul>
+			<p class="ov-empty" th:if="${overview.alerts.isEmpty()}">
+				<i class="bi bi-check-circle" aria-hidden="true"></i>Không có cảnh báo. Lịch tàu và các chuyến sắp chạy đều ổn.
+			</p>
+			<p class="ov-more" th:if="${overview.alertTotal > overview.alerts.size()}"
+				th:text="|Đang hiện ${overview.alerts.size()} trên ${overview.alertTotal} cảnh báo.|">Đang hiện 8 trên 12 cảnh báo.</p>
+		</section>
+
+		<section class="panel ov-panel" aria-labelledby="ov-week-h">
+			<header class="ov-head">
+				<h2 id="ov-week-h">Lịch tàu 7 ngày tới</h2>
+				<span class="ov-legend"><i class="ov-dot is-empty" aria-hidden="true"></i>Chưa có chuyến</span>
+			</header>
+			<div class="ov-scroll" th:if="${!overview.trains.isEmpty()}">
+				<table class="ov-week">
+					<thead>
+						<tr>
+							<th scope="col">Tàu</th>
+							<th scope="col" th:each="day : ${overview.week}" th:classappend="${day.today} ? 'is-today'">
+								<span th:text="${day.label}">T4</span><small th:text="${day.dayMonth}">28/10</small>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="train : ${overview.trains}">
+							<th scope="row">
+								<a th:href="@{/admin/trains/{id}(id=${train.id})}" th:text="${train.code}">SE1</a>
+								<small th:text="${train.name}">Thống Nhất 1</small>
+							</th>
+							<td th:each="count : ${train.trips}" th:classappend="${count == 0} ? 'is-empty'">
+								<span th:if="${count > 0}" th:text="${count}">1</span>
+								<span th:if="${count == 0}" aria-hidden="true">–</span>
+								<span class="visually-hidden" th:if="${count == 0}">Chưa có chuyến</span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<p class="ov-empty" th:if="${overview.trains.isEmpty()}">Chưa có tàu nào.</p>
+			<p class="ov-more" th:if="${overview.trainTotal > overview.trains.size()}">
+				<span th:text="|Đang hiện ${overview.trains.size()} trên ${overview.trainTotal} tàu, tàu cần chú ý xếp trước.|">Đang hiện 8 trên 20 tàu.</span>
+				<a th:href="@{/admin/trains}">Xem tất cả tàu</a>
+			</p>
+		</section>
+	</div>
+
+	<div class="ov-row ov-row-charts">
+		<section class="panel ov-panel" aria-labelledby="ov-sales-h" data-chart="sales">
+			<header class="ov-head">
+				<h2 id="ov-sales-h">Doanh thu và booking đã bán</h2>
+				<span class="grow"></span>
+				<div class="tab-seg" role="group" aria-label="Khoảng thời gian">
+					<button type="button" class="tab-seg-link" data-days="7" aria-pressed="false">7 ngày</button>
+					<button type="button" class="tab-seg-link active" data-days="14" aria-pressed="true">14 ngày</button>
+					<button type="button" class="tab-seg-link" data-days="30" aria-pressed="false">30 ngày</button>
+				</div>
+			</header>
+			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
+			<div class="ov-chart" data-plot></div>
+		</section>
+
+		<section class="panel ov-panel" aria-labelledby="ov-forecast-h" data-chart="forecast">
+			<header class="ov-head">
+				<h2 id="ov-forecast-h">Dự báo 7 ngày tới</h2>
+			</header>
+			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
+			<div class="ov-chart" data-plot></div>
+		</section>
+	</div>
+
+	<script defer th:src="@{/js/admin/charts.js}"></script>
+	<script defer th:src="@{/js/admin/overview.js}"></script>
 </main>
 </body>
 </html>
