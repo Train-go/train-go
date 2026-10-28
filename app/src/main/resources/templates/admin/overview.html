@@ -75,16 +75,15 @@
 			<button type="button" class="tab-seg-link" data-preset="year">Năm nay</button>
 		</div>
 		<div class="ov-custom">
-			<label>Từ ngày<input type="date" class="form-control form-control-sm" name="from" required></label>
-			<label>Đến ngày<input type="date" class="form-control form-control-sm" name="to" required></label>
-			<label>Gộp theo
-				<select class="form-select form-select-sm" name="group">
-					<option value="">Tự động</option>
-					<option value="day">Ngày</option>
-					<option value="week">Tuần</option>
-					<option value="month">Tháng</option>
-				</select>
-			</label>
+			<input type="date" class="form-control form-control-sm" name="from" aria-label="Từ ngày" title="Từ ngày" required>
+			<span class="ov-to" aria-hidden="true">→</span>
+			<input type="date" class="form-control form-control-sm" name="to" aria-label="Đến ngày" title="Đến ngày" required>
+			<select class="form-select form-select-sm" name="group" aria-label="Gộp theo" title="Gộp theo">
+				<option value="">Gộp tự động</option>
+				<option value="day">Gộp theo ngày</option>
+				<option value="week">Gộp theo tuần</option>
+				<option value="month">Gộp theo tháng</option>
+			</select>
 		</div>
 		<p class="ov-filter-error" data-filter-error role="alert" hidden></p>
 	</form>
