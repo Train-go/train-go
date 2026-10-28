@@ -15,6 +15,8 @@ import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
 import com.voyagego.traingo.model.dto.DayPrice;
 import com.voyagego.traingo.model.dto.IdCount;
+import com.voyagego.traingo.model.dto.TrainDayCount;
+import com.voyagego.traingo.model.dto.TrainSchedule;
 
 import jakarta.persistence.LockModeType;
 
@@ -26,6 +28,12 @@ import jakarta.persistence.LockModeType;
  */
 public interface TripRepository extends JpaRepository<Trip, Long> {
 	long countByRouteId(Long routeId);
+
+	/** Trips that are not cancelled, past ones included (the overview's "Chuyến"). */
+	long countByStatusNot(TripStatus status);
+
+	/** Trips of one status that leave after {@code after}; with SCHEDULED these are the upcoming ones (D8). */
+	long countByStatusAndDepartureAtAfter(TripStatus status, LocalDateTime after);
 
 	@Query("""
 			select t.route.id as id, count(t) as total from Trip t
@@ -169,5 +177,34 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	List<DayPrice> findDayPrices(@Param("originId") Long originId, @Param("destinationId") Long destinationId,
 			@Param("dayStart") LocalDateTime dayStart, @Param("dayEnd") LocalDateTime dayEnd,
 			@Param("now") LocalDateTime now);
+
+	/** Trips per train and day in [from, to), cancelled ones left out. */
+	@Query(value = """
+			select t.train_id as trainId, date(t.departure_at) as day, count(*) as trips
+			from trips t
+			where t.status <> 'CANCELLED' and t.departure_at >= :from and t.departure_at < :to
+			group by t.train_id, date(t.departure_at)""", nativeQuery = true)
+	List<TrainDayCount> findTrainDayCounts(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+	/** Per train that still has scheduled trips after {@code now}: how many, the next and the last. */
+	@Query(value = """
+			select t.train_id as trainId, count(*) as upcoming,
+			       min(t.departure_at) as nextAt, max(t.departure_at) as lastAt
+			from trips t
+			where t.status = 'SCHEDULED' and t.departure_at > :now
+			group by t.train_id""", nativeQuery = true)
+	List<TrainSchedule> findTrainSchedules(@Param("now") LocalDateTime now);
+
+	/** Scheduled trips leaving in (now, to), soonest first, with what the alert text prints loaded. */
+	@Query("""
+			select t from Trip t
+			join fetch t.train
+			join fetch t.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where t.status = com.voyagego.traingo.entity.TripStatus.SCHEDULED
+			and t.departureAt > :now and t.departureAt < :to
+			order by t.departureAt""")
+	List<Trip> findUpcomingBetween(@Param("now") LocalDateTime now, @Param("to") LocalDateTime to);
 
 }

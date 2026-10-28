@@ -1,5 +1,6 @@
 package com.voyagego.traingo.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.voyagego.traingo.entity.Booking;
 import com.voyagego.traingo.entity.BookingStatus;
+import com.voyagego.traingo.model.dto.DayTotal;
 import com.voyagego.traingo.model.dto.IdCount;
 
 import jakarta.persistence.LockModeType;
@@ -70,6 +72,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
 	long countByTripIdAndBookingStatus(Long tripId, BookingStatus status);
 
+	/** Bookings in one status, for the overview's totals. */
+	long countByBookingStatus(BookingStatus status);
+
 	@Query("select coalesce(sum(b.totalPrice), 0) from Booking b where b.bookingStatus = :status")
 	long sumTotalPriceByBookingStatus(@Param("status") BookingStatus status);
 
@@ -102,5 +107,18 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	@Query("select b from Booking b where b.id = :id")
 	Optional<Booking> findByIdForUpdate(@Param("id") Long id);
+
+	/**
+	 * Confirmed bookings per day they were paid, in [from, to). Native SQL for
+	 * the same reason as TripRepository.findDayPrices: JPQL cannot group by the
+	 * date of a timestamp.
+	 */
+	@Query(value = """
+			select date(b.paid_at) as day, count(*) as bookings, coalesce(sum(b.total_price), 0) as revenue
+			from bookings b
+			where b.booking_status = 'CONFIRMED' and b.paid_at >= :from and b.paid_at < :to
+			group by date(b.paid_at)
+			order by day""", nativeQuery = true)
+	List<DayTotal> findSalesByDay(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
 }

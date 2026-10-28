@@ -157,7 +157,7 @@ public class AuthController {
 	}
 
 	private static String homeOf(TrainGoUserDetails user) {
-		return user.getRole() == UserRole.ADMIN ? "redirect:/admin/trains" : "redirect:/";
+		return user.getRole() == UserRole.ADMIN ? "redirect:/admin" : "redirect:/";
 	}
 
 }

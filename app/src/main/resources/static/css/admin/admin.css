@@ -805,3 +805,119 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 	.net-split { grid-template-columns: minmax(0, 1fr); }
 	.net-map { position: static; max-height: none; }
 }
+
+/* ---------- overview (#37) ---------- */
+
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.kpi { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; }
+/* The small lines sit at the bottom of the tile, so tiles of one row end alike. */
+.kpi-foot { display: grid; gap: 4px; margin-top: auto; padding-top: 6px; }
+.kpi h2 { margin: 0; color: var(--muted); font-size: 14px; font-weight: 700; }
+.kpi-value { margin: 0; color: var(--ink); font-size: clamp(26px, 2.4vw, 34px); font-variant-numeric: tabular-nums; font-weight: 800; line-height: 1.2; overflow-wrap: anywhere; }
+.kpi-note { margin: 0; color: var(--muted); font-size: 14px; font-weight: 600; }
+/* The tile's name and its note lead to the page that holds the detail. */
+.kpi h2 a { display: inline-flex; align-items: center; gap: 2px; color: inherit; text-decoration: none; }
+.kpi h2 a .bi { font-size: 18px; line-height: 1; transition: transform 0.15s; }
+.kpi h2 a:hover { color: var(--accent-strong); }
+.kpi h2 a:hover .bi { transform: translateX(3px); }
+.kpi-note a { color: inherit; text-decoration: none; }
+.kpi-note a:hover { color: var(--accent-strong); text-decoration: underline; }
+
+@media (max-width: 1100px) {
+	.kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 400px) {
+	.kpis { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- overview: trend, alerts, week grid, charts (#37) ---------- */
+
+.kpi-trend { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; margin: 2px 0 0; padding-top: 8px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; font-weight: 600; }
+.delta { font-weight: 800; }
+.delta.up { color: var(--ok); }
+.delta.down { color: var(--danger); }
+
+.ov-row { display: grid; gap: 16px; margin-top: 16px; }
+.ov-row-attention { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); }
+.ov-row-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ov-panel { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; padding: 16px 18px 18px; }
+.ov-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.ov-head h2 { margin: 0; font-size: 16px; font-weight: 800; }
+.ov-head .grow { flex: 1; }
+.ov-count { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; background: var(--danger); color: #fff; font-size: 12px; font-weight: 800; }
+/* The range switch is made of buttons: drop the browser's button look. */
+.tab-seg button.tab-seg-link { border: 0; background: transparent; font-family: inherit; cursor: pointer; }
+.tab-seg button.tab-seg-link.active { background: var(--surface); }
+.ov-summary { margin: 0; color: var(--muted); font-size: 13px; font-weight: 600; }
+.ov-more { margin: 0; color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.ov-more a { margin-left: 6px; font-weight: 700; }
+.ov-empty { display: flex; align-items: center; gap: 8px; margin: 0; padding: 14px; border-radius: var(--r-control); background: var(--ok-soft); color: var(--ok); font-weight: 700; }
+.ov-chart + .ov-empty, .ov-chart .ov-empty { background: var(--sunk); color: var(--muted); }
+
+/* What needs attention. */
+.ov-alerts { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.ov-alert { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r-control); background: var(--sunk); }
+.ov-alert > i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; font-size: 17px; }
+.ov-alert b { display: block; font-size: 14px; }
+.ov-alert small { display: block; color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.ov-alert.is-danger { background: var(--danger-soft); }
+.ov-alert.is-danger > i { background: var(--danger); color: #fff; }
+.ov-alert.is-warning { background: var(--warn-soft); }
+.ov-alert.is-warning > i { background: var(--warn); color: #fff; }
+.ov-alert.is-info > i { background: var(--accent-soft); color: var(--accent-strong); }
+
+/* The week of each train: a number per day, empty days stand out. */
+.ov-legend { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; color: var(--muted); font-size: 12px; font-weight: 600; }
+.ov-dot { width: 14px; height: 14px; border-radius: 4px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.ov-dot.is-empty { background: var(--warn-soft); box-shadow: inset 0 0 0 1px var(--warn); }
+.ov-scroll { position: relative; overflow-x: auto; }
+.ov-week { width: 100%; min-width: 460px; border-collapse: separate; border-spacing: 4px; }
+.ov-week th, .ov-week td { text-align: center; }
+.ov-week thead th { padding: 4px 2px; color: var(--muted); font-size: 12px; font-weight: 700; line-height: 1.2; }
+.ov-week thead th small { display: block; font-size: 11px; font-weight: 600; }
+.ov-week thead th.is-today { color: var(--accent-strong); }
+.ov-week thead th:first-child { text-align: left; }
+.ov-week tbody th { padding: 6px 8px 6px 0; text-align: left; font-size: 14px; }
+.ov-week tbody th small { display: block; max-width: 140px; overflow: hidden; color: var(--muted); font-size: 11.5px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.ov-week td { height: 40px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-strong); font-size: 14px; font-weight: 800; }
+.ov-week td.is-empty { background: var(--warn-soft); box-shadow: inset 0 0 0 1px var(--warn); color: var(--warn); }
+
+/* Charts (charts.js). */
+.ov-chart { position: relative; min-width: 0; }
+.ch { display: block; width: 100%; height: auto; overflow: visible; }
+.ch-grid { stroke: var(--line); stroke-width: 1; }
+.ch-tick, .ch-label { fill: var(--muted); font: 600 11px var(--font); }
+.ch-tick-line { fill: var(--ink-2); }
+.ch-bar { fill: var(--accent); opacity: 0.85; }
+.ch-hit { fill: transparent; }
+.ch-col:hover .ch-hit { fill: var(--sunk); }
+.ch-col:hover .ch-bar { opacity: 1; }
+.ch-line { fill: none; stroke: var(--warn); stroke-linejoin: round; stroke-width: 2.5; }
+.ch-dot { fill: var(--surface); stroke: var(--warn); stroke-width: 2.5; }
+.ch-empty { fill: var(--muted); font: 600 13px var(--font); }
+.ch-legend { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 6px 0 0; color: var(--ink-2); font-size: 12.5px; font-weight: 600; }
+.ch-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.ch-key-bar { width: 12px; height: 12px; border-radius: 3px; background: var(--accent); }
+.ch-key-line { width: 16px; height: 0; border-top: 3px solid var(--warn); }
+
+/* The filter shared by both charts. */
+.ov-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 16px; padding: 14px 18px; }
+.ov-custom { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ov-custom .form-control, .ov-custom .form-select { width: auto; min-width: 140px; height: 38px; }
+.ov-to { color: var(--muted); font-weight: 700; }
+.ov-filter-error { flex-basis: 100%; margin: 0; color: var(--danger); font-size: 13px; font-weight: 700; }
+.ov-filter .tab-seg { flex-wrap: wrap; }
+@media (max-width: 520px) {
+	.ov-custom { width: 100%; }
+	.ov-custom .form-control, .ov-custom .form-select { flex: 1 1 130px; min-width: 0; }
+	.ov-to { display: none; }
+}
+
+@media (max-width: 1100px) {
+	.ov-row-attention, .ov-row-charts { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 520px) {
+	.ov-panel { padding: 14px; }
+	.ov-alert { grid-template-columns: auto minmax(0, 1fr); }
+	.ov-alert .btn { grid-column: 2; justify-self: start; }
+}
