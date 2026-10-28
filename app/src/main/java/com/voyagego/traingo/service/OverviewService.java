@@ -72,7 +72,7 @@ public class OverviewService {
 
 	private static final String[] SHORT_WEEKDAYS = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
 	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
-	private static final DateTimeFormatter DAY_TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
+	private static final DateTimeFormatter HOUR_MINUTE = DateTimeFormatter.ofPattern("HH:mm");
 	private static final DateTimeFormatter DAY_MONTH_YEAR = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private static final DateTimeFormatter MONTH_YEAR = DateTimeFormatter.ofPattern("MM/yyyy");
 
@@ -254,18 +254,18 @@ public class OverviewService {
 			String level = null;
 			if (schedule == null) {
 				level = "danger";
-				alerts.add(new Alert(level, "bi-exclamation-octagon", train.getCode() + " hết lịch chạy",
-						"Không còn chuyến nào sắp chạy. Thêm chuyến để tàu tiếp tục khai thác.", href));
+				alerts.add(new Alert(level, "bi-exclamation-octagon", train.getCode() + " chưa có lịch chạy sắp tới",
+						"Hiện không có chuyến nào được lên lịch. Hãy bổ sung lịch chạy để tiếp tục khai thác.", href));
 			} else if (schedule.getLastAt().toLocalDate().isBefore(weekEnd)) {
 				level = "warning";
-				alerts.add(new Alert(level, "bi-hourglass-split", train.getCode() + " sắp hết chuyến",
-						"Chuyến cuối khởi hành " + schedule.getLastAt().format(DAY_TIME) + ", lịch còn "
-								+ schedule.getUpcoming() + " chuyến.", href));
+				alerts.add(new Alert(level, "bi-hourglass-split", train.getCode() + " sắp hết lịch chạy",
+						"Chuyến cuối khởi hành " + when(schedule.getLastAt()) + ". Lịch hiện còn "
+								+ schedule.getUpcoming() + " chuyến, hãy bổ sung lịch chạy.", href));
 			} else if (!emptyDays.isEmpty()) {
 				level = "info";
 				alerts.add(new Alert(level, "bi-calendar-x", train.getCode() + " có ngày chưa có chuyến",
-						emptyDays.size() == WEEK ? "Không có chuyến nào trong 7 ngày tới."
-								: "Chưa có chuyến ngày " + String.join(", ", emptyDays) + ".", href));
+						emptyDays.size() == WEEK ? "Tàu chưa có chuyến nào trong 7 ngày tới."
+								: "Chưa có chuyến vào ngày " + String.join(", ", emptyDays) + ".", href));
 			}
 			rows.add(new TrainWeek(train.getId(), train.getCode(), train.getName(), trips, level));
 		}
@@ -290,15 +290,18 @@ public class OverviewService {
 					String route = PopularRoute.placeName(trip.getRoute().getOriginStation().getName()) + " → "
 							+ PopularRoute.placeName(trip.getRoute().getDestinationStation().getName());
 					String href = "/admin/trains/" + trip.getTrain().getId();
-					String when = "Khởi hành " + trip.getDepartureAt().format(DAY_TIME);
+					String title = trip.getTrain().getCode() + " · " + route;
+					String start = "Khởi hành " + when(trip.getDepartureAt()) + ". ";
 					if (fill < LOW_FILL_PERCENT) {
 						low.add(new Alert("warning", "bi-graph-down-arrow",
-								trip.getTrain().getCode() + " " + route + " còn trống nhiều",
-								when + ", mới bán " + count + "/" + seats + " chỗ.", href));
+								title + (count == 0 ? " chưa bán được vé" : " có tỷ lệ lấp đầy thấp"),
+								start + (count == 0 ? "Hiện còn trống toàn bộ " + seats + " chỗ."
+										: "Mới bán " + count + "/" + seats + " chỗ, còn " + (seats - count) + " chỗ trống."),
+								href));
 					} else if (fill >= FULL_FILL_PERCENT) {
-						full.add(new Alert("info", "bi-graph-up-arrow",
-								trip.getTrain().getCode() + " " + route + " sắp đầy",
-								when + ", đã bán " + count + "/" + seats + " chỗ.", href));
+						full.add(new Alert("info", "bi-graph-up-arrow", title + " sắp hết chỗ",
+								start + "Đã bán " + count + "/" + seats + " chỗ, chỉ còn " + (seats - count) + " chỗ trống.",
+								href));
 					}
 				});
 		List<Alert> result = new ArrayList<>(low.stream().limit(5).toList());
@@ -336,6 +339,11 @@ public class OverviewService {
 			days.add(new WeekDay(day, shortWeekday(day), day.format(DAY_MONTH), i == 0));
 		}
 		return days;
+	}
+
+	/** "lúc 08:00 ngày 29/10", the way an alert names a departure. */
+	private static String when(LocalDateTime time) {
+		return "lúc " + time.format(HOUR_MINUTE) + " ngày " + time.format(DAY_MONTH);
 	}
 
 	private static String shortWeekday(LocalDate day) {
