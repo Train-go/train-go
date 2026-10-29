@@ -18,7 +18,7 @@
 	}
 	function render(focus = false) {
 		const ids = new Set(network.stations.map(station => station.id));
-		if ((state.type === 'station' && !ids.has(state.id))
+		if ((['station', 'suggest'].includes(state.type) && !ids.has(state.id))
 			|| (['pair', 'gap'].includes(state.type) && (!ids.has(state.a) || !ids.has(state.b)))) state = { type: 'overview' };
 		root.querySelector('#net-count').textContent = `${network.stations.length} ga · ${network.routes.length} tuyến`;
 		overview.hidden = state.type === 'overview';
@@ -28,7 +28,7 @@
 			onPair: (a, b) => select({ type: 'pair', a, b }),
 			onGap: (a, b) => select({ type: 'gap', a, b })
 		});
-		TG.stationPanels(panel, { network, state, select, write, remove });
+		TG.stationPanels(panel, { network, state, select, write, remove, commit });
 		if (focus) focusPanel();
 	}
 	function select(next) {
@@ -94,6 +94,28 @@
 		}
 		if (failure) report(failure, form);
 		else if (refreshed) focusPanel();
+	}
+	/**
+	 * Runs `task` (API calls) with the page locked, then shows `nextState` on
+	 * fresh data. Resolves true when both worked; a failure becomes a toast.
+	 */
+	async function commit(task, nextState) {
+		if (busy) return false;
+		setBusy(true);
+		let failure;
+		let refreshed = false;
+		try {
+			await task();
+			state = nextState;
+			refreshed = await reload(true);
+		} catch (error) { failure = error; }
+		finally { setBusy(false); }
+		if (failure) {
+			TG.toast(failure.message || 'Có lỗi xảy ra, vui lòng thử lại.', { error: true });
+			return false;
+		}
+		if (refreshed) focusPanel();
+		return refreshed;
 	}
 	async function remove(url, title, body, confirmLabel, message, nextState, trigger) {
 		if (busy || trigger.disabled) return;

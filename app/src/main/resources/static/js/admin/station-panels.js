@@ -53,7 +53,10 @@
 				form.elements.code.setAttribute('aria-describedby', 'station-code-help');
 				form.querySelector('#station-code-help').hidden = false;
 			}
-		} else prefillGap(form, a, b);
+		} else TG.stationDraft(form, {
+			stations: ctx.network.stations,
+			slot: { lo: a.kmMark, hi: b.kmMark, prev: a, next: b }
+		});
 		form.querySelector('[data-action=cancel]').onclick = () => ctx.select(station ? { type: 'station', id: station.id } : { type: 'overview' });
 		form.addEventListener('submit', event => {
 			event.preventDefault();
@@ -70,29 +73,8 @@
 			body.kmMark = km.value === '' ? null : Number(km.value);
 			ctx.write(station ? `/api/admin/stations/${station.id}` : '/api/admin/stations',
 				{ method: station ? 'PUT' : 'POST', body }, form, station ? 'Đã lưu ga.' : 'Đã thêm ga.',
-				saved => ({ type: 'station', id: saved.id }));
+				saved => (station ? { type: 'station', id: saved.id } : { type: 'suggest', id: saved.id }));
 		});
-	}
-	async function prefillGap(form, a, b) {
-		const km = form.elements.kmMark;
-		const warning = form.querySelector('#km-range-warning');
-		warning.textContent = `Km nằm ngoài khoảng giữa ${name(a)} (${a.kmMark}) và ${name(b)} (${b.kmMark}).`;
-		km.setAttribute('aria-describedby', 'km-range-warning');
-		let touched = false;
-		km.addEventListener('input', () => {
-			touched = true;
-			warning.hidden = km.value === '' || (Number(km.value) > a.kmMark && Number(km.value) < b.kmMark);
-		});
-		try {
-			const result = await TG.api(`/api/admin/stations/free-km?lo=${a.kmMark}&hi=${b.kmMark}`);
-			// A slow suggestion must never replace the user's value or a newer panel.
-			if (form.isConnected && !touched) km.value = result.km;
-		} catch (error) {
-			if (!form.isConnected) return;
-			const alert = form.querySelector('[data-km-error]');
-			alert.textContent = error.message || 'Không tải được gợi ý km. Bạn có thể nhập lý trình.';
-			alert.hidden = false;
-		}
 	}
 	function pair(panel, ctx, a, b) {
 		panel.append(clone('pair'));
@@ -141,11 +123,21 @@
 			panel.querySelector('.net-directions').append(fragment);
 		});
 	}
+	/** After a new station is saved: the routes worth creating for it. */
+	function suggestions(panel, ctx, station) {
+		panel.append(clone('suggest'));
+		text(panel, '#net-panel-h', `Nối ${name(station)} vào tuyến`);
+		const leave = () => ctx.select({ type: 'station', id: station.id });
+		TG.routeSuggestions(panel.querySelector('[data-suggest-host]'), {
+			station, network: ctx.network, commit: ctx.commit, onSkip: leave
+		});
+	}
 	TG.stationPanels = function (panel, ctx) {
 		panel.replaceChildren();
 		const find = id => ctx.network.stations.find(station => station.id === id);
 		const state = ctx.state;
-		if (state.type === 'station') {
+		if (state.type === 'suggest') suggestions(panel, ctx, find(state.id));
+		else if (state.type === 'station') {
 			if (state.edit) stationForm(panel, ctx, find(state.id));
 			else stationDetails(panel, ctx, find(state.id));
 		} else if (state.type === 'gap') stationForm(panel, ctx, null, find(state.a), find(state.b));
