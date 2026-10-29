@@ -60,4 +60,21 @@ public final class TextUtils {
 		return initials.toUpperCase(Locale.ROOT);
 	}
 
+	/**
+	 * A price in the short form of the date strip: 350000 gives "350k",
+	 * 1200000 gives "1,2tr", 2000000 gives "2tr". Under 1.000 dong it is
+	 * printed as it is ("500đ").
+	 */
+	public static String shortMoney(long dong) {
+		if (dong < 1_000) {
+			return dong + "đ";
+		}
+		long thousands = Math.round(dong / 1_000.0);
+		if (thousands < 1_000) {
+			return thousands + "k";
+		}
+		long tenths = Math.round(dong / 100_000.0);
+		return tenths % 10 == 0 ? tenths / 10 + "tr" : tenths / 10 + "," + tenths % 10 + "tr";
+	}
+
 }

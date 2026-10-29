@@ -32,7 +32,7 @@ public class RoleBasedLoginSuccessHandler extends SavedRequestAwareAuthenticatio
 			// Never change shared handler settings based on an individual login.
 			requestCache.removeRequest(request, response);
 			clearAuthenticationAttributes(request);
-			getRedirectStrategy().sendRedirect(request, response, "/admin/trains");
+			getRedirectStrategy().sendRedirect(request, response, "/admin");
 			return;
 		}
 		super.onAuthenticationSuccess(request, response, authentication);

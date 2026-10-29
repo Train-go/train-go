@@ -2214,12 +2214,28 @@ body:has(.tg-trust) .tg-foot {
 	color: var(--traingo-navy);
 }
 
+.tg-day-price {
+	min-height: 16px;
+	color: var(--traingo-primary);
+	font-size: 12px;
+	line-height: 16px;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+}
+
+.tg-day-price.is-sold {
+	color: var(--traingo-neutral-500);
+	font-weight: 600;
+}
+
 .tg-day[aria-current="date"] {
 	background: var(--traingo-navy);
 	color: #fff;
 }
 
-.tg-day[aria-current="date"] small {
+.tg-day[aria-current="date"] small,
+.tg-day[aria-current="date"] .tg-day-price {
 	color: #b9c8ec;
 }
 
