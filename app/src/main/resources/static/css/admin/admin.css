@@ -595,6 +595,22 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 /* The suggested arrival, read-only until "Sửa". */
 .input-locked { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 40px; padding: 0 4px 0 12px; border-radius: var(--r-control); background: var(--sunk); color: var(--ink-2); font-weight: 600; }
 .price-field { max-width: 320px; }
+.wz-seg { display: inline-flex; justify-self: start; gap: 2px; padding: 3px; border-radius: 10px; background: var(--sunk); }
+.wz-seg button { min-height: 32px; padding: 0 12px; border: 0; border-radius: var(--r-control); background: transparent; color: var(--muted); font-size: 13px; font-weight: 700; cursor: pointer; }
+.wz-seg button:hover { color: var(--ink); }
+.wz-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(12, 44, 40, 0.12); }
+.dest:disabled { border-style: dashed; background: var(--bg); color: #9aa7a1; cursor: not-allowed; }
+.dest:disabled:hover { border-color: var(--line-strong); }
+.dest:disabled small { color: #9aa7a1; }
+/* The pace of a many-legs plan, two cards that act as radios. */
+.paces { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.pace { display: grid; gap: 2px; padding: 10px 12px; text-align: left; border-radius: var(--r-control); border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink); cursor: pointer; }
+.pace:hover { border-color: var(--accent); }
+.pace small { color: var(--muted); font-weight: 600; font-size: 12px; }
+.pace[aria-checked="true"] { border: 2px solid var(--accent); background: var(--accent-soft); padding: 9px 11px; }
+.leg-table th.num, .leg-table td.num { text-align: right; }
+.leg-table td.num .input-group { margin-left: auto; max-width: 200px; }
+.leg-table td.num .wz-err { justify-content: flex-end; }
 
 .confirm-list { list-style: none; margin: 0; padding: 0; display: grid; }
 .confirm-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 16px; padding: 10px 0; border-bottom: 1px solid var(--line); }
@@ -632,6 +648,15 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 	.confirm-list li { grid-template-columns: minmax(0, 1fr) auto; }
 	.confirm-list li > span:not(.num) { grid-column: 1 / -1; grid-row: 2; }
 	.price-field { max-width: none; }
+	.paces { grid-template-columns: minmax(0, 1fr); }
+	/* One card per leg: name and time on the first line, the price under them. */
+	.leg-table thead { display: none; }
+	.leg-table, .leg-table tbody { display: block; }
+	.leg-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+	.leg-table td { display: block; padding: 0; border: 0; background: none; box-shadow: none; }
+	.leg-table td.num { grid-column: 1 / -1; text-align: left; }
+	.leg-table td.num .input-group { margin-left: 0; max-width: none; }
+	.leg-table td.num .wz-err { justify-content: flex-start; }
 }
 
 /* ---------- overlays: offcanvas (sheet), modal (confirm), toast ---------- */
