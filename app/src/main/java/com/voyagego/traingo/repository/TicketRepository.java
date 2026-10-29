@@ -77,4 +77,12 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 			order by t.ticketCode""")
 	List<Ticket> findDetailsByBookingId(@Param("bookingId") Long bookingId);
 
+	/** Seats sold on the given trips: tickets of CONFIRMED bookings, per trip id. */
+	@Query("""
+			select t.tripSeat.trip.id as id, count(t) as total from Ticket t
+			where t.booking.bookingStatus = com.voyagego.traingo.entity.BookingStatus.CONFIRMED
+			and t.tripSeat.trip.id in :tripIds
+			group by t.tripSeat.trip.id""")
+	List<IdCount> countSoldByTrips(@Param("tripIds") Collection<Long> tripIds);
+
 }

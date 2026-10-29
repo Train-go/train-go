@@ -13,7 +13,10 @@ import org.springframework.data.repository.query.Param;
 
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
+import com.voyagego.traingo.model.dto.DayPrice;
 import com.voyagego.traingo.model.dto.IdCount;
+import com.voyagego.traingo.model.dto.TrainDayCount;
+import com.voyagego.traingo.model.dto.TrainSchedule;
 
 import jakarta.persistence.LockModeType;
 
@@ -25,6 +28,12 @@ import jakarta.persistence.LockModeType;
  */
 public interface TripRepository extends JpaRepository<Trip, Long> {
 	long countByRouteId(Long routeId);
+
+	/** Trips that are not cancelled, past ones included (the overview's "Chuyến"). */
+	long countByStatusNot(TripStatus status);
+
+	/** Trips of one status that leave after {@code after}; with SCHEDULED these are the upcoming ones (D8). */
+	long countByStatusAndDepartureAtAfter(TripStatus status, LocalDateTime after);
 
 	@Query("""
 			select t.route.id as id, count(t) as total from Trip t
@@ -136,5 +145,66 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 	List<Trip> findBookable(@Param("originId") Long originId, @Param("destinationId") Long destinationId,
 			@Param("dayStart") LocalDateTime dayStart, @Param("dayEnd") LocalDateTime dayEnd,
 			@Param("now") LocalDateTime now);
+
+	/**
+	 * For each day in [dayStart, dayEnd): the lowest price among the trips that
+	 * still have a free seat, the number of trips and the free seats, for one
+	 * pair of stations, in ONE query. Only SCHEDULED trips that have not left
+	 * count, so today shows only what can still be booked.
+	 *
+	 * Native SQL on purpose: JPQL cannot group by the date of a timestamp and
+	 * also aggregate a per-trip count of free seats. The inner query counts free
+	 * seats once per trip; the outer one groups the trips by day.
+	 */
+	@Query(value = """
+			select x.day as day,
+			       min(case when x.free > 0 then x.price end) as minPrice,
+			       count(*) as tripCount,
+			       coalesce(sum(x.free), 0) as availableSeats
+			from (
+			  select date(t.departure_at) as day, t.base_price as price,
+			         (select count(*) from trip_seats s
+			           where s.trip_id = t.id and s.status = 'AVAILABLE') as free
+			  from trips t
+			  join routes r on r.id = t.route_id
+			  where r.origin_station_id = :originId and r.destination_station_id = :destinationId
+			    and t.status = 'SCHEDULED'
+			    and t.departure_at >= :dayStart and t.departure_at < :dayEnd
+			    and t.departure_at > :now
+			) x
+			group by x.day
+			order by x.day""", nativeQuery = true)
+	List<DayPrice> findDayPrices(@Param("originId") Long originId, @Param("destinationId") Long destinationId,
+			@Param("dayStart") LocalDateTime dayStart, @Param("dayEnd") LocalDateTime dayEnd,
+			@Param("now") LocalDateTime now);
+
+	/** Trips per train and day in [from, to), cancelled ones left out. */
+	@Query(value = """
+			select t.train_id as trainId, date(t.departure_at) as day, count(*) as trips
+			from trips t
+			where t.status <> 'CANCELLED' and t.departure_at >= :from and t.departure_at < :to
+			group by t.train_id, date(t.departure_at)""", nativeQuery = true)
+	List<TrainDayCount> findTrainDayCounts(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+	/** Per train that still has scheduled trips after {@code now}: how many, the next and the last. */
+	@Query(value = """
+			select t.train_id as trainId, count(*) as upcoming,
+			       min(t.departure_at) as nextAt, max(t.departure_at) as lastAt
+			from trips t
+			where t.status = 'SCHEDULED' and t.departure_at > :now
+			group by t.train_id""", nativeQuery = true)
+	List<TrainSchedule> findTrainSchedules(@Param("now") LocalDateTime now);
+
+	/** Scheduled trips leaving in (now, to), soonest first, with what the alert text prints loaded. */
+	@Query("""
+			select t from Trip t
+			join fetch t.train
+			join fetch t.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where t.status = com.voyagego.traingo.entity.TripStatus.SCHEDULED
+			and t.departureAt > :now and t.departureAt < :to
+			order by t.departureAt""")
+	List<Trip> findUpcomingBetween(@Param("now") LocalDateTime now, @Param("to") LocalDateTime to);
 
 }

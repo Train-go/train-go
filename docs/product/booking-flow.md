@@ -10,6 +10,14 @@ Tìm chuyến -> Chọn chuyến -> Chọn toa -> Chọn ghế / giường
   -> Nhập hành khách -> Review -> Thanh toán mô phỏng -> Vé điện tử
 ```
 
+## Dải ngày của trang Chọn chuyến
+
+Dưới mỗi ngày của dải 7 ngày hiện giá thấp nhất của tuyến đang tìm (#41), để khách
+chọn ngày mà không phải bấm thử từng ngày: giá rút gọn của chuyến rẻ nhất **còn chỗ**
+(`180k`, `1,2tr`); "Hết vé" khi ngày có chuyến nhưng mọi chuyến hết chỗ; không ghi gì
+khi không có chuyến. Chỉ chuyến `SCHEDULED` chưa khởi hành được tính, nên hôm nay không
+tính chuyến đã chạy. Cả dải lấy bằng một câu truy vấn (`TripRepository.findDayPrices`).
+
 ## Trạng thái của một chỗ
 
 ```

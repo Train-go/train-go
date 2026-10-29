@@ -86,9 +86,12 @@
 			</span>
 			<div class="tg-days">
 				<a class="tg-day" th:each="tab : ${dateStrip}" th:href="@{${search.url(tab.date)}}"
-					th:attr="aria-current=${tab.date == search.date} ? 'date' : null">
+					th:attr="aria-current=${tab.date == search.date} ? 'date' : null, aria-label=${tab.ariaLabel}">
 					<small th:text="${tab.label}">Hôm nay</small>
 					<b th:text="${#temporals.format(tab.date, 'dd/MM')}">27/10</b>
+					<!-- Always present, empty on a day with no trip, so every day keeps the same height. -->
+					<span class="tg-day-price" th:classappend="${tab.soldOut} ? 'is-sold'"
+						th:text="${tab.soldOut} ? 'Hết vé' : (${tab.minPrice != null} ? ${T(com.voyagego.traingo.common.TextUtils).shortMoney(tab.minPrice)} : '')">350k</span>
 				</a>
 			</div>
 			<a class="tg-dates-arrow" th:href="@{${nextWeekUrl}}" aria-label="7 ngày sau">
