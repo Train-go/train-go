@@ -72,8 +72,15 @@ tính từ ga Hà Nội) bắt buộc, nguyên từ 0 đến 5000, không trùng
 (`docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`).
 
 Theo quyết định ngày 26/10/2026, trang **không có ma trận tuyến** (#24 không làm
-ma trận); bộ chọn cặp ga ở ngăn Tổng quan thay cho ô trống của ma trận. Tạo nhiều
-tuyến một lần thuộc #39.
+ma trận); bộ chọn cặp ga ở ngăn Tổng quan thay cho ô trống của ma trận.
+
+**Tạo nhiều tuyến từ một ga (#39).** Ngăn của một ga có mục "Tạo tuyến từ [ga]": mỗi ga
+khác một ô kèm khoảng cách theo lý trình và trạng thái ("Đã có hai chiều", "Đã có chiều
+đi", "Đã có chiều về"). Admin tích các ga đến; "Tạo cả chiều về" (mặc định có tích) tạo
+thêm chiều ngược lại; "Chọn hai ga kề" tích ga kề phía trước và phía sau còn thiếu tuyến.
+Ga đã có đủ chiều cần tạo thì ô tích bị khóa. Nút "Tạo N tuyến" dùng API batch của #38 và
+toast "Hoàn tác" xóa đúng các tuyến vừa tạo. Quyết định 27/10/2026: không làm cách chọn
+nhiều ô trên ma trận vì dự án không có ma trận.
 
 **Chèn ga thông minh (#38).** Form chèn ga có ô tên dạng combobox gợi ý 13 ga có thật
 của đường sắt Thống Nhất mà hệ thống chưa có (Phủ Lý, Nam Định, Ninh Bình, Đông Hà,
