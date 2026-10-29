@@ -18,11 +18,15 @@ import java.util.List;
  * @param destinations one per route that starts at {@code origin}
  * @param withoutRoute the other stations, which no route reaches from
  *        {@code origin}
+ * @param chainReach ids of the stations a multi-leg plan from {@code origin}
+ *        can end at: those reached through routes between every pair of
+ *        neighbouring stations on the way
  * @param lastTrips the last two trips of the schedule that are not cancelled
  */
 public record NextLegOptions(long trainId, String trainCode, boolean chained, Origin origin,
 		LocalDateTime earliestDeparture, LocalDateTime defaultDeparture, List<Origin> origins,
-		List<Destination> destinations, List<Unrouted> withoutRoute, List<TripSummary> lastTrips) {
+		List<Destination> destinations, List<Unrouted> withoutRoute, List<Long> chainReach,
+		List<TripSummary> lastTrips) {
 
 	public record Origin(long stationId, String name) {
 	}

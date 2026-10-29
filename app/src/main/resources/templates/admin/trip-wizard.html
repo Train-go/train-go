@@ -17,6 +17,7 @@
 	<div class="wz-page" data-trip-wizard
 		th:data-next-leg-url="@{/api/admin/trains/{id}/next-leg(id=${train.id})}"
 		th:data-trips-url="@{/api/admin/trains/{id}/trips(id=${train.id})}"
+		th:data-plan-url="@{/api/admin/trains/{id}/plan(id=${train.id})}"
 		th:data-train-code="${train.code}" th:data-seats-per-trip="${seatsPerTrip}">
 		<a class="btn btn-link btn-sm wz-back" th:href="@{/admin/trains/{id}(id=${train.id}, view='ngay')}" data-wz-back>
 			<i class="bi bi-arrow-left" aria-hidden="true"></i><span th:text="|Tàu ${train.code}|">Tàu SE1</span>
@@ -49,6 +50,15 @@
 			<div class="chips" role="group" aria-label="Ga xuất phát" data-origins></div>
 		</div>
 		<p class="wz-q" data-standing hidden>Tàu đang ở <b data-standing-name></b>. Chuyến mới đi tới đâu?</p>
+		<div class="wz-seg" role="group" aria-label="Số chặng" data-mode hidden>
+			<button type="button" data-mode-value="one">Một chặng</button>
+			<button type="button" data-mode-value="many">Nhiều chặng tới một ga</button>
+		</div>
+		<div class="dest-wrap" data-many-wrap hidden>
+			<span class="form-label mb-0">Đi tới ga cuối nào? Tàu dừng ở mọi ga kề giữa đường.</span>
+			<div class="dests" role="group" aria-label="Ga cuối" data-finals></div>
+			<div class="wz-err" role="alert" id="wz-final-err" data-err="final" hidden></div>
+		</div>
 		<div class="dest-wrap" data-dest-wrap hidden>
 			<span class="form-label mb-0" id="wz-dests-label" data-dests-label hidden>Đi tới ga nào?</span>
 			<div class="dests" role="group" aria-label="Ga đến" data-dests></div>
@@ -67,9 +77,20 @@
 	<!-- Step 2, Khi nào. -->
 	<template id="wz-step-when">
 		<p class="wz-q" data-question></p>
+		<div class="field" data-pace-field hidden>
+			<span class="form-label" id="wz-pace-label">Nhịp chạy</span>
+			<div class="paces" role="radiogroup" aria-labelledby="wz-pace-label" data-paces>
+				<button type="button" class="pace" role="radio" data-pace="DAILY">
+					<b>Mỗi ngày một chặng</b><small>Đi 08:00, nghỉ đêm ở mỗi ga.</small>
+				</button>
+				<button type="button" class="pace" role="radio" data-pace="NONSTOP">
+					<b>Chạy liên tục</b><small>Nghỉ 30 phút ở mỗi ga rồi đi tiếp.</small>
+				</button>
+			</div>
+		</div>
 		<div class="field">
 			<div class="date-nav">
-				<span class="form-label mb-0" id="wz-day-label">Ngày khởi hành</span>
+				<span class="form-label mb-0" id="wz-day-label" data-day-label>Ngày khởi hành</span>
 				<span>
 					<button type="button" class="icon-btn" aria-label="7 ngày trước" data-day-prev>
 						<i class="bi bi-chevron-left" aria-hidden="true"></i>
@@ -83,7 +104,7 @@
 		</div>
 		<div class="time-line">
 			<div class="field">
-				<label class="form-label" for="wz-dep">Giờ đi</label>
+				<label class="form-label" for="wz-dep" data-dep-label>Giờ đi</label>
 				<input class="form-control mono" id="wz-dep" inputmode="numeric" autocomplete="off" placeholder="hh:mm"
 					maxlength="5" data-dep>
 			</div>
@@ -91,7 +112,7 @@
 		</div>
 		<div class="wz-err" role="alert" id="wz-dep-err" data-err="dep" hidden></div>
 
-		<div class="field" data-arr-locked>
+		<div class="field" data-arr-locked data-one-only>
 			<span class="form-label" data-arr-label></span>
 			<div class="input-locked">
 				<span data-arr-text></span>
@@ -99,7 +120,7 @@
 			</div>
 			<div class="form-text" data-arr-hint></div>
 		</div>
-		<div class="arr-fields" data-arr-open hidden>
+		<div class="arr-fields" data-arr-open data-one-only hidden>
 			<div class="time-line">
 				<div class="field">
 					<label class="form-label" for="wz-arr" data-arr-label></label>
@@ -141,6 +162,25 @@
 			<div class="form-text" id="wz-price-hint" data-price-hint></div>
 		</div>
 		<div class="wz-err" role="alert" id="wz-price-err" data-err="price" hidden></div>
+	</template>
+
+	<!-- Step 3 of the many-legs mode, Giá: one row per leg. -->
+	<template id="wz-step-prices">
+		<p class="wz-q">Giá cơ bản của từng chặng?</p>
+		<p class="text-body-secondary mb-0">Giá mỗi chặng, gợi ý theo 1.000đ/km. Sửa trực tiếp nếu cần.</p>
+		<div class="table-responsive">
+			<table class="table align-middle leg-table">
+				<thead>
+					<tr>
+						<th scope="col">Chặng</th>
+						<th scope="col">Khởi hành</th>
+						<th scope="col" class="num">Giá cơ bản</th>
+					</tr>
+				</thead>
+				<tbody data-leg-rows></tbody>
+			</table>
+		</div>
+		<div class="wz-err" role="alert" id="wz-price-err-many" data-err="price" hidden></div>
 	</template>
 
 	<!-- Step 4, Xác nhận. -->

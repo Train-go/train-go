@@ -153,6 +153,27 @@ public class TrainScheduleService {
 		return legs;
 	}
 
+	/**
+	 * The stations a plan from {@code origin} can end at: walking away from the
+	 * origin along the line, each one up to the first pair of neighbours with no
+	 * route in the travel direction, both ways.
+	 */
+	private List<Long> chainReach(List<Station> line, Station origin) {
+		Set<List<Long>> routes = new HashSet<>();
+		for (Route route : routeRepository.findAllWithStations()) {
+			routes.add(List.of(route.getOriginStation().getId(), route.getDestinationStation().getId()));
+		}
+		int at = indexOf(line, origin.getId());
+		List<Long> reach = new ArrayList<>();
+		for (int step : new int[] { -1, 1 }) {
+			for (int i = at; i + step >= 0 && i + step < line.size()
+					&& routes.contains(List.of(line.get(i).getId(), line.get(i + step).getId())); i += step) {
+				reach.add(line.get(i + step).getId());
+			}
+		}
+		return reach;
+	}
+
 	private static int indexOf(List<Station> line, long stationId) {
 		for (int i = 0; i < line.size(); i++) {
 			if (line.get(i).getId() == stationId) {
@@ -191,7 +212,9 @@ public class TrainScheduleService {
 
 		List<NextLegOptions.Destination> destinations = new ArrayList<>();
 		List<NextLegOptions.Unrouted> withoutRoute = new ArrayList<>();
+		List<Long> chainReach = new ArrayList<>();
 		if (origin != null) {
+			chainReach = chainReach(line, origin);
 			Set<Long> reached = new HashSet<>();
 			for (Route route : routeRepository.findFromStation(origin.getId())) {
 				Station to = route.getDestinationStation();
@@ -221,7 +244,7 @@ public class TrainScheduleService {
 				origin == null ? null : new NextLegOptions.Origin(origin.getId(), origin.getName()), earliest,
 				defaultDeparture(earliest),
 				line.stream().map(station -> new NextLegOptions.Origin(station.getId(), station.getName())).toList(),
-				destinations, withoutRoute, lastTrips);
+				destinations, withoutRoute, chainReach, lastTrips);
 	}
 
 	/**

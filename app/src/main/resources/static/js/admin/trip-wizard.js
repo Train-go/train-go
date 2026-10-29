@@ -10,6 +10,12 @@
  * when the leg is added (docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md),
  * and a message for legs[0].x takes the admin back to the step holding x.
  *
+ * Two things sit on top of that (#40). "Nhiều chặng tới một ga" plans one leg
+ * per pair of neighbouring stations through GET .../plan, lets the admin edit
+ * the price of each and adds them all in one request. "Tạo tuyến và chọn" in
+ * the list of stations without a route creates the missing route through
+ * POST /api/admin/routes/batch and picks that station as the destination.
+ *
  * Dates are plain Date objects holding the server's wall-clock time, built
  * and printed through the helpers of train-sheet-derive.js.
  */
@@ -34,9 +40,12 @@
 	const STEPS = ['Đi đâu', 'Khi nào', 'Giá', 'Xác nhận'];
 	const STEP_TEMPLATES = ['wz-step-where', 'wz-step-when', 'wz-step-price', 'wz-step-confirm'];
 	// The error slots each step checks before the next one opens.
-	const STEP_ERRORS = [['where'], ['dep', 'arr'], ['price'], []];
-	// "legs[0].departureAt" from the server: the error slot of that field.
-	const LEG_FIELD = /^legs\[0\]\.(\w+)$/;
+	const STEP_ERRORS = [['where', 'final'], ['dep', 'arr'], ['price'], []];
+	// "legs[2].basePrice" from the server: the index of the leg and the field.
+	const LEG_FIELD = /^legs\[(\d+)\]\.(\w+)$/;
+	// Step 3 of the many-legs mode is a table of prices instead of one field.
+	const MANY_PRICES_TEMPLATE = 'wz-step-prices';
+	const ROUTES_BATCH_URL = '/api/admin/routes/batch';
 	const FIELD_SLOT = {
 		originStationId: 'where', destinationStationId: 'where', departureAt: 'dep', arrivalAt: 'arr',
 		basePrice: 'price'
@@ -112,16 +121,22 @@
 		return {
 			destination: null, day: D.startOfDay(departure), depTime: D.fmtTime(departure), arrTime: '',
 			arrOffset: 0, arrTouched: false, arrOpen: false, price: NaN, priceTouched: false, page: null,
-			showMissing: false
+			showMissing: false,
+			// The many-legs mode: the last station, the pace and the plan they produced.
+			mode: 'one', finalStation: null, pace: 'DAILY', planKey: null, legs: [], legErrors: {}
 		};
 	}
 
 	/** The leg as chosen so far, with every suggestion filled in and every error found. */
 	function derive() {
 		const earliest = D.parseIso(options.earliestDeparture);
-		const dest = options.destinations.find(function (d) {
+		const many = draft.mode === 'many';
+		const dest = many ? null : (options.destinations.find(function (d) {
 			return d.stationId === draft.destination;
-		}) || null;
+		}) || null);
+		const last = many ? (options.origins.find(function (s) {
+			return s.stationId === draft.finalStation;
+		}) || null) : null;
 		const dep = D.atTime(draft.day, draft.depTime);
 		const autoArr = dest && dep ? new Date(dep.getTime() + dest.minutes * 60000) : null;
 		const arr = draft.arrTouched
@@ -132,13 +147,24 @@
 		const errors = {};
 		if (!options.origin) {
 			errors.where = 'Chọn ga xuất phát.';
-		} else if (!dest) {
+		} else if (many && !last) {
+			errors.final = 'Chọn ga cuối.';
+		} else if (!many && !dest) {
 			errors.where = 'Chọn ga đến.';
 		}
 		if (!dep) {
 			errors.dep = 'Giờ không hợp lệ. Nhập dạng 24 giờ, ví dụ 08:00.';
 		} else if (dep < earliest) {
 			errors.dep = earliestMessage(earliest);
+		}
+		if (many) {
+			if (draft.legs.some(legPriceError)) {
+				errors.price = 'Sửa giá các chặng báo lỗi.';
+			}
+			Object.keys(serverErrors).forEach(function (slot) {
+				errors[slot] = errors[slot] || serverErrors[slot];
+			});
+			return { many: true, earliest: earliest, last: last, dep: dep, errors: errors };
 		}
 		if (draft.arrTouched && !arr) {
 			errors.arr = 'Giờ không hợp lệ. Nhập dạng 24 giờ, ví dụ 09:45.';
@@ -154,6 +180,14 @@
 			errors[slot] = errors[slot] || serverErrors[slot];
 		});
 		return { earliest: earliest, dest: dest, dep: dep, arr: arr, autoArr: autoArr, price: price, errors: errors };
+	}
+
+	/** Why the price of a planned leg cannot be added, or null when it can. */
+	function legPriceError(leg) {
+		if (Number.isNaN(leg.price)) {
+			return 'Nhập giá cơ bản.';
+		}
+		return leg.price % 1000 === 0 ? null : 'Giá làm tròn tới nghìn đồng.';
 	}
 
 	/** Same wording as TripCreationService: the turnaround after the last arrival, or simply the present. */
@@ -238,9 +272,11 @@
 	/** Opens step i: draws it from its template, then focuses its first control. */
 	function go(i, focusSelector) {
 		step = i;
-		body.replaceChildren(document.getElementById(STEP_TEMPLATES[i]).content.cloneNode(true));
+		const many = draft.mode === 'many';
+		const template = many && i === 2 ? MANY_PRICES_TEMPLATE : STEP_TEMPLATES[i];
+		body.replaceChildren(document.getElementById(template).content.cloneNode(true));
 		body.append(document.getElementById('wz-actions').content.cloneNode(true));
-		[drawWhere, drawWhen, drawPrice, drawConfirm][i]();
+		[drawWhere, drawWhen, many ? drawPrices : drawPrice, drawConfirm][i]();
 		wireActions();
 		update();
 		const target = (focusSelector && q(focusSelector))
@@ -260,17 +296,22 @@
 			go(step - 1);
 		});
 		if (step === STEPS.length - 1) {
-			next.append('Thêm chuyến', icon('check-lg'));
+			next.append(draft.mode === 'many' ? 'Thêm ' + draft.legs.length + ' chuyến' : 'Thêm chuyến',
+					icon('check-lg'));
 			next.addEventListener('click', add);
 		} else {
 			next.append('Tiếp tục', icon('arrow-right'));
-			next.addEventListener('click', function () {
+			next.addEventListener('click', async function () {
 				tried[step] = true;
 				const errors = derive().errors;
 				if (STEP_ERRORS[step].some(function (slot) {
 					return errors[slot];
 				})) {
 					update();
+					return;
+				}
+				// Leaving "Khi nào" of the many-legs mode plans the legs the price table lists.
+				if (draft.mode === 'many' && step === 1 && !(await plan())) {
 					return;
 				}
 				go(step + 1);
@@ -325,6 +366,24 @@
 		if (!origin) {
 			return;
 		}
+		const modes = q('[data-mode]');
+		modes.hidden = false;
+		modes.querySelectorAll('button').forEach(function (button) {
+			button.addEventListener('click', function () {
+				if (draft.mode === button.dataset.modeValue) {
+					return;
+				}
+				draft.mode = button.dataset.modeValue;
+				// The error of the other mode no longer applies.
+				delete serverErrors.where;
+				delete serverErrors.final;
+				go(0, '[data-mode] [aria-pressed="true"]');
+			});
+		});
+		if (draft.mode === 'many') {
+			drawFinals();
+			return;
+		}
 		q('[data-dest-wrap]').hidden = false;
 		q('[data-dests-label]').hidden = options.chained || !options.destinations.length;
 		const dests = q('[data-dests]');
@@ -360,6 +419,13 @@
 			options.withoutRoute.forEach(function (station) {
 				const li = el('li');
 				li.append(el('span', null, station.name), el('small', 'text-body-secondary', ' · ' + station.distanceKm + ' km'));
+				const create = el('button', 'btn btn-link btn-sm', 'Tạo tuyến và chọn');
+				create.type = 'button';
+				create.setAttribute('aria-label', 'Tạo tuyến và chọn ' + station.name);
+				create.addEventListener('click', function () {
+					createRouteAndPick(station, create);
+				});
+				li.append(create);
 				list.append(li);
 			});
 			// With no route at all, the list is the only thing to read, so it starts open.
@@ -376,6 +442,80 @@
 		}
 	}
 
+	/** The many-legs mode: one button per station but the origin; those no chain of neighbours reaches are locked. */
+	function drawFinals() {
+		q('[data-many-wrap]').hidden = false;
+		const reach = new Set(options.chainReach);
+		const finals = q('[data-finals]');
+		options.origins.forEach(function (station) {
+			if (station.stationId === options.origin.stationId) {
+				return;
+			}
+			const card = el('button', 'dest');
+			card.type = 'button';
+			card.dataset.station = station.stationId;
+			card.append(el('b', null, station.name));
+			if (reach.has(station.stationId)) {
+				card.addEventListener('click', function () {
+					if (draft.finalStation !== station.stationId) {
+						draft.finalStation = station.stationId;
+						draft.planKey = null;
+					}
+					edited('final');
+					go(1);
+				});
+			} else {
+				card.disabled = true;
+				card.append(el('small', null, 'Thiếu tuyến giữa đường'));
+			}
+			finals.append(card);
+		});
+	}
+
+	/** "Tạo tuyến và chọn": makes the missing route from the origin, then picks its station as the destination. */
+	async function createRouteAndPick(station, button) {
+		const origin = options.origin;
+		button.disabled = true;
+		let ids;
+		try {
+			const routes = [{ originStationId: origin.stationId, destinationStationId: station.stationId,
+				distanceKm: station.distanceKm }];
+			ids = (await TG.api(ROUTES_BATCH_URL, { method: 'POST', body: { routes: routes } })).ids;
+		} catch (error) {
+			button.disabled = false;
+			TG.toast(error.message, { error: true });
+			return;
+		}
+		if (!(await load(origin.stationId))) {
+			return;
+		}
+		draft.destination = station.stationId;
+		draft.arrTouched = false;
+		draft.arrOpen = false;
+		draft.priceTouched = false;
+		edited('where');
+		TG.toast('Đã tạo tuyến ' + origin.name + ' → ' + station.name + '.', {
+			label: 'Hoàn tác',
+			run: async function () {
+				try {
+					await TG.api(ROUTES_BATCH_URL + '?ids=' + ids.join(','), { method: 'DELETE' });
+				} catch (error) {
+					TG.toast(error.message, { error: true });
+					return;
+				}
+				if (body.classList.contains('is-done') || !(await load(origin.stationId))) {
+					return;
+				}
+				if (draft.destination === station.stationId) {
+					draft.destination = null;
+				}
+				TG.toast('Đã hoàn tác.');
+				go(0);
+			}
+		});
+		go(1);
+	}
+
 	async function pickOrigin(stationId) {
 		if (options.origin && options.origin.stationId === stationId) {
 			return;
@@ -384,6 +524,8 @@
 			return;
 		}
 		draft.destination = null;
+		draft.finalStation = null;
+		draft.planKey = null;
 		draft.priceTouched = false;
 		draft.arrTouched = false;
 		draft.arrOpen = false;
@@ -396,7 +538,25 @@
 	/* Step 2: when it leaves and arrives. */
 	function drawWhen() {
 		const v = derive();
-		q('[data-question]').textContent = options.origin.name + ' → ' + v.dest.name + ' khởi hành lúc nào?';
+		if (v.many) {
+			q('[data-question]').textContent = options.origin.name + ' → ' + v.last.name
+					+ ': chạy theo nhịp nào, và chặng đầu khởi hành lúc nào?';
+			q('[data-pace-field]').hidden = false;
+			body.querySelectorAll('[data-one-only]').forEach(function (node) {
+				node.hidden = true;
+			});
+			q('[data-day-label]').textContent = 'Ngày đi chặng đầu';
+			q('[data-dep-label]').textContent = 'Giờ đi chặng đầu';
+			q('[data-paces]').addEventListener('click', function (event) {
+				const card = event.target.closest('[data-pace]');
+				if (card) {
+					draft.pace = card.dataset.pace;
+					update();
+				}
+			});
+		} else {
+			q('[data-question]').textContent = options.origin.name + ' → ' + v.dest.name + ' khởi hành lúc nào?';
+		}
 		q('[data-day-prev]').addEventListener('click', function () {
 			draft.page = 0;
 			drawDays();
@@ -555,9 +715,117 @@
 		});
 	}
 
-	/* Step 4: the leg as it will be added. */
+	/* Step 3 of the many-legs mode: the price of each planned leg. */
+	// Redraws the errors of the rows of the open price table; set by drawPrices.
+	let refreshRows = function () {};
+
+	function drawPrices() {
+		const rows = q('[data-leg-rows]');
+		const inputs = [];
+		const errorBoxes = [];
+		draft.legs.forEach(function (leg, i) {
+			const tr = el('tr');
+			const name = el('td');
+			name.append(el('b', null, leg.originName + ' → ' + leg.destinationName),
+					el('small', 'd-block text-body-secondary', money.format(leg.distanceKm) + ' km'));
+			const time = el('td', 'text-nowrap', dayTime(leg.dep));
+			const cell = el('td', 'num');
+			const group = el('div', 'input-group');
+			const input = el('input', 'form-control');
+			input.inputMode = 'numeric';
+			input.autocomplete = 'off';
+			input.maxLength = 13;
+			input.value = Number.isNaN(leg.price) ? '' : money.format(leg.price);
+			input.setAttribute('aria-label', 'Giá cơ bản ' + leg.originName + ' → ' + leg.destinationName);
+			input.addEventListener('input', function () {
+				const digits = input.value.replace(/\D/g, '');
+				leg.price = digits ? Number(digits) : NaN;
+				leg.touched = true;
+				delete draft.legErrors[i];
+				edited('price');
+				update();
+			});
+			input.addEventListener('change', function () {
+				input.value = Number.isNaN(leg.price) ? '' : money.format(leg.price);
+			});
+			group.append(input, el('span', 'input-group-text', 'đ'));
+			const err = el('div', 'wz-err');
+			err.setAttribute('role', 'alert');
+			err.hidden = true;
+			cell.append(group, err);
+			inputs.push(input);
+			errorBoxes.push(err);
+			tr.append(name, time, cell);
+			rows.append(tr);
+		});
+		refreshRows = function () {
+			draft.legs.forEach(function (leg, i) {
+				const message = draft.legErrors[i] || ((tried[2] || leg.touched) ? legPriceError(leg) : null);
+				errorBoxes[i].replaceChildren();
+				errorBoxes[i].hidden = !message;
+				if (message) {
+					errorBoxes[i].append(icon('exclamation-circle'), el('span', null, message));
+					inputs[i].setAttribute('aria-invalid', 'true');
+				} else {
+					inputs[i].removeAttribute('aria-invalid');
+				}
+				inputs[i].classList.toggle('is-invalid', !!message);
+			});
+		};
+	}
+
+	/** Plans the legs of the many-legs mode; false when the server refuses (a route is missing). */
+	async function plan() {
+		const v = derive();
+		const key = [options.origin.stationId, draft.finalStation, draft.pace, D.toIso(v.dep)].join('|');
+		if (key === draft.planKey) {
+			return true;
+		}
+		const query = new URLSearchParams({
+			from: options.origin.stationId, to: draft.finalStation, pace: draft.pace, firstDeparture: D.toIso(v.dep)
+		});
+		let planned;
+		try {
+			planned = await TG.api(root.dataset.planUrl + '?' + query.toString());
+		} catch (error) {
+			TG.toast(error.message, { error: true });
+			return false;
+		}
+		draft.legs = planned.map(function (leg) {
+			return {
+				originStationId: leg.originStationId, destinationStationId: leg.destinationStationId,
+				originName: leg.originName, destinationName: leg.destinationName, distanceKm: leg.distanceKm,
+				dep: D.parseIso(leg.departureAt), arr: D.parseIso(leg.arrivalAt), price: leg.basePrice, touched: false
+			};
+		});
+		draft.planKey = key;
+		draft.legErrors = {};
+		delete serverErrors.price;
+		return true;
+	}
+
+	/* Step 4: the legs as they will be added. */
 	function drawConfirm() {
 		const v = derive();
+		if (v.many) {
+			const list = q('.confirm-list');
+			const template = list.firstElementChild;
+			draft.legs.forEach(function (leg) {
+				const li = template.cloneNode(true);
+				li.querySelector('[data-confirm-route]').textContent = leg.originName + ' → ' + leg.destinationName;
+				li.querySelector('[data-confirm-time]').textContent = dayTime(leg.dep) + ' → '
+						+ (sameDay(leg.dep, leg.arr) ? D.fmtTime(leg.arr) : dayTime(leg.arr));
+				li.querySelector('[data-confirm-price]').textContent = vnd(leg.price);
+				list.append(li);
+			});
+			template.remove();
+			const km = draft.legs.reduce(function (sum, leg) {
+				return sum + leg.distanceKm;
+			}, 0);
+			q('[data-confirm-sum]').textContent = draft.legs.length + ' chuyến, ' + money.format(km)
+					+ ' km. Mỗi chuyến mở bán ' + seatsPerTrip + ' chỗ.';
+			return;
+		}
 		q('[data-confirm-route]').textContent = options.origin.name + ' → ' + v.dest.name;
 		q('[data-confirm-time]').textContent = dayTime(v.dep) + ' → '
 				+ (sameDay(v.dep, v.arr) ? D.fmtTime(v.arr) : dayTime(v.arr));
@@ -603,6 +871,13 @@
 				card.setAttribute('aria-pressed', String(Number(card.dataset.station) === draft.destination));
 			});
 			showError('where', errorOf('where'));
+			showError('final', errorOf('final'));
+			body.querySelectorAll('[data-mode] button').forEach(function (button) {
+				button.setAttribute('aria-pressed', String(button.dataset.modeValue === draft.mode));
+			});
+			body.querySelectorAll('[data-finals] .dest').forEach(function (card) {
+				card.setAttribute('aria-pressed', String(Number(card.dataset.station) === draft.finalStation));
+			});
 		} else if (step === 1) {
 			body.querySelectorAll('[data-days] button').forEach(function (button) {
 				const day = D.parseIso(button.dataset.day);
@@ -620,30 +895,39 @@
 			});
 			showError('dep', errorOf('dep'), q('[data-dep]'));
 
-			const open = draft.arrOpen || draft.arrTouched;
-			const ran = v.arr && v.dep && v.arr > v.dep ? 'Chạy ' + duration(Math.round((v.arr - v.dep) / 60000)) : '';
-			q('[data-arr-locked]').hidden = open;
-			q('[data-arr-open]').hidden = !open;
-			body.querySelectorAll('[data-arr-label]').forEach(function (label) {
-				label.textContent = 'Đến ' + v.dest.name;
-			});
-			q('[data-arr-text]').textContent = v.arr ? D.dayLabel(v.arr) + ' · ' + D.fmtTime(v.arr) : '';
-			q('[data-arr-edit]').hidden = !v.arr;
-			q('[data-arr-hint]').textContent = ran ? ran + ', tính theo 60 km/h.' : '';
-			const arrInput = q('[data-arr]');
-			const offset = draft.arrTouched ? draft.arrOffset : (v.autoArr ? D.daysBetween(v.dep, v.autoArr) : 0);
-			if (document.activeElement !== arrInput) {
-				arrInput.value = draft.arrTouched ? draft.arrTime : (v.autoArr ? D.fmtTime(v.autoArr) : '');
+			if (v.many) {
+				body.querySelectorAll('[data-pace]').forEach(function (card) {
+					card.setAttribute('aria-checked', String(card.dataset.pace === draft.pace));
+				});
+			} else {
+				const open = draft.arrOpen || draft.arrTouched;
+				const ran = v.arr && v.dep && v.arr > v.dep ? 'Chạy ' + duration(Math.round((v.arr - v.dep) / 60000)) : '';
+				q('[data-arr-locked]').hidden = open;
+				q('[data-arr-open]').hidden = !open;
+				body.querySelectorAll('[data-arr-label]').forEach(function (label) {
+					label.textContent = 'Đến ' + v.dest.name;
+				});
+				q('[data-arr-text]').textContent = v.arr ? D.dayLabel(v.arr) + ' · ' + D.fmtTime(v.arr) : '';
+				q('[data-arr-edit]').hidden = !v.arr;
+				q('[data-arr-hint]').textContent = ran ? ran + ', tính theo 60 km/h.' : '';
+				const arrInput = q('[data-arr]');
+				const offset = draft.arrTouched ? draft.arrOffset : (v.autoArr ? D.daysBetween(v.dep, v.autoArr) : 0);
+				if (document.activeElement !== arrInput) {
+					arrInput.value = draft.arrTouched ? draft.arrTime : (v.autoArr ? D.fmtTime(v.autoArr) : '');
+				}
+				q('[data-arr-offset]').textContent = offset === 0 ? 'Cùng ngày' : '+' + offset + ' ngày';
+				q('[data-arr-minus]').disabled = offset === 0;
+				const openHint = q('[data-arr-open-hint]');
+				openHint.textContent = ran;
+				openHint.hidden = !ran || !!errorOf('arr');
+				const reset = q('[data-arr-reset]');
+				reset.hidden = !v.autoArr;
+				reset.textContent = v.autoArr ? 'Dùng giờ gợi ý ' + D.fmtTime(v.autoArr) : '';
+				showError('arr', errorOf('arr'), open ? arrInput : null);
 			}
-			q('[data-arr-offset]').textContent = offset === 0 ? 'Cùng ngày' : '+' + offset + ' ngày';
-			q('[data-arr-minus]').disabled = offset === 0;
-			const openHint = q('[data-arr-open-hint]');
-			openHint.textContent = ran;
-			openHint.hidden = !ran || !!errorOf('arr');
-			const reset = q('[data-arr-reset]');
-			reset.hidden = !v.autoArr;
-			reset.textContent = v.autoArr ? 'Dùng giờ gợi ý ' + D.fmtTime(v.autoArr) : '';
-			showError('arr', errorOf('arr'), open ? arrInput : null);
+		} else if (step === 2 && v.many) {
+			showError('price', errorOf('price'));
+			refreshRows();
 		} else if (step === 2) {
 			q('[data-price-reset]').hidden = !draft.priceTouched;
 			q('[data-price-hint]').textContent = 'Gợi ý ' + vnd(v.dest.suggestedPrice) + ' theo 1.000đ/km.';
@@ -661,11 +945,33 @@
 					el('b', null, trip.originName + ' → ' + trip.destinationName));
 			previewList.append(li);
 		});
+		let after = '';
+		if (v.many) {
+			// The planned legs from step 3 on; before that, one line for the whole run.
+			const planned = step >= 2 && draft.legs.length;
+			if (planned) {
+				draft.legs.forEach(function (leg) {
+					const li = el('li', 'new');
+					li.append(el('span', null, dayTime(leg.dep)), el('b', null, leg.originName + ' → ' + leg.destinationName));
+					previewList.append(li);
+				});
+				const end = draft.legs[draft.legs.length - 1];
+				after = 'Sau đó tàu ở ' + end.destinationName + ' từ ' + dayTime(end.arr) + '.';
+			} else {
+				const li = el('li', 'new');
+				li.append(el('span', null, v.dep ? dayTime(v.dep) : 'Chưa chọn giờ'),
+						el('b', null, (options.origin ? options.origin.name : '?') + ' → ' + (v.last ? v.last.name : '?')));
+				previewList.append(li);
+			}
+			previewAfter.textContent = after;
+			previewAfter.hidden = !after;
+			return;
+		}
 		const added = el('li', 'new');
 		added.append(el('span', null, v.dest && v.dep ? dayTime(v.dep) : 'Chưa chọn giờ'),
 				el('b', null, (options.origin ? options.origin.name : '?') + ' → ' + (v.dest ? v.dest.name : '?')));
 		previewList.append(added);
-		const after = v.dest && v.arr && v.dep && v.arr > v.dep ? 'Sau đó tàu ở ' + v.dest.name + ' từ ' + dayTime(v.arr) + '.' : '';
+		after = v.dest && v.arr && v.dep && v.arr > v.dep ? 'Sau đó tàu ở ' + v.dest.name + ' từ ' + dayTime(v.arr) + '.' : '';
 		previewAfter.textContent = after;
 		previewAfter.hidden = !after;
 	}
@@ -679,25 +985,38 @@
 		}
 		saving = true;
 		update();
-		const leg = {
-			// The server compares this with where the train stands now, so a schedule
-			// another admin changed meanwhile is refused instead of chained wrongly.
+		const many = v.many;
+		// The server compares the first origin with where the train stands now, so a schedule
+		// another admin changed meanwhile is refused instead of chained wrongly.
+		const legs = many ? draft.legs.map(function (leg) {
+			return {
+				originStationId: leg.originStationId, destinationStationId: leg.destinationStationId,
+				departureAt: D.toIso(leg.dep), arrivalAt: D.toIso(leg.arr), basePrice: leg.price
+			};
+		}) : [{
 			originStationId: options.origin.stationId,
 			destinationStationId: v.dest.stationId,
 			departureAt: D.toIso(v.dep),
 			arrivalAt: D.toIso(v.arr),
 			basePrice: v.price
-		};
+		}];
 		try {
-			await TG.api(root.dataset.tripsUrl, { method: 'POST', body: { legs: [leg] } });
+			await TG.api(root.dataset.tripsUrl, { method: 'POST', body: { legs: legs } });
 		} catch (error) {
 			saving = false;
 			let first = null;
 			Object.keys(error.fields || {}).forEach(function (key) {
 				const match = LEG_FIELD.exec(key);
-				const slot = match && FIELD_SLOT[match[1]];
+				const slot = match && FIELD_SLOT[match[2]];
 				if (slot) {
-					serverErrors[slot] = error.fields[key];
+					const index = Number(match[1]);
+					if (many && slot === 'price') {
+						draft.legErrors[index] = error.fields[key];
+						serverErrors.price = 'Sửa giá các chặng báo lỗi.';
+					} else {
+						// Only the first leg of a plan has a time the admin typed.
+						serverErrors[slot] = (many && index > 0 ? 'Chặng ' + (index + 1) + ': ' : '') + error.fields[key];
+					}
 					const owner = STEP_ERRORS.findIndex(function (slots) {
 						return slots.indexOf(slot) >= 0;
 					});
@@ -713,17 +1032,24 @@
 			return;
 		}
 		saving = false;
-		done(options.origin.name, v.dest, v.arr);
+		if (many) {
+			const end = draft.legs[draft.legs.length - 1];
+			done('Đã thêm ' + legs.length + ' chuyến cho ' + trainCode,
+					'Tàu ở ' + end.destinationName + ' từ ' + dayTime(end.arr) + '.', 'Nối tiếp từ ' + end.destinationName);
+		} else {
+			done('Đã thêm chuyến ' + options.origin.name + ' → ' + v.dest.name,
+					'Tàu ở ' + v.dest.name + ' từ ' + dayTime(v.arr) + '.', 'Thêm chuyến từ ' + v.dest.name);
+		}
 	}
 
-	function done(originName, dest, arrival) {
+	function done(titleText, text, againLabel) {
 		stepsBar.hidden = true;
 		preview.hidden = true;
 		body.classList.add('is-done');
 		body.replaceChildren(document.getElementById('wz-done').content.cloneNode(true));
-		q('[data-done-title]').textContent = 'Đã thêm chuyến ' + originName + ' → ' + dest.name;
-		q('[data-done-text]').textContent = 'Tàu ở ' + dest.name + ' từ ' + dayTime(arrival) + '.';
-		q('[data-done-again-label]').textContent = 'Thêm chuyến từ ' + dest.name;
+		q('[data-done-title]').textContent = titleText;
+		q('[data-done-text]').textContent = text;
+		q('[data-done-again-label]').textContent = againLabel;
 		const back = q('[data-done-back]');
 		back.href = backLink.href;
 		back.textContent = 'Về tàu ' + trainCode;

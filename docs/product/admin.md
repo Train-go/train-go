@@ -234,7 +234,7 @@ bấm một bước đã qua trên thanh bước để quay lại sửa. Tàu đ
   có chuyến thì chọn ga xuất phát trước ("Xuất phát từ ga nào?"). Mỗi tuyến đi ra từ ga
   xuất phát là một thẻ: "Ra Bắc" hoặc "Vào Nam" theo lý trình, tên ga, "km · thời gian chạy".
   Bấm thẻ thì sang bước sau. Các ga chưa có tuyến nằm trong mục gập "N ga chưa có tuyến từ
-  [ga]", chỉ để xem (tạo tuyến ngay tại đây thuộc #40).
+  [ga]"; mỗi ga có nút "Tạo tuyến và chọn" (xem dưới).
 - **Khi nào:** dải 14 ngày tính từ ngày của giờ sớm nhất, hiện 7 ngày mỗi lần với ‹ ›;
   ngày trước giờ sớm nhất bị khóa. Giờ đi mặc định là 08:00 đầu tiên không sớm hơn giờ
   sớm nhất. Ô giờ đi nhận dạng 24 giờ ("8", "845", "8h45" đều thành "08:45"), kèm nút
@@ -258,6 +258,26 @@ luôn kèm `originStationId`, nên lịch bị admin khác đổi trong lúc đ�
 Tải lại trang rồi thử lại." Lỗi `legs[0].x` từ server đưa admin về bước chứa ô x. Thêm xong
 hiện "Đã thêm chuyến A → B", "Tàu ở B từ …", nút "Thêm chuyến từ B" (tải lại lựa chọn và về
 bước 1) và "Về tàu SE1".
+
+**Nhiều chặng tới một ga và Tạo tuyến và chọn (#40).** Bước 1 có nút chia đoạn "Một chặng /
+Nhiều chặng tới một ga" (hiện khi đã có ga xuất phát). Ở chế độ nhiều chặng, mỗi ga trừ ga
+xuất phát là một nút; ga mà chuỗi tuyến giữa các ga kề không tới được bị khóa kèm chữ
+"Thiếu tuyến giữa đường" (`NextLegOptions.chainReach`, tính ở
+`TrainScheduleService.nextLegOptions`). Chọn ga cuối thì sang bước 2 có hai thẻ nhịp chạy
+(`role="radio"`): "Mỗi ngày một chặng" (đi 08:00, nghỉ đêm ở mỗi ga) và "Chạy liên tục"
+(nghỉ 30 phút ở mỗi ga), cùng dải ngày và ô giờ đi của chặng đầu (cùng luật giờ sớm nhất với
+chế độ một chặng). Bấm "Tiếp tục" gọi `GET /api/admin/trains/{id}/plan` (`planLegs`, cùng API
+với "Điền nhanh" của View Bảng tính); đổi ga cuối, nhịp hoặc giờ đi thì kế hoạch và giá đã
+sửa được tính lại. Bước 3 là bảng Chặng (hai ga, km), Khởi hành, Giá cơ bản (sửa được, báo lỗi
+ngay dưới ô khi giá lẻ hoặc trống). Bước 4 liệt kê mọi chặng, tổng km và nút "Thêm N chuyến"
+gửi cả lô tới `POST /api/admin/trains/{id}/trips`; lỗi `legs[i].basePrice` hiện dưới dòng thứ
+i của bảng giá, lỗi giờ hoặc ga đưa admin về bước chứa chúng. Xong hiện "Đã thêm N chuyến cho
+SE1" và nút "Nối tiếp từ [ga cuối]". Cột xem trước liệt kê từng chặng đã lập từ bước 3.
+
+Trong mục gập "N ga chưa có tuyến từ [ga]" (chế độ một chặng), nút "Tạo tuyến và chọn" tạo
+tuyến từ ga đang đứng tới ga đó qua `POST /api/admin/routes/batch` (km theo lý trình), chọn
+ga đó làm ga đến và sang bước 2, kèm toast "Hoàn tác" xóa đúng tuyến vừa tạo
+(`DELETE /api/admin/routes/batch?ids=`) rồi tải lại lựa chọn.
 
 ## Quản lý chuyến `/admin/trips`
 
