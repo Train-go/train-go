@@ -19,6 +19,15 @@
 	th:data-plan-url="@{/api/admin/trains/{id}/plan(id=${train.id})}"
 	th:data-trips-url="@{/api/admin/trains/{id}/trips(id=${train.id})}">
 
+	<header class="sheet-head">
+		<h2>Lịch chạy</h2>
+		<button type="button" class="btn btn-outline-secondary" data-train-edit
+			th:data-id="${train.id}" th:data-code="${train.code}" th:data-name="${train.name}"
+			th:data-has-trips="${hasTrips}">
+			<i class="bi bi-pencil" aria-hidden="true"></i>Sửa tàu
+		</button>
+	</header>
+
 	<button type="button" class="btn btn-link btn-sm past-toggle" th:if="${schedule.pastCount > 0}"
 		data-past-toggle th:data-count="${schedule.pastCount}" aria-expanded="false" aria-controls="sched-grid">
 		<i class="bi bi-clock-history" aria-hidden="true"></i>
@@ -36,7 +45,7 @@
 					<th scope="col">Giờ đến</th>
 					<th scope="col" class="num">Km</th>
 					<th scope="col" class="num">Giá</th>
-					<th scope="col" class="num">Vé</th>
+					<th scope="col" class="num">Đã bán</th>
 					<th scope="col">Trạng thái</th>
 				</tr>
 			</thead>

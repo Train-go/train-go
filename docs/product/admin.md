@@ -16,27 +16,24 @@ nhập. Bốn ô số đọc thật từ database, không có biểu đồ:
 
 Menu có "Tổng quan" ở đầu và chữ TrainGo dẫn về `/admin`.
 
-Từ 28/10/2026 trang có thêm các khối để quản trị chủ động hơn (Phi yêu cầu), từ trên xuống:
+Từ 30/10/2026 trang theo bố cục "đài điều khiển" (Phi chọn hướng E), từ trên xuống:
 
-- **Bốn ô số**, theo thứ tự Doanh thu, Booking, Chuyến, Người dùng. Tên mỗi ô là liên kết
-  tới trang chi tiết (Booking, Chuyến, Người dùng; Doanh thu mở Booking). Các dòng nhỏ của ô
-  nằm sát đáy ô: ghi chú ("đã hủy" mở tab Đã hủy của Booking, "sắp chạy" mở trang Chuyến) và
-  xu hướng 7 ngày qua so với 7 ngày trước (Doanh thu, Booking, Người dùng).
-- **Bộ lọc biểu đồ**, dùng chung cho hai biểu đồ ngay dưới: mốc nhanh (7 ngày, 30 ngày, Tháng
-  này, Tháng trước), chọn từ ngày đến ngày bất kỳ (không quá 366 ngày, không sau
-  hôm nay) và gộp theo ngày, tuần hoặc tháng; để "Tự động" thì khoảng đến 31 ngày gộp theo
-  ngày, đến 180 ngày theo tuần, dài hơn theo tháng. Tuần bắt đầu từ thứ Hai, tuần và tháng ở
-  hai đầu được cắt theo khoảng. Mọi điều khiển áp dụng ngay khi đổi, không có nút xác nhận. Khoảng đang chọn nằm trên địa chỉ (`?from=&to=&group=`) nên
-  tải lại hoặc gửi link vẫn thấy đúng biểu đồ.
-- **Doanh thu và booking đã bán** (cột là doanh thu, đường là số booking), tính theo ngày
-  thanh toán của booking `CONFIRMED`.
-- **Người dùng mới** (cột là khách đăng ký mới, đường là tổng số khách).
-- **Cần chú ý:** tàu hết lịch chạy (không còn chuyến sắp chạy), tàu sắp hết chuyến (chuyến
-  cuối nằm trong 7 ngày tới), tàu có ngày chưa có chuyến trong 7 ngày tới, chuyến khởi hành
-  trong 48 giờ tới bán dưới 30% chỗ hoặc trên 90% chỗ. Nặng xếp trước, hiện tối đa 8 và ghi
-  rõ khi còn nhiều hơn.
-- **Lịch tàu 7 ngày tới:** mỗi tàu một hàng, mỗi ngày số chuyến; ngày chưa có chuyến nổi
-  bật. Tàu cần chú ý xếp trước, hiện tối đa 8 tàu và có liên kết sang trang Tàu.
+- **Đầu trang:** ngày hôm nay và bộ lọc biểu đồ: mốc nhanh (7 ngày, 30 ngày, Tháng này, Tháng
+  trước), chọn từ ngày đến ngày bất kỳ (không quá 366 ngày, không sau hôm nay) và gộp theo ngày,
+  tuần hoặc tháng; để "Tự động" thì khoảng đến 31 ngày gộp theo ngày, đến 180 ngày theo tuần, dài
+  hơn theo tháng. Tuần bắt đầu từ thứ Hai, tuần và tháng ở hai đầu được cắt theo khoảng. Mọi điều
+  khiển áp dụng ngay khi đổi. Khoảng đang chọn nằm trên địa chỉ (`?from=&to=&group=`).
+- **Ba đường trên một trục thời gian:** Doanh thu (vùng), Booking đã bán (cột), Người dùng mới
+  (que), kèm tổng của khoảng đã chọn. Doanh thu và booking tính theo ngày thanh toán của booking
+  `CONFIRMED`.
+- **Các số chính** bên cạnh: Doanh thu, Booking, Người dùng, mỗi số có hai thanh tuần này so với
+  tuần trước; Chuyến có thanh sắp chạy so với đã chạy. Tên mỗi số là liên kết tới trang chi tiết;
+  "đã hủy" mở tab Đã hủy của Booking, "sắp chạy" mở trang Chuyến.
+- **Cần chú ý:** ba cột Khẩn, Lưu ý, Theo dõi: tàu chưa có chuyến sắp chạy, tàu sắp hết lịch chạy
+  (chuyến cuối nằm trong 7 ngày tới), tàu trống lịch trong 7 ngày tới, chuyến khởi hành trong 48
+  giờ tới bán dưới 30% chỗ hoặc từ 90% chỗ. Hiện tối đa 8 và ghi rõ khi còn nhiều hơn.
+- **Lịch tàu 7 ngày tới:** mỗi tàu một hàng, mỗi ô là các chuyến trong ngày (giờ, tuyến, số đã
+  bán, thanh lấp đầy); ngày chưa có chuyến nổi bật. Tàu cần chú ý xếp trước, tối đa 8 tàu.
 
 Biểu đồ vẽ bằng SVG (`static/js/admin/charts.js`), lấy số từ `GET /api/admin/overview/sales`
 và `/users` (tham số `from`, `to`, `group`). Mỗi khối dùng một câu truy vấn gom nhóm nên chi phí không tăng theo số booking.
@@ -44,27 +41,28 @@ Bố cục: hai cột ở màn hình rộng, một cột ở 1100px trở xuốn
 
 ## Ga và tuyến `/admin/stations`
 
-Trang "Ga và tuyến": bên trái là sơ đồ đường tàu dọc Bắc–Nam, bên phải là một
-ngăn đổi theo thứ admin bấm trên sơ đồ. Thao tác gọi REST `/api/admin/network`,
-`/api/admin/stations`, `/api/admin/routes` và vẽ lại sơ đồ, không tải lại trang.
+Trang "Ga và tuyến" (30/10/2026, gộp cả trang Tuyến): bên trái là đường tàu Bắc – Nam, bên phải
+là bảng tuyến; mọi thao tác mở trong ngăn kéo bên phải. Thao tác gọi REST `/api/admin/network`,
+`/api/admin/stations`, `/api/admin/routes` và vẽ lại trang, không tải lại. Màn hình không in tổng
+số ga hay tuyến.
 
-- **Sơ đồ:** ga đặt theo lý trình, hai ga cách nhau ít nhất 60px. Đoạn giữa hai
-  ga kề có ba kiểu: hai chiều, một chiều, chưa có tuyến. Tuyến giữa hai ga không
-  kề (Hà Nội ⇄ Sài Gòn) là một cung bên trái. Dấu `+` giữa hai ga để chèn ga. Ga,
-  đoạn, cung và dấu `+` bấm được bằng chuột và bàn phím (`Tab`, `Enter`/`Space`),
-  mỗi thứ có `aria-label` như "Huế ⇄ Đà Nẵng, 103 km, cả hai chiều".
-- **Tổng quan** (mặc định): hướng dẫn và bộ chọn hai ga để mở ngăn cặp ga, kể cả
-  cặp chưa có tuyến.
+- **Đường tàu:** các ga theo lý trình; giữa hai ga kề ghi km và trạng thái Hai chiều, Thiếu chiều
+  hoặc Chưa có tuyến. Đoạn thiếu có nút "Tạo tuyến" tạo ngay phần còn thiếu theo km lý trình, toast
+  có "Hoàn tác". Từ hai đoạn thiếu trở lên có "Tạo tất cả". Mỗi đoạn có "Chèn ga".
+- **Bảng tuyến:** mỗi cặp ga một dòng gồm Tuyến ("Nối thẳng" khi hai ga không kề), Khoảng cách,
+  Chiều (thiếu chiều thì có nút "Tạo chiều ..."), Chuyến sắp chạy; ô tìm theo tên hoặc mã ga không
+  phân biệt dấu. Bấm một dòng mở ngăn cặp ga.
+- **Đầu trang:** "Thêm ga" mở ngăn nhập ga; "Thêm tuyến" mở form `/admin/routes/new`, dùng cho
+  cặp ga không kề.
 - **Ngăn ga:** km, tỉnh, địa chỉ; sửa ngay trong ngăn. Ga đã có tuyến thì giữ mã
   ("Ga đã có tuyến nên giữ mã.") và không xóa được ("Không xóa được: ga đang có N
   tuyến. Xóa các tuyến đó trước."). Km trùng báo tên ga đang giữ km đó.
 - **Ngăn cặp ga:** hai chiều A → B, B → A với km và số chuyến sắp chạy, hoặc
-  "Chưa có" kèm nút "Tạo chiều này" (km điền sẵn theo lý trình). Xóa một chiều
-  bị chặn khi tuyến đã có chuyến.
+  "Chưa có" kèm nút "Tạo chiều này" (km điền sẵn theo lý trình). Chiều đã có thì có
+  "Sửa khoảng cách" và "Xóa"; xóa bị chặn khi tuyến đã có chuyến.
 - **Chèn ga:** km điền sẵn là km trống gần điểm giữa hai ga nhất; km ngoài khoảng
   hai ga thì cảnh báo nhưng vẫn cho lưu. Lưu xong ngăn chuyển sang ga mới.
-- Từ 1100px sơ đồ và ngăn nằm cạnh nhau, sơ đồ dính khi cuộn; hẹp hơn thì ngăn
-  xuống dưới và trang cuộn tới ngăn khi chọn.
+- Từ 1200px đường tàu và bảng tuyến nằm cạnh nhau; hẹp hơn thì xếp chồng.
 
 Validation ga: `code` không trùng, chỉ gồm chữ cái không dấu và chữ số, tối đa 10
 ký tự, tự viết hoa (`sgn` trùng `SGN`); `name` bắt buộc; lý trình (`kmMark`, km
@@ -72,7 +70,7 @@ tính từ ga Hà Nội) bắt buộc, nguyên từ 0 đến 5000, không trùng
 (`docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md`).
 
 Theo quyết định ngày 26/10/2026, trang **không có ma trận tuyến** (#24 không làm
-ma trận); bộ chọn cặp ga ở ngăn Tổng quan thay cho ô trống của ma trận.
+ma trận).
 
 **Tạo nhiều tuyến từ một ga (#39).** Ngăn của một ga có mục "Tạo tuyến từ [ga]": mỗi ga
 khác một ô kèm khoảng cách theo lý trình và trạng thái ("Đã có hai chiều", "Đã có chiều
@@ -100,7 +98,10 @@ Làm ngày 26/10/2026 (#27): `controller/NetworkAdminApiController`,
 `service/NetworkService`, `static/js/admin/line-map.js`, `stations.js`,
 `station-panels.js`. Form ga cũ (`/admin/stations/new`, `/{id}/edit`) đã gỡ.
 
-## Quản lý tuyến `/admin/routes`
+## Quản lý tuyến
+
+Danh sách tuyến nằm ở trang Ga và tuyến; `/admin/routes` chuyển hướng về đó.
+`/admin/routes/new` và `/admin/routes/{id}/edit` là hai form còn lại.
 
 Xem, tạo, sửa, xóa. Điều kiện: ga đi khác ga đến. Không quản lý ga trung gian.
 Danh sách xếp theo lý trình ga đi, rồi ga đến. Form gợi ý khoảng cách bằng hiệu lý
@@ -123,15 +124,11 @@ khóa tuyến bảo vệ sửa/xóa và tranh chấp với việc thêm chuyến
 (tuyến kèm hai ga, tổng chuyến theo tuyến, chuyến sắp chạy theo tuyến), xếp theo
 lý trình ga đi rồi ga đến; gợi ý khoảng cách là trị tuyệt đối hiệu lý trình.
 
-Giao diện (26/10/2026, `RouteAdminController`): trang Thymeleaf thường,
-Post/Redirect/Get. Danh sách có cột tuyến (tên và mã hai ga), khoảng
-cách, chiều ngược (Đã có/Chưa có), chuyến sắp chạy, tổng chuyến. Ô tìm `?q=` lọc
-theo tên hoặc mã ga, không phân biệt hoa thường và dấu ("vinh", "VIN", "hue").
-Form thêm chọn ga đi/ga đến theo lý trình, tự điền khoảng cách theo lý trình khi
-admin chưa gõ tay, tích "Tạo luôn chiều ngược" mặc định bật. Lỗi cùng ga và tuyến
-trùng hiện ở ô ga đến. Form sửa giữ nguyên hai ga, chỉ đổi khoảng cách. Nút xóa bị
-khóa kèm lý do khi tuyến đã có chuyến; gửi thẳng POST xóa vẫn bị service chặn và
-báo "Không xóa được: tuyến đã có N chuyến.".
+Giao diện (`RouteAdminController`): trang Thymeleaf thường, Post/Redirect/Get về Ga và tuyến.
+Form thêm chọn ga đi/ga đến theo lý trình, tự điền khoảng cách theo lý trình khi admin chưa gõ tay,
+tích "Tạo luôn chiều ngược" mặc định bật. Lỗi cùng ga và tuyến trùng hiện ở ô ga đến. Form sửa giữ
+nguyên hai ga, chỉ đổi khoảng cách. Xóa nằm ở ngăn cặp ga, qua `DELETE /api/admin/routes/{id}`;
+service chặn và báo "Không xóa được: tuyến đã có N chuyến.".
 
 Theo quyết định ngày 25/10/2026, trang Tuyến **không làm ma trận ga × ga**, ô bật
 ra và hoàn tác của issue #24. REST tạo/xóa tuyến có từ #27 (trang "Ga và tuyến").
@@ -152,19 +149,21 @@ liệt kê). D2 ngày 12/10/2026 giữ nguyên luật không xóa tàu. **Phi đ
 26/10/2026: tàu được xóa mềm** (xem "Xóa mềm tàu" bên dưới); issue #25 AC6 ghi
 "không có chức năng xóa tàu" là trước quyết định này.
 
-View "Theo ngày" (#25, 26/10/2026) là phần lịch chạy đã có:
+View "Theo ngày" (lịch theo giờ, Phi chọn 30/10/2026):
 
 - `/admin/trains` mở tàu đầu tiên theo mã; mỗi tàu là một tab "mã + tên", trên
   điện thoại chỉ còn mã.
-- Banner ghi ga đi của chặng tiếp theo, vị trí tàu lúc này ("Đang chạy A → B",
-  "Đang ở [ga]"), lịch xếp đến lúc nào và giờ sớm nhất đi lại. Giờ sớm nhất là
-  giờ đến của chuyến cuối cộng 30 phút; nếu mốc đó đã qua, hoặc tàu chưa có
-  chuyến, thì lấy giờ hiện tại làm tròn lên 5 phút, vì chuyến mới phải khởi hành
-  trong tương lai. Tàu chưa có chuyến chưa hủy: "[mã] cần chặng đầu tiên".
-- Lịch nhóm theo ngày ("Hôm nay", "Ngày mai", "Hôm qua" hoặc thứ trong tuần).
-  Mỗi chuyến ghi giờ đi, giờ đến (kèm ngày nếu đến hôm sau), hai ga, giá, số vé
-  đã bán trên 96 và trạng thái Sắp chạy / Đang chạy / Đã chạy / Đã hủy theo D8.
+- **Bốn ô thông tin:** Vị trí ("Đang chạy A → B" hoặc ga đang đứng), Chuyến tới, Chặng mới đi từ
+  (kèm "Sớm nhất ..." và "Lịch xếp đến ..."), Đã bán của các chuyến sắp chạy. Giờ sớm nhất là
+  giờ đến của chuyến cuối cộng 30 phút; nếu mốc đó đã qua, hoặc tàu chưa có chuyến, thì lấy giờ
+  hiện tại làm tròn lên 5 phút, vì chuyến mới phải khởi hành trong tương lai.
+- **Lịch theo giờ:** mỗi ngày một hàng, trục ngang 24 giờ, mỗi chặng là một thanh dài đúng thời
+  gian chạy (chặng qua đêm tách làm hai ở nửa đêm), dải dưới thanh là tỉ lệ đã bán. Màu theo trạng
+  thái Sắp chạy / Đang chạy / Đã chạy / Đã hủy theo D8. Có vạch "Bây giờ", nhãn chờ khi hai chặng
+  cách nhau từ 3 giờ, cột "Cuối ngày ở", ô nét đứt "Chặng mới" ở giờ sớm nhất (mở trình hướng dẫn),
+  và câu cảnh báo khi chuỗi chặng bị ngắt do một chuyến đã hủy. Bấm thanh mở ngăn chi tiết chuyến.
   Chuyến đã đến nơi được ẩn sẵn sau nút "Hiện N chặng đã chạy".
+- **Sơ đồ toa:** đầu tàu và bốn toa cố định, chỉ để xem.
 - Thêm và sửa tàu trong ngăn kéo, lưu qua `POST`/`PUT /api/admin/trains`. Mã gồm
   1-4 chữ cái rồi 1-4 chữ số, lưu viết hoa, không trùng; tên bắt buộc. Tàu đã có
   chuyến (kể cả chuyến đã hủy) thì không đổi được mã; service chặn cả khi gọi
@@ -197,7 +196,7 @@ Phi chốt ngày 26/10/2026, migration `V8__train_soft_delete.sql`:
 định "Theo ngày"), nên bấm menu Tàu mở lại view đó. View Bảng tính dành cho admin
 nhập nhiều chặng một lúc:
 
-- **Bảng lịch:** Ngày, Giờ đi, Từ, Đến, Giờ đến (`+N` khi khác ngày), Km, Giá, Vé (đã
+- **Bảng lịch:** Ngày, Giờ đi, Từ, Đến, Giờ đến (`+N` khi khác ngày), Km, Giá, Đã bán (đã
   bán/96), Trạng thái. Chặng đã chạy ẩn sau nút "Hiện N chặng đã chạy".
 - **Dòng nháp** dưới bảng nối tiếp nhau: ga đi của dòng sau là ga đến của dòng trước,
   giờ đi sớm nhất là giờ đến cộng 30 phút. Giờ đi, giờ đến, giá tự tính theo công
@@ -225,7 +224,7 @@ SE1." có nút "Xem" mở ngăn chi tiết chuyến. Bấm một dòng của b�
 
 ### Trình hướng dẫn thêm chuyến `/admin/trains/{id}/trips/new` (#28)
 
-Banner của view "Theo ngày" có nút "Thêm chuyến", hoặc "Thêm chuyến đầu tiên" khi tàu chưa
+Đầu lịch của view "Theo ngày" có nút "Thêm chuyến", hoặc "Thêm chuyến đầu tiên" khi tàu chưa
 có chuyến chưa hủy (Phi chốt 27/10/2026, thay chữ "Nối chặng" của issue #28 AC1: hành động
 tạo ra một chuyến, còn nối chặng là tên luật mà trình hướng dẫn tự áp). Nút mở trình hướng dẫn thêm **một** chặng vào cuối lịch, gồm 4 bước;
 bấm một bước đã qua trên thanh bước để quay lại sửa. Tàu đã xóa trả trang 404.
@@ -289,9 +288,13 @@ là danh sách mọi chuyến để tra cứu (#29):
   Đã hủy (`CANCELLED`), hai nhóm sau xếp giờ giảm dần; số đếm mỗi nhóm không
   phụ thuộc bộ lọc;
 - lọc theo tàu, tìm theo tên hoặc mã ga không phân biệt dấu ("hue" ra "Huế");
-  bộ lọc nằm trên URL (`?tab=&train=&q=`); ô chọn tàu chỉ có tàu chưa xóa, chuyến
+  bộ lọc nằm trên URL (`?tab=&train=&q=&band=&sort=`); ô chọn tàu chỉ có tàu chưa xóa, chuyến
   của tàu đã xóa vẫn nằm trong danh sách;
-- bảng nhóm theo ngày khởi hành; bấm một dòng mở ngăn chi tiết chuyến (dưới đây).
+- sổ tồn chỗ (Phi chọn 30/10/2026): Giờ đi, Tàu, Hành trình, Đã bán, Theo toa (số ghế thật đã bán
+  của từng toa), Lấp đầy, Mức bán hoặc Trạng thái. Chip Tất cả, Sắp đầy (từ 90% chỗ), Bán chậm
+  (dưới 30% chỗ và khởi hành trong 48 giờ, cùng luật với cảnh báo ở Tổng quan). Sắp xếp theo giờ đi
+  (nhóm theo ngày) hoặc theo mức lấp đầy; hiện 40 chuyến một lần với "Hiện thêm";
+- bấm một dòng mở ngăn chi tiết chuyến (dưới đây).
 
 Form thêm chuyến gồm: tuyến, ngày giờ khởi hành, ngày giờ đến, giá cơ bản. Tàu là
 tàu của trang đang mở. Luật nối chặng (`docs/product/domain-model.md`, mục "Lịch
@@ -331,28 +334,28 @@ nếu vi phạm.
 ## Quản lý booking `/admin/bookings`
 
 Ba nhóm theo D8, so giờ đi với hiện tại: Sắp đi (chưa hủy, giờ đi sau bây giờ), Đã
-đi (chưa hủy, giờ đi không sau bây giờ), Đã hủy. Mỗi nhóm có số đếm. Ô tìm "Mã
-booking hoặc tên khách" không phân biệt hoa thường và dấu, tìm cả tên người đi
-trên vé, tự gửi sau 300ms; số đếm không đổi theo ô tìm. Bảng gồm Mã, Khách (tên và
-email), Chuyến (tàu · ga đi → ga đến, giờ đi), Vé, Tổng tiền, xếp theo giờ đi tăng
-dần.
+đi (chưa hủy, giờ đi không sau bây giờ), Đã hủy. Mỗi nhóm có số đếm. Ô tìm theo mã booking, tên
+khách hoặc tên hành khách không phân biệt hoa thường và dấu, tự gửi sau 300ms; số đếm không đổi
+theo ô tìm.
+
+Danh sách theo chuyến (Phi chọn 30/10/2026): booking nằm dưới chuyến của nó. Đầu mỗi chuyến có giờ
+đi, tàu, tuyến, số đã bán và thanh theo toa; mỗi booking một dòng gồm mã, khách, từng hành khách với
+chỗ ("Toa 1, A05"; booking đã hủy ghi "Đã trả chỗ") và tổng tiền. Sắp đi xếp giờ tăng dần, Đã đi và
+Đã hủy xếp giờ giảm dần; hiện 10 chuyến một lần với "Hiện thêm". Bấm giờ đi mở ngăn chi tiết chuyến.
 
 Bấm một dòng mở ngăn chi tiết bên phải và đổi địa chỉ thành `?open=BK…`, nên gửi
 được link mở thẳng một booking. Ngăn có khách (tên, email, số điện thoại), chuyến,
 giờ đi, thanh toán và bảng vé (họ tên kèm 4 số cuối CCCD, "Toa n · chỗ", giá). Dữ
 liệu của ngăn lấy từ `GET /api/admin/bookings/{code}`.
 
-`/admin/bookings?customer={userId}` chỉ hiện booking của khách đó (mọi nhóm), ô tìm
-điền sẵn tên khách. Trang Người dùng link sang đây.
+`/admin/bookings?customer={userId}` chỉ hiện booking của khách đó (mọi nhóm), kèm dòng "Booking của
+[tên]" và link "Xem tất cả"; ô tìm khi đó chỉ tìm trong booking của khách này. Trang Người dùng
+link sang đây.
 
-Sửa hoặc xóa chữ trong ô tìm thì bỏ bộ lọc `customer`: từ khóa mới tìm trên booking
-của mọi khách, số đếm về tổng từng nhóm. Link "Bỏ tìm kiếm" cũng bỏ bộ lọc khách.
-
-Admin hủy được booking chưa tới giờ đi. Chân ngăn có câu "Hủy booking sẽ trả các chỗ
-về trạng thái còn trống." và nút "Hủy booking"; bấm thì có hộp xác nhận "N chỗ trên chuyến
-… sẽ mở bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền.", rồi toast "Đã hủy
-BK…. N chỗ đã mở bán lại." và danh sách tải lại. Chuyến đã khởi hành thì nút bị khóa kèm
-"Không hủy được: chuyến đã khởi hành."; booking đã hủy không có nút. Việc hủy là
+Admin hủy được booking chưa tới giờ đi. Chân ngăn có nút "Hủy booking"; bấm thì có hộp xác nhận "N
+chỗ trên chuyến … sẽ mở bán lại.", rồi toast "Đã hủy BK…. N chỗ đã mở bán lại." và danh sách tải
+lại. Chuyến đã khởi hành hoặc booking đã hủy thì không có nút (luật nghiệp vụ không đưa lên giao
+diện; service vẫn chặn khi gọi API trực tiếp). Việc hủy là
 `POST /api/admin/bookings/{code}/cancel`, gọi `BookingCancellationService`, service
 duy nhất giữ luật hủy (booking `CONFIRMED` và chuyến chưa khởi hành đổi sang `CANCELLED`,
 các chỗ của booking về `AVAILABLE`, trong một transaction), để khách tự hủy ở "Vé của

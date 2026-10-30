@@ -1,42 +1,48 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
-<head><title>Ga và tuyến · Quản trị TrainGo</title></head>
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
+<head>
+	<title>Ga và tuyến · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/stations.css}">
+</head>
 <body>
-<main id="station-network">
+<main class="admin-wrap" id="station-network">
 	<div class="page-head">
 		<h1>Ga và tuyến</h1>
-		<span id="net-count" class="count" aria-live="polite">Đang tải…</span>
-		<span class="grow"></span>
-		<button id="net-overview-btn" type="button" class="btn btn-outline-secondary" hidden>Tổng quan</button>
+		<div class="page-actions" id="net-actions" hidden>
+			<button type="button" class="btn btn-outline-secondary" data-add-station><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm ga</button>
+			<a class="btn btn-primary" th:href="@{/admin/routes/new}"><i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm tuyến</a>
+		</div>
 	</div>
-	<noscript><p class="alert alert-secondary">Vui lòng bật JavaScript để xem và quản lý sơ đồ ga và tuyến.</p></noscript>
+	<noscript><p class="alert alert-secondary">Vui lòng bật JavaScript để xem và quản lý ga và tuyến.</p></noscript>
 	<div id="net-load-error" class="alert alert-danger" role="alert" hidden>
 		<span></span><button type="button" class="btn btn-outline-danger">Thử lại</button>
 	</div>
-	<div class="net-split" hidden>
-		<section class="net-map" aria-label="Sơ đồ tuyến Bắc – Nam">
-			<div class="net-map-h">Bắc</div><div id="net-map-content"></div><div class="net-map-h">Nam</div>
-			<div class="net-legend">
-				<span><i class="l-both" aria-hidden="true"></i>Hai chiều</span>
-				<span><i class="l-one" aria-hidden="true"></i>Một chiều</span>
-				<span><i class="l-none" aria-hidden="true"></i>Chưa có tuyến</span>
-				<span><i class="l-arc" aria-hidden="true"></i>Tuyến dài chạy thẳng</span>
-			</div>
+	<div class="net" hidden>
+		<section class="dc-card net-line" aria-labelledby="line-h">
+			<div class="panel-head"><h2 id="line-h">Đường tàu Bắc – Nam</h2></div>
+			<div data-line></div>
 		</section>
-		<section class="net-panel panel" aria-labelledby="net-panel-h"></section>
+		<section class="dc-card net-routes" aria-labelledby="routes-h">
+			<div class="panel-head">
+				<h2 id="routes-h">Tuyến</h2>
+				<div class="search net-search">
+					<i class="bi bi-search" aria-hidden="true"></i>
+					<input type="search" class="form-control" data-route-search placeholder="Tên hoặc mã ga"
+						aria-label="Tìm tuyến theo tên hoặc mã ga" autocomplete="off">
+				</div>
+			</div>
+			<div data-routes></div>
+		</section>
 	</div>
-	<template id="net-overview-template">
-		<div class="panel-body">
-			<h2 id="net-panel-h" tabindex="-1">Tổng quan</h2>
-			<p class="text-body-secondary">Bấm một ga để xem thông tin, một đoạn hoặc cung để xem cặp ga. Dấu cộng trên đường để chèn ga. Bạn cũng có thể chọn hai ga bên dưới.</p>
-			<form id="pair-picker" class="d-grid gap-3" novalidate>
-				<div><label for="pair-a" class="form-label">Ga thứ nhất</label><select id="pair-a" name="a" class="form-select" required></select></div>
-				<div><label for="pair-b" class="form-label">Ga thứ hai</label><select id="pair-b" name="b" class="form-select" required></select></div>
-				<div><button type="submit" class="btn btn-primary">Xem cặp ga</button></div>
-			</form>
+	<!-- A station, a pair of stations or a new station open here (station-panels.js). -->
+	<aside class="offcanvas offcanvas-end" id="net-sheet" tabindex="-1" aria-labelledby="net-panel-h">
+		<div class="offcanvas-header">
+			<span class="grow"></span>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Đóng"></button>
 		</div>
-	</template>
+		<div class="offcanvas-body"><section class="net-panel"></section></div>
+	</aside>
 	<template id="net-station-template">
 		<div class="panel-body">
 			<div class="panel-title"><h2 id="net-panel-h" tabindex="-1"></h2><span class="code" data-value="code"></span></div>
@@ -91,6 +97,7 @@
 			<div data-distance-field><label class="form-label">Khoảng cách (km)</label>
 				<input name="distanceKm" type="number" class="form-control" min="1" step="1" inputmode="numeric" required></div>
 			<div><button type="submit" class="btn btn-outline-secondary" data-action="create-route">Tạo chiều này</button>
+				<a class="btn btn-outline-secondary" data-action="edit-route">Sửa khoảng cách</a>
 				<button type="button" class="btn btn-outline-danger" data-action="delete-route">Xóa</button></div>
 			<p class="form-text" data-delete-reason hidden></p>
 		</form>
@@ -99,7 +106,7 @@
 	<script defer th:src="@{/js/admin/station-draft.js}"></script>
 	<script defer th:src="@{/js/admin/route-suggestions.js}"></script>
 	<script defer th:src="@{/js/admin/fan-out.js}"></script>
-	<script defer th:src="@{/js/admin/line-map.js}"></script>
+	<script defer th:src="@{/js/admin/station-line.js}"></script>
 	<script defer th:src="@{/js/admin/station-panels.js}"></script>
 	<script defer th:src="@{/js/admin/stations.js}"></script>
 </main>

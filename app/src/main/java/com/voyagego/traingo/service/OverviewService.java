@@ -29,13 +29,13 @@ import com.voyagego.traingo.model.dto.CoachLayout;
 import com.voyagego.traingo.model.dto.DayCount;
 import com.voyagego.traingo.model.dto.DayTotal;
 import com.voyagego.traingo.model.dto.IdCount;
-import com.voyagego.traingo.model.dto.TrainDayCount;
 import com.voyagego.traingo.model.dto.TrainSchedule;
 import com.voyagego.traingo.model.response.Overview;
 import com.voyagego.traingo.model.response.Overview.Alert;
 import com.voyagego.traingo.model.response.Overview.Trend;
 import com.voyagego.traingo.model.response.Overview.TrainWeek;
 import com.voyagego.traingo.model.response.Overview.WeekDay;
+import com.voyagego.traingo.model.response.Overview.WeekTrip;
 import com.voyagego.traingo.model.response.PopularRoute;
 import com.voyagego.traingo.model.response.SalesSeries;
 import com.voyagego.traingo.model.response.UsersSeries;
@@ -102,7 +102,7 @@ public class OverviewService {
 		alerts.sort(Comparator.comparingInt(alert -> severity(alert.level())));
 
 		trains.sort(Comparator.comparingInt((TrainWeek train) -> severity(train.level()))
-				.thenComparing(Comparator.comparingLong((TrainWeek train) -> train.trips().stream().filter(n -> n == 0).count()).reversed())
+				.thenComparing(Comparator.comparingLong(TrainWeek::emptyDays).reversed())
 				.thenComparing(TrainWeek::code));
 
 		return new Overview(
@@ -236,40 +236,58 @@ public class OverviewService {
 	private List<Alert> trainAlerts(LocalDateTime now, List<WeekDay> week, List<TrainWeek> rows) {
 		LocalDate today = now.toLocalDate();
 		LocalDate weekEnd = today.plusDays(WEEK);
-		Map<Long, Map<LocalDate, Long>> counts = new HashMap<>();
-		for (TrainDayCount count : tripRepository.findTrainDayCounts(today.atStartOfDay(), weekEnd.atStartOfDay())) {
-			counts.computeIfAbsent(count.getTrainId(), id -> new HashMap<>()).put(count.getDay(), count.getTrips());
+		List<Trip> weekTrips = tripRepository.findLiveBetween(today.atStartOfDay(), weekEnd.atStartOfDay());
+		Map<Long, Long> soldOfWeek = weekTrips.isEmpty() ? Map.of()
+				: ticketRepository.countSoldByTrips(weekTrips.stream().map(Trip::getId).toList()).stream()
+						.collect(Collectors.toMap(IdCount::getId, IdCount::getTotal));
+		Map<Long, Map<LocalDate, List<WeekTrip>>> byTrain = new HashMap<>();
+		for (Trip trip : weekTrips) {
+			byTrain.computeIfAbsent(trip.getTrain().getId(), id -> new HashMap<>())
+					.computeIfAbsent(trip.getDepartureAt().toLocalDate(), day -> new ArrayList<>())
+					.add(toWeekTrip(trip, soldOfWeek.getOrDefault(trip.getId(), 0L), now));
 		}
 		Map<Long, TrainSchedule> schedules = tripRepository.findTrainSchedules(now).stream()
 				.collect(Collectors.toMap(TrainSchedule::getTrainId, schedule -> schedule));
 
 		List<Alert> alerts = new ArrayList<>();
 		for (Train train : trainRepository.findAllByDeletedFalseOrderByCodeAsc()) {
-			Map<LocalDate, Long> perDay = counts.getOrDefault(train.getId(), Map.of());
-			List<Integer> trips = week.stream().map(day -> perDay.getOrDefault(day.date(), 0L).intValue()).toList();
-			List<String> emptyDays = week.stream().filter(day -> perDay.getOrDefault(day.date(), 0L) == 0)
+			Map<LocalDate, List<WeekTrip>> perDay = byTrain.getOrDefault(train.getId(), Map.of());
+			List<List<WeekTrip>> days = week.stream().map(day -> perDay.getOrDefault(day.date(), List.of())).toList();
+			List<String> emptyDays = week.stream().filter(day -> !perDay.containsKey(day.date()))
 					.map(WeekDay::dayMonth).toList();
 			TrainSchedule schedule = schedules.get(train.getId());
 			String href = "/admin/trains/" + train.getId();
 			String level = null;
 			if (schedule == null) {
 				level = "danger";
-				alerts.add(new Alert(level, "bi-exclamation-octagon", train.getCode() + " chưa có lịch chạy sắp tới",
-						"Hiện không có chuyến nào được lên lịch. Hãy bổ sung lịch chạy để tiếp tục khai thác.", href));
+				alerts.add(new Alert(level, "bi-exclamation-octagon", train.getCode() + " chưa có chuyến sắp chạy",
+						"Thêm chuyến để tàu tiếp tục mở bán vé.", href));
 			} else if (schedule.getLastAt().toLocalDate().isBefore(weekEnd)) {
 				level = "warning";
 				alerts.add(new Alert(level, "bi-hourglass-split", train.getCode() + " sắp hết lịch chạy",
-						"Chuyến cuối khởi hành " + when(schedule.getLastAt()) + ". Lịch hiện còn "
-								+ schedule.getUpcoming() + " chuyến, hãy bổ sung lịch chạy.", href));
+						"Còn " + schedule.getUpcoming() + " chuyến, chuyến cuối khởi hành " + when(schedule.getLastAt())
+								+ ". Thêm chuyến để lịch không bị ngắt.", href));
 			} else if (!emptyDays.isEmpty()) {
 				level = "info";
-				alerts.add(new Alert(level, "bi-calendar-x", train.getCode() + " có ngày chưa có chuyến",
+				alerts.add(new Alert(level, "bi-calendar-x",
+						emptyDays.size() == 1 ? train.getCode() + " trống lịch ngày " + emptyDays.get(0)
+								: train.getCode() + " trống lịch " + emptyDays.size() + " ngày",
 						emptyDays.size() == WEEK ? "Tàu chưa có chuyến nào trong 7 ngày tới."
-								: "Chưa có chuyến vào ngày " + String.join(", ", emptyDays) + ".", href));
+								: emptyDays.size() == 1 ? "Thêm chuyến cho ngày này để lịch liền mạch."
+										: "Chưa có chuyến ngày " + String.join(", ", emptyDays) + ". Thêm chuyến để lịch liền mạch.",
+						href));
 			}
-			rows.add(new TrainWeek(train.getId(), train.getCode(), train.getName(), trips, level));
+			rows.add(new TrainWeek(train.getId(), train.getCode(), train.getName(), days, level));
 		}
 		return alerts;
+	}
+
+	private static WeekTrip toWeekTrip(Trip trip, long sold, LocalDateTime now) {
+		int seats = CoachLayout.totalSeats();
+		String route = PopularRoute.placeName(trip.getRoute().getOriginStation().getName()) + " → "
+				+ PopularRoute.placeName(trip.getRoute().getDestinationStation().getName());
+		return new WeekTrip(trip.getDepartureAt().format(HOUR_MINUTE), route, sold, seats, percent(sold, seats),
+				!trip.getDepartureAt().isAfter(now));
 	}
 
 	/** Trips leaving in the next 48 hours that sold under 30% or over 90% of their seats. */
@@ -290,18 +308,14 @@ public class OverviewService {
 					String route = PopularRoute.placeName(trip.getRoute().getOriginStation().getName()) + " → "
 							+ PopularRoute.placeName(trip.getRoute().getDestinationStation().getName());
 					String href = "/admin/trains/" + trip.getTrain().getId();
-					String title = trip.getTrain().getCode() + " · " + route;
-					String start = "Khởi hành " + when(trip.getDepartureAt()) + ". ";
+					String title = trip.getTrain().getCode() + " " + route;
+					String start = "Khởi hành " + when(trip.getDepartureAt());
 					if (fill < LOW_FILL_PERCENT) {
-						low.add(new Alert("warning", "bi-graph-down-arrow",
-								title + (count == 0 ? " chưa bán được vé" : " có tỷ lệ lấp đầy thấp"),
-								start + (count == 0 ? "Hiện còn trống toàn bộ " + seats + " chỗ."
-										: "Mới bán " + count + "/" + seats + " chỗ, còn " + (seats - count) + " chỗ trống."),
-								href));
+						low.add(new Alert("warning", "bi-graph-down-arrow", title + (count == 0 ? " chưa bán được vé" : " bán chậm"),
+								start + (count == 0 ? "." : ", đã bán " + count + "/" + seats + " chỗ."), href));
 					} else if (fill >= FULL_FILL_PERCENT) {
 						full.add(new Alert("info", "bi-graph-up-arrow", title + " sắp hết chỗ",
-								start + "Đã bán " + count + "/" + seats + " chỗ, chỉ còn " + (seats - count) + " chỗ trống.",
-								href));
+								start + ", đã bán " + count + "/" + seats + " chỗ.", href));
 					}
 				});
 		List<Alert> result = new ArrayList<>(low.stream().limit(5).toList());
@@ -341,9 +355,9 @@ public class OverviewService {
 		return days;
 	}
 
-	/** "lúc 08:00 ngày 29/10", the way an alert names a departure. */
+	/** "08:00 29/10", the way an alert names a departure. */
 	private static String when(LocalDateTime time) {
-		return "lúc " + time.format(HOUR_MINUTE) + " ngày " + time.format(DAY_MONTH);
+		return time.format(HOUR_MINUTE) + " " + time.format(DAY_MONTH);
 	}
 
 	private static String shortWeekday(LocalDate day) {

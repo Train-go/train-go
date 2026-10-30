@@ -60,20 +60,6 @@ public class RouteService {
 						route.getOriginStation().getId())))).toList();
 	}
 
-	/** Search the display rows so filtering keeps their order and trip counts. */
-	@Transactional(readOnly = true)
-	public List<RouteRow> search(String q) {
-		List<RouteRow> all = findAll();
-		String query = TextUtils.fold(q == null ? "" : q.strip());
-		if (query.isBlank()) {
-			return all;
-		}
-		return all.stream().filter(row -> TextUtils.fold(row.getOriginName()).contains(query)
-				|| TextUtils.fold(row.getOriginCode()).contains(query)
-				|| TextUtils.fold(row.getDestinationName()).contains(query)
-				|| TextUtils.fold(row.getDestinationCode()).contains(query)).toList();
-	}
-
 	@Transactional(readOnly = true)
 	public RouteRow findRow(long id) {
 		Route route = routes.findWithStationsById(id).orElseThrow(() -> new RouteNotFoundException(id));

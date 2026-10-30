@@ -7,12 +7,13 @@
 	templates below and adds the leg through POST /api/admin/trains/{id}/trips.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title th:text="|Thêm chuyến ${train.code} · Quản trị TrainGo|">Thêm chuyến SE1 · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/trip-wizard.css}">
 </head>
 <body>
-<main>
+<main class="admin-wrap">
 
 	<div class="wz-page" data-trip-wizard
 		th:data-next-leg-url="@{/api/admin/trains/{id}/next-leg(id=${train.id})}"

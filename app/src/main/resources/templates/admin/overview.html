@@ -1,145 +1,138 @@
 <!DOCTYPE html>
 <!--
-	The admin overview (#37), /admin.
-
-	Top to bottom: the four totals with their 7-day trend, a filter (quick ranges,
-	any from-to dates, day/week/month grouping) and two charts drawn by overview.js
-	from /api/admin/overview/sales and /users, then what needs
-	attention (trains running out of trips, trips selling badly or nearly full)
-	and the week ahead of each train. OverviewService decides what each
-	figure counts; this page only prints them.
+	The admin overview (#37), /admin: graphics first. One card holds three tracks
+	on one time axis (revenue, bookings, new users, drawn by overview.js from
+	/api/admin/overview/sales and /users). Beside it each figure of the week is a
+	pair of bars, this week against last. Below, the alerts in three columns by
+	level, and each train's trips of the coming week. OverviewService decides what
+	each figure counts; this page only prints them.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title>Tổng quan · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/overview.css}">
 </head>
 <body>
-<main data-overview>
+<main class="admin-wrap" data-overview>
 
-	<div class="page-head">
-		<h1>Tổng quan</h1>
+	<div class="dc-head">
+		<div>
+			<h1>Tổng quan</h1>
+			<p class="dc-date" th:text="${todayLabel}">Thứ Sáu, 30/10/2026</p>
+		</div>
+		<form class="dc-range ov-filter" data-filter novalidate aria-label="Lọc biểu đồ" th:data-today="${today}">
+			<div class="seg" role="group" aria-label="Khoảng nhanh">
+				<button type="button" class="seg-btn" data-preset="7d">7 ngày</button>
+				<button type="button" class="seg-btn" data-preset="30d">30 ngày</button>
+				<button type="button" class="seg-btn" data-preset="month">Tháng này</button>
+				<button type="button" class="seg-btn" data-preset="lastmonth">Tháng trước</button>
+			</div>
+			<div class="ov-custom">
+				<input type="date" class="form-control" name="from" aria-label="Từ ngày" required>
+				<span class="ov-to">đến</span>
+				<input type="date" class="form-control" name="to" aria-label="Đến ngày" required>
+				<select class="form-select" name="group" aria-label="Gộp theo">
+					<option value="">Gộp tự động</option>
+					<option value="day">Gộp theo ngày</option>
+					<option value="week">Gộp theo tuần</option>
+					<option value="month">Gộp theo tháng</option>
+				</select>
+			</div>
+			<p class="ov-filter-error" data-filter-error role="alert" hidden></p>
+		</form>
 	</div>
 
-	<section class="kpis" aria-label="Các số liệu chính">
-		<article class="panel kpi">
-			<h2><a th:href="@{/admin/bookings}">Doanh thu<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
-			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.revenue, 0, 'POINT')} + 'đ'">52.340.000đ</p>
-			<div class="kpi-foot">
-				<p class="kpi-trend" th:with="t=${overview.revenueTrend}">
-					<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}đ|">7 ngày qua: 1.200.000đ</span>
-					<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
-						th:text="${t.delta() > 0} ? |▲ ${#numbers.formatInteger(t.delta(), 0, 'POINT')}đ| : (${t.delta() < 0} ? |▼ ${#numbers.formatInteger(-t.delta(), 0, 'POINT')}đ| : 'Bằng tuần trước')">▲ 300.000đ</b>
-				</p>
-			</div>
-		</article>
-		<article class="panel kpi">
-			<h2><a th:href="@{/admin/bookings}">Booking<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
-			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.bookings, 0, 'POINT')}">128</p>
-			<div class="kpi-foot">
-				<p class="kpi-note"><a th:href="@{/admin/bookings(tab='cancelled')}" th:text="|${#numbers.formatInteger(overview.cancelledBookings, 0, 'POINT')} đã hủy|">9 đã hủy</a></p>
-				<p class="kpi-trend" th:with="t=${overview.bookingTrend}">
-					<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')}|">7 ngày qua: 5</span>
-					<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
-						th:text="${t.delta() > 0} ? |▲ ${t.delta()}| : (${t.delta() < 0} ? |▼ ${-t.delta()}| : 'Bằng tuần trước')">▲ 2</b>
-				</p>
-			</div>
-		</article>
-		<article class="panel kpi">
-			<h2><a th:href="@{/admin/trips}">Chuyến<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
-			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.trips, 0, 'POINT')}">24</p>
-			<div class="kpi-foot">
-				<p class="kpi-note"><a th:href="@{/admin/trips(tab='upcoming')}" th:text="|${#numbers.formatInteger(overview.upcomingTrips, 0, 'POINT')} sắp chạy|">6 sắp chạy</a></p>
-			</div>
-		</article>
-		<article class="panel kpi">
-			<h2><a th:href="@{/admin/users}">Người dùng<i class="bi bi-arrow-right-short" aria-hidden="true"></i></a></h2>
-			<p class="kpi-value" th:text="${#numbers.formatInteger(overview.customers, 0, 'POINT')}">56</p>
-			<div class="kpi-foot">
-				<p class="kpi-trend" th:with="t=${overview.usersTrend}">
-					<span th:text="|7 ngày qua: ${#numbers.formatInteger(t.current, 0, 'POINT')} mới|">7 ngày qua: 3 mới</span>
-					<b class="delta" th:classappend="${t.delta() > 0} ? 'up' : (${t.delta() < 0} ? 'down')"
-						th:text="${t.delta() > 0} ? |▲ ${t.delta()}| : (${t.delta() < 0} ? |▼ ${-t.delta()}| : 'Bằng tuần trước')">▲ 1</b>
-				</p>
-			</div>
-		</article>
-	</section>
+	<div class="ct-stack">
+		<div class="ct-top">
+			<section class="dc-card ct-hero" aria-label="Xu hướng theo khoảng thời gian">
+				<div class="ct-track">
+					<header class="ct-track-head"><h2>Doanh thu</h2><p class="dc-num" data-sum="revenue"></p></header>
+					<div class="ct-plot" data-chart="revenue"></div>
+				</div>
+				<div class="ct-track">
+					<header class="ct-track-head"><h2>Booking đã bán</h2><p class="dc-num" data-sum="bookings"></p></header>
+					<div class="ct-plot" data-chart="bookings"></div>
+				</div>
+				<div class="ct-track">
+					<header class="ct-track-head"><h2>Người dùng mới</h2><p class="dc-num" data-sum="users"></p></header>
+					<div class="ct-plot" data-chart="users"></div>
+				</div>
+			</section>
 
-	<form class="panel ov-filter" data-filter novalidate aria-label="Lọc biểu đồ" th:data-today="${today}">
-		<div class="tab-seg" role="group" aria-label="Khoảng nhanh">
-			<button type="button" class="tab-seg-link" data-preset="7d">7 ngày</button>
-			<button type="button" class="tab-seg-link" data-preset="30d">30 ngày</button>
-			<button type="button" class="tab-seg-link" data-preset="month">Tháng này</button>
-			<button type="button" class="tab-seg-link" data-preset="lastmonth">Tháng trước</button>
-		</div>
-		<div class="ov-custom">
-			<input type="date" class="form-control form-control-sm" name="from" aria-label="Từ ngày" title="Từ ngày" required>
-			<span class="ov-to" aria-hidden="true">→</span>
-			<input type="date" class="form-control form-control-sm" name="to" aria-label="Đến ngày" title="Đến ngày" required>
-			<select class="form-select form-select-sm" name="group" aria-label="Gộp theo" title="Gộp theo">
-				<option value="">Gộp tự động</option>
-				<option value="day">Gộp theo ngày</option>
-				<option value="week">Gộp theo tuần</option>
-				<option value="month">Gộp theo tháng</option>
-			</select>
-		</div>
-		<p class="ov-filter-error" data-filter-error role="alert" hidden></p>
-	</form>
-
-	<div class="ov-row ov-row-charts">
-		<section class="panel ov-panel" aria-labelledby="ov-sales-h" data-chart="sales">
-			<header class="ov-head">
-				<h2 id="ov-sales-h">Doanh thu và booking đã bán</h2>
-			</header>
-			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
-			<div class="ov-chart" data-plot></div>
-		</section>
-
-		<section class="panel ov-panel" aria-labelledby="ov-users-h" data-chart="users">
-			<header class="ov-head">
-				<h2 id="ov-users-h">Người dùng mới</h2>
-			</header>
-			<p class="ov-summary" data-summary aria-live="polite">&nbsp;</p>
-			<div class="ov-chart" data-plot></div>
-		</section>
-	</div>
-
-	<div class="ov-row ov-row-attention">
-		<section class="panel ov-panel" aria-labelledby="ov-alerts-h">
-			<header class="ov-head">
-				<h2 id="ov-alerts-h">Cần chú ý</h2>
-				<span class="ov-count" th:if="${overview.alertTotal > 0}" th:text="${overview.alertTotal}">3</span>
-			</header>
-			<ul class="ov-alerts" th:if="${!overview.alerts.isEmpty()}">
-				<li class="ov-alert" th:each="alert : ${overview.alerts}" th:classappend="|is-${alert.level}|">
-					<i class="bi" th:classappend="${alert.icon}" aria-hidden="true"></i>
-					<div>
-						<b th:text="${alert.title}">SE1 sắp hết chuyến</b>
-						<small th:text="${alert.detail}">Chuyến cuối khởi hành 02/11 08:00, lịch còn 3 chuyến.</small>
+			<section class="dc-card ct-pulse" aria-label="Các số liệu chính">
+				<article class="ct-fig" th:with="t=${overview.revenueTrend}">
+					<header><h2><a th:href="@{/admin/bookings}">Doanh thu</a></h2>
+						<th:block th:replace="~{:: chip(${t}, 'đ')}"></th:block></header>
+					<p class="dc-num" th:text="${#numbers.formatInteger(overview.revenue, 0, 'POINT')} + 'đ'">52.340.000đ</p>
+					<th:block th:replace="~{:: twin('Doanh thu', ${t}, 'đ')}"></th:block>
+				</article>
+				<article class="ct-fig" th:with="t=${overview.bookingTrend}">
+					<header><h2><a th:href="@{/admin/bookings}">Booking</a></h2>
+						<th:block th:replace="~{:: chip(${t}, '')}"></th:block></header>
+					<p class="dc-num" th:text="${#numbers.formatInteger(overview.bookings, 0, 'POINT')}">128</p>
+					<th:block th:replace="~{:: twin('Booking', ${t}, '')}"></th:block>
+					<p class="ct-note"><a th:href="@{/admin/bookings(tab='cancelled')}" th:text="|${#numbers.formatInteger(overview.cancelledBookings, 0, 'POINT')} đã hủy|">9 đã hủy</a></p>
+				</article>
+				<article class="ct-fig" th:with="t=${overview.usersTrend}">
+					<header><h2><a th:href="@{/admin/users}">Người dùng</a></h2>
+						<th:block th:replace="~{:: chip(${t}, '')}"></th:block></header>
+					<p class="dc-num" th:text="${#numbers.formatInteger(overview.customers, 0, 'POINT')}">56</p>
+					<th:block th:replace="~{:: twin('Người dùng mới', ${t}, '')}"></th:block>
+				</article>
+				<article class="ct-fig" th:with="done=${overview.trips - overview.upcomingTrips}">
+					<header><h2><a th:href="@{/admin/trips}">Chuyến</a></h2></header>
+					<p class="dc-num" th:text="${#numbers.formatInteger(overview.trips, 0, 'POINT')}">24</p>
+					<div class="ct-split" role="img" th:attr="aria-label=|${overview.upcomingTrips} chuyến sắp chạy, ${done} chuyến đã chạy|">
+						<i th:style="|--w:${overview.trips == 0 ? 0 : overview.upcomingTrips * 100 / overview.trips}%|"></i>
 					</div>
-					<a class="btn btn-outline-secondary btn-sm" th:if="${alert.href != null}" th:href="@{${alert.href}}"
-						th:aria-label="|Xem: ${alert.title}|">Xem</a>
-				</li>
-			</ul>
-			<p class="ov-empty" th:if="${overview.alerts.isEmpty()}">
+					<p class="ct-note"><a th:href="@{/admin/trips(tab='upcoming')}" th:text="|${#numbers.formatInteger(overview.upcomingTrips, 0, 'POINT')} sắp chạy|">6 sắp chạy</a>, <th:block th:text="|${#numbers.formatInteger(done, 0, 'POINT')} đã chạy|">18 đã chạy</th:block></p>
+				</article>
+			</section>
+		</div>
+
+		<section class="ct-triage" aria-labelledby="ct-alerts-h">
+			<header class="dc-head2">
+				<h2 id="ct-alerts-h">Cần chú ý</h2>
+				<span class="ct-badge" th:if="${overview.alertTotal > 0}" th:text="${overview.alertTotal}">3</span>
+			</header>
+			<th:block th:if="${!overview.alerts.isEmpty()}">
+				<div class="ct-lanes">
+					<section class="ct-lane" th:each="lane : ${#strings.arraySplit('danger,warning,info', ',')}" th:classappend="|is-${lane}|"
+						th:with="name=${lane == 'danger' ? 'Khẩn' : (lane == 'warning' ? 'Lưu ý' : 'Theo dõi')}, items=${overview.alerts.?[level == #root.lane]}" th:attr="aria-label=${name}">
+						<header>
+							<span class="ct-lvl"><i class="bi" th:classappend="${lane == 'danger' ? 'bi-exclamation-octagon' : (lane == 'warning' ? 'bi-hourglass-split' : 'bi-info-circle')}" aria-hidden="true"></i><th:block th:text="${name}">Khẩn</th:block></span>
+							<b th:text="${#lists.size(items)}">1</b>
+						</header>
+						<ul th:unless="${#lists.isEmpty(items)}">
+							<li class="ct-alert" th:each="alert : ${items}">
+								<div><b th:text="${alert.title}">SE1 sắp hết lịch chạy</b><small th:text="${alert.detail}">Chuyến cuối khởi hành lúc 08:00 ngày 02/11.</small></div>
+								<a class="ct-link" th:if="${alert.href != null}" th:href="@{${alert.href}}" th:attr="aria-label=|Xem: ${alert.title}|">Xem</a>
+							</li>
+						</ul>
+						<p class="ct-none" th:if="${#lists.isEmpty(items)}">Không có</p>
+					</section>
+				</div>
+				<p class="ct-more" th:if="${overview.alertTotal > overview.alerts.size()}"
+					th:text="|Đang hiện ${overview.alerts.size()} trên ${overview.alertTotal} cảnh báo.|">Đang hiện 8 trên 12 cảnh báo.</p>
+			</th:block>
+			<p class="ct-empty" th:if="${overview.alerts.isEmpty()}">
 				<i class="bi bi-check-circle" aria-hidden="true"></i>Không có cảnh báo. Lịch tàu và các chuyến sắp chạy đều ổn.
 			</p>
-			<p class="ov-more" th:if="${overview.alertTotal > overview.alerts.size()}"
-				th:text="|Đang hiện ${overview.alerts.size()} trên ${overview.alertTotal} cảnh báo.|">Đang hiện 8 trên 12 cảnh báo.</p>
 		</section>
 
-		<section class="panel ov-panel" aria-labelledby="ov-week-h">
-			<header class="ov-head">
-				<h2 id="ov-week-h">Lịch tàu 7 ngày tới</h2>
-				<span class="ov-legend"><i class="ov-dot is-empty" aria-hidden="true"></i>Chưa có chuyến</span>
+		<section class="dc-card ct-schedule" aria-labelledby="ct-week-h">
+			<header class="dc-head2">
+				<h2 id="ct-week-h">Lịch tàu 7 ngày tới</h2>
+				<span class="dc-legend"><i class="ct-gap-key" aria-hidden="true"></i>Chưa có chuyến</span>
 			</header>
-			<div class="ov-scroll" th:if="${!overview.trains.isEmpty()}">
-				<table class="ov-week">
+			<div class="dc-scroll" th:if="${!overview.trains.isEmpty()}">
+				<table class="ct-table">
 					<thead>
 						<tr>
 							<th scope="col">Tàu</th>
 							<th scope="col" th:each="day : ${overview.week}" th:classappend="${day.today} ? 'is-today'">
-								<span th:text="${day.label}">T4</span><small th:text="${day.dayMonth}">28/10</small>
+								<span th:text="${day.today} ? 'Hôm nay' : ${day.label}">T4</span><small th:text="${day.dayMonth}">28/10</small>
 							</th>
 						</tr>
 					</thead>
@@ -149,22 +142,43 @@
 								<a th:href="@{/admin/trains/{id}(id=${train.id})}" th:text="${train.code}">SE1</a>
 								<small th:text="${train.name}">Thống Nhất 1</small>
 							</th>
-							<td th:each="count : ${train.trips}" th:classappend="${count == 0} ? 'is-empty'">
-								<span th:if="${count > 0}" th:text="${count}">1</span>
-								<span th:if="${count == 0}" aria-hidden="true">–</span>
-								<span class="visually-hidden" th:if="${count == 0}">Chưa có chuyến</span>
+							<td th:each="trips : ${train.days}">
+								<div class="ct-trip" th:each="trip : ${trips}" th:classappend="${trip.past} ? 'is-past'">
+									<b th:text="${trip.time}">08:00</b>
+									<span th:text="${trip.route}">Hà Nội → Huế</span>
+									<i class="dc-meter" th:style="|--p:${trip.percent}%|"></i>
+									<small th:text="|${trip.sold}/${trip.seats}|">12/96</small>
+								</div>
+								<div class="ct-gap" th:if="${#lists.isEmpty(trips)}">Chưa có chuyến</div>
 							</td>
 						</tr>
 					</tbody>
 				</table>
 			</div>
-			<p class="ov-empty" th:if="${overview.trains.isEmpty()}">Chưa có tàu nào.</p>
-			<p class="ov-more" th:if="${overview.trainTotal > overview.trains.size()}">
+			<p class="ct-empty" th:if="${overview.trains.isEmpty()}">Chưa có tàu nào.</p>
+			<p class="ct-more" th:if="${overview.trainTotal > overview.trains.size()}">
 				<span th:text="|Đang hiện ${overview.trains.size()} trên ${overview.trainTotal} tàu, tàu cần chú ý xếp trước.|">Đang hiện 8 trên 20 tàu.</span>
 				<a th:href="@{/admin/trains}">Xem tất cả tàu</a>
 			</p>
 		</section>
 	</div>
+
+	<!-- Page-local fragments of the "Các số liệu chính" column. -->
+	<th:block th:if="${false}">
+		<span th:fragment="chip(trend, unit)" class="dc-chip" th:classappend="${trend.delta() > 0} ? 'is-up' : (${trend.delta() < 0} ? 'is-down')">
+			<th:block th:if="${trend.delta() == 0}">Bằng tuần trước</th:block>
+			<th:block th:if="${trend.delta() != 0}">
+				<i class="bi" th:classappend="${trend.delta() > 0} ? 'bi-graph-up-arrow' : 'bi-graph-down-arrow'" aria-hidden="true"></i>
+				<span class="visually-hidden" th:text="${trend.delta() > 0} ? 'Tăng' : 'Giảm'">Tăng</span><th:block th:text="${#numbers.formatInteger(trend.change(), 0, 'POINT')} + ${unit}">300.000đ</th:block>
+			</th:block>
+		</span>
+		<div th:fragment="twin(name, trend, unit)" class="ct-twin" role="group"
+			th:with="now=${#numbers.formatInteger(trend.current, 0, 'POINT')} + ${unit}, last=${#numbers.formatInteger(trend.previous, 0, 'POINT')} + ${unit}"
+			th:attr="aria-label=|${name}: tuần này ${now}, tuần trước ${last}|">
+			<div class="ct-twin-row"><span>Tuần này</span><i class="ct-bar is-now" th:style="|--w:${#numbers.formatDecimal(trend.currentWidth(), 1, 1, 'POINT')}%|"></i><b th:text="${now}">1</b></div>
+			<div class="ct-twin-row"><span>Tuần trước</span><i class="ct-bar" th:style="|--w:${#numbers.formatDecimal(trend.previousWidth(), 1, 1, 'POINT')}%|"></i><b th:text="${last}">1</b></div>
+		</div>
+	</th:block>
 
 	<script defer th:src="@{/js/admin/charts.js}"></script>
 	<script defer th:src="@{/js/admin/overview.js}"></script>

@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <!-- routeId selects edit mode; both requests share only the distance field. -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title th:text="${routeId == null} ? 'Thêm tuyến · Quản trị TrainGo' : 'Sửa tuyến · Quản trị TrainGo'">Thêm tuyến · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/route-form.css}">
 </head>
 <body>
-<main th:with="editing=${routeId != null}">
+<main class="admin-wrap" th:with="editing=${routeId != null}">
 
 	<div class="page-head">
-		<a class="btn btn-link" th:href="@{/admin/routes}">
-			<i class="bi bi-arrow-left" aria-hidden="true"></i>Danh sách tuyến
+		<a class="btn btn-link" th:href="@{/admin/stations}">
+			<i class="bi bi-arrow-left" aria-hidden="true"></i>Ga và tuyến
 		</a>
 	</div>
 
-	<div class="panel">
+	<div class="panel route-form-card">
 		<!-- Server validation keeps messages in Vietnamese beside their fields. -->
 		<form class="panel-body" method="post" novalidate th:object="${routeForm}"
 			th:action="${editing} ? @{/admin/routes/{id}(id=${routeId})} : @{/admin/routes}">
@@ -51,7 +52,6 @@
 					<dt class="col-sm-3">Ga đến</dt>
 					<dd class="col-sm-9" th:text="|${route.destinationName} (${route.destinationCode})|">Ga Huế (HUE)</dd>
 				</dl>
-				<p class="form-text">Chỉ đổi được khoảng cách.</p>
 			</div>
 
 			<div class="row g-3">
@@ -60,7 +60,7 @@
 					<input type="number" class="form-control" th:field="*{distanceKm}" th:errorclass="is-invalid"
 						min="1" step="1" inputmode="numeric" required aria-describedby="distanceError distanceHelp">
 					<div id="distanceError" class="invalid-feedback" th:errors="*{distanceKm}">Khoảng cách phải lớn hơn 0 km.</div>
-					<div id="distanceHelp" class="form-text" th:text="${editing} ? 'Chỉ cập nhật tuyến này, không đổi chiều ngược.' : 'Tự điền theo lý trình hai ga khi chưa nhập khoảng cách bằng tay.'">Tự điền theo lý trình hai ga.</div>
+					<div id="distanceHelp" class="form-text" th:unless="${editing}">Tự điền theo lý trình hai ga.</div>
 				</div>
 			</div>
 
@@ -73,7 +73,7 @@
 				<button type="submit" class="btn btn-primary">
 					<i class="bi bi-check-lg" aria-hidden="true"></i><span th:text="${editing} ? 'Lưu thay đổi' : 'Thêm tuyến'">Thêm tuyến</span>
 				</button>
-				<a class="btn btn-outline-secondary" th:href="@{/admin/routes}">Hủy</a>
+				<a class="btn btn-outline-secondary" th:href="@{/admin/stations}">Hủy</a>
 			</div>
 		</form>
 	</div>

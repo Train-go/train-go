@@ -13,7 +13,7 @@ import com.voyagego.traingo.service.TripAdminService;
 
 /**
  * /admin/trips in docs/product/admin.md: every trip, to look one up and open
- * its sheet. The filters live in the URL (?tab=&train=&q=) so a filtered list
+ * its sheet. The filters live in the URL (?tab=&train=&q=&band=&sort=) so a filtered list
  * can be reloaded and shared. Trips are created on their train's page, and
  * the sheet cancels through TripAdminApiController.
  */
@@ -37,8 +37,10 @@ public class TripAdminController {
 
 	@GetMapping
 	public String list(@RequestParam(required = false) String tab, @RequestParam(required = false) Long train,
-			@RequestParam(required = false) String q, Model model) {
-		model.addAttribute("view", tripAdminService.list(tab, train, q, LocalDateTime.now()));
+			@RequestParam(required = false) String q, @RequestParam(required = false) String band,
+			@RequestParam(required = false) String sort,
+			@RequestParam(defaultValue = "" + TripAdminService.PAGE) int limit, Model model) {
+		model.addAttribute("view", tripAdminService.list(tab, train, q, band, sort, limit, LocalDateTime.now()));
 		return LIST_VIEW;
 	}
 

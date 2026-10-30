@@ -9,25 +9,6 @@
 		reason.textContent = message;
 		if (message) button.setAttribute('aria-describedby', reason.id);
 	}
-	function overview(panel, ctx) {
-		panel.append(clone('overview'));
-		const form = panel.querySelector('form');
-		['a', 'b'].forEach(key => {
-			const select = form.elements.namedItem(key);
-			select.add(new Option('Chọn ga', ''));
-			ctx.network.stations.forEach(station => select.add(new Option(station.name, station.id)));
-		});
-		form.addEventListener('submit', event => {
-			event.preventDefault();
-			const a = Number(form.elements.a.value), b = Number(form.elements.b.value);
-			const fields = {};
-			if (!a) fields.a = 'Vui lòng chọn ga thứ nhất.';
-			if (!b) fields.b = 'Vui lòng chọn ga thứ hai.';
-			else if (a === b) fields.b = 'Ga thứ hai phải khác ga thứ nhất.';
-			TG.showFieldErrors(form, fields);
-			if (!Object.keys(fields).length) ctx.select({ type: 'pair', a, b });
-		});
-	}
 	function stationDetails(panel, ctx, station) {
 		panel.append(clone('station'));
 		text(panel, '#net-panel-h', station.name);
@@ -42,11 +23,11 @@
 		remove.onclick = () => ctx.remove(`/api/admin/stations/${station.id}`, `Xóa ${station.name}?`,
 			'Ga sẽ không còn trong danh sách chọn ga khi tạo tuyến.', 'Xóa ga', 'Đã xóa ga.', { type: 'overview' }, remove);
 	}
-	function stationForm(panel, ctx, station, a, b) {
+	function stationForm(panel, ctx, station, a, b, add) {
 		panel.append(clone(station ? 'edit' : 'gap'));
 		const form = panel.querySelector('form');
 		form.querySelector('[data-station-fields]').append(clone('station-fields'));
-		text(form, '#net-panel-h', station ? `Sửa ${station.name}` : `Chèn ga giữa ${name(a)} và ${name(b)}`);
+		text(form, '#net-panel-h', station ? `Sửa ${station.name}` : add ? 'Thêm ga' : `Chèn ga giữa ${name(a)} và ${name(b)}`);
 		if (station) {
 			['name', 'code', 'city', 'address', 'kmMark'].forEach(key => { form.elements.namedItem(key).value = station[key] ?? ''; });
 			if (station.routeCount) {
@@ -97,6 +78,7 @@
 				text(form, '[data-direction-meta]', `${route.distanceKm} km · ${route.upcomingTrips} chuyến sắp chạy`);
 				form.querySelector('[data-distance-field]').remove();
 				create.remove();
+				form.querySelector('[data-action=edit-route]').href = `/admin/routes/${route.id}/edit`;
 				const reason = form.querySelector('[data-delete-reason]');
 				reason.id = `route-delete-reason-${key}`;
 				blockDelete(remove, reason, route.totalTrips ? `Không xóa được: tuyến đã có ${route.totalTrips} chuyến.` : '');
@@ -105,6 +87,7 @@
 				form.addEventListener('submit', event => event.preventDefault());
 			} else {
 				remove.remove();
+				form.querySelector('[data-action=edit-route]').remove();
 				text(form, '[data-direction-meta]', 'Chưa có');
 				const input = form.elements.distanceKm;
 				input.id = `distance-${key}`;
@@ -141,8 +124,7 @@
 		else if (state.type === 'station') {
 			if (state.edit) stationForm(panel, ctx, find(state.id));
 			else stationDetails(panel, ctx, find(state.id));
-		} else if (state.type === 'gap') stationForm(panel, ctx, null, find(state.a), find(state.b));
+		} else if (state.type === 'gap') stationForm(panel, ctx, null, find(state.a), find(state.b), state.add);
 		else if (state.type === 'pair') pair(panel, ctx, find(state.a), find(state.b));
-		else overview(panel, ctx);
 	};
 })();

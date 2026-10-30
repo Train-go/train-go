@@ -1,5 +1,6 @@
 package com.voyagego.traingo.controller;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import com.voyagego.traingo.model.dto.CoachLayout;
 import com.voyagego.traingo.model.response.TrainScheduleView;
 import com.voyagego.traingo.service.TrainScheduleService;
 import com.voyagego.traingo.service.TrainService;
+import com.voyagego.traingo.service.TripAdminService;
 
 /**
  * The train page (docs/product/admin.md, "Quản lý tàu"): one tab per train,
@@ -52,10 +54,11 @@ public class TrainAdminController {
 		List<Train> trains = trainService.findAll();
 		if (trains.isEmpty()) {
 			model.addAttribute("trains", trains);
+			model.addAttribute("todayLabel", TripAdminService.longDay(LocalDate.now()));
 			return VIEW;
 		}
 		// The view the browser remembered goes along, or the next redirect would drop it.
-		return "redirect:/admin/trains/" + trains.get(0).getId() + (SHEET_VIEW.equals(view) ? "?view=bang" : "");
+		return "redirect:/admin/trains/" + trains.get(0).getId() + (view == null ? "" : SHEET_VIEW.equals(view) ? "?view=bang" : "?view=ngay");
 	}
 
 	@GetMapping("/{id}")
@@ -67,6 +70,7 @@ public class TrainAdminController {
 		// "bang" is the spreadsheet view; anything else is the day view.
 		model.addAttribute("view", SHEET_VIEW.equals(view) ? SHEET_VIEW : "ngay");
 		model.addAttribute("schedule", schedule);
+		model.addAttribute("todayLabel", TripAdminService.longDay(now.toLocalDate()));
 		model.addAttribute("train", schedule.train());
 		model.addAttribute("trains", trainService.findAll());
 		// Counts cancelled trips too, unlike the schedule's chain end.

@@ -1,8 +1,11 @@
 package com.voyagego.traingo.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -17,13 +20,18 @@ import com.voyagego.traingo.entity.BookingStatus;
 import com.voyagego.traingo.entity.PaymentStatus;
 import com.voyagego.traingo.entity.Ticket;
 import com.voyagego.traingo.entity.Trip;
+import com.voyagego.traingo.model.dto.CoachLayout;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.response.BookingAdminDetail;
 import com.voyagego.traingo.model.response.BookingAdminDetail.TicketLine;
 import com.voyagego.traingo.model.response.BookingListView;
-import com.voyagego.traingo.model.response.BookingListView.BookingRow;
+import com.voyagego.traingo.model.response.BookingListView.BookingLine;
+import com.voyagego.traingo.model.response.BookingListView.Passenger;
+import com.voyagego.traingo.model.response.BookingListView.TripGroup;
+import com.voyagego.traingo.model.response.CoachFill;
 import com.voyagego.traingo.repository.BookingRepository;
 import com.voyagego.traingo.repository.TicketRepository;
+import com.voyagego.traingo.repository.TripSeatRepository;
 import com.voyagego.traingo.repository.UserRepository;
 
 /**
@@ -61,29 +69,38 @@ public class BookingAdminService {
 		}
 	}
 
+	/** Trips a page of the list shows, and the most "Hiện thêm" can ask for. */
+	public static final int PAGE = 10;
+	private static final int MAX_SHOWN = 1000;
+	private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 	private static final String[] SHORT_WEEKDAYS = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
 	private static final DateTimeFormatter DAY_TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
 	private static final DateTimeFormatter FULL = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
 	private final BookingRepository bookingRepository;
 	private final TicketRepository ticketRepository;
+	private final TripSeatRepository tripSeatRepository;
 	private final UserRepository userRepository;
 	private final BookingCancellationService cancellationService;
 
 	public BookingAdminService(BookingRepository bookingRepository, TicketRepository ticketRepository,
-			UserRepository userRepository, BookingCancellationService cancellationService) {
+			TripSeatRepository tripSeatRepository, UserRepository userRepository, BookingCancellationService cancellationService) {
 		this.bookingRepository = bookingRepository;
 		this.ticketRepository = ticketRepository;
+		this.tripSeatRepository = tripSeatRepository;
 		this.userRepository = userRepository;
 		this.cancellationService = cancellationService;
 	}
 
 	/**
-	 * The rows of one group, earliest departure first. {@code q} matches the
-	 * booking code, the customer's name or any passenger's name, ignoring case
-	 * and diacritics. {@code customerId} limits the page to one customer.
+	 * One group, as trips with their bookings: earliest departure first while
+	 * upcoming, latest first once gone. {@code q} matches the booking code, the
+	 * customer's name or any passenger's name, ignoring case and diacritics.
+	 * {@code customerId} limits the page to one customer. Only the first
+	 * {@code limit} trips are read further, so the cost follows the page.
 	 */
-	public BookingListView list(String tab, String q, Long customerId, LocalDateTime now) {
+	public BookingListView list(String tab, String q, Long customerId, int limit, LocalDateTime now) {
 		Map<Group, List<Booking>> byGroup = bookingRepository.findAllForAdmin(customerId).stream()
 				.collect(Collectors.groupingBy(booking -> groupOf(booking, now)));
 		Group open = tab == null && customerId != null ? firstNonEmpty(byGroup) : Group.of(tab);
@@ -91,27 +108,61 @@ public class BookingAdminService {
 
 		String typed = q == null ? "" : q.strip();
 		String needle = TextUtils.fold(typed);
-		// Passengers are only read when there is something to search for.
-		Map<Long, List<Ticket>> ticketsByBooking = needle.isEmpty() ? Map.of() : ticketsOf(inGroup);
-		Map<Long, Long> ticketCounts = ticketRepository.countByBooking().stream()
-				.collect(Collectors.toMap(IdCount::getId, IdCount::getTotal));
-
-		List<BookingRow> rows = inGroup.stream()
+		// Passengers are only read for all of the group when there is something to search for.
+		Map<Long, List<Ticket>> searched = needle.isEmpty() ? Map.of() : ticketsOf(inGroup);
+		Comparator<Booking> byDeparture = Comparator.comparing((Booking booking) -> booking.getTrip().getDepartureAt());
+		Map<Long, List<Booking>> byTrip = inGroup.stream()
 				.filter(booking -> needle.isEmpty()
-						|| matches(booking, needle, ticketsByBooking.getOrDefault(booking.getId(), List.of())))
-				.sorted(Comparator.comparing((Booking booking) -> booking.getTrip().getDepartureAt()))
-				.map(booking -> toRow(booking, ticketCounts.getOrDefault(booking.getId(), 0L).intValue()))
-				.toList();
+						|| matches(booking, needle, searched.getOrDefault(booking.getId(), List.of())))
+				.sorted(open == Group.UPCOMING ? byDeparture : byDeparture.reversed())
+				.collect(Collectors.groupingBy(booking -> booking.getTrip().getId(), LinkedHashMap::new, Collectors.toList()));
 
+		int shown = Math.max(PAGE, Math.min(limit, MAX_SHOWN));
+		boolean searching = !typed.isEmpty();
+		List<TripGroup> trips = toGroups(byTrip.values().stream().limit(shown).toList(), open, searching, now);
 		String customerName = customerId == null ? ""
 				: userRepository.findById(customerId).map(user -> user.getFullName()).orElse("");
-		// With nothing typed, a customer's page shows the customer's name in the box.
-		// The customer filter already narrows the list, so the name filters nothing.
-		String shown = typed.isEmpty() ? customerName : typed;
-		return new BookingListView(open.key(), shown, !typed.isEmpty(), customerId, customerName,
+		return new BookingListView(open.key(), typed, searching, customerId, customerName, shown, byTrip.size(),
 				byGroup.getOrDefault(Group.UPCOMING, List.of()).size(),
 				byGroup.getOrDefault(Group.PAST, List.of()).size(),
-				byGroup.getOrDefault(Group.CANCELLED, List.of()).size(), rows);
+				byGroup.getOrDefault(Group.CANCELLED, List.of()).size(), trips);
+	}
+
+	private List<TripGroup> toGroups(List<List<Booking>> pages, Group open, boolean searching, LocalDateTime now) {
+		if (pages.isEmpty()) {
+			return List.of();
+		}
+		List<Long> tripIds = pages.stream().map(books -> books.get(0).getTrip().getId()).toList();
+		Map<Long, List<Ticket>> tickets = ticketsOf(pages.stream().flatMap(List::stream).toList());
+		Map<Long, Long> sold = ticketRepository.countSoldByTrips(tripIds).stream()
+				.collect(Collectors.toMap(IdCount::getId, IdCount::getTotal));
+		Map<Long, List<CoachFill>> fills = CoachFill.byTrip(tripSeatRepository.countBookedByTripAndCoach(tripIds));
+		int seats = CoachLayout.totalSeats();
+		List<TripGroup> groups = new ArrayList<>();
+		LocalDate previous = null;
+		for (List<Booking> books : pages) {
+			Trip trip = books.get(0).getTrip();
+			LocalDate day = trip.getDepartureAt().toLocalDate();
+			long soldSeats = sold.getOrDefault(trip.getId(), 0L);
+			String count = soldSeats + "/" + seats + " chỗ đã bán";
+			String summary = open == Group.CANCELLED ? books.size() + " booking đã hủy"
+					: searching ? books.size() + " booking khớp tìm kiếm, " + count : count;
+			boolean bar = open != Group.CANCELLED && !trip.isCancelled();
+			groups.add(new TripGroup(trip.getId(), day.equals(previous) ? null : TripAdminService.dayLabel(day, now.toLocalDate()),
+					day.format(DATE), trip.getDepartureAt().format(TIME), trip.getTrain().getCode(), routeLabel(trip), summary,
+					bar ? fills.getOrDefault(trip.getId(), CoachFill.of(Map.of())) : null,
+					books.stream().map(booking -> toLine(booking, tickets.getOrDefault(booking.getId(), List.of()))).toList()));
+			previous = day;
+		}
+		return groups;
+	}
+
+	private static BookingLine toLine(Booking booking, List<Ticket> tickets) {
+		boolean cancelled = booking.getBookingStatus() == BookingStatus.CANCELLED;
+		return new BookingLine(booking.getBookingCode(), booking.getCustomer().getFullName(),
+				booking.getCustomer().getEmail(), booking.getTotalPrice(), cancelled,
+				tickets.stream().map(ticket -> new Passenger(ticket.getFullName(), cancelled ? "Đã trả chỗ"
+						: "Toa " + ticket.getTripSeat().getCoachNumber() + ", " + ticket.getTripSeat().getSeatCode())).toList());
 	}
 
 	/** Throws BookingNotFoundException, shown as a 404, for an unknown code. */
@@ -179,13 +230,6 @@ public class BookingAdminService {
 		return TextUtils.fold(booking.getBookingCode()).contains(needle)
 				|| TextUtils.fold(booking.getCustomer().getFullName()).contains(needle)
 				|| tickets.stream().anyMatch(ticket -> TextUtils.fold(ticket.getFullName()).contains(needle));
-	}
-
-	private static BookingRow toRow(Booking booking, int ticketCount) {
-		Trip trip = booking.getTrip();
-		return new BookingRow(booking.getBookingCode(), booking.getCustomer().getFullName(),
-				booking.getCustomer().getEmail(), trip.getTrain().getCode(), routeLabel(trip),
-				weekdayLabel(trip.getDepartureAt()), ticketCount, booking.getTotalPrice());
 	}
 
 	private static String routeLabel(Trip trip) {

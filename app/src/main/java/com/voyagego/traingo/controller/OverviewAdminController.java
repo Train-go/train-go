@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.voyagego.traingo.service.OverviewService;
+import com.voyagego.traingo.service.TripAdminService;
 
 /**
- * The admin area's entry point, /admin: four totals read from the database
+ * The admin area's entry point, /admin: the figures read from the database
  * (#37). Every other admin screen has its own controller.
  */
 @Controller
@@ -34,6 +35,7 @@ public class OverviewAdminController {
 	public String overview(Model model) {
 		model.addAttribute("overview", overviewService.overview(LocalDateTime.now()));
 		model.addAttribute("today", LocalDate.now());
+		model.addAttribute("todayLabel", TripAdminService.longDay(LocalDate.now()));
 		return "admin/overview";
 	}
 

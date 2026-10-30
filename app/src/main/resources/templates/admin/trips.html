@@ -1,104 +1,126 @@
 <!DOCTYPE html>
+<!--
+	/admin/trips, the seat inventory: sold seats per trip, the fill split by
+	coach, quick filters for trips nearly full or selling slowly, and a sort by
+	fill. The filters are a GET form and links, so they live in the URL.
+-->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title>Chuyến · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/trips.css}">
 </head>
 <body>
-<main>
+<main class="admin-wrap"
+	th:with="sortParam=${view.sort == 'time' ? null : view.sort}, bandParam=${view.band == '' ? null : view.band}">
 
 	<div class="page-head">
 		<h1>Chuyến</h1>
-		<span class="grow"></span>
-		<span class="text-body-secondary">Chuyến mới được tạo ở trang của từng tàu.</span>
-		<a class="btn btn-outline-secondary" th:href="@{/admin/trains}">
-			<i class="bi bi-train-front" aria-hidden="true"></i>Đến trang Tàu
-		</a>
 	</div>
 
-	<!--
-		The filters are a GET form, so they live in the URL (?tab=&train=&q=).
-		trips.js submits it when the train changes and shortly after typing.
-	-->
-	<form class="toolbar" method="get" th:action="@{/admin/trips}" data-trip-filters>
-		<!-- The same segmented tabs as the bookings page. -->
-		<nav class="tab-seg" aria-label="Nhóm chuyến">
-			<a class="tab-seg-link"
-				th:href="@{/admin/trips(tab='upcoming', train=${view.trainId}, q=${view.query})}"
-				th:classappend="${view.tab == 'upcoming'} ? 'active'"
-				th:attr="aria-current=${view.tab == 'upcoming'} ? 'page' : null">
-				<span>Sắp chạy</span><span class="count" th:text="${view.upcomingCount}">12</span>
-			</a>
-			<a class="tab-seg-link"
-				th:href="@{/admin/trips(tab='departed', train=${view.trainId}, q=${view.query})}"
-				th:classappend="${view.tab == 'departed'} ? 'active'"
-				th:attr="aria-current=${view.tab == 'departed'} ? 'page' : null">
-				<span>Đã khởi hành</span><span class="count" th:text="${view.departedCount}">80</span>
-			</a>
-			<a class="tab-seg-link"
-				th:href="@{/admin/trips(tab='cancelled', train=${view.trainId}, q=${view.query})}"
-				th:classappend="${view.tab == 'cancelled'} ? 'active'"
-				th:attr="aria-current=${view.tab == 'cancelled'} ? 'page' : null">
-				<span>Đã hủy</span><span class="count" th:text="${view.cancelledCount}">2</span>
-			</a>
-		</nav>
-		<input type="hidden" name="tab" th:value="${view.tab}">
-		<span class="grow"></span>
-		<label class="visually-hidden" for="trip-train">Lọc theo tàu</label>
-		<select id="trip-train" name="train" class="form-select w-auto">
-			<option value="">Tất cả tàu</option>
-			<option th:each="train : ${view.trains}" th:value="${train.id}"
-				th:selected="${train.id == view.trainId}"
-				th:text="|${train.code} · ${train.name}|">SE1 · Thống Nhất</option>
-		</select>
-		<div class="search">
-			<i class="bi bi-search" aria-hidden="true"></i>
-			<label class="visually-hidden" for="trip-q">Tìm theo ga</label>
-			<input id="trip-q" name="q" type="search" class="form-control" placeholder="Tìm theo ga"
-				th:value="${view.query}" autocomplete="off">
+	<section class="dc-card cc-wrap" aria-label="Sổ tồn chỗ theo chuyến">
+		<form method="get" th:action="@{/admin/trips}" data-trip-filters>
+			<div class="cv-bar">
+				<nav class="cv-tabs" aria-label="Nhóm chuyến">
+					<a th:href="@{/admin/trips(tab='upcoming', train=${view.trainId}, q=${view.query})}"
+						th:attr="aria-current=${view.tab == 'upcoming'} ? 'page' : null">Sắp chạy<span class="cv-count" th:text="${view.upcomingCount}">12</span></a>
+					<a th:href="@{/admin/trips(tab='departed', train=${view.trainId}, q=${view.query})}"
+						th:attr="aria-current=${view.tab == 'departed'} ? 'page' : null">Đã khởi hành<span class="cv-count" th:text="${view.departedCount}">80</span></a>
+					<a th:href="@{/admin/trips(tab='cancelled', train=${view.trainId}, q=${view.query})}"
+						th:attr="aria-current=${view.tab == 'cancelled'} ? 'page' : null">Đã hủy<span class="cv-count" th:text="${view.cancelledCount}">2</span></a>
+				</nav>
+				<input type="hidden" name="tab" th:value="${view.tab}">
+				<input type="hidden" name="band" th:if="${bandParam != null}" th:value="${bandParam}">
+				<div class="cv-filters">
+					<select id="trip-train" name="train" class="form-select cv-train" aria-label="Lọc theo tàu">
+						<option value="">Tất cả tàu</option>
+						<option th:each="train : ${view.trains}" th:value="${train.id}"
+							th:selected="${train.id == view.trainId}"
+							th:text="|${train.code} · ${train.name}|">SE1 · Thống Nhất</option>
+					</select>
+					<div class="search cv-search">
+						<i class="bi bi-search" aria-hidden="true"></i>
+						<input id="trip-q" name="q" type="search" class="form-control" placeholder="Tên hoặc mã ga"
+							aria-label="Tìm chuyến theo tên hoặc mã ga" th:value="${view.query}" autocomplete="off">
+					</div>
+				</div>
+			</div>
+			<div class="cc-tools">
+				<div class="cc-chips" role="group" aria-label="Lọc theo mức lấp đầy">
+					<a class="cc-chip" th:href="@{/admin/trips(tab=${view.tab}, train=${view.trainId}, q=${view.query}, sort=${sortParam})}"
+						th:attr="aria-current=${view.band == ''} ? 'true' : null">Tất cả<span th:text="${view.allCount}">12</span></a>
+					<a class="cc-chip" th:href="@{/admin/trips(tab=${view.tab}, train=${view.trainId}, q=${view.query}, sort=${sortParam}, band='full')}"
+						th:attr="aria-current=${view.band == 'full'} ? 'true' : null">Sắp đầy<span th:text="${view.fullCount}">1</span></a>
+					<a class="cc-chip" th:href="@{/admin/trips(tab=${view.tab}, train=${view.trainId}, q=${view.query}, sort=${sortParam}, band='slow')}"
+						th:attr="aria-current=${view.band == 'slow'} ? 'true' : null">Bán chậm<span th:text="${view.slowCount}">3</span></a>
+				</div>
+				<select id="trip-sort" name="sort" class="form-select cc-sort" aria-label="Sắp xếp">
+					<option value="time" th:selected="${view.sort == 'time'}">Theo giờ đi</option>
+					<option value="high" th:selected="${view.sort == 'high'}">Lấp đầy cao nhất</option>
+					<option value="low" th:selected="${view.sort == 'low'}">Lấp đầy thấp nhất</option>
+				</select>
+			</div>
+		</form>
+
+		<div class="dc-scroll" th:unless="${#lists.isEmpty(view.days)}">
+			<table class="cc-table">
+				<thead>
+					<tr>
+						<th scope="col">Giờ đi</th>
+						<th scope="col">Tàu</th>
+						<th scope="col">Hành trình</th>
+						<th scope="col" class="cc-n">Đã bán</th>
+						<th scope="col">Theo toa</th>
+						<th scope="col" class="cc-n">Lấp đầy</th>
+						<th scope="col" th:text="${view.tab == 'upcoming'} ? 'Mức bán' : 'Trạng thái'">Mức bán</th>
+					</tr>
+				</thead>
+				<tbody>
+					<th:block th:each="day : ${view.days}">
+						<tr class="cc-group" th:if="${day.label != null}">
+							<th scope="rowgroup" colspan="7"><th:block th:text="${day.label}">Hôm nay</th:block><span th:text="${day.date}">26/10/2026</span></th>
+						</tr>
+						<!-- trip-sheet.js opens the trip sheet on click and on Enter. -->
+						<tr th:each="row : ${day.rows}" class="cc-row" tabindex="0" th:data-trip-id="${row.id}"
+							th:classappend="${row.phase == 'done'} ? 'is-done' : (${row.cancelled} ? 'is-off')">
+							<td><span class="cc-open"><th:block th:text="${row.time}">08:00</th:block><small th:if="${row.dayMonth != null}" th:text="${row.dayMonth}">26/10</small></span></td>
+							<td th:text="${row.trainCode}">SE1</td>
+							<td><span class="cc-stn" th:text="|${row.originName} →|">Ga Hà Nội →</span> <span class="cc-stn" th:text="${row.destinationName}">Ga Thanh Hóa</span></td>
+							<td class="cc-n cc-sold"><th:block th:unless="${row.cancelled}" th:text="|${row.soldSeats}/${row.totalSeats}|">3/96</th:block></td>
+							<td class="cc-bar"><th:block th:unless="${row.cancelled}"><span th:replace="~{admin/fragments/coach-bar :: bar(${row.coaches})}"></span></th:block></td>
+							<td class="cc-n cc-pct" th:classappend="${row.band == 'full'} ? 'is-full' : (${row.band == 'slow'} ? 'is-slow')"><th:block th:unless="${row.cancelled}" th:text="|${row.percent}%|">3%</th:block></td>
+							<td class="cc-last">
+								<th:block th:if="${view.tab == 'upcoming'}">
+									<span class="cc-band is-full" th:if="${row.band == 'full'}">Sắp đầy</span>
+									<span class="cc-band is-slow" th:if="${row.band == 'slow'}">Bán chậm</span>
+								</th:block>
+								<span class="tag" th:unless="${view.tab == 'upcoming'}" th:classappend="${row.phase}" th:text="${row.phaseLabel}">Đã chạy</span>
+							</td>
+						</tr>
+					</th:block>
+				</tbody>
+			</table>
 		</div>
-		<button type="submit" class="visually-hidden">Lọc</button>
-	</form>
 
-	<div class="panel table-responsive" th:unless="${#lists.isEmpty(view.days)}">
-		<table class="table table-hover align-middle">
-			<thead>
-				<tr>
-					<th scope="col">Giờ</th>
-					<th scope="col">Tàu</th>
-					<th scope="col">Tuyến</th>
-					<th scope="col" class="num">Giá cơ bản</th>
-					<th scope="col" class="num">Đã bán</th>
-					<th scope="col">Trạng thái</th>
-				</tr>
-			</thead>
-			<tbody>
-				<th:block th:each="day : ${view.days}">
-					<tr class="group-row">
-						<td colspan="6"><span th:text="${day.label}">Hôm nay</span><span class="text-body-secondary" th:text="${day.date}">26/10/2026</span></td>
-					</tr>
-					<!-- trip-sheet.js opens the trip sheet on click and on Enter. -->
-					<tr th:each="row : ${day.rows}" class="clickable" tabindex="0" th:data-trip-id="${row.id}">
-						<td class="mono" th:text="${row.time}">08:00 → 11:40</td>
-						<td><span class="code" th:text="${row.trainCode}">SE1</span></td>
-						<td><b th:text="${row.route}">Ga Hà Nội → Ga Thanh Hóa</b></td>
-						<td class="num" th:text="${#numbers.formatInteger(row.basePrice, 0, 'POINT')} + 'đ'">250.000đ</td>
-						<td class="num" th:text="|${row.soldSeats}/${row.totalSeats}|">3/96</td>
-						<td><span class="tag" th:classappend="${row.phase}" th:text="${row.phaseLabel}">Sắp chạy</span></td>
-					</tr>
-				</th:block>
-			</tbody>
-		</table>
-	</div>
+		<div class="cv-more" th:if="${view.total > view.shown}">
+			<a class="btn btn-outline-secondary" th:href="@{/admin/trips(tab=${view.tab}, train=${view.trainId}, q=${view.query}, sort=${sortParam}, band=${bandParam}, limit=${view.limit + 40})}"
+				th:text="|Hiện thêm ${view.more} chuyến|">Hiện thêm 40 chuyến</a>
+			<span th:text="|Đang hiện ${view.shown} trên ${view.total} chuyến|">Đang hiện 40 trên 92 chuyến</span>
+		</div>
 
-	<div class="empty" th:if="${#lists.isEmpty(view.days)}">
-		<i class="bi bi-calendar2-x" aria-hidden="true"></i>
-		<th:block th:if="${view.filtered}">
-			<b>Không có chuyến nào khớp bộ lọc.</b>
-			<a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/trips(tab=${view.tab})}">Bỏ lọc</a>
-		</th:block>
-		<b th:unless="${view.filtered}">Chưa có chuyến nào trong nhóm này.</b>
-	</div>
+		<div class="cv-empty" th:if="${#lists.isEmpty(view.days)}">
+			<i class="bi" th:classappend="${view.filtered or bandParam != null} ? 'bi-search' : 'bi-calendar2-x'" aria-hidden="true"></i>
+			<th:block th:if="${bandParam != null}">
+				<b th:text="|Không có chuyến ${view.band == 'full' ? 'sắp đầy' : 'bán chậm'} trong nhóm này|">Không có chuyến sắp đầy trong nhóm này</b>
+				<a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/trips(tab=${view.tab}, train=${view.trainId}, q=${view.query})}">Xem tất cả</a>
+			</th:block>
+			<th:block th:if="${bandParam == null and view.filtered}">
+				<b>Không có chuyến nào khớp bộ lọc</b>
+				<a class="btn btn-outline-secondary btn-sm" th:href="@{/admin/trips(tab=${view.tab})}">Bỏ lọc</a>
+			</th:block>
+			<b th:if="${bandParam == null and !view.filtered}">Chưa có chuyến nào trong nhóm này</b>
+		</div>
+	</section>
 
 	<th:block th:replace="~{admin/fragments/trip-sheet :: sheet}"></th:block>
 	<script defer th:src="@{/js/admin/trips.js}"></script>

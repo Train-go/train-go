@@ -9,6 +9,8 @@ Accepted. Thay phần "template dashboard bên ngoài" của
 tầng, static admin dưới `static/css/admin/` và `static/js/admin/`, không nạp
 `app.css` và `admin.css` trên cùng một trang, `activeNav` do controller đặt.
 
+Phần màu, font và cách tổ chức CSS được thay bởi `0014-giao-dien-admin-v2.md` (30/10/2026).
+
 ## Context
 
 Nhóm chọn giao diện admin mới trong `docs/reports/ui-mau/admin/index.html`:

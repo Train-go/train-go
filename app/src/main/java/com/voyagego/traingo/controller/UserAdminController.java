@@ -28,8 +28,9 @@ public class UserAdminController {
 
 	/** {@code role} is ADMIN or CUSTOMER; anything else opens the customer tab. */
 	@GetMapping
-	public String list(@RequestParam(required = false) String role, Model model) {
-		model.addAttribute("view", userAdminService.list("ADMIN".equals(role) ? UserRole.ADMIN : UserRole.CUSTOMER));
+	public String list(@RequestParam(required = false) String role, @RequestParam(required = false) String q,
+			@RequestParam(defaultValue = "" + UserAdminService.PAGE) int limit, Model model) {
+		model.addAttribute("view", userAdminService.list("ADMIN".equals(role) ? UserRole.ADMIN : UserRole.CUSTOMER, q, limit));
 		return "admin/users";
 	}
 

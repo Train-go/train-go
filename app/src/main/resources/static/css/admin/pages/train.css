@@ -1,0 +1,233 @@
+/* Tàu: admin/train.html, both views. */
+
+/* ---------- Head and tabs ---------- */
+
+.tr-head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); }
+.tr-tabs { display: flex; gap: var(--space-xs); margin-bottom: var(--space-lg); overflow-x: auto; scrollbar-width: none; }
+.tr-tabs::-webkit-scrollbar { display: none; }
+.tr-tabs a {
+	display: inline-flex; align-items: baseline; gap: var(--space-sm); min-height: 44px; padding: var(--space-sm) var(--space-md);
+	border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: var(--color-card); color: var(--color-muted-fg);
+	white-space: nowrap; text-decoration: none; transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.tr-tabs a b { color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.tr-tabs a span { font-size: 0.875rem; }
+.tr-tabs a:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.tr-tabs a:active { background: var(--color-primary-soft); }
+.tr-tabs a[aria-current="page"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.tr-tabs a[aria-current="page"] b { color: var(--color-primary); }
+
+.tr-stack { display: grid; gap: var(--space-lg); }
+.tr-stack > * { min-width: 0; }
+
+/* ---------- The facts and the consist ---------- */
+
+.tr-top { overflow: clip; }
+.tr-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
+.tr-fact { display: grid; align-content: start; gap: var(--space-xs); min-width: 0; padding: var(--space-md) var(--space-lg); border-left: 1px solid var(--color-border); }
+.tr-fact:first-child { border-left: 0; }
+.tr-fact dt { color: var(--color-muted-fg); font-size: 0.875rem; font-weight: 600; }
+.tr-fact dd { display: grid; gap: var(--space-xs); margin: 0; }
+.tr-fact dd b { color: var(--color-heading); font-size: 1.125rem; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.tr-fact dd small { color: var(--color-muted-fg); font-size: 0.875rem; line-height: 1.45; }
+.tr-fact.is-run dd b { color: var(--color-warning); }
+.tr-fact .dc-meter { max-width: 12rem; }
+
+.tr-consist { padding: var(--space-lg); }
+.tr-sub { color: var(--color-muted-fg); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+.tr-cars { display: grid; grid-template-columns: 5.5rem repeat(4, minmax(0, 1fr)); gap: var(--space-xs); margin: 0; padding: 0; list-style: none; }
+.tr-loco { display: grid; place-items: center; min-height: 4.5rem; border-radius: var(--radius-xl) var(--radius-sm) var(--radius-sm) var(--radius-xl); background: var(--color-primary); color: var(--color-on-primary); font-size: 0.875rem; font-weight: 700; }
+.tr-car { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; min-height: 4.5rem; padding: var(--space-sm) var(--space-md); border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm); background: var(--color-card); }
+.tr-car .bi { flex: none; color: var(--color-primary); font-size: 20px; }
+.tr-car span { display: grid; min-width: 0; }
+.tr-car b { color: var(--color-heading); }
+.tr-car small { color: var(--color-muted-fg); font-size: 0.875rem; }
+.tr-car.is-bed { background: var(--color-bg); }
+
+/* ---------- Theo ngày: a day per row, the hours across ---------- */
+
+.tb-wrap { overflow: clip; }
+.tb-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm) var(--space-lg); padding: var(--space-lg) var(--space-lg) var(--space-sm); }
+.tb-head h2 { text-wrap: balance; }
+.tb-head .tr-past { margin: 0; }
+.tb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); }
+.tb-scroll { position: relative; }
+.tb-chart { min-width: 52rem; padding: 0 var(--space-lg) var(--space-sm); }
+.tb-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) 10rem; align-items: stretch; border-bottom: 1px solid var(--color-border); }
+.tb-axis { border-bottom-color: var(--color-border-strong); }
+.tb-day { display: grid; align-content: center; padding: var(--space-sm) var(--space-sm) var(--space-sm) 0; }
+.tb-day b { color: var(--color-heading); font-size: 0.9375rem; }
+.tb-day span { color: var(--color-muted-fg); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+.tb-row.is-today .tb-day b { color: var(--color-primary); }
+.tb-hours { position: relative; height: 2.75rem; }
+.tb-hours span { position: absolute; bottom: var(--space-xs); left: var(--x); transform: translateX(-50%); color: var(--color-muted-fg); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.tb-hours span:first-child { transform: none; }
+.tb-track {
+	position: relative; min-height: 4.5rem; margin: 0; padding: 0; list-style: none;
+	background: repeating-linear-gradient(to right, var(--color-border) 0 1px, transparent 1px calc(100% / 8));
+}
+.tb-row.is-today .tb-track { background-color: var(--color-primary-soft); }
+/* The bar is as long as the leg runs; the button over it carries the words and the click. */
+.tb-bar {
+	position: absolute; top: var(--space-sm); bottom: var(--space-sm); left: var(--x); width: max(var(--w), 3px); z-index: 1;
+	overflow: hidden; border: 1px solid; border-radius: var(--radius-sm); pointer-events: none; transition: box-shadow var(--dur) var(--ease);
+}
+.tb-belt {
+	position: absolute; top: var(--space-sm); bottom: var(--space-sm); left: var(--x); width: max(var(--w), min(10.5rem, var(--room) - 4px)); z-index: 2;
+	display: grid; align-content: center; gap: 1px; padding: var(--space-xs) var(--space-sm); overflow: hidden; container-type: inline-size;
+	border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-heading); text-align: left; cursor: pointer;
+}
+.tb-belt b { font-size: 0.875rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.tb-belt span { overflow: hidden; font-size: 0.8125rem; line-height: 1.2; white-space: nowrap; text-overflow: ellipsis; }
+.tb-belt .tb-short { display: none; }
+@container (max-width: 10rem) { .tb-belt .tb-long { display: none; } .tb-belt .tb-short { display: block; } }
+@container (max-width: 5.5rem) { .tb-belt span, .tb-belt .tb-short { display: none; } }
+@container (max-width: 2.75rem) { .tb-belt b { display: none; } }
+.tb-leg:hover .tb-bar { box-shadow: var(--shadow-md); }
+.tb-belt:active { transform: translateY(1px); }
+.tb-belt:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; z-index: 3; }
+.tb-leg.is-up .tb-bar { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.tb-leg.is-run .tb-bar { border-color: var(--color-warning); background: var(--color-warning-soft); color: var(--color-warning); }
+.tb-leg.is-run .tb-belt { color: var(--color-warning); }
+.tb-leg.is-done .tb-bar { border-color: var(--color-border-strong); background: var(--color-bg); color: var(--color-muted-fg); }
+.tb-leg.is-done .tb-belt { color: var(--color-muted-fg); }
+.tb-leg.is-off .tb-bar { border-style: dashed; border-color: var(--color-destructive); background: var(--color-destructive-soft); }
+.tb-leg.is-off .tb-belt { color: var(--color-destructive); }
+.tb-leg.is-off .tb-belt span, .tb-leg.is-off .tb-belt b { text-decoration: line-through; text-decoration-thickness: 1px; }
+.tb-leg.is-break .tb-bar { box-shadow: inset 4px 0 0 var(--color-destructive); }
+.tb-leg.is-new .tb-bar { background: var(--color-success-soft); }
+.tb-leg.is-cont .tb-bar { border-left-style: dashed; border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.tb-leg.is-on .tb-bar { border-right-style: dashed; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.tb-fill { position: absolute; inset: auto 0 0 0; height: 4px; background: linear-gradient(to right, currentColor var(--p), transparent var(--p)); opacity: 0.8; }
+.tb-wait { position: absolute; top: 50%; left: var(--x); transform: translate(-50%, -50%); padding: 0 var(--space-xs); border-radius: var(--radius-sm); background: var(--color-card); color: var(--color-muted-fg); font-size: 0.8125rem; white-space: nowrap; pointer-events: none; }
+.tb-slot {
+	position: absolute; top: var(--space-sm); bottom: var(--space-sm); left: min(var(--x), calc(100% - 8.5rem)); width: 8.5rem; z-index: 2;
+	display: inline-flex; align-items: center; gap: var(--space-xs); padding: 0 var(--space-sm); border: 1px dashed var(--color-primary); border-radius: var(--radius-sm);
+	background: var(--color-card); color: var(--color-primary); font-size: 0.8125rem; font-weight: 600; text-align: left; cursor: pointer; transition: background-color var(--dur) var(--ease);
+}
+.tb-slot span { overflow: hidden; line-height: 1.25; }
+.tb-slot .bi { flex: none; }
+.tb-slot:hover { background: var(--color-primary-soft); }
+.tb-slot:active { transform: translateY(1px); }
+.tb-slot:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.tb-now { position: absolute; top: 0; bottom: 0; left: var(--x); z-index: 0; border-left: 2px dashed var(--color-warning); pointer-events: none; }
+.tb-hours .tb-now-chip { top: 0; bottom: auto; padding: 0 var(--space-xs); border-radius: var(--radius-sm); background: var(--color-warning); color: var(--color-white); font-weight: 700; white-space: nowrap; }
+.tb-alert { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-sm); margin: 0 0 var(--space-sm); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); background: var(--color-destructive-soft); color: var(--color-destructive); font-size: 0.875rem; font-weight: 600; }
+.tb-alert .bi { flex: none; }
+.tb-night { display: flex; align-items: center; padding: var(--space-sm) 0 var(--space-sm) var(--space-md); color: var(--color-heading); font-size: 0.875rem; font-weight: 600; }
+.tb-axis .tb-night { align-items: flex-end; padding-bottom: var(--space-xs); color: var(--color-muted-fg); font-size: 0.75rem; font-weight: 600; }
+.tb-night.is-run { color: var(--color-warning); }
+.tb-night-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.tb-key { display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg); margin: 0; padding: var(--space-sm) var(--space-lg) var(--space-lg); color: var(--color-muted-fg); font-size: 0.8125rem; }
+.tb-key span { display: inline-flex; align-items: center; gap: var(--space-xs); }
+.tb-swatch { display: inline-block; width: 1.25rem; height: 0.75rem; border: 1px solid; border-radius: 3px; }
+.tb-swatch.is-up { border-color: var(--color-primary); background: var(--color-card); }
+.tb-swatch.is-run { border-color: var(--color-warning); background: var(--color-warning-soft); }
+.tb-swatch.is-done { border-color: var(--color-border-strong); background: var(--color-bg); }
+.tb-swatch.is-off { border-style: dashed; border-color: var(--color-destructive); background: var(--color-destructive-soft); }
+.tb-swatch.is-break { border-color: var(--color-primary); box-shadow: inset 4px 0 0 var(--color-destructive); }
+.tb-swatch.is-slot { border-style: dashed; border-color: var(--color-primary); }
+
+/* ---------- Bảng tính ---------- */
+
+/* The "Theo ngày / Bảng tính" switch next to the train tabs. */
+.view-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--sunk); }
+.view-seg a { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border-radius: var(--r-control); color: var(--muted); font-size: 13px; font-weight: 700; text-decoration: none; }
+.view-seg a:hover { color: var(--ink); text-decoration: none; }
+.view-seg a.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(12, 44, 40, 0.12); }
+
+/* "Bảng tính": the schedule and the draft rows share one table, so columns line up. */
+/* minmax(0, 1fr): the wide table scrolls inside its panel instead of stretching the page. */
+.sheet-view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.grid { width: 100%; margin: 0; border-collapse: collapse; font-size: 13.5px; }
+.grid > thead th { padding: 10px 12px; font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; text-align: left; border-bottom: 1px solid var(--line); }
+.grid > thead th.num { text-align: right; }
+.grid td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+.grid td.num { text-align: right; }
+.sched:not(.show-past) tr.past { display: none; }
+.sched tr.past { color: var(--muted); }
+.sched tr.clickable { cursor: pointer; }
+.sched tr.clickable:hover > td { background: var(--sunk); }
+/* The trips just added flash once, then settle. */
+.sched tr.fresh { animation: fresh-flash 1.6s ease-out; }
+@keyframes fresh-flash { from { background: var(--accent-soft); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .sched tr.fresh { animation: none; background: var(--accent-soft); } }
+.empty-cell { color: var(--muted); white-space: normal; padding: 18px 12px; }
+.plus-day { margin-left: 4px; padding: 0 4px; border-radius: 4px; background: var(--warn-soft); color: var(--warn); font-size: 11.5px; font-weight: 700; }
+
+/* Draft rows: a tinted band under the schedule. */
+.drafts-h td { padding: 10px 12px; background: var(--accent-soft); border-top: 1px solid var(--accent-line); border-bottom: 1px solid var(--accent-line); color: var(--accent-strong); font-weight: 700; }
+tr.draft td { padding: 8px 8px; background: var(--surface); }
+tr.draft .form-select, tr.draft .form-control { min-width: 84px; }
+tr.draft .form-select[data-f="to"], tr.draft .form-select[data-f="origin-select"] { min-width: 150px; }
+tr.draft [data-f="time"], tr.draft [data-f="arr"] { width: 78px; min-width: 0; }
+tr.draft [data-f="price"] { width: 118px; text-align: right; }
+.locked-cell { display: inline-block; min-width: 110px; padding: 5px 10px; border-radius: var(--r-control); background: var(--sunk); color: var(--ink-2); font-weight: 600; }
+.arr-cell { display: flex; align-items: center; gap: 4px; }
+.icon-btn.sm { width: 28px; height: 28px; }
+.draft-help td { padding: 0 12px 10px; background: var(--surface); }
+.draft-errs { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; color: var(--danger); font-size: 13px; font-weight: 600; }
+.draft-errs li { display: flex; align-items: center; gap: 6px; white-space: normal; }
+.row-act { text-align: right; }
+
+/* Add, fill and save bar: sticks to the bottom on wide screens. */
+.draft-bar { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: 0 -6px 16px rgba(12, 44, 40, 0.06); }
+.draft-bar .grow { flex: 1; }
+.draft-bar .fill { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.draft-bar .fill label { font-weight: 600; color: var(--ink-2); }
+.draft-bar .form-select { width: auto; }
+.err-summary { color: var(--danger); font-weight: 700; }
+@media (max-width: 720px) { .draft-bar { position: static; box-shadow: none; } }
+#train-form .is-invalid ~ .form-text { display: none; }
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 1180px) {
+	.tr-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.tr-fact:nth-child(3) { border-left: 0; }
+	.tr-fact:nth-child(n + 3) { border-top: 1px solid var(--color-border); }
+}
+@media (max-width: 860px) {
+	.tr-cars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.tr-loco { grid-column: 1 / -1; min-height: 2.5rem; border-radius: var(--radius-xl) var(--radius-xl) var(--radius-sm) var(--radius-sm); }
+}
+@media (max-width: 760px) {
+	.tr-tabs a span { display: none; }
+	.tr-submit { margin-left: 0; }
+
+	/* The day label and where the train ends the day sit over a full-width track; no sideways scroll. */
+	.tb-chart { min-width: 0; padding: 0 var(--space-md) var(--space-sm); }
+	.tb-row { grid-template-columns: minmax(0, 1fr) auto; }
+	.tb-day { display: flex; gap: var(--space-sm); align-items: baseline; padding-bottom: var(--space-xs); }
+	.tb-track, .tb-hours { grid-column: 1 / -1; grid-row: 2; }
+	.tb-night { grid-column: 2; grid-row: 1; padding: var(--space-sm) 0 var(--space-xs); font-weight: 400; color: var(--color-muted-fg); }
+	.tb-axis .tb-day, .tb-axis .tb-night { display: none; }
+	.tb-night-label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: pre; }
+	.tb-night b { color: var(--color-heading); font-weight: 600; }
+	.tb-night.is-run b { color: var(--color-warning); }
+	.tb-hours span:not(.tb-now-chip):nth-child(even) { display: none; }
+	.tb-track { margin-bottom: var(--space-sm); }
+	.tb-belt b { font-size: 0.8125rem; }
+	.tb-alert { margin-top: calc(-1 * var(--space-xs)); }
+}
+@media (max-width: 640px) {
+	.tr-facts { grid-template-columns: minmax(0, 1fr); }
+	.tr-fact { padding: var(--space-md); border-left: 0; }
+	.tr-fact:nth-child(n + 2) { border-top: 1px solid var(--color-border); }
+	.tb-head, .tr-schedule, .tr-consist { padding: var(--space-md); }
+	.tr-empty { margin: 0 var(--space-md) var(--space-md); }
+}
+
+/* ---------- the view switch ---------- */
+
+.view-seg { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
+.view-seg a { min-height: 32px; padding: 0 var(--space-md); border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; }
+.view-seg a.active { background: var(--color-card); color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-border); }
+.dc-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-md) var(--space-xl); margin-bottom: var(--space-lg); }
+.dc-date { margin-top: var(--space-xs); color: var(--color-muted-fg); font-size: 0.9375rem; }
+.sheet-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+/* Legs and days that have run, until "Hiện N chặng đã chạy". */
+.tb-chart:not(.show-past) .past { display: none; }
+.tb-slot:hover { text-decoration: none; }
+.tr-tabs a:hover { text-decoration: none; }
+.past-toggle { justify-self: start; }

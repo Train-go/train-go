@@ -21,9 +21,11 @@ import com.voyagego.traingo.model.dto.TrainPosition;
  * @param earliestDepartureLabel {@code earliestDeparture} as "04/11 10:15"
  * @param pastCount how many trips have already arrived; the page hides them
  *        until the admin asks for them
+ * @param hours the same trips on the hour chart of "Theo ngày"
  */
 public record TrainScheduleView(Train train, TrainPosition position, Trip chainEnd, String scheduledUntil,
-		LocalDateTime earliestDeparture, String earliestDepartureLabel, List<ScheduleDay> days, int pastCount) {
+		LocalDateTime earliestDeparture, String earliestDepartureLabel, List<ScheduleDay> days, int pastCount,
+		TrainHoursView hours) {
 
 	public boolean hasTrips() {
 		return !days.isEmpty();
