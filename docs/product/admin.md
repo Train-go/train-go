@@ -345,6 +345,9 @@ liệu của ngăn lấy từ `GET /api/admin/bookings/{code}`.
 `/admin/bookings?customer={userId}` chỉ hiện booking của khách đó (mọi nhóm), ô tìm
 điền sẵn tên khách. Trang Người dùng link sang đây.
 
+Sửa hoặc xóa chữ trong ô tìm thì bỏ bộ lọc `customer`: từ khóa mới tìm trên booking
+của mọi khách, số đếm về tổng từng nhóm. Link "Bỏ tìm kiếm" cũng bỏ bộ lọc khách.
+
 Admin hủy được booking chưa tới giờ đi. Chân ngăn có câu "Hủy booking sẽ trả các chỗ
 về trạng thái còn trống." và nút "Hủy booking"; bấm thì có hộp xác nhận "N chỗ trên chuyến
 … sẽ mở bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền.", rồi toast "Đã hủy

@@ -16,8 +16,12 @@
 	const search = document.querySelector('[data-booking-search]');
 	if (search) {
 		const input = search.elements.namedItem('q');
+		const customer = search.elements.namedItem('customer');
 		let timer = null;
 		function submitSoon() {
+			if (customer) {
+				customer.remove();
+			}
 			clearTimeout(timer);
 			timer = setTimeout(function () {
 				search.requestSubmit();
