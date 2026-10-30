@@ -75,7 +75,7 @@
 		<i class="bi bi-ticket-perforated" aria-hidden="true"></i>
 		<b th:text="${view.searching} ? |Không có booking nào khớp &quot;${view.q}&quot;.| : 'Không có booking nào trong nhóm này.'">Không có booking nào trong nhóm này.</b>
 		<a class="btn btn-outline-secondary btn-sm" th:if="${view.searching}"
-			th:href="@{/admin/bookings(tab=${view.tab}, q='', customer=${view.customerId})}">Bỏ tìm kiếm</a>
+			th:href="@{/admin/bookings(tab=${view.tab}, q='')}">Bỏ tìm kiếm</a>
 	</div>
 
 	<!-- Filled and opened by bookings.js. -->
