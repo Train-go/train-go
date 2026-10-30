@@ -1,146 +1,183 @@
 <!DOCTYPE html>
 <!--
-	Homepage, after docs/reports/ui-mau/client/trang-chu-8-swiss.html.
-
-	The search form's ids (tgFrom, tgTo, tgDate, tgSwap, tgSearchForm,
-	tgSearchError) are read by landing.js.
+	Homepage. The search form's ids (search-from, search-to, search-date,
+	search-swap, search, search-error) are read by landing.js. The journeys come
+	ranked from HomeService; the chips and "Xem thêm" are links, so the block holds
+	the same shape however many routes there are, and nothing counts them.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, overPhoto=true)}">
 <head>
 	<title>TrainGo · Đặt vé tàu trực tuyến</title>
+	<link rel="stylesheet" th:href="@{/css/pages/home.css}">
 </head>
 <body>
 
 <main>
 
-	<!-- Hero (SPEC.md 5.2): photo under a navy veil, search across its bottom edge. -->
-	<section class="tg-hero">
-		<img class="tg-hero-img" th:src="@{/images/home/hero-sa-pa.jpg}"
-			alt="Tàu leo núi màu đỏ chạy trên cầu sắt giữa thung lũng ruộng bậc thang" fetchpriority="high">
-		<div class="container tg-hero-text">
-			<h1>Đặt vé tàu nhanh, rõ ràng.</h1>
-		</div>
-	</section>
-
-	<div class="container tg-search-wrap">
-		<!--
-			A shortcut into the trip list: it opens /trips with the two station
-			codes and the day filled in. The ticket count is the number of seats
-			picked later, so there is no passenger field (D6).
-		-->
-		<form class="tg-search" method="get" th:action="@{/trips}" id="tgSearchForm" novalidate>
-			<label class="tg-cell tg-cell-from" for="tgFrom">
-				<small>Đi từ</small>
-				<select id="tgFrom" name="from" required>
-					<option value="">Chọn ga đi</option>
-					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${station.name}">Ga Sài Gòn</option>
-				</select>
-			</label>
-			<button class="tg-swap" type="button" id="tgSwap" aria-label="Đổi ga đi và ga đến" title="Đổi chiều">
-				<i class="bi bi-arrow-left-right" aria-hidden="true"></i>
-			</button>
-			<label class="tg-cell tg-cell-to" for="tgTo">
-				<small>Đến</small>
-				<select id="tgTo" name="to" required>
-					<option value="">Chọn ga đến</option>
-					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${station.name}">Ga Nha Trang</option>
-				</select>
-			</label>
-			<label class="tg-cell tg-cell-date" for="tgDate">
-				<small>Ngày đi</small>
-				<input type="date" id="tgDate" name="date" th:value="${today}" th:min="${today}" required>
-			</label>
-			<button class="tg-go" type="submit">Tìm chuyến <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
-		</form>
-		<p class="tg-search-error d-none" id="tgSearchError" role="alert"></p>
-	</div>
-
-	<!-- Destinations: picking one fills "Đến" in the search above. -->
-	<section class="container tg-section" th:if="${!#lists.isEmpty(destinations)}">
-		<div class="tg-sec-head tg-reveal">
-			<h2>Đi đâu cũng có tàu</h2>
-		</div>
-		<div class="tg-places">
-			<button type="button" class="tg-place tg-reveal" th:each="place, it : ${destinations}"
-				th:classappend="${it.first} ? 'is-big'" th:attr="data-to=${place.stationCode}">
-				<img th:if="${place.photo != null}" th:src="@{${place.photo.path}}" th:alt="${place.photo.alt}" loading="lazy">
-				<span class="tg-place-text">
-					<small><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span th:text="${place.stationName}">Ga Nha Trang</span></small>
-					<strong th:text="${place.place}">Nha Trang</strong>
-				</span>
-			</button>
-		</div>
-	</section>
-
-	<!-- Popular routes (SPEC.md 5.3): each opens the trip list for today on that route. -->
-	<section class="container tg-section" id="popular-routes">
-		<div class="tg-sec-head tg-reveal">
-			<h2>Tuyến phổ biến</h2>
-		</div>
-		<div class="tg-routes">
-			<a class="tg-route tg-reveal" th:each="route : ${popularRoutes}"
-				th:href="@{/trips(from=${route.originCode}, to=${route.destinationCode})}">
-				<span class="tg-route-photo">
-					<img th:if="${route.photo != null}" th:src="@{${route.photo.path}}" alt="" loading="lazy">
-				</span>
-				<span class="tg-route-body">
-					<span class="tg-route-line">
-						<b th:text="${route.originPlace}">Hà Nội</b>
-						<i class="bi bi-arrow-right" aria-hidden="true"></i>
-						<b th:text="${route.destinationPlace}">Đà Nẵng</b>
-					</span>
-					<span class="tg-route-meta"><i class="bi bi-signpost-split" aria-hidden="true"></i><span th:text="${route.note}">791 km</span></span>
-				</span>
-			</a>
-		</div>
-	</section>
-
-	<!--
-		How it works (SPEC.md 5.4); the navbar's "Hướng dẫn" lands here. The
-		steps are drawn as stops on a line, on a white band across the page.
-	-->
-	<section class="tg-band" id="how-it-works">
+	<section class="hero" aria-labelledby="hero-title">
+		<img class="hero-photo" th:src="@{/images/home/hero-sa-pa.jpg}" width="1920" height="1080" alt="" fetchpriority="high">
 		<div class="container">
-			<div class="tg-sec-head tg-reveal">
-				<h2>Đặt vé thế nào</h2>
+			<h1 id="hero-title">Đặt vé tàu Bắc – Nam, chọn chỗ theo ý bạn</h1>
+			<p class="hero-lead">Tìm chuyến tàu phù hợp, lựa chọn ghế hoặc giường trên sơ đồ toa và nhận vé điện tử sau khi thanh toán.</p>
+
+			<!-- A shortcut into the trip list. The ticket count is the number of seats picked later, so there is no passenger field (D6). -->
+			<form class="search" id="search" method="get" th:action="@{/trips}" novalidate>
+				<div class="field field-from">
+					<label class="field-label" for="search-from">Ga đi</label>
+					<div class="control">
+						<i class="bi bi-geo-alt" aria-hidden="true"></i>
+						<select id="search-from" name="from" required>
+							<option value="">Chọn ga đi</option>
+							<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}">Hà Nội</option>
+						</select>
+					</div>
+				</div>
+				<button class="icon-btn" type="button" id="search-swap" aria-label="Đổi ga đi và ga đến"><i class="bi bi-arrow-left-right" aria-hidden="true"></i></button>
+				<div class="field field-to">
+					<label class="field-label" for="search-to">Ga đến</label>
+					<div class="control">
+						<i class="bi bi-geo-alt" aria-hidden="true"></i>
+						<select id="search-to" name="to" required>
+							<option value="">Chọn ga đến</option>
+							<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}">Sài Gòn</option>
+						</select>
+					</div>
+				</div>
+				<div class="field field-date">
+					<label class="field-label" for="search-date">Ngày khởi hành</label>
+					<div class="control">
+						<i class="bi bi-calendar3" aria-hidden="true"></i>
+						<input id="search-date" name="date" type="date" th:value="${today}" th:min="${today}" required>
+					</div>
+				</div>
+				<button class="btn btn-cta" type="submit"><i class="bi bi-search" aria-hidden="true"></i>Tìm chuyến</button>
+				<p class="search-error" id="search-error" aria-live="polite"></p>
+			</form>
+
+			<div class="quick" th:if="${!#lists.isEmpty(popular.footerRoutes)}">
+				<span>Gợi ý tuyến đường:</span>
+				<a th:each="route : ${popular.quickRoutes}" th:href="@{/trips(from=${route.originCode}, to=${route.destinationCode})}"
+					th:text="|${route.originPlace} – ${route.destinationPlace}|">Huế – Đà Nẵng</a>
 			</div>
-			<ol class="tg-how">
-				<li class="tg-reveal">
-					<span class="tg-how-num">1</span>
-					<h3>Tìm chuyến</h3>
-					<p>Chọn ga đi, ga đến và ngày khởi hành.</p>
+		</div>
+	</section>
+
+	<section class="props-band" aria-label="Đặt vé cùng TrainGo">
+		<div class="container">
+			<div class="props-grid">
+				<div class="prop">
+					<span class="prop-icon"><i class="bi bi-search" aria-hidden="true"></i></span>
+					<div><h3>Tìm chuyến dễ dàng</h3><p>Chọn ga đi, ga đến cùng ngày khởi hành bạn muốn.</p></div>
+				</div>
+				<div class="prop">
+					<span class="prop-icon"><i class="bi bi-grid-3x2-gap" aria-hidden="true"></i></span>
+					<div><h3>Chọn chỗ trực quan</h3><p>Sơ đồ từng toa cho phép bạn chọn ghế hoặc giường còn trống một cách trực quan.</p></div>
+				</div>
+				<div class="prop">
+					<span class="prop-icon"><i class="bi bi-ticket-perforated" aria-hidden="true"></i></span>
+					<div><h3>Vé của bạn, luôn trong tầm tay</h3><p>Sau khi thanh toán, vé sẽ được cấp ngay và bạn có thể xem lại bất cứ lúc nào trong mục Vé của tôi.</p></div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="section" aria-labelledby="routes-title">
+		<div class="container">
+			<div class="section-head">
+				<div>
+					<h2 id="routes-title">Khám phá các hành trình nổi bật</h2>
+					<p>Tìm hiểu những tuyến đường và lựa chọn chuyến tàu phù hợp với kế hoạch của bạn.</p>
+				</div>
+				<a class="link-arrow" th:href="@{/trips}">Tìm chuyến khác <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+			</div>
+			<div class="chips" role="group" aria-label="Lọc theo điểm đến">
+				<a class="chip" th:each="chip : ${popular.chips}" th:href="@{/(region=${chip.key == '' ? null : chip.key})} + '#routes-title'"
+					th:attr="aria-current=${chip.key == popular.region} ? 'true' : null" th:text="${chip.label}">Tất cả</a>
+			</div>
+			<ul class="routes" th:unless="${#lists.isEmpty(popular.routes)}">
+				<li class="card route" th:each="route, it : ${popular.routes}" th:classappend="${it.first} ? 'is-featured'">
+					<figure class="route-photo"><img th:if="${route.photo != null}" th:src="@{${route.photo.path}}" alt="" loading="lazy"></figure>
+					<div class="route-body">
+						<h3 class="route-name"><th:block th:text="${route.originPlace}">Hà Nội</th:block> <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="visually-hidden">đến</span> <th:block th:text="${route.destinationPlace}">Sài Gòn</th:block></h3>
+						<p class="route-dur"><i class="bi bi-clock" aria-hidden="true"></i><th:block th:text="${route.durationLabel}">28 giờ 45 phút</th:block></p>
+						<dl class="route-facts">
+							<div><dt>Chuyến gần nhất</dt><dd th:text="${route.nextLabel}">Hôm nay, 08:00</dd></div>
+							<div class="route-price"><dt>Giá từ</dt><dd><a th:href="@{/trips(from=${route.originCode}, to=${route.destinationCode})}"><span class="visually-hidden" th:text="|Xem chuyến ${route.originPlace} đến ${route.destinationPlace}, giá từ |"></span><th:block th:text="${#numbers.formatInteger(route.price, 0, 'POINT')} + ' đ'">100.000 đ</th:block></a></dd></div>
+						</dl>
+					</div>
 				</li>
-				<li class="tg-reveal">
-					<span class="tg-how-num">2</span>
-					<h3>Chọn chỗ</h3>
-					<p>Chọn toa rồi chọn ghế hoặc giường trên sơ đồ.</p>
+			</ul>
+			<p class="route-empty" th:if="${#lists.isEmpty(popular.routes)}">Chưa có hành trình nào trong khu vực này.</p>
+			<div class="more" th:if="${popular.hasMore}">
+				<a class="btn btn-outline" th:href="@{/(region=${popular.region == '' ? null : popular.region}, limit=${popular.limit + 3})} + '#routes-title'">Xem thêm hành trình</a>
+			</div>
+		</div>
+	</section>
+
+	<section class="section" id="how-it-works" aria-labelledby="how-title">
+		<div class="container">
+			<div class="section-head">
+				<div><h2 id="how-title">Ba bước đơn giản để bắt đầu hành trình</h2></div>
+			</div>
+			<ol class="steps3">
+				<li class="card step-card" data-reveal>
+					<figure class="step-visual"><img th:src="@{/images/home/buoc-1-chon-chuyen.png}" width="1368" height="880" alt="" loading="lazy"></figure>
+					<div class="step-text">
+						<span class="step-num" aria-hidden="true">01</span>
+						<h3>Tìm chuyến</h3>
+						<p>Chọn điểm đi, điểm đến và ngày khởi hành. So sánh giờ chạy để chọn chuyến phù hợp.</p>
+					</div>
 				</li>
-				<li class="tg-reveal">
-					<span class="tg-how-num">3</span>
-					<h3>Nhập hành khách</h3>
-					<p>Điền họ tên và số CCCD trên từng vé.</p>
+				<li class="card step-card" data-reveal>
+					<figure class="step-visual"><img th:src="@{/images/home/buoc-2-chon-cho.png}" width="1304" height="924" alt="" loading="lazy"></figure>
+					<div class="step-text">
+						<span class="step-num" aria-hidden="true">02</span>
+						<h3>Chọn chỗ</h3>
+						<p>Xem sơ đồ toa tàu và lựa chọn ghế hoặc giường còn trống theo ý thích.</p>
+					</div>
 				</li>
-				<li class="tg-reveal">
-					<span class="tg-how-num">4</span>
-					<h3>Thanh toán</h3>
-					<p>Xem lại booking rồi thanh toán.</p>
-				</li>
-				<li class="tg-reveal">
-					<span class="tg-how-num">5</span>
-					<h3>Nhận vé</h3>
-					<p>Vé điện tử hiện ngay trên website.</p>
+				<li class="card step-card" data-reveal>
+					<div class="step-visual step-visual-ticket">
+						<div class="ticket" aria-hidden="true">
+							<div class="ticket-main">
+								<div class="ticket-head"><span class="brand"><span class="brand-mark"><i class="bi bi-train-front"></i></span>TrainGo</span></div>
+								<div class="ticket-route">
+									<div><b>08:00</b><small>Huế</small></div>
+									<span class="rail"></span>
+									<div class="to"><b>09:45</b><small>Đà Nẵng</small></div>
+								</div>
+								<dl>
+									<div><dt>Tàu</dt><dd>SE1</dd></div>
+									<div><dt>Toa</dt><dd>1, ghế ngồi</dd></div>
+								</dl>
+							</div>
+							<div class="ticket-stub">
+								<div><small>Chỗ</small><b>A13</b></div>
+								<div><small>Mã vé</small><div class="ticket-code">TK202610005-01</div></div>
+							</div>
+						</div>
+					</div>
+					<div class="step-text">
+						<span class="step-num" aria-hidden="true">03</span>
+						<h3>Nhận vé điện tử</h3>
+						<p>Hoàn tất thanh toán và nhận vé điện tử cho từng hành khách.</p>
+					</div>
 				</li>
 			</ol>
 		</div>
 	</section>
 
-	<div class="tg-trust">
-		<div class="container">
-			<div><i class="bi bi-lock" aria-hidden="true"></i><strong>Thanh toán an toàn</strong></div>
-			<div><i class="bi bi-qr-code" aria-hidden="true"></i><strong>Vé nằm trong điện thoại</strong></div>
-			<div><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i><strong>Hủy vé ngay trên web</strong></div>
-		</div>
+	<div class="container" th:if="${popular.cta != null}">
+		<section class="cta" aria-labelledby="cta-title" data-reveal>
+			<h2 id="cta-title" th:text="|${popular.cta.originPlace} – ${popular.cta.destinationPlace}, chọn ngày khởi hành|">Hà Nội – Sài Gòn, chọn ngày khởi hành</h2>
+			<p>Chọn ngày bạn muốn đi để khám phá các chuyến tàu còn chỗ.</p>
+			<ul class="days" aria-label="Bảy ngày tới">
+				<li th:each="day : ${popular.days}">
+					<a th:href="@{/trips(from=${popular.cta.originCode}, to=${popular.cta.destinationCode}, date=${day.date})}"><th:block th:text="${day.label}">Hôm nay</th:block><b th:text="${day.dateLabel}">27/10</b></a>
+				</li>
+			</ul>
+		</section>
 	</div>
 
 	<script th:src="@{/js/landing.js}"></script>

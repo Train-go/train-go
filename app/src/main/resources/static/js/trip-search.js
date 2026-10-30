@@ -6,25 +6,25 @@
 (function () {
 	'use strict';
 
-	var fromField = document.getElementById('tgFindFrom');
-	var toField = document.getElementById('tgFindTo');
-	document.getElementById('tgFindSwap').addEventListener('click', function () {
+	var fromField = document.getElementById('find-from');
+	var toField = document.getElementById('find-to');
+	document.getElementById('find-swap').addEventListener('click', function () {
 		var origin = fromField.value;
 		fromField.value = toField.value;
 		toField.value = origin;
 	});
 
 	// On a phone the strip scrolls sideways; bring the day being shown to its middle.
-	var shownDay = document.querySelector('.tg-day[aria-current="date"]');
+	var shownDay = document.querySelector('.dates a[aria-current="date"]');
 	if (shownDay) {
-		var strip = shownDay.parentElement;
+		var strip = shownDay.closest('ul');
 		var stripBox = strip.getBoundingClientRect();
 		var dayBox = shownDay.getBoundingClientRect();
 		strip.scrollLeft += dayBox.left - stripBox.left - (stripBox.width - dayBox.width) / 2;
 	}
 
 	// The day label opens the calendar; picking a day keeps stations and filters.
-	var pickDate = document.getElementById('tgPickDate');
+	var pickDate = document.getElementById('pick-date');
 	if (pickDate) {
 		pickDate.addEventListener('click', function () {
 			try {
@@ -44,23 +44,11 @@
 	}
 
 	// A ticked filter sends the form at once, so its submit button is not needed.
-	var filterForm = document.getElementById('tgFilterForm');
+	var filterForm = document.getElementById('filters');
 	if (filterForm) {
-		filterForm.querySelector('.tg-filters-apply').hidden = true;
+		filterForm.querySelector('.filter-apply').hidden = true;
 		filterForm.addEventListener('change', function () {
 			filterForm.requestSubmit();
-		});
-	}
-
-	// On a phone the filters fold behind the "Lọc chuyến" button.
-	var filters = document.getElementById('tgFilters');
-	var toggle = document.getElementById('tgFiltersToggle');
-	if (filters && toggle) {
-		filters.classList.add('is-foldable');
-		toggle.hidden = false;
-		toggle.addEventListener('click', function () {
-			var open = filters.classList.toggle('is-open');
-			toggle.setAttribute('aria-expanded', String(open));
 		});
 	}
 })();

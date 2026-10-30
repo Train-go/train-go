@@ -3,8 +3,7 @@
 <body>
 
 <!--
-	The four steps of a booking, after docs/reports/ui-mau/client/hanh-khach-2-the-ve.html.
-	A page includes it with the step it shows, 1 to 4:
+	The four steps of a booking. A page includes it with the step it shows, 1 to 4:
 
 		<nav th:replace="~{fragments/booking-steps :: steps(3)}"></nav>
 
@@ -14,31 +13,37 @@
 		stepsTripsUrl  step 1, the trip list with the search the user ran,
 		               e.g. /trips?from=HNI&to=HUE&date=2026-10-24
 		stepsSeatsUrl  step 2, the seat page of the trip being booked
-
-	Without them step 1 goes to /trips and step 2 to "#" until the seat page
-	exists and sets stepsSeatsUrl.
 -->
-<nav th:fragment="steps(current)" aria-label="Các bước đặt vé"
+<nav th:fragment="steps(current)" class="stepper" aria-label="Các bước đặt vé"
 	th:with="hrefs=${ {stepsTripsUrl != null ? stepsTripsUrl : '/trips',
 			stepsSeatsUrl != null ? stepsSeatsUrl : '#',
 			'/booking/passengers'} },
-		names=${ {'Chọn chuyến', 'Chọn chỗ', 'Hành khách', 'Thanh toán'} }">
-	<ol class="tg-steps">
+		names=${ {'Chọn chuyến', 'Chọn chỗ', 'Xác nhận', 'Thanh toán'} }">
+	<ol>
 		<li th:each="name, it : ${names}"
 			th:with="step=${it.count}"
-			th:classappend="${step < current} ? 'is-done' : (${step == current} ? 'is-current' : '')"
+			th:classappend="${step < current} ? 'is-done'"
 			th:attr="aria-current=${step == current} ? 'step' : null">
 			<a th:if="${step < current}" th:href="@{${hrefs[it.index]}}">
-				<span class="tg-step-dot"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
-				<span class="tg-step-name" th:text="${name}">Chọn chuyến</span>
+				<span class="step-dot"><i class="bi bi-check-lg" aria-hidden="true"></i></span>
+				<span class="step-label" th:text="${name}">Chọn chuyến</span>
+				<span class="visually-hidden">, đã xong</span>
 			</a>
-			<span th:unless="${step < current}" class="tg-step">
-				<span class="tg-step-dot" th:text="${step}">2</span>
-				<span class="tg-step-name" th:text="${name}">Chọn chỗ</span>
-			</span>
+			<th:block th:unless="${step < current}">
+				<span class="step-dot" th:text="${step}">2</span>
+				<span class="step-label" th:text="${name}">Chọn chỗ</span>
+			</th:block>
 		</li>
 	</ol>
+	<p class="stepper-now" aria-hidden="true" th:text="|Bước ${current} trên 4: ${names[current - 1]}|">Bước 2 trên 4: Chọn chỗ</p>
 </nav>
+
+<!-- One leg: the two times and stations with the duration between them. -->
+<div th:fragment="leg(departure, arrival, plusDays, origin, destination, duration)" class="trip-times">
+	<div class="trip-time"><b th:text="${#temporals.format(departure, 'HH:mm')}">08:00</b><small th:text="${origin}">Huế</small></div>
+	<div class="trip-dur" th:text="${duration}">1 giờ 45 phút</div>
+	<div class="trip-time to"><b><th:block th:text="${#temporals.format(arrival, 'HH:mm')}">09:45</th:block><sup th:if="${plusDays > 0}" th:text="|+${plusDays}|">+1</sup></b><small th:text="${destination}">Đà Nẵng</small></div>
+</div>
 
 </body>
 </html>

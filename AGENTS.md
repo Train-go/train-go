@@ -72,7 +72,7 @@ Dự án có **hai hệ giao diện tách rời**, không được trộn:
 | | Landing / khách | Admin |
 | --- | --- | --- |
 | Template | `templates/layout/base.html`, `templates/fragments/` | `templates/admin/layout/base.html`, `templates/admin/fragments/` |
-| CSS | `/css/app.css` | `/css/admin/admin.css` |
+| CSS | `/css/app.css` + `/css/pages/<trang>.css` | `/css/admin/admin.css` + `/css/admin/pages/<trang>.css` |
 | JS | `/js/landing.js` | `/js/admin/admin.js` |
 
 **Không bao giờ nạp `app.css` và `admin.css` trên cùng một trang.** Hai khu dùng

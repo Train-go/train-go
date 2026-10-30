@@ -225,7 +225,7 @@ public class TripAdminService {
 		return trip.getDepartureAt().format(TIME) + " → " + arrival;
 	}
 
-	private static String duration(Trip trip) {
+	static String duration(Trip trip) {
 		long minutes = Duration.between(trip.getDepartureAt(), trip.getArrivalAt()).toMinutes();
 		long hours = minutes / 60;
 		long rest = minutes % 60;

@@ -1,0 +1,5 @@
+/* Trang lỗi: error/*.html. */
+
+.error-page { display: grid; place-items: center; flex: 1; padding-block: var(--space-3xl); }
+.error-page .state { width: min(36rem, 100%); margin: 0; }
+.state-code { color: var(--color-primary); font-size: 0.875rem; font-weight: 700; }

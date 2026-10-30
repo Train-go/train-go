@@ -244,7 +244,7 @@ Việc hủy cũng phải nằm trong transaction.
 
 Luật hủy chỉ nằm ở `BookingCancellationService`, dùng chung cho khách (Vé của tôi)
 và admin (#35). Khách bấm "Hủy booking" thấy hộp xác nhận "N chỗ trên chuyến … sẽ mở
-bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền."; hủy xong quay về trang
+bán lại."; hủy xong quay về trang
 chi tiết với thông báo "Đã hủy booking BK…". Gửi hủy cho booking đã đi hoặc đã hủy
 bị từ chối với "Không hủy được: chuyến đã khởi hành." hoặc "Booking đã hủy.", không
 đổi gì trong database.

@@ -1,0 +1,16 @@
+/* Vé điện tử: tickets/ticket.html, tickets/booking-tickets.html. */
+
+.container.tickets { max-width: calc(880px + 2 * var(--gutter)); }
+.tickets h1 { margin-bottom: var(--space-lg); font-size: clamp(1.5rem, 1vw + 1.1rem, 2rem); }
+.ticket-entry { display: grid; gap: var(--space-xs); }
+.ticket-open { display: inline-flex; align-items: center; justify-self: end; gap: var(--space-xs); min-height: 44px; font-weight: 600; text-decoration: none; }
+.ticket-open:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.ticket-after { display: flex; flex-wrap: wrap; gap: var(--space-md) var(--space-lg); margin-top: var(--space-lg); }
+.ticket-after a { display: inline-flex; align-items: center; gap: var(--space-xs); min-height: 44px; font-weight: 600; text-decoration: none; }
+.ticket-after a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.ticket.is-void .ticket-main, .ticket.is-void .ticket-stub { filter: grayscale(1); }
+.ticket.is-void .ticket-stub { background: var(--color-muted-fg); }
+@media print {
+	.site-header, .ticket-after, .ticket-open, .footer-legal-compact { display: none; }
+	.ticket { filter: none; break-inside: avoid; }
+}

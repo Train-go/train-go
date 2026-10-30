@@ -1,264 +1,154 @@
 <!DOCTYPE html>
 <!--
-	Step 1 of a booking, the trip list (issue #26), after
-	docs/reports/ui-mau/client/chon-chuyen-b-mo-rong.html.
-
-	Everything is plain links and GET forms on /trips, so a copied link opens
-	the same day, filters and order. trip-search.js only adds conveniences:
-	swapping stations, sending the filter form on change, opening the calendar
-	from the day label and folding the filters on a phone.
+	Step 1 of a booking, the trip list (issue #26). Everything is plain links and
+	GET forms on /trips, so a copied link opens the same day, filters and order.
+	trip-search.js only adds conveniences: swapping stations, sending the filter
+	form on change and opening the calendar from the day label.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
 	<title th:text="${originName != null} ? |${originName} → ${destinationName} · TrainGo| : 'Chọn chuyến · TrainGo'">Chọn chuyến · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/trips.css}">
 </head>
 <body>
 
-<main class="container tg-trips" th:object="${search}">
+<main class="page" th:object="${search}">
+<div class="container">
 
 	<nav th:replace="~{fragments/booking-steps :: steps(1)}"></nav>
 
 	<!-- A booking page that has no booking in progress sends the customer here with its reason. -->
-	<div th:if="${errorMessage}" class="alert alert-warning d-flex gap-2 mt-3" role="alert">
-		<i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+	<div th:if="${errorMessage}" class="alert alert-warning" role="alert">
+		<i class="bi bi-info-circle" aria-hidden="true"></i>
 		<span th:text="${errorMessage}">Hãy chọn chuyến và chỗ trước.</span>
 	</div>
 
-	<form class="tg-find" method="get" th:action="@{/trips}" id="tgFind" novalidate>
-		<div class="tg-find-field">
-			<label for="tgFindFrom">Ga đi</label>
-			<span class="tg-find-box" th:classappend="${#fields.hasErrors('from')} ? 'is-invalid'">
+	<form class="card trip-search" method="get" th:action="@{/trips}" id="find" novalidate>
+		<div class="field field-from">
+			<label class="field-label" for="find-from">Ga đi</label>
+			<div class="control" th:classappend="${#fields.hasErrors('from')} ? 'is-invalid'">
 				<i class="bi bi-geo-alt" aria-hidden="true"></i>
-				<select id="tgFindFrom" name="from" th:attr="aria-describedby=${#fields.hasErrors('from')} ? 'tgFindFromError' : null">
+				<select id="find-from" name="from" th:attr="aria-describedby=${#fields.hasErrors('from')} ? 'find-from-error' : null">
 					<option value="" th:selected="*{from == null}">Chọn ga đi</option>
-					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${station.name}"
-						th:selected="${station.code == search.from}">Ga Huế</option>
+					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}"
+						th:selected="${station.code == search.from}">Huế</option>
 				</select>
-			</span>
-			<p class="tg-find-error" id="tgFindFromError" th:if="${#fields.hasErrors('from')}" th:errors="*{from}">Không tìm thấy ga đi này.</p>
+			</div>
+			<p class="field-error" id="find-from-error" th:if="${#fields.hasErrors('from')}" th:errors="*{from}">Không tìm thấy ga đi này.</p>
 		</div>
-		<button class="tg-find-swap" type="button" id="tgFindSwap" aria-label="Đổi ga đi và ga đến" title="Đổi chiều">
-			<i class="bi bi-arrow-left-right" aria-hidden="true"></i>
-		</button>
-		<div class="tg-find-field"
-			th:with="toInvalid=${#fields.hasErrors('to') or #fields.hasErrors('differentStations')}">
-			<label for="tgFindTo">Ga đến</label>
-			<span class="tg-find-box" th:classappend="${toInvalid} ? 'is-invalid'">
-				<i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
-				<select id="tgFindTo" name="to" th:attr="aria-describedby=${toInvalid} ? 'tgFindToError' : null">
+		<button class="icon-btn" type="button" id="find-swap" aria-label="Đổi ga đi và ga đến"><i class="bi bi-arrow-left-right" aria-hidden="true"></i></button>
+		<div class="field field-to" th:with="toInvalid=${#fields.hasErrors('to') or #fields.hasErrors('differentStations')}">
+			<label class="field-label" for="find-to">Ga đến</label>
+			<div class="control" th:classappend="${toInvalid} ? 'is-invalid'">
+				<i class="bi bi-geo-alt" aria-hidden="true"></i>
+				<select id="find-to" name="to" th:attr="aria-describedby=${toInvalid} ? 'find-to-error' : null">
 					<option value="" th:selected="*{to == null}">Chọn ga đến</option>
-					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${station.name}"
-						th:selected="${station.code == search.to}">Ga Đà Nẵng</option>
+					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}"
+						th:selected="${station.code == search.to}">Đà Nẵng</option>
 				</select>
-			</span>
-			<p class="tg-find-error" id="tgFindToError" th:if="${toInvalid}">
+			</div>
+			<p class="field-error" id="find-to-error" th:if="${toInvalid}">
 				<span th:if="${#fields.hasErrors('to')}" th:errors="*{to}">Không tìm thấy ga đến này.</span>
 				<span th:if="${!#fields.hasErrors('to')}" th:errors="*{differentStations}">Ga đến phải khác ga đi.</span>
 			</p>
 		</div>
 		<input type="hidden" name="date" th:value="*{date}">
-		<button class="tg-find-go" type="submit"><i class="bi bi-search" aria-hidden="true"></i>Tìm chuyến</button>
+		<button class="btn btn-primary" type="submit"><i class="bi bi-search" aria-hidden="true"></i>Tìm chuyến</button>
 	</form>
 
 	<th:block th:if="${result != null}">
 
-		<div class="tg-trips-head">
-			<h1>
-				<span th:text="${originName}">Huế</span>
-				<i class="bi bi-arrow-right" aria-hidden="true"></i><span class="visually-hidden">đến</span>
-				<span th:text="${destinationName}">Đà Nẵng</span>
-			</h1>
-			<label class="tg-pick-date">
+		<div class="results-head">
+			<h1><th:block th:text="${#strings.replace(originName, 'Ga ', '')}">Huế</th:block> <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="visually-hidden">đến</span> <th:block th:text="${#strings.replace(destinationName, 'Ga ', '')}">Đà Nẵng</th:block></h1>
+			<label class="date-pick">
 				<i class="bi bi-calendar3" aria-hidden="true"></i>
 				<span th:text="${dayTitle}">Thứ ba, 27/10/2026</span>
-				<i class="bi bi-chevron-down" aria-hidden="true"></i>
-				<input type="date" id="tgPickDate" th:value="*{date}" th:min="${today}" aria-label="Chọn ngày đi">
+				<input type="date" id="pick-date" th:value="*{date}" th:min="${today}" aria-label="Chọn ngày khởi hành">
 			</label>
 		</div>
 
-		<nav class="tg-dates" aria-label="Ngày đi">
-			<a class="tg-dates-arrow" th:if="${prevWeekUrl != null}" th:href="@{${prevWeekUrl}}" aria-label="7 ngày trước">
-				<i class="bi bi-chevron-left" aria-hidden="true"></i>
-			</a>
-			<span class="tg-dates-arrow is-disabled" th:if="${prevWeekUrl == null}" aria-hidden="true">
-				<i class="bi bi-chevron-left"></i>
-			</span>
-			<div class="tg-days">
-				<a class="tg-day" th:each="tab : ${dateStrip}" th:href="@{${search.url(tab.date)}}"
-					th:attr="aria-current=${tab.date == search.date} ? 'date' : null, aria-label=${tab.ariaLabel}">
-					<small th:text="${tab.label}">Hôm nay</small>
-					<b th:text="${#temporals.format(tab.date, 'dd/MM')}">27/10</b>
-					<!-- Always present, empty on a day with no trip, so every day keeps the same height. -->
-					<span class="tg-day-price" th:classappend="${tab.soldOut} ? 'is-sold'"
-						th:text="${tab.soldOut} ? 'Hết vé' : (${tab.minPrice != null} ? ${T(com.voyagego.traingo.common.TextUtils).shortMoney(tab.minPrice)} : '')">350k</span>
-				</a>
-			</div>
-			<a class="tg-dates-arrow" th:href="@{${nextWeekUrl}}" aria-label="7 ngày sau">
-				<i class="bi bi-chevron-right" aria-hidden="true"></i>
-			</a>
+		<nav class="dates" aria-label="Ngày khởi hành">
+			<a class="icon-btn" th:if="${prevWeekUrl != null}" th:href="@{${prevWeekUrl}}" aria-label="7 ngày trước"><i class="bi bi-chevron-left" aria-hidden="true"></i></a>
+			<span class="icon-btn is-off" th:if="${prevWeekUrl == null}" aria-hidden="true"><i class="bi bi-chevron-left"></i></span>
+			<ul>
+				<li th:each="tab : ${dateStrip}">
+					<a th:href="@{${search.url(tab.date)}}" th:attr="aria-current=${tab.date == search.date} ? 'date' : null, aria-label=${tab.ariaLabel}">
+						<th:block th:text="${tab.label}">Hôm nay</th:block>
+						<b th:text="${#temporals.format(tab.date, 'dd/MM')}">27/10</b>
+						<!-- Always present, empty on a day with no trip, so every day keeps the same height. -->
+						<small th:classappend="${tab.soldOut} ? 'is-sold'" th:text="${tab.soldOut} ? 'Hết vé' : (${tab.minPrice != null} ? ${T(com.voyagego.traingo.common.TextUtils).shortMoney(tab.minPrice)} : '')">350k</small>
+					</a>
+				</li>
+			</ul>
+			<a class="icon-btn" th:href="@{${nextWeekUrl}}" aria-label="7 ngày sau"><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
 		</nav>
 
-		<section class="tg-trips-empty tg-trips-none" th:if="${result.dayTotal == 0}">
-			<i class="bi bi-calendar-x" aria-hidden="true"></i>
-			<strong th:text="|Không có chuyến ${originName} → ${destinationName} ngày ${#temporals.format(search.date, 'dd/MM')}|">Không có chuyến Huế → Đà Nẵng ngày 27/10</strong>
+		<section class="card state" th:if="${result.dayTotal == 0}">
+			<span class="state-icon"><i class="bi bi-calendar-x" aria-hidden="true"></i></span>
+			<h2 th:text="|Không có chuyến ${#strings.replace(originName, 'Ga ', '')} → ${#strings.replace(destinationName, 'Ga ', '')} ngày ${#temporals.format(search.date, 'dd/MM')}|">Không có chuyến Huế → Đà Nẵng ngày 27/10</h2>
 			<p>Chọn ngày khác trên dải ngày phía trên.</p>
 		</section>
 
-		<div class="tg-trips-layout" th:if="${result.dayTotal > 0}">
-			<!--
-				The bar sits outside the results so that on a phone, where the
-				filters fold away, the "Lọc chuyến" button comes right before the
-				panel it opens; grid areas in app.css put the panel beside it on a
-				wide screen.
-			-->
-			<div class="tg-results-bar">
-				<h2 id="tgTripCount" th:text="|${#lists.size(result.cards)} chuyến|">3 chuyến</h2>
-				<button class="tg-filters-toggle" type="button" id="tgFiltersToggle" aria-controls="tgFilters"
-					aria-expanded="false" hidden>
-					<i class="bi bi-sliders" aria-hidden="true"></i>Lọc chuyến
-					<b th:if="*{filterCount() > 0}" th:text="*{filterCount()}">2</b>
-				</button>
-				<nav class="tg-sort" aria-label="Sắp xếp">
+		<th:block th:if="${result.dayTotal > 0}">
+			<div class="trip-tools">
+				<h2 id="trip-count" th:text="|${#lists.size(result.cards)} chuyến|">3 chuyến</h2>
+				<nav class="trip-sort" aria-label="Sắp xếp">
 					<a th:href="@{${search.sortUrl('earliest')}}" th:attr="aria-current=*{sortKey() == 'earliest'} ? 'true' : null">Sớm nhất</a>
 					<a th:href="@{${search.sortUrl('cheapest')}}" th:attr="aria-current=*{sortKey() == 'cheapest'} ? 'true' : null">Rẻ nhất</a>
 					<a th:href="@{${search.sortUrl('fastest')}}" th:attr="aria-current=*{sortKey() == 'fastest'} ? 'true' : null">Nhanh nhất</a>
 				</nav>
 			</div>
+			<form class="trip-filters" method="get" th:action="@{/trips}" id="filters" aria-label="Lọc chuyến">
+				<input type="hidden" name="from" th:value="*{from}">
+				<input type="hidden" name="to" th:value="*{to}">
+				<input type="hidden" name="date" th:value="*{date}">
+				<input type="hidden" name="sort" th:value="*{sortKey()}" th:if="*{sortKey() != 'earliest'}">
+				<fieldset>
+					<legend>Giờ đi</legend>
+					<label class="filter-chip"><input type="checkbox" name="slot" value="morning" th:checked="*{hasSlot('morning')}">Sáng</label>
+					<label class="filter-chip"><input type="checkbox" name="slot" value="afternoon" th:checked="*{hasSlot('afternoon')}">Chiều</label>
+					<label class="filter-chip"><input type="checkbox" name="slot" value="evening" th:checked="*{hasSlot('evening')}">Tối</label>
+					<label class="filter-chip"><input type="checkbox" name="slot" value="night" th:checked="*{hasSlot('night')}">Đêm</label>
+				</fieldset>
+				<fieldset>
+					<legend>Loại chỗ</legend>
+					<label class="filter-chip"><input type="checkbox" name="type" value="SEAT" th:checked="*{hasType(T(com.voyagego.traingo.entity.CoachType).SEAT)}">Ghế ngồi</label>
+					<label class="filter-chip"><input type="checkbox" name="type" value="SLEEPER" th:checked="*{hasType(T(com.voyagego.traingo.entity.CoachType).SLEEPER)}">Giường nằm</label>
+				</fieldset>
+				<label class="filter-chip"><input type="checkbox" name="hideSoldOut" value="true" th:checked="*{hideSoldOut}">Ẩn chuyến hết vé</label>
+				<a class="filter-clear" th:if="*{filterCount() > 0}" th:href="@{${search.clearFiltersUrl()}}">Bỏ lọc</a>
+				<button class="btn btn-primary btn-sm filter-apply" type="submit">Lọc</button>
+			</form>
 
-			<aside class="tg-filters" id="tgFilters" aria-label="Lọc chuyến">
-				<form method="get" th:action="@{/trips}" id="tgFilterForm">
-					<input type="hidden" name="from" th:value="*{from}">
-					<input type="hidden" name="to" th:value="*{to}">
-					<input type="hidden" name="date" th:value="*{date}">
-					<input type="hidden" name="sort" th:value="*{sortKey()}" th:if="*{sortKey() != 'earliest'}">
-					<div class="tg-filters-top">
-						<h2>Lọc chuyến</h2>
-						<a class="tg-filters-clear" th:if="*{filterCount() > 0}" th:href="@{${search.clearFiltersUrl()}}">Bỏ lọc</a>
-					</div>
-					<fieldset class="tg-filter-group">
-						<legend>Giờ đi</legend>
-						<div class="tg-chips">
-							<label class="tg-chip">
-								<input type="checkbox" name="slot" value="morning" th:checked="*{hasSlot('morning')}">
-								<i class="bi bi-sunrise" aria-hidden="true"></i><b>Sáng</b><small>5h - 12h</small>
-							</label>
-							<label class="tg-chip">
-								<input type="checkbox" name="slot" value="afternoon" th:checked="*{hasSlot('afternoon')}">
-								<i class="bi bi-sun" aria-hidden="true"></i><b>Chiều</b><small>12h - 18h</small>
-							</label>
-							<label class="tg-chip">
-								<input type="checkbox" name="slot" value="evening" th:checked="*{hasSlot('evening')}">
-								<i class="bi bi-sunset" aria-hidden="true"></i><b>Tối</b><small>18h - 22h</small>
-							</label>
-							<label class="tg-chip">
-								<input type="checkbox" name="slot" value="night" th:checked="*{hasSlot('night')}">
-								<i class="bi bi-moon-stars" aria-hidden="true"></i><b>Đêm</b><small>22h - 5h</small>
-							</label>
-						</div>
-					</fieldset>
-					<fieldset class="tg-filter-group">
-						<legend>Loại chỗ</legend>
-						<div class="tg-chips is-two">
-							<label class="tg-chip">
-								<input type="checkbox" name="type" value="SEAT" th:checked="*{hasType(T(com.voyagego.traingo.entity.CoachType).SEAT)}">
-								<i class="bi bi-person" aria-hidden="true"></i><b>Ghế ngồi</b>
-							</label>
-							<label class="tg-chip">
-								<input type="checkbox" name="type" value="SLEEPER" th:checked="*{hasType(T(com.voyagego.traingo.entity.CoachType).SLEEPER)}">
-								<i class="bi bi-moon" aria-hidden="true"></i><b>Giường nằm</b>
-							</label>
-						</div>
-					</fieldset>
-					<label class="tg-check">
-						<input type="checkbox" name="hideSoldOut" value="true" th:checked="*{hideSoldOut}">Ẩn chuyến hết vé
-					</label>
-					<button class="btn btn-primary tg-filters-apply" type="submit">Lọc</button>
-				</form>
-			</aside>
-
-			<section class="tg-results" aria-labelledby="tgTripCount">
-				<section class="tg-trips-empty tg-trips-none" th:if="${#lists.isEmpty(result.cards)}">
-					<i class="bi bi-funnel" aria-hidden="true"></i>
-					<strong>Không có chuyến phù hợp</strong>
-					<a class="btn btn-outline-primary btn-lg" th:href="@{${search.clearFiltersUrl()}}">Bỏ lọc</a>
-				</section>
-
-				<div class="tg-trip-list">
-					<th:block th:each="card : ${result.cards}">
-						<details class="tg-trip" th:unless="${card.soldOut()}" th:open="${card.tripId() == openTripId}">
-							<summary th:replace="~{trips/search :: tripHead(${card}, 'summary')}"></summary>
-							<div class="tg-trip-opts">
-								<div th:replace="~{trips/search :: seatOption(${card}, 'SEAT', 'Ghế ngồi', 'bi-person')}"></div>
-								<div th:replace="~{trips/search :: seatOption(${card}, 'SLEEPER', 'Giường nằm', 'bi-moon-stars')}"></div>
-							</div>
-						</details>
-						<div class="tg-trip is-sold-out" th:if="${card.soldOut()}">
-							<div th:replace="~{trips/search :: tripHead(${card}, 'div')}"></div>
-						</div>
-					</th:block>
-				</div>
+			<section class="card state" th:if="${#lists.isEmpty(result.cards)}">
+				<span class="state-icon"><i class="bi bi-funnel" aria-hidden="true"></i></span>
+				<h2>Không có chuyến phù hợp</h2>
+				<a class="btn btn-outline" th:href="@{${search.clearFiltersUrl()}}">Bỏ lọc</a>
 			</section>
-		</div>
+
+			<ul class="trips" aria-labelledby="trip-count" th:unless="${#lists.isEmpty(result.cards)}">
+				<li class="card trip" th:each="card : ${result.cards}" th:classappend="${card.soldOut()} ? 'is-full'">
+					<div class="trip-train">
+						<b th:text="${card.trainCode}">SE1</b>
+						<span class="badge badge-success" th:unless="${card.soldOut()}" th:classappend="${card.totalLeft() <= 8} ? 'is-low'"><i class="bi bi-check-lg" aria-hidden="true"></i><th:block th:text="|Còn ${card.totalLeft()} chỗ|">Còn 57 chỗ</th:block></span>
+						<span class="badge badge-muted" th:if="${card.soldOut()}"><i class="bi bi-x-lg" aria-hidden="true"></i>Hết chỗ</span>
+					</div>
+					<div th:replace="~{fragments/booking-steps :: leg(${card.departureAt}, ${card.arrivalAt}, ${card.arrivesNextDay}, ${#strings.replace(originName, 'Ga ', '')}, ${#strings.replace(destinationName, 'Ga ', '')}, ${card.durationLabel})}"></div>
+					<div class="trip-price"><small>Giá vé</small><b th:text="${#numbers.formatInteger(card.price, 0, 'POINT')} + ' đ'">100.000 đ</b></div>
+					<div class="trip-go">
+						<a class="btn btn-cta" th:unless="${card.soldOut()}" th:href="@{/booking/{id}/seats(id=${card.tripId})}"
+							th:attr="aria-label=|Chọn chỗ tàu ${card.trainCode}, ${#temporals.format(card.departureAt, 'HH:mm')}|">Chọn chỗ</a>
+						<button class="btn btn-outline" type="button" th:if="${card.soldOut()}" disabled>Hết chỗ</button>
+					</div>
+				</li>
+			</ul>
+		</th:block>
 
 	</th:block>
-
+</div>
 	<script th:src="@{/js/trip-search.js}"></script>
 </main>
-
-<!--
-	Pieces of a trip card, outside <main> so the layout never renders them on
-	their own. The head is a <summary> on a trip that can be opened, and a
-	plain <div> on a sold-out one, with an empty arrow slot so its columns
-	line up with the cards above.
--->
-<th:block th:fragment="tripHead(card, tag)">
-	<summary class="tg-trip-head" th:if="${tag == 'summary'}">
-		<th:block th:replace="~{trips/search :: tripHeadBody(${card})}"></th:block>
-		<span class="tg-trip-chev" aria-hidden="true"><i class="bi bi-chevron-down"></i></span>
-	</summary>
-	<div class="tg-trip-head" th:if="${tag == 'div'}">
-		<th:block th:replace="~{trips/search :: tripHeadBody(${card})}"></th:block>
-		<span class="tg-trip-chev is-empty" aria-hidden="true"></span>
-	</div>
-</th:block>
-
-<th:block th:fragment="tripHeadBody(card)">
-	<span class="tg-trip-times">
-		<span>
-			<b th:text="${#temporals.format(card.departureAt, 'HH:mm')}">06:15</b>
-			<small th:text="${originName}">Huế</small>
-		</span>
-		<span class="tg-trip-rail">
-			<span><i class="bi bi-train-front" aria-hidden="true"></i><th:block th:text="|${card.trainCode} · ${card.durationLabel}|">SE1 · 1g45</th:block></span>
-		</span>
-		<span class="tg-trip-end">
-			<b><th:block th:text="${#temporals.format(card.arrivalAt, 'HH:mm')}">08:00</th:block><sup
-				th:if="${card.arrivesNextDay > 0}" th:text="|+${card.arrivesNextDay}|">+1</sup></b>
-			<small th:text="${destinationName}">Đà Nẵng</small>
-		</span>
-	</span>
-	<span class="tg-trip-price">
-		<th:block th:unless="${card.soldOut()}">
-			<strong th:text="${#numbers.formatInteger(card.price, 0, 'POINT')} + 'đ'">350.000đ</strong>
-			<em th:classappend="${card.totalLeft() <= 8} ? 'is-low'" th:text="|Còn ${card.totalLeft()} chỗ|">Còn 40 chỗ</em>
-		</th:block>
-		<strong th:if="${card.soldOut()}">Hết vé</strong>
-	</span>
-</th:block>
-
-<div th:fragment="seatOption(card, type, label, icon)" class="tg-opt"
-	th:with="left=${card.left(T(com.voyagego.traingo.entity.CoachType).valueOf(type))}"
-	th:classappend="${left == 0} ? 'is-none'">
-	<span class="tg-opt-icon" aria-hidden="true"><i class="bi" th:classappend="${icon}"></i></span>
-	<span class="tg-opt-text">
-		<b th:text="${label}">Ghế ngồi</b>
-		<small th:if="${left > 0}" th:classappend="${left <= 5} ? 'is-low'" th:text="|Còn ${left} chỗ|">Còn 20 chỗ</small>
-	</span>
-	<a class="tg-opt-go" th:if="${left > 0}" th:href="@{/booking/{id}/seats(id=${card.tripId}, type=${type})}"
-		th:attr="aria-label=|Chọn ${label}, chuyến ${card.trainCode}|">Chọn</a>
-	<span class="tg-opt-go is-disabled" th:if="${left == 0}" aria-disabled="true">Hết chỗ</span>
-</div>
 
 </body>
 </html>

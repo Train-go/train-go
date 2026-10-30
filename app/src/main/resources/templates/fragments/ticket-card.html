@@ -3,74 +3,36 @@
 <body>
 
 <!--
-	The e-ticket card of issue #34, shared by /tickets/{id} and
-	/my-trips/{id}/tickets. It is the ticket of the passenger step (CSS
-	.tg-tk*) with the name and masked CCCD of the passenger in place of the
-	form, and a "ĐÃ HỦY" stamp when the booking was cancelled:
+	The e-ticket of issue #34, shared by the success page, /tickets/{id} and
+	/my-trips/{id}/tickets, with an "Đã hủy" badge when the booking was cancelled:
 
-		<div th:replace="~{fragments/ticket-card :: card(${ticket}, ${index}, ${count})}"></div>
+		<li th:replace="~{fragments/ticket-card :: card(${ticket}, ${index}, ${count})}"></li>
 
 	index and count (1 and 3 for "Vé 1/3") may be null; the card then shows no
-	"Vé i/N" tag.
+	"Vé i/N" badge.
 -->
-<div class="tg-tkw" th:fragment="card(ticket, index, count)">
-	<article class="tg-tk tg-tk-issued" th:classappend="${ticket.cancelled} ? 'is-void'">
-		<div class="tg-tk-main">
-			<div class="tg-tk-top">
-				<span class="tg-tk-brand"><i class="bi bi-train-front" aria-hidden="true"></i>
-					<th:block th:text="|TrainGo · ${ticket.trainCode} · ${#temporals.format(ticket.departureAt, 'dd/MM/yyyy')}|">TrainGo · SE1 · 28/10/2026</th:block></span>
-				<span class="tg-tk-void" th:if="${ticket.cancelled}">ĐÃ HỦY</span>
-				<span class="tg-tk-no" th:if="${index != null}" th:text="|Vé ${index}/${count}|">Vé 1/2</span>
-			</div>
-
-			<div class="tg-tk-leg">
-				<div>
-					<b th:text="${#temporals.format(ticket.departureAt, 'HH:mm')}">06:15</b>
-					<small th:text="${ticket.originName}">Huế</small>
-				</div>
-				<div class="tg-tk-rail">
-					<i class="bi bi-train-front" aria-hidden="true"></i>
-					<span th:text="${ticket.durationLabel}">2g45</span>
-				</div>
-				<div class="tg-tk-end">
-					<b><th:block th:text="${#temporals.format(ticket.arrivalAt, 'HH:mm')}">08:00</th:block><sup
-						th:if="${ticket.arrivesNextDay > 0}" th:text="|+${ticket.arrivesNextDay}|">+1</sup></b>
-					<small th:text="${ticket.destinationName}">Đà Nẵng</small>
-				</div>
-			</div>
-
-			<div class="tg-tk-who">
-				<div class="tg-tk-person">
-					<span class="tg-tk-avatar" th:text="${T(com.voyagego.traingo.common.TextUtils).initials(ticket.passengerName)}">VA</span>
-					<div>
-						<b th:text="${ticket.passengerName}">Nguyễn Văn An</b>
-						<small class="tg-mono" th:text="|CCCD ${ticket.maskedId}|">CCCD •••• 1234</small>
-					</div>
-				</div>
-			</div>
-
-			<dl class="tg-tk-codes">
-				<div>
-					<dt>Mã vé</dt>
-					<dd class="tg-mono tg-tk-code" th:text="${ticket.ticketCode}">TK202610001-01</dd>
-				</div>
-				<div>
-					<dt>Mã booking</dt>
-					<dd class="tg-mono" th:text="${ticket.bookingCode}">BK202610001</dd>
-				</div>
-			</dl>
+<li class="ticket is-issued" th:fragment="card(ticket, index, count)" th:classappend="${ticket.cancelled} ? 'is-void'">
+	<article class="ticket-main">
+		<div class="ticket-head">
+			<span class="brand"><span class="brand-mark"><i class="bi bi-train-front" aria-hidden="true"></i></span>TrainGo</span>
+			<span class="badge badge-muted" th:if="${index != null and !ticket.cancelled}" th:text="|Vé ${index}/${count}|">Vé 1/2</span>
+			<span class="badge badge-muted" th:if="${ticket.cancelled}">Đã hủy</span>
 		</div>
-
-		<div class="tg-tk-stub">
-			<span class="tg-tk-coach" th:text="|Toa ${ticket.coachNumber}|">Toa 1</span>
-			<span class="tg-tk-big" th:text="${ticket.seatCode}">A05</span>
-			<span class="tg-tk-kind" th:text="${ticket.coachTypeLabel}">Ghế ngồi</span>
-			<span class="tg-tk-price" th:text="${#numbers.formatInteger(ticket.price, 0, 'POINT')} + 'đ'">170.000đ</span>
-			<span class="tg-tk-bars" aria-hidden="true"></span>
-		</div>
-
+		<div th:replace="~{fragments/booking-steps :: leg(${ticket.departureAt}, ${ticket.arrivalAt}, ${ticket.arrivesNextDay}, ${ticket.originName}, ${ticket.destinationName}, ${ticket.durationLabel})}"></div>
+		<dl>
+			<div><dt>Người đi</dt><dd th:text="${ticket.passengerName}">Nguyễn Văn An</dd></div>
+			<div><dt>CCCD</dt><dd th:text="${ticket.maskedId}">•••• 1234</dd></div>
+			<div><dt>Giá vé</dt><dd th:text="${#numbers.formatInteger(ticket.price, 0, 'POINT')} + ' đ'">100.000 đ</dd></div>
+			<div><dt>Tàu</dt><dd th:text="${ticket.trainCode}">SE1</dd></div>
+			<div><dt>Ngày khởi hành</dt><dd th:text="${#temporals.format(ticket.departureAt, 'dd/MM/yyyy')}">31/10/2026</dd></div>
+			<div><dt>Mã booking</dt><dd class="ticket-code" th:text="${ticket.bookingCode}">BK202610001</dd></div>
+		</dl>
 	</article>
-</div>
+	<div class="ticket-stub">
+		<div><small th:text="|Toa ${ticket.coachNumber}, ${#strings.toLowerCase(ticket.coachTypeLabel)}|">Toa 1, ghế ngồi</small><b th:text="${ticket.seatCode}">A05</b></div>
+		<div><small>Mã vé</small><div class="ticket-code" th:text="${ticket.ticketCode}">TK202610001-01</div></div>
+	</div>
+</li>
 
 </body>
 </html>

@@ -5,57 +5,36 @@
 	"Xem các vé" opens the e-tickets of the booking (#34).
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
 	<title>Đặt vé thành công · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/success.css}">
 </head>
 <body>
 
-<main class="container tg-pay">
-
-	<div class="tg-pay-col">
-		<h1 class="tg-pay-title">Đặt vé thành công</h1>
-
-		<div class="tg-receipt-wrap">
-			<article class="tg-bill" aria-labelledby="tgDoneCode">
-				<header class="tg-bill-head">
-					<span class="tg-bill-brand"><i class="bi bi-train-front" aria-hidden="true"></i>TrainGo</span>
-					<span class="tg-bill-stamp" th:text="${#strings.toUpperCase(booking.statusLabel)}">ĐÃ THANH TOÁN</span>
-				</header>
-
-				<div class="tg-bill-trip">
-					<span class="tg-bill-route" th:text="${booking.routeLabel}">Huế → Đồng Hới</span>
-					<small th:text="|${booking.trainLabel} · ${booking.departureLabel}|">SE1 · Thứ Tư, 28/10/2026 · 08:00</small>
-				</div>
-
-				<p class="tg-bill-code">Mã booking <b id="tgDoneCode" th:text="${booking.code}">BK202610009</b></p>
-
-				<ul class="tg-bill-lines">
-					<li th:each="ticket : ${booking.tickets}">
-						<span class="tg-bill-seat" th:text="${#strings.substringAfter(ticket.seatLabel, '· ')}">A05</span>
-						<span>
-							<b th:text="${ticket.seatLabel}">Toa 1 · A05</b>
-							<small th:text="${ticket.fullName}">Nguyễn Văn An</small>
-						</span>
-						<strong th:text="${#numbers.formatInteger(ticket.price, 0, 'POINT')} + 'đ'">170.000đ</strong>
-					</li>
-				</ul>
-
-				<div class="tg-bill-sum">
-					<span>Tổng tiền</span>
-					<strong th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + 'đ'">340.000đ</strong>
-				</div>
-			</article>
+<main class="page">
+<div class="container done">
+	<section class="done-head" aria-labelledby="done-title">
+		<h1 id="done-title">Đặt vé thành công</h1>
+		<div class="done-meta">
+			<dl class="trip-facts">
+				<div><dt>Mã booking</dt><dd class="ticket-code" th:text="${booking.code}">BK202610001</dd></div>
+				<div><dt>Tổng tiền</dt><dd th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + ' đ'">200.000 đ</dd></div>
+			</dl>
+			<span class="badge badge-success"><i class="bi bi-check-lg" aria-hidden="true"></i><th:block th:text="${booking.statusLabel}">Đã thanh toán</th:block></span>
 		</div>
-
-		<a class="tg-bill-pay tg-bill-tickets" th:href="@{/my-trips/{id}/tickets(id=${booking.id})}">
-			<i class="bi bi-ticket-perforated" aria-hidden="true"></i>Xem các vé
-		</a>
-
-		<div class="tg-pay-after">
-			<a th:href="@{/my-trips}"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Vé của tôi</a>
-		</div>
+	</section>
+	<ol class="ticket-list">
+		<th:block th:each="ticket, it : ${tickets}">
+			<li th:replace="~{fragments/ticket-card :: card(${ticket}, ${it.count}, ${it.size})}"></li>
+		</th:block>
+	</ol>
+	<div class="done-actions">
+		<a class="btn btn-primary" th:href="@{/trips}">Đặt chuyến khác</a>
+		<a class="btn btn-outline" th:href="@{/my-trips}"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Vé của tôi</a>
+		<button class="btn btn-outline" type="button" onclick="window.print()"><i class="bi bi-printer" aria-hidden="true"></i>In vé</button>
 	</div>
+</div>
 </main>
 
 </body>

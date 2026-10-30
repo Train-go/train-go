@@ -1,0 +1,39 @@
+/* Thông tin người đi: booking/passengers.html. */
+
+.page-title { margin-bottom: var(--space-lg); font-size: clamp(1.5rem, 1vw + 1.1rem, 2rem); }
+.tk-book { margin-top: 0; }
+.tk-col { min-width: 0; }
+/* The aside holds only the total and the action, so it starts flush with its own top. */
+.tk-book .total { margin-top: 0; }
+.tk-list { display: grid; gap: var(--space-lg); margin: 0; padding: 0; list-style: none; }
+
+/* The ticket's main part is the fieldset: keep only the perforation edge traingo.css gives it. */
+.tk .ticket-main { margin: 0; min-inline-size: 0; border-top: 0; border-left: 0; }
+@media (min-width: 641px) { .tk .ticket-main { border-bottom: 0; } }
+
+.tk-when { display: inline-flex; align-items: baseline; gap: var(--space-sm); color: var(--color-muted-fg); font-size: 0.9375rem; font-weight: 500; }
+.tk-when b { color: var(--color-heading); font-weight: 700; }
+.ticket .trip-times { margin-top: var(--space-md); }
+
+/* Traveller and CCCD share one row in both states: the account holder's card, or the name field once changed. */
+.tk-person { margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
+.field-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); min-height: 24px; }
+.tk-who { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; min-height: var(--control-h); padding: 0 var(--space-md); border-radius: var(--radius-md); background: var(--color-bg); }
+.tk-who-text { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
+.tk-who-text b { overflow: hidden; color: var(--color-heading); text-overflow: ellipsis; white-space: nowrap; }
+.tk-who-text small { color: var(--color-muted-fg); font-size: 0.8125rem; white-space: nowrap; }
+
+/* A link in a label row: small to the eye, a 44px target to the finger. */
+.link-btn.is-inline { position: relative; min-height: 0; padding: 0; font-size: 0.875rem; }
+.link-btn.is-inline::before { content: ""; position: absolute; inset: -12px -8px; }
+.link-btn.is-inline:hover { background: transparent; text-decoration: underline; text-underline-offset: 0.2em; }
+
+.tk:not(.is-editing) .tk-name { display: none; }
+.tk.is-editing .tk-who-field { display: none; }
+
+.tk .ticket-stub small, .is-issued .ticket-stub small { display: block; }
+.tk-price { font-size: 1.125rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.tk:not(.is-editing) .tk-name { display: none; }
+.tk-when .bi { color: var(--color-primary); }
+.tk .field-error:empty { display: none; }
