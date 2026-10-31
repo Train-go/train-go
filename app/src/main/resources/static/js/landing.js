@@ -39,11 +39,16 @@
 	var date = document.getElementById('search-date');
 	var error = document.getElementById('search-error');
 
+	// What the visitor actually types in: station-picker.js hides the select behind an input.
+	function box(field) {
+		return field.closest('.control').querySelector('input') || field;
+	}
+
 	function clear() {
 		[from, to, date].forEach(function (field) {
 			field.closest('.control').classList.remove('is-invalid');
-			field.removeAttribute('aria-invalid');
-			field.removeAttribute('aria-describedby');
+			box(field).removeAttribute('aria-invalid');
+			box(field).removeAttribute('aria-describedby');
 		});
 		error.textContent = '';
 	}
@@ -51,16 +56,19 @@
 	function fail(event, field, message) {
 		event.preventDefault();
 		field.closest('.control').classList.add('is-invalid');
-		field.setAttribute('aria-invalid', 'true');
-		field.setAttribute('aria-describedby', 'search-error');
+		box(field).setAttribute('aria-invalid', 'true');
+		box(field).setAttribute('aria-describedby', 'search-error');
 		error.textContent = message;
-		field.focus();
+		box(field).focus();
 	}
 
 	document.getElementById('search-swap').addEventListener('click', function () {
 		var origin = from.value;
 		from.value = to.value;
 		to.value = origin;
+		[from, to].forEach(function (field) {
+			field.dispatchEvent(new Event('change', { bubbles: true }));
+		});
 		clear();
 	});
 

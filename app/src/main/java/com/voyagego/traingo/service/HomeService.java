@@ -37,17 +37,17 @@ public class HomeService {
 	/**
 	 * One photo per station, by station code. Keyed by code rather than name so
 	 * renaming a station in the admin keeps its photo. A station added later
-	 * simply has no photo until one is added here and credited in the footer.
+	 * simply has no photo until one is added here.
 	 */
 	private static final Map<String, StationPhoto> PHOTOS = Map.of(
-			"HNI", new StationPhoto("ga-ha-noi.jpg", "Hồ Hoàn Kiếm, Hà Nội"),
-			"THA", new StationPhoto("ga-thanh-hoa.jpg", "Bãi biển Sầm Sơn, Thanh Hóa"),
-			"VIN", new StationPhoto("ga-vinh.jpg", "Thành phố Vinh nhìn từ núi Quyết"),
-			"DHO", new StationPhoto("ga-dong-hoi.jpg", "Sân ga Đồng Hới lúc chiều tối"),
-			"HUE", new StationPhoto("ga-hue.jpg", "Cổng Đại Nội Huế"),
-			"DNG", new StationPhoto("ga-da-nang.jpg", "Cầu Rồng Đà Nẵng về đêm"),
-			"NTR", new StationPhoto("ga-nha-trang.jpg", "Bờ biển Nha Trang"),
-			"SGN", new StationPhoto("ga-sai-gon.jpg", "Sài Gòn về đêm"));
+			"HNI", new StationPhoto("tuyen-hni.jpg", "Cầu Long Biên, Hà Nội"),
+			"THA", new StationPhoto("tuyen-tha.jpg", "Bãi biển Sầm Sơn, Thanh Hóa"),
+			"VIN", new StationPhoto("tuyen-vin.jpg", "Biển Cửa Lò về đêm, Nghệ An"),
+			"DHO", new StationPhoto("tuyen-dho.jpg", "Hang động Phong Nha, Quảng Bình"),
+			"HUE", new StationPhoto("tuyen-hue.jpg", "Cổng Đại Nội Huế"),
+			"DNG", new StationPhoto("tuyen-dng.jpg", "Cầu Rồng Đà Nẵng"),
+			"NTR", new StationPhoto("tuyen-ntr.jpg", "Hòn Nội, vịnh Nha Trang"),
+			"SGN", new StationPhoto("tuyen-sgn.jpg", "Sài Gòn về đêm"));
 
 	/** The region of a destination, by station code, for the chips of the journeys block. */
 	private static final Map<String, String> REGIONS = Map.of("HNI", "bac", "THA", "bac", "VIN", "trung", "DHO", "trung",

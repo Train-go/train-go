@@ -27,7 +27,7 @@
 
 	<article class="card my-detail" aria-labelledby="booking-code">
 		<header class="my-detail-head">
-			<span class="brand"><span class="brand-mark"><i class="bi bi-train-front" aria-hidden="true"></i></span>TrainGo</span>
+			<span class="brand"><img class="brand-mark" th:src="@{/images/brand/logo.svg}" width="40" height="40" alt="">TrainGo</span>
 			<span class="badge" th:classappend="|badge-${booking.statusCss}|" th:text="${booking.statusLabel}">Đã thanh toán</span>
 		</header>
 		<p class="my-label">Mã booking</p>

@@ -4,10 +4,11 @@
 .invoice-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); }
 .invoice h1 { font-size: clamp(1.5rem, 1vw + 1.1rem, 2rem); }
 .invoice .trip-times { margin-top: var(--space-xl); }
-.invoice .trip-facts { margin-top: var(--space-lg); }
-/* On a narrow card the date drops under its label instead of breaking the label. */
-.invoice .trip-facts div { flex-wrap: wrap; column-gap: var(--space-sm); }
-.invoice .trip-facts dt { white-space: nowrap; }
+/* Under the seats: each fact puts its value below its label. */
+.invoice .trip-facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-xl); margin-top: var(--space-lg); padding: var(--space-md); border-radius: var(--radius-md); background: var(--color-bg); }
+.invoice .trip-facts div { flex-direction: column; align-items: flex-start; gap: 2px; }
+.invoice-total { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); margin: var(--space-lg) 0 0; color: var(--color-fg); font-weight: 600; }
+.invoice-total b { color: var(--color-heading); font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 .lines { width: 100%; margin-top: var(--space-xl); border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .lines th { padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border); color: var(--color-muted-fg); font-size: 0.875rem; font-weight: 600; text-align: left; white-space: nowrap; }
@@ -16,9 +17,6 @@
 .lines td:nth-child(2) { color: var(--color-heading); font-weight: 600; overflow-wrap: anywhere; }
 .lines td small { margin-left: var(--space-sm); color: var(--color-muted-fg); font-size: 0.875rem; }
 .lines .num { text-align: right; white-space: nowrap; }
-.lines tfoot th, .lines tfoot td { padding-top: var(--space-lg); border-bottom: 0; }
-.lines tfoot th { color: var(--color-fg); font-size: 1rem; }
-.lines tfoot td { color: var(--color-heading); font-size: 1.5rem; font-weight: 700; }
 .seat-tag { display: inline-grid; place-items: center; min-width: 44px; height: 32px; padding: 0 var(--space-xs); border-radius: var(--radius-sm); background: var(--color-primary-soft); color: var(--color-primary); font-size: 0.875rem; font-weight: 700; }
 
 .pay { display: grid; gap: var(--space-md); margin-top: var(--space-xl); }
@@ -36,9 +34,8 @@
 @media (max-width: 640px) {
 	.invoice { padding: var(--space-lg) var(--space-md); }
 	.lines thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-	.lines, .lines tbody, .lines tfoot { display: block; }
+	.lines, .lines tbody { display: block; }
 	.lines tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-xs) var(--space-md); padding-block: var(--space-md); border-bottom: 1px solid var(--color-border); }
-	.lines td, .lines td + td, .lines tfoot th, .lines tfoot td { padding: 0; border: 0; }
+	.lines td, .lines td + td { padding: 0; border: 0; }
 	.lines tbody td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
-	.lines tfoot tr { padding-block: var(--space-lg) 0; border-bottom: 0; }
 }

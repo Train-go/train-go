@@ -15,25 +15,38 @@
 	th:classappend="${overPhoto != null and overPhoto} ? 'is-fixed is-over-photo'">
 	<div class="container">
 		<a class="brand" th:href="@{/}" aria-label="TrainGo, trang chủ">
-			<span class="brand-mark"><i class="bi bi-train-front" aria-hidden="true"></i></span>TrainGo
+			<img class="brand-mark brand-mark-light" th:src="@{/images/brand/logo.svg}" width="40" height="40" alt="">
+			<img class="brand-mark brand-mark-dark" th:src="@{/images/brand/logo-on-dark.svg}" width="40" height="40" alt="">
+			TrainGo
 		</a>
 		<nav class="nav" aria-label="Chính">
 			<a class="nav-hide-sm" th:href="@{/trips}" th:attr="aria-current=${activeNav == 'search'} ? 'page' : null">Chọn chuyến</a>
 			<a th:href="@{/my-trips}" th:attr="aria-current=${activeNav == 'my-trips'} ? 'page' : null">Vé của tôi</a>
-			<th:block th:if="${currentUser == null}">
-				<a class="btn btn-outline btn-sm" th:href="@{/login}"><i class="bi bi-person" aria-hidden="true"></i><span class="nav-label">Đăng nhập</span></a>
-			</th:block>
-			<th:block th:if="${currentUser != null}">
-				<a class="btn btn-outline btn-sm" th:href="@{/admin}" th:if="${currentUser.role.name() == 'ADMIN'}">Quản trị</a>
-				<span class="account">
-					<span class="avatar avatar-sm" aria-hidden="true" th:text="${T(com.voyagego.traingo.common.TextUtils).initials(currentUser.fullName)}">VA</span>
-					<span class="account-name" th:text="${currentUser.fullName}">Nguyễn Văn An</span>
-				</span>
-				<form th:action="@{/logout}" method="post">
-					<button type="submit" class="icon-btn" aria-label="Đăng xuất" title="Đăng xuất"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></button>
-				</form>
-			</th:block>
 		</nav>
+		<div class="header-actions">
+			<a class="btn btn-outline btn-sm" th:href="@{/login}" th:if="${currentUser == null}"><i class="bi bi-person" aria-hidden="true"></i><span class="nav-label">Đăng nhập</span></a>
+			<th:block th:if="${currentUser != null}">
+				<div class="dropdown">
+					<button class="account" type="button" data-bs-toggle="dropdown" aria-expanded="false" th:attr="aria-label=|Tài khoản ${currentUser.fullName}|">
+						<span class="avatar avatar-sm" aria-hidden="true" th:text="${T(com.voyagego.traingo.common.TextUtils).initials(currentUser.fullName)}">VA</span>
+						<span class="account-name" th:text="${currentUser.fullName}">Nguyễn Văn An</span>
+						<i class="bi bi-chevron-down account-chevron" aria-hidden="true"></i>
+					</button>
+					<div class="dropdown-menu dropdown-menu-end account-dropdown">
+						<div class="account-summary">
+							<strong th:text="${currentUser.fullName}">Nguyễn Văn An</strong>
+							<small th:text="${currentUser.email}">an.nguyen@example.com</small>
+						</div>
+						<hr class="dropdown-divider">
+						<a class="dropdown-item" th:href="@{/admin}" th:if="${currentUser.role.name() == 'ADMIN'}"><i class="bi bi-speedometer2" aria-hidden="true"></i>Quản trị</a>
+						<a class="dropdown-item" th:classappend="${activeNav == 'profile'} ? 'active'" th:href="@{/profile}"><i class="bi bi-person" aria-hidden="true"></i>Hồ sơ</a>
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Đăng xuất</button>
+						</form>
+					</div>
+				</div>
+			</th:block>
+		</div>
 	</div>
 </header>
 

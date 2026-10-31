@@ -17,16 +17,27 @@
 
 /* Traveller and CCCD share one row in both states: the account holder's card, or the name field once changed. */
 .tk-person { margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid var(--color-border); }
-.field-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); min-height: 24px; }
 .tk-who { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; min-height: var(--control-h); padding: 0 var(--space-md); border-radius: var(--radius-md); background: var(--color-bg); }
 .tk-who-text { display: grid; flex: 1; min-width: 0; line-height: 1.3; }
 .tk-who-text b { overflow: hidden; color: var(--color-heading); text-overflow: ellipsis; white-space: nowrap; }
 .tk-who-text small { color: var(--color-muted-fg); font-size: 0.8125rem; white-space: nowrap; }
 
-/* A link in a label row: small to the eye, a 44px target to the finger. */
-.link-btn.is-inline { position: relative; min-height: 0; padding: 0; font-size: 0.875rem; }
-.link-btn.is-inline::before { content: ""; position: absolute; inset: -12px -8px; }
-.link-btn.is-inline:hover { background: transparent; text-decoration: underline; text-underline-offset: 0.2em; }
+/* Small to the eye, a 44px target to the finger. */
+.tk-edit { position: relative; display: inline-flex; flex: none; align-items: center; gap: var(--space-xs); padding: 0; border: 0; background: transparent; color: var(--color-primary); font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+.tk-edit::before { content: ""; position: absolute; inset: -12px -8px; }
+.tk-edit:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.tk-edit:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* The label reads as the box's hint, and rises to make room once the box is used or filled. */
+.float-field { position: relative; display: block; flex: 1; min-width: 0; align-self: stretch; }
+.control .float-field input { display: block; width: 100%; height: 100%; padding-top: 0; }
+.float-field label { position: absolute; top: 50%; left: 0; max-width: 100%; overflow: hidden; color: var(--color-placeholder); line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; pointer-events: none; transform: translateY(-50%); transition: top var(--dur-fast) var(--ease), font-size var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease); }
+.float-field input::placeholder { color: transparent; }
+.float-field input:focus::placeholder { color: var(--color-placeholder); }
+.control .float-field input:focus, .control .float-field input:not(:placeholder-shown) { padding-top: 16px; }
+.float-field input:focus + label, .float-field input:not(:placeholder-shown) + label { top: 6px; color: var(--color-muted-fg); font-size: 0.75rem; font-weight: 600; transform: none; }
+.float-field input:focus + label { color: var(--color-primary); }
+.control.is-invalid .float-field label { color: var(--color-destructive); }
 
 .tk:not(.is-editing) .tk-name { display: none; }
 .tk.is-editing .tk-who-field { display: none; }

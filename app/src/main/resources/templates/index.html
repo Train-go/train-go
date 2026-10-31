@@ -27,7 +27,7 @@
 					<label class="field-label" for="search-from">Ga đi</label>
 					<div class="control">
 						<i class="bi bi-geo-alt" aria-hidden="true"></i>
-						<select id="search-from" name="from" required>
+						<select id="search-from" name="from" required data-station-picker>
 							<option value="">Chọn ga đi</option>
 							<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}">Hà Nội</option>
 						</select>
@@ -38,7 +38,7 @@
 					<label class="field-label" for="search-to">Ga đến</label>
 					<div class="control">
 						<i class="bi bi-geo-alt" aria-hidden="true"></i>
-						<select id="search-to" name="to" required>
+						<select id="search-to" name="to" required data-station-picker>
 							<option value="">Chọn ga đến</option>
 							<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}">Sài Gòn</option>
 						</select>
@@ -141,7 +141,7 @@
 					<div class="step-visual step-visual-ticket">
 						<div class="ticket" aria-hidden="true">
 							<div class="ticket-main">
-								<div class="ticket-head"><span class="brand"><span class="brand-mark"><i class="bi bi-train-front"></i></span>TrainGo</span></div>
+								<div class="ticket-head"><span class="brand"><img class="brand-mark" th:src="@{/images/brand/logo.svg}" width="40" height="40" alt="">TrainGo</span></div>
 								<div class="ticket-route">
 									<div><b>08:00</b><small>Huế</small></div>
 									<span class="rail"></span>
@@ -180,6 +180,7 @@
 		</section>
 	</div>
 
+	<script th:src="@{/js/station-picker.js}"></script>
 	<script th:src="@{/js/landing.js}"></script>
 </main>
 

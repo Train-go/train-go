@@ -5,8 +5,8 @@
 	seat, each with the passenger's name and CCCD.
 
 	The name defaults to the account holder's, whose masked phone then shows on
-	the ticket. "Đổi người đi" opens the name field (passengers.js); the CCCD is
-	always asked. The form only changes the session draft (D7). Names and CCCD
+	the ticket. "Sửa" opens the name field (passengers.js); the CCCD is always
+	asked. Each field's label sits inside its box and rises when the box is used. The form only changes the session draft (D7). Names and CCCD
 	are checked on the server, so the page works the same when a check fails.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
@@ -49,25 +49,30 @@
 						<div th:replace="~{fragments/booking-steps :: leg(${page.trip.departureAt}, ${page.trip.arrivalAt}, ${page.trip.arrivesNextDay}, ${#strings.replace(page.trip.originName, 'Ga ', '')}, ${#strings.replace(page.trip.destinationName, 'Ga ', '')}, ${page.trip.durationLabel})}"></div>
 						<div class="tk-person field-row">
 							<div class="field tk-who-field">
-								<div class="field-head"><span class="field-label">Người đi</span><button class="link-btn is-inline" type="button" data-edit th:attr="aria-label=|Đổi người đi vé ${slot.number}|"><i class="bi bi-pencil" aria-hidden="true"></i>Đổi người đi</button></div>
 								<div class="tk-who">
 									<span class="avatar avatar-sm" aria-hidden="true" data-avatar th:text="${T(com.voyagego.traingo.common.TextUtils).initials(line.fullName)}">VA</span>
-									<span class="tk-who-text"><b data-person th:text="${line.fullName}">Nguyễn Văn An</b><small data-phone th:if="${page.maskedPhone != null}" th:hidden="${!mine}" th:text="|SĐT ${page.maskedPhone}|">SĐT •••• 4567</small></span>
+									<span class="tk-who-text"><span class="visually-hidden">Người đi: </span><b data-person th:text="${line.fullName}">Nguyễn Văn An</b><small data-phone th:if="${page.maskedPhone != null}" th:hidden="${!mine}" th:text="|SĐT ${page.maskedPhone}|">SĐT •••• 4567</small></span>
+									<button class="tk-edit" type="button" data-edit th:attr="aria-label=|Sửa người đi vé ${slot.number}|"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa</button>
 								</div>
 							</div>
 							<div class="field tk-name">
-								<div class="field-head"><label class="field-label" th:for="${#ids.next(nameField)}">Họ và tên người đi</label><button class="link-btn is-inline" type="button" data-mine><i class="bi bi-person" aria-hidden="true"></i>Dùng tên của tôi</button></div>
 								<div class="control" th:classappend="${#fields.hasErrors(nameField)} ? 'is-invalid'">
 									<i class="bi bi-person" aria-hidden="true"></i>
-									<input type="text" autocomplete="off" maxlength="100" data-name th:field="*{__${nameField}__}">
+									<span class="float-field">
+										<input type="text" autocomplete="off" maxlength="100" placeholder="Nguyễn Văn A" data-name th:field="*{__${nameField}__}">
+										<label th:for="|passengers${it.index}.fullName|">Họ và tên người đi</label>
+									</span>
+									<button class="reveal" type="button" data-mine aria-label="Dùng tên của tôi" title="Dùng tên của tôi"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
 								</div>
 								<p class="field-error" th:if="${#fields.hasErrors(nameField)}" th:errors="*{__${nameField}__}">Nhập họ tên người đi.</p>
 							</div>
 							<div class="field">
-								<div class="field-head"><label class="field-label" th:for="${#ids.next(idField)}">Số CCCD</label></div>
 								<div class="control" th:classappend="${#fields.hasErrors(idField)} ? 'is-invalid'">
 									<i class="bi bi-person-vcard" aria-hidden="true"></i>
-									<input type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="0xx xxx xxx xxx" data-identity th:field="*{__${idField}__}">
+									<span class="float-field">
+										<input type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="0xx xxx xxx xxx" data-identity th:field="*{__${idField}__}">
+										<label th:for="|passengers${it.index}.identityNumber|">Số CCCD</label>
+									</span>
 								</div>
 								<p class="field-error" th:if="${#fields.hasErrors(idField)}" th:errors="*{__${idField}__}">Số CCCD gồm đúng 12 chữ số.</p>
 							</div>

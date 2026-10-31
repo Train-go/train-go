@@ -14,7 +14,7 @@
 <li class="ticket is-issued" th:fragment="card(ticket, index, count)" th:classappend="${ticket.cancelled} ? 'is-void'">
 	<article class="ticket-main">
 		<div class="ticket-head">
-			<span class="brand"><span class="brand-mark"><i class="bi bi-train-front" aria-hidden="true"></i></span>TrainGo</span>
+			<span class="brand"><img class="brand-mark" th:src="@{/images/brand/logo.svg}" width="40" height="40" alt="">TrainGo</span>
 			<span class="badge badge-muted" th:if="${index != null and !ticket.cancelled}" th:text="|Vé ${index}/${count}|">Vé 1/2</span>
 			<span class="badge badge-muted" th:if="${ticket.cancelled}">Đã hủy</span>
 		</div>

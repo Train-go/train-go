@@ -32,14 +32,14 @@
 	<section class="card trip-summary" aria-labelledby="trip-title">
 		<div>
 			<h1 id="trip-title"><th:block th:text="${#strings.replace(trip.originName, 'Ga ', '')}">Huế</th:block> <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="visually-hidden">đến</span> <th:block th:text="${#strings.replace(trip.destinationName, 'Ga ', '')}">Đà Nẵng</th:block></h1>
-			<dl class="trip-facts">
-				<div><dt><i class="bi bi-train-front" aria-hidden="true"></i>Tàu</dt><dd th:text="${trip.trainCode}">SE1</dd></div>
-				<div><dt><i class="bi bi-calendar3" aria-hidden="true"></i>Ngày khởi hành</dt><dd th:text="${dayLabel}">Thứ tư, 28/10</dd></div>
-				<div><dt><i class="bi bi-clock" aria-hidden="true"></i>Giờ</dt><dd><th:block th:text="|${#temporals.format(trip.departureAt, 'HH:mm')} đến ${#temporals.format(trip.arrivalAt, 'HH:mm')}|">08:00 đến 09:45</th:block><sup th:if="${trip.arrivesNextDay > 0}" th:text="|+${trip.arrivesNextDay}|">+1</sup></dd></div>
-				<div><dt><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Giá vé</dt><dd id="tgPrice"></dd></div>
-			</dl>
+			<ul class="trip-line">
+				<li><b th:text="${trip.trainCode}">SE1</b></li>
+				<li th:text="${dayLabel}">Thứ tư, 28/10/2026</li>
+				<li><th:block th:text="|${#temporals.format(trip.departureAt, 'HH:mm')} - ${#temporals.format(trip.arrivalAt, 'HH:mm')}|">08:00 - 09:45</th:block><sup th:if="${trip.arrivesNextDay > 0}" th:text="|+${trip.arrivesNextDay}|">+1</sup></li>
+				<li id="tgPrice"></li>
+			</ul>
 		</div>
-		<a class="btn btn-outline btn-sm" th:href="@{${stepsTripsUrl}}">Đổi chuyến</a>
+		<a class="trip-change" th:href="@{${stepsTripsUrl}}">Đổi chuyến</a>
 	</section>
 
 	<div class="book">

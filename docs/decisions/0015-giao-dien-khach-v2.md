@@ -26,5 +26,6 @@ CSS theo từng trang (30/10/2026).
 ## Consequences
 
 - Trang khách mới phải có file CSS riêng và thẻ `<link>` trong `<head>`.
-- Ảnh tuyến dùng các ảnh đã ghi nguồn ở footer. Ảnh `footer-duong-ray.jpg` lấy từ prototype, chưa rõ
-  nguồn, cần thay hoặc ghi nguồn trước khi công khai.
+- Ảnh lấy nguyên từ prototype, footer không ghi nguồn ảnh vì app chỉ chạy ở localhost (Phi, 31/10/2026).
+  Trước khi công khai phải ghi lại nguồn: 8 ảnh tuyến có link gốc trong `images/tuyen/NGUON-ANH.md` của
+  prototype, còn `hero-sa-pa.jpg` và `footer-duong-ray.jpg` chưa rõ nguồn nên cần thay hoặc tra lại.

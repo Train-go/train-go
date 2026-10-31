@@ -20,6 +20,9 @@
 .search .btn { min-width: 160px; }
 .search-error { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-sm); margin-top: calc(-1 * var(--space-xs)); padding: var(--space-sm) var(--space-md); border-radius: var(--radius-md); background: var(--color-destructive-soft); color: var(--color-destructive); font-size: 0.9375rem; font-weight: 600; }
 .search-error:empty { display: none; }
+
+/* backdrop-filter makes .search and the .quick chips stacking layers: lift the form so an open station list passes over them. */
+.search:has(.is-picker-open) { position: relative; z-index: 2; }
 .quick { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-top: var(--space-md); font-size: 0.9375rem; color: rgba(255, 255, 255, 0.9); }
 .quick a {
 	display: inline-flex; align-items: center; gap: var(--space-xs); min-height: 36px; padding: 0 var(--space-md); border-radius: var(--radius-pill);
@@ -160,8 +163,7 @@
 .step-visual-ticket .ticket { width: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 8rem); filter: drop-shadow(0 10px 15px rgba(15, 23, 42, 0.12)); }
 .step-visual-ticket .ticket-main, .step-visual-ticket .ticket-stub { padding: var(--space-md); }
 .step-visual-ticket .ticket-head .brand { font-size: 1rem; }
-.step-visual-ticket .brand-mark { width: 28px; height: 28px; }
-.step-visual-ticket .brand-mark .bi { width: 16px; height: 16px; }
+.step-visual-ticket .brand-mark { width: 32px; height: 32px; }
 .step-visual-ticket .ticket-head .badge { display: none; }
 .step-visual-ticket .ticket-route { margin-top: var(--space-sm); gap: var(--space-sm); }
 .step-visual-ticket .ticket-route b { font-size: 1.125rem; }

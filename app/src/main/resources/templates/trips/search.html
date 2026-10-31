@@ -29,7 +29,7 @@
 			<label class="field-label" for="find-from">Ga đi</label>
 			<div class="control" th:classappend="${#fields.hasErrors('from')} ? 'is-invalid'">
 				<i class="bi bi-geo-alt" aria-hidden="true"></i>
-				<select id="find-from" name="from" th:attr="aria-describedby=${#fields.hasErrors('from')} ? 'find-from-error' : null">
+				<select id="find-from" name="from" data-station-picker th:attr="aria-describedby=${#fields.hasErrors('from')} ? 'find-from-error' : null">
 					<option value="" th:selected="*{from == null}">Chọn ga đi</option>
 					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}"
 						th:selected="${station.code == search.from}">Huế</option>
@@ -42,7 +42,7 @@
 			<label class="field-label" for="find-to">Ga đến</label>
 			<div class="control" th:classappend="${toInvalid} ? 'is-invalid'">
 				<i class="bi bi-geo-alt" aria-hidden="true"></i>
-				<select id="find-to" name="to" th:attr="aria-describedby=${toInvalid} ? 'find-to-error' : null">
+				<select id="find-to" name="to" data-station-picker th:attr="aria-describedby=${toInvalid} ? 'find-to-error' : null">
 					<option value="" th:selected="*{to == null}">Chọn ga đến</option>
 					<option th:each="station : ${stations}" th:value="${station.code}" th:text="${#strings.replace(station.name, 'Ga ', '')}"
 						th:selected="${station.code == search.to}">Đà Nẵng</option>
@@ -76,7 +76,6 @@
 					<a th:href="@{${search.url(tab.date)}}" th:attr="aria-current=${tab.date == search.date} ? 'date' : null, aria-label=${tab.ariaLabel}">
 						<th:block th:text="${tab.label}">Hôm nay</th:block>
 						<b th:text="${#temporals.format(tab.date, 'dd/MM')}">27/10</b>
-						<!-- Always present, empty on a day with no trip, so every day keeps the same height. -->
 						<small th:classappend="${tab.soldOut} ? 'is-sold'" th:text="${tab.soldOut} ? 'Hết vé' : (${tab.minPrice != null} ? ${T(com.voyagego.traingo.common.TextUtils).shortMoney(tab.minPrice)} : '')">350k</small>
 					</a>
 				</li>
@@ -147,6 +146,7 @@
 
 	</th:block>
 </div>
+	<script th:src="@{/js/station-picker.js}"></script>
 	<script th:src="@{/js/trip-search.js}"></script>
 </main>
 

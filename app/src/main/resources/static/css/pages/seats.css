@@ -1,13 +1,25 @@
 /* Chọn chỗ: booking/seats.html. */
 
 /* Seat page */
-.trip-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-lg); padding: var(--space-lg); }
+/* The trip in one line above the map. */
+.trip-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-xs) var(--space-lg); padding: var(--space-lg); }
+.trip-change { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
+.trip-change:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.trip-line { display: flex; flex-wrap: wrap; align-items: center; margin: var(--space-xs) 0 0; padding: 0; list-style: none; color: var(--color-muted-fg); }
+.trip-line b { color: var(--color-heading); }
+.trip-line li:not(:first-child):not(:empty)::before { content: "·"; margin-inline: var(--space-sm); }
+/* A phone: the link beside the route, then train and day on one line, time and price on the next. */
+@media (max-width: 640px) {
+	.trip-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: var(--space-md); }
+	.trip-summary > div { display: contents; }
+	.trip-summary h1 { grid-row: 1; grid-column: 1; }
+	.trip-change { grid-row: 1; grid-column: 2; }
+	.trip-line { grid-row: 2; grid-column: 1 / -1; margin-top: 0; }
+	.trip-line li:nth-child(2) { flex-basis: calc(100% - 4rem); }
+	.trip-line li:nth-child(3)::before { display: none; }
+}
 .trip-summary h1 { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-sm); font-size: clamp(1.375rem, 1vw + 1rem, 1.75rem); }
 .trip-summary h1 .bi { width: 22px; height: 22px; color: var(--color-muted-fg); }
-.trip-facts { display: flex; flex-wrap: wrap; gap: var(--space-sm) var(--space-xl); margin: var(--space-sm) 0 0; }
-.trip-facts div { display: flex; align-items: center; gap: var(--space-sm); }
-.trip-facts dt { display: flex; align-items: center; gap: var(--space-xs); color: var(--color-muted-fg); font-size: 0.875rem; }
-.trip-facts dd { margin: 0; font-weight: 700; color: var(--color-heading); }
 
 .coach { margin-top: var(--space-md); padding: var(--space-xl); }
 .coach-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-lg); }

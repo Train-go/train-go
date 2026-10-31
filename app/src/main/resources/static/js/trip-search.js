@@ -12,6 +12,9 @@
 		var origin = fromField.value;
 		fromField.value = toField.value;
 		toField.value = origin;
+		[fromField, toField].forEach(function (field) {
+			field.dispatchEvent(new Event('change', { bubbles: true }));
+		});
 	});
 
 	// On a phone the strip scrolls sideways; bring the day being shown to its middle.
