@@ -3,89 +3,52 @@
 <body>
 
 <!--
-	Customer navigation, after docs/reports/ui-mau/client/chon-chuyen-b-mo-rong.html.
+	Customer navigation, a glass bar. The current page is marked by the activeNav
+	model attribute its controller sets ("search" for /trips, "my-trips" for
+	/my-trips), so nested pages such as /booking/12/seats keep their mark.
 
-	The current page is marked by the activeNav model attribute its controller
-	sets ("search" for /trips, "my-trips" for /my-trips), the same way the admin
-	menu works, so nested pages such as /trips/12 keep "Tìm vé" marked.
-
-	Below Bootstrap's lg breakpoint the three links fold into the menu opened by
-	the round button. A guest keeps "Đăng nhập" on the bar; a signed-in user's
-	name and "Đăng xuất" live in the menu, so a long name never crowds the logo.
+	On the homepage it floats over the photo (overPhoto, landing.js adds the glass
+	once the page scrolls). On a phone "Chọn chuyến" folds away: the homepage and
+	the steps already lead there.
 -->
-<header th:fragment="navbar">
-	<!--
-		navbar and container on separate elements: on one element the navbar's
-		padding rule overrides the container's side gutter, and the logo touches
-		the edge of a phone screen.
-	-->
-	<nav class="navbar navbar-expand-lg tg-navbar" aria-label="Điều hướng chính">
-		<div class="container">
-			<a class="navbar-brand tg-logo" th:href="@{/}">
-				<span class="tg-logo-mark" aria-hidden="true"><i class="bi bi-train-front"></i></span>TrainGo
-			</a>
-
-			<div class="tg-nav-end order-lg-last">
-				<th:block th:if="${currentUser == null}">
-					<a class="tg-pill-btn is-light" th:href="@{/login}">Đăng nhập</a>
-					<a class="tg-pill-btn is-dark d-none d-sm-inline-flex" th:href="@{/register}">Đăng ký</a>
-				</th:block>
-				<th:block th:if="${currentUser != null}">
-					<div th:replace="~{fragments/navbar :: account('d-none d-lg-flex align-items-center gap-2')}"></div>
-				</th:block>
-				<button class="tg-toggler d-lg-none" type="button" data-bs-toggle="collapse"
-					data-bs-target="#tgNav" aria-controls="tgNav" aria-expanded="false" aria-label="Mở menu">
-					<i class="bi bi-list" aria-hidden="true"></i>
-				</button>
-			</div>
-
-			<div class="collapse navbar-collapse" id="tgNav">
-				<ul class="navbar-nav tg-pills">
-					<li class="nav-item">
-						<a class="nav-link" th:href="@{/trips}"
-							th:attr="aria-current=${activeNav == 'search'} ? 'page' : null">
-							<i class="bi bi-search" aria-hidden="true"></i>Tìm vé
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" th:href="@{/my-trips}"
-							th:attr="aria-current=${activeNav == 'my-trips'} ? 'page' : null">
-							<i class="bi bi-ticket-perforated" aria-hidden="true"></i>Vé của tôi
-						</a>
-					</li>
-					<li class="nav-item">
-						<a class="nav-link" th:href="@{/#how-it-works}">
-							<i class="bi bi-question-circle" aria-hidden="true"></i>Hướng dẫn
-						</a>
-					</li>
-					<!-- On a phone "Đăng ký" has no room on the bar, so it lives in the menu. -->
-					<li class="nav-item d-sm-none" th:if="${currentUser == null}">
-						<a class="nav-link" th:href="@{/register}">
-							<i class="bi bi-person-plus" aria-hidden="true"></i>Đăng ký
-						</a>
-					</li>
-				</ul>
-
-				<th:block th:if="${currentUser != null}">
-					<div th:replace="~{fragments/navbar :: account('d-flex d-lg-none flex-column gap-2 mt-3 px-3')}"></div>
-				</th:block>
-			</div>
+<header th:fragment="navbar" class="site-header" id="header"
+	th:classappend="${overPhoto != null and overPhoto} ? 'is-fixed is-over-photo'">
+	<div class="container">
+		<a class="brand" th:href="@{/}" aria-label="TrainGo, trang chủ">
+			<img class="brand-mark brand-mark-light" th:src="@{/images/brand/logo.svg}" width="40" height="40" alt="">
+			<img class="brand-mark brand-mark-dark" th:src="@{/images/brand/logo-on-dark.svg}" width="40" height="40" alt="">
+			TrainGo
+		</a>
+		<nav class="nav" aria-label="Chính">
+			<a class="nav-hide-sm" th:href="@{/trips}" th:attr="aria-current=${activeNav == 'search'} ? 'page' : null">Chọn chuyến</a>
+			<a th:href="@{/my-trips}" th:attr="aria-current=${activeNav == 'my-trips'} ? 'page' : null">Vé của tôi</a>
+		</nav>
+		<div class="header-actions">
+			<a class="btn btn-outline btn-sm" th:href="@{/login}" th:if="${currentUser == null}"><i class="bi bi-person" aria-hidden="true"></i><span class="nav-label">Đăng nhập</span></a>
+			<th:block th:if="${currentUser != null}">
+				<div class="dropdown">
+					<button class="account" type="button" data-bs-toggle="dropdown" aria-expanded="false" th:attr="aria-label=|Tài khoản ${currentUser.fullName}|">
+						<span class="avatar avatar-sm" aria-hidden="true" th:text="${T(com.voyagego.traingo.common.TextUtils).initials(currentUser.fullName)}">VA</span>
+						<span class="account-name" th:text="${currentUser.fullName}">Nguyễn Văn An</span>
+						<i class="bi bi-chevron-down account-chevron" aria-hidden="true"></i>
+					</button>
+					<div class="dropdown-menu dropdown-menu-end account-dropdown">
+						<div class="account-summary">
+							<strong th:text="${currentUser.fullName}">Nguyễn Văn An</strong>
+							<small th:text="${currentUser.email}">an.nguyen@example.com</small>
+						</div>
+						<hr class="dropdown-divider">
+						<a class="dropdown-item" th:href="@{/admin}" th:if="${currentUser.role.name() == 'ADMIN'}"><i class="bi bi-speedometer2" aria-hidden="true"></i>Quản trị</a>
+						<a class="dropdown-item" th:classappend="${activeNav == 'profile'} ? 'active'" th:href="@{/profile}"><i class="bi bi-person" aria-hidden="true"></i>Hồ sơ</a>
+						<form th:action="@{/logout}" method="post">
+							<button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>Đăng xuất</button>
+						</form>
+					</div>
+				</div>
+			</th:block>
 		</div>
-	</nav>
+	</div>
 </header>
-
-<!-- Signed-in user: name, admin entry, sign-out. The caller passes the layout classes. -->
-<div th:fragment="account(layout)" th:class="${layout}">
-	<span class="fw-semibold text-break">
-		<i class="bi bi-person-circle" aria-hidden="true"></i>
-		<span th:text="${currentUser.fullName}">Họ tên</span>
-	</span>
-	<a class="btn btn-primary rounded-pill" th:href="@{/admin/trains}"
-		th:if="${currentUser.role.name() == 'ADMIN'}">Quản trị</a>
-	<form th:action="@{/logout}" method="post" class="d-grid">
-		<button type="submit" class="btn btn-outline-primary rounded-pill">Đăng xuất</button>
-	</form>
-</div>
 
 </body>
 </html>

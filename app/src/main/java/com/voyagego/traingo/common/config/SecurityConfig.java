@@ -52,6 +52,7 @@ public class SecurityConfig {
 				.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
 				.requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
 				.requestMatchers("/booking/**", "/my-trips/**", "/tickets/**").hasRole("CUSTOMER")
+				.requestMatchers("/profile/**").authenticated()
 				// Also opens /error, /login, /register, the trip pages, /api/trips/**
 				// (the seat map is readable before login) and the static files.
 				.anyRequest().permitAll())

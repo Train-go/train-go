@@ -5,19 +5,18 @@
 	the one-line footer, like the other error pages.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
 	<title>Không đặt được chuyến này · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/error.css}">
 </head>
 <body>
-<main class="container">
-	<section class="tg-error">
-		<span class="tg-error-code">Không đặt được</span>
+<main class="error-page container">
+	<section class="card state">
+		<span class="state-code">Không đặt được</span>
 		<h1>Chuyến này không còn để đặt</h1>
 		<p th:text="${reason} ?: 'Chuyến này hiện không đặt được.'">Chuyến này đã bị hủy.</p>
-		<div class="tg-error-actions">
-			<a class="btn btn-primary btn-lg" th:href="@{/trips}">Chọn chuyến khác</a>
-		</div>
+		<a class="btn btn-primary" th:href="@{/trips}">Chọn chuyến khác</a>
 	</section>
 </main>
 </body>

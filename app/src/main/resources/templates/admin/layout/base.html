@@ -19,6 +19,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<title th:replace="${title}">Quản trị TrainGo</title>
+	<link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
 	<!-- Read by TG.api, which sends the token on every request that changes data. -->
 	<meta name="_csrf" th:content="${_csrf.token}">
 	<meta name="_csrf_header" th:content="${_csrf.headerName}">

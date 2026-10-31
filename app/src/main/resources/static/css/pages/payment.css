@@ -1,0 +1,41 @@
+/* Thanh toán: booking/payment.html. */
+
+.invoice { max-width: 760px; margin-inline: auto; padding: var(--space-xl); }
+.invoice-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); }
+.invoice h1 { font-size: clamp(1.5rem, 1vw + 1.1rem, 2rem); }
+.invoice .trip-times { margin-top: var(--space-xl); }
+/* Under the seats: each fact puts its value below its label. */
+.invoice .trip-facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-xl); margin-top: var(--space-lg); padding: var(--space-md); border-radius: var(--radius-md); background: var(--color-bg); }
+.invoice .trip-facts div { flex-direction: column; align-items: flex-start; gap: 2px; }
+.invoice-total { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-md); margin: var(--space-lg) 0 0; color: var(--color-fg); font-weight: 600; }
+.invoice-total b { color: var(--color-heading); font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.lines { width: 100%; margin-top: var(--space-xl); border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.lines th { padding: var(--space-sm) 0; border-bottom: 1px solid var(--color-border); color: var(--color-muted-fg); font-size: 0.875rem; font-weight: 600; text-align: left; white-space: nowrap; }
+.lines td { padding: var(--space-md) 0; border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+.lines td + td, .lines th + th { padding-left: var(--space-md); }
+.lines td:nth-child(2) { color: var(--color-heading); font-weight: 600; overflow-wrap: anywhere; }
+.lines td small { margin-left: var(--space-sm); color: var(--color-muted-fg); font-size: 0.875rem; }
+.lines .num { text-align: right; white-space: nowrap; }
+.seat-tag { display: inline-grid; place-items: center; min-width: 44px; height: 32px; padding: 0 var(--space-xs); border-radius: var(--radius-sm); background: var(--color-primary-soft); color: var(--color-primary); font-size: 0.875rem; font-weight: 700; }
+
+.pay { display: grid; gap: var(--space-md); margin-top: var(--space-xl); }
+.btn-lg { min-height: 56px; font-size: 1.0625rem; }
+/* While paying the button keeps its colour and says so; the script ignores clicks until the answer. */
+.btn[aria-busy="true"] { cursor: progress; }
+.spin { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* The icon sits in the line, so a wrapped note stays centred as one block. */
+.pay-note { color: var(--color-muted-fg); font-size: 0.875rem; text-align: center; text-wrap: balance; }
+.pay-note .bi { margin-right: var(--space-xs); vertical-align: -3px; }
+.pay .notice { margin-top: 0; }
+
+/* A phone: each line becomes a block, seat and price on top, the traveller's name under them at full width. */
+@media (max-width: 640px) {
+	.invoice { padding: var(--space-lg) var(--space-md); }
+	.lines thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+	.lines, .lines tbody { display: block; }
+	.lines tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-xs) var(--space-md); padding-block: var(--space-md); border-bottom: 1px solid var(--color-border); }
+	.lines td, .lines td + td { padding: 0; border: 0; }
+	.lines tbody td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+}

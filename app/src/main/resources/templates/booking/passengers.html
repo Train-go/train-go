@@ -5,129 +5,96 @@
 	seat, each with the passenger's name and CCCD.
 
 	The name defaults to the account holder's, whose masked phone then shows on
-	the ticket. "Đổi người đi" opens the name field (passengers.js); the CCCD is
-	always asked. The form only changes the session draft (D7). Names and CCCD
+	the ticket. "Sửa" opens the name field (passengers.js); the CCCD is always
+	asked. Each field's label sits inside its box and rises when the box is used. The form only changes the session draft (D7). Names and CCCD
 	are checked on the server, so the page works the same when a check fails.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
-	<title>Vé của bạn · TrainGo</title>
+	<title>Thông tin người đi · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/passengers.css}">
 </head>
 <body>
 
-<main class="container tg-pass">
+<main class="page">
+<div class="container">
 
 	<nav th:replace="~{fragments/booking-steps :: steps(3)}"></nav>
 
-	<div class="tg-pass-col">
-		<h1 class="tg-pass-title">Vé của bạn</h1>
+	<h1 class="page-title">Thông tin người đi</h1>
 
-		<div class="alert alert-danger d-flex gap-2" role="alert" th:if="${errorMessage}">
-			<i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-			<span th:text="${errorMessage}">Số hành khách phải bằng số chỗ đã chọn.</span>
-		</div>
+	<div class="alert alert-danger" role="alert" th:if="${errorMessage}">
+		<i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+		<span th:text="${errorMessage}">Số hành khách phải bằng số chỗ đã chọn.</span>
+	</div>
 
-		<form method="post" id="tgPassForm" th:action="@{/booking/passengers}" th:object="${form}" novalidate
-			th:data-account-name="${page.accountName}">
-
-			<div class="tg-pass-stack">
-				<div class="tg-tkw" th:each="slot, it : ${page.slots}"
+	<form class="book tk-book" method="post" id="tgPassForm" th:action="@{/booking/passengers}" th:object="${form}" novalidate
+		th:data-account-name="${page.accountName}">
+		<div class="tk-col">
+			<ol class="tk-list">
+				<li class="ticket tk" th:each="slot, it : ${page.slots}" data-ticket
 					th:with="line=${form.passengers[it.index]},
 						mine=${form.passengers[it.index].fullName == page.accountName},
 						nameField=|passengers[${it.index}].fullName|,
 						idField=|passengers[${it.index}].identityNumber|,
-						editing=${form.passengers[it.index].fullName != page.accountName or #fields.hasErrors('passengers[' + it.index + '].fullName')}">
-
-					<article class="tg-tk" data-ticket>
-						<div class="tg-tk-main">
-							<div class="tg-tk-top">
-								<span class="tg-tk-brand"><i class="bi bi-train-front" aria-hidden="true"></i>
-									<th:block th:text="|TrainGo · ${page.trip.trainCode} · ${#temporals.format(page.trip.departureAt, 'dd/MM/yyyy')}|">TrainGo · SE1 · 28/10/2026</th:block></span>
-								<span class="tg-tk-no" th:text="|Vé ${slot.number}/${page.slots.size()}|">Vé 1/2</span>
-							</div>
-
-							<div class="tg-tk-leg">
-								<div>
-									<b th:text="${#temporals.format(page.trip.departureAt, 'HH:mm')}">06:15</b>
-									<small th:text="${page.trip.originName}">Huế</small>
-								</div>
-								<div class="tg-tk-rail">
-									<i class="bi bi-train-front" aria-hidden="true"></i>
-									<span th:text="${page.trip.durationLabel}">2g45</span>
-								</div>
-								<div class="tg-tk-end">
-									<b><th:block th:text="${#temporals.format(page.trip.arrivalAt, 'HH:mm')}">08:00</th:block><sup
-										th:if="${page.trip.arrivesNextDay > 0}" th:text="|+${page.trip.arrivesNextDay}|">+1</sup></b>
-									<small th:text="${page.trip.destinationName}">Đà Nẵng</small>
-								</div>
-							</div>
-
-							<div class="tg-tk-who">
-								<div class="tg-tk-person">
-									<span class="tg-tk-avatar" th:classappend="${mine} ? '' : 'is-other'" data-avatar
-										th:text="${T(com.voyagego.traingo.common.TextUtils).initials(line.fullName)}">VA</span>
-									<div>
-										<b data-person th:text="${line.fullName} ?: '—'">Nguyễn Văn An</b>
-										<small data-phone th:if="${page.maskedPhone != null}" th:hidden="${!mine}"
-											th:text="|SĐT ${page.maskedPhone}|">SĐT •••• 4567</small>
-									</div>
-								</div>
-								<button class="tg-tk-link" type="button" data-edit th:aria-expanded="${editing}">
-									<i class="bi bi-pencil" aria-hidden="true"></i>Đổi người đi
-								</button>
-							</div>
-
-							<div class="tg-tk-edit" data-edit-box th:hidden="${!editing}">
-								<label class="tg-field" th:classappend="${#fields.hasErrors(nameField)} ? 'is-bad'">
-									<span>Họ và tên người đi</span>
-									<input type="text" autocomplete="off" maxlength="100" data-name
-										th:field="*{__${nameField}__}">
-									<small class="tg-field-msg" th:if="${#fields.hasErrors(nameField)}"
-										th:errors="*{__${nameField}__}">Nhập họ tên người đi.</small>
-								</label>
-								<button class="tg-tk-link" type="button" data-mine>
-									<i class="bi bi-person-check" aria-hidden="true"></i>Dùng tên tài khoản
-								</button>
-							</div>
-
-							<label class="tg-field" th:classappend="${#fields.hasErrors(idField)} ? 'is-bad'">
-								<span>Số CCCD</span>
-								<input type="text" inputmode="numeric" autocomplete="off" maxlength="12"
-									placeholder="12 chữ số" data-identity th:field="*{__${idField}__}">
-								<small class="tg-field-msg" th:if="${#fields.hasErrors(idField)}"
-									th:errors="*{__${idField}__}">Số CCCD gồm đúng 12 chữ số.</small>
-							</label>
+						editing=${form.passengers[it.index].fullName != page.accountName or #fields.hasErrors('passengers[' + it.index + '].fullName')}"
+					th:classappend="${editing} ? 'is-editing'">
+					<fieldset class="ticket-main">
+						<legend class="visually-hidden" th:text="|Vé ${slot.number}, ${slot.typeLabel} ${slot.seatCode} toa ${slot.coachNumber}|">Vé 1, Ghế ngồi A05 toa 1</legend>
+						<div class="ticket-head">
+							<span class="tk-when"><b th:text="${page.trip.trainCode}">SE1</b><th:block th:text="${#temporals.format(page.trip.departureAt, 'dd/MM/yyyy')}">31/10/2026</th:block></span>
+							<span class="badge badge-muted" th:text="|Vé ${slot.number}/${page.slots.size()}|">Vé 1/2</span>
 						</div>
-
-						<div class="tg-tk-stub">
-							<span class="tg-tk-coach" th:text="|Toa ${slot.coachNumber}|">Toa 1</span>
-							<span class="tg-tk-big" th:text="${slot.seatCode}">A05</span>
-							<span class="tg-tk-kind" th:text="${slot.typeLabel}">Ghế ngồi</span>
-							<span class="tg-tk-price" th:text="${#numbers.formatInteger(slot.price, 0, 'POINT')} + 'đ'">170.000đ</span>
-							<span class="tg-tk-bars" aria-hidden="true"></span>
+						<div th:replace="~{fragments/booking-steps :: leg(${page.trip.departureAt}, ${page.trip.arrivalAt}, ${page.trip.arrivesNextDay}, ${#strings.replace(page.trip.originName, 'Ga ', '')}, ${#strings.replace(page.trip.destinationName, 'Ga ', '')}, ${page.trip.durationLabel})}"></div>
+						<div class="tk-person field-row">
+							<div class="field tk-who-field">
+								<div class="tk-who">
+									<span class="avatar avatar-sm" aria-hidden="true" data-avatar th:text="${T(com.voyagego.traingo.common.TextUtils).initials(line.fullName)}">VA</span>
+									<span class="tk-who-text"><span class="visually-hidden">Người đi: </span><b data-person th:text="${line.fullName}">Nguyễn Văn An</b><small data-phone th:if="${page.maskedPhone != null}" th:hidden="${!mine}" th:text="|SĐT ${page.maskedPhone}|">SĐT •••• 4567</small></span>
+									<button class="tk-edit" type="button" data-edit th:attr="aria-label=|Sửa người đi vé ${slot.number}|"><i class="bi bi-pencil" aria-hidden="true"></i>Sửa</button>
+								</div>
+							</div>
+							<div class="field tk-name">
+								<div class="control" th:classappend="${#fields.hasErrors(nameField)} ? 'is-invalid'">
+									<i class="bi bi-person" aria-hidden="true"></i>
+									<span class="float-field">
+										<input type="text" autocomplete="off" maxlength="100" placeholder="Nguyễn Văn A" data-name th:field="*{__${nameField}__}">
+										<label th:for="|passengers${it.index}.fullName|">Họ và tên người đi</label>
+									</span>
+									<button class="reveal" type="button" data-mine aria-label="Dùng tên của tôi" title="Dùng tên của tôi"><i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i></button>
+								</div>
+								<p class="field-error" th:if="${#fields.hasErrors(nameField)}" th:errors="*{__${nameField}__}">Nhập họ tên người đi.</p>
+							</div>
+							<div class="field">
+								<div class="control" th:classappend="${#fields.hasErrors(idField)} ? 'is-invalid'">
+									<i class="bi bi-person-vcard" aria-hidden="true"></i>
+									<span class="float-field">
+										<input type="text" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="0xx xxx xxx xxx" data-identity th:field="*{__${idField}__}">
+										<label th:for="|passengers${it.index}.identityNumber|">Số CCCD</label>
+									</span>
+								</div>
+								<p class="field-error" th:if="${#fields.hasErrors(idField)}" th:errors="*{__${idField}__}">Số CCCD gồm đúng 12 chữ số.</p>
+							</div>
 						</div>
-					</article>
-				</div>
-			</div>
-
-			<div class="tg-pass-bar">
-				<div class="tg-pass-bar-in">
-					<span>
-						<small th:text="|${page.slots.size()} vé · Tổng tiền|">2 vé · Tổng tiền</small>
-						<strong th:text="${#numbers.formatInteger(page.total, 0, 'POINT')} + 'đ'">340.000đ</strong>
-					</span>
-					<button class="tg-pass-next" type="submit">Tiếp tục <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
-				</div>
-			</div>
-
+					</fieldset>
+					<div class="ticket-stub">
+						<div><small th:text="|Toa ${slot.coachNumber}|">Toa 1</small><b th:text="${slot.seatCode}">A05</b><small th:text="${slot.typeLabel}">Ghế ngồi</small></div>
+						<div><small>Giá vé</small><strong class="tk-price" th:text="${#numbers.formatInteger(slot.price, 0, 'POINT')} + ' đ'">100.000 đ</strong></div>
+					</div>
+				</li>
+			</ol>
 			<!-- Saves what was typed, then opens the seat page of this trip. -->
-			<button class="tg-pass-back" type="submit" formnovalidate th:formaction="@{/booking/passengers/reselect}">
-				<i class="bi bi-arrow-left" aria-hidden="true"></i>Chọn lại chỗ
+			<button class="link-back border-0 bg-transparent p-0" type="submit" formnovalidate th:formaction="@{/booking/passengers/reselect}" style="color: var(--color-primary)">
+				<i class="bi bi-chevron-left" aria-hidden="true"></i>Chọn lại chỗ
 			</button>
-		</form>
-	</div>
-
+		</div>
+		<aside class="card summary" aria-label="Tổng tiền">
+			<div class="total"><span th:text="|${page.slots.size()} vé|">2 vé</span><b th:text="${#numbers.formatInteger(page.total, 0, 'POINT')} + ' đ'">200.000 đ</b></div>
+			<button class="btn btn-cta btn-block" type="submit">Tiếp tục</button>
+		</aside>
+	</form>
+</div>
 	<script th:src="@{/js/passengers.js}"></script>
 </main>
 

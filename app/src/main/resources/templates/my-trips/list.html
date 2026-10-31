@@ -2,70 +2,52 @@
 <!--
 	"Vé của tôi" (#31): the customer's bookings in three groups (D8). The tabs
 	are links (?tab=), so a group can be reloaded and shared; every card links
-	to its booking. MyTripsView carries every label ready to print. Cards and
-	colours follow docs/reports/ui-mau/client/thanh-toan.html.
+	to its booking. MyTripsView carries every label ready to print. 
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
 	<title>Vé của tôi · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/my-trips.css}">
 </head>
 <body>
-<main class="container tg-trips-page">
+<main class="page">
+<div class="container my-trips">
+	<h1>Vé của tôi</h1>
 
-	<h1 class="tg-trips-title">Vé của tôi</h1>
-
-	<nav class="tg-trips-tabs" aria-label="Nhóm vé">
-		<a th:href="@{/my-trips(tab='upcoming')}"
-			th:attr="aria-current=${view.tab == 'upcoming'} ? 'page' : null">
-			Sắp đi <span class="tg-trips-count" th:text="${view.upcomingCount}">1</span>
-		</a>
-		<a th:href="@{/my-trips(tab='past')}"
-			th:attr="aria-current=${view.tab == 'past'} ? 'page' : null">
-			Đã đi <span class="tg-trips-count" th:text="${view.pastCount}">2</span>
-		</a>
-		<a th:href="@{/my-trips(tab='cancelled')}"
-			th:attr="aria-current=${view.tab == 'cancelled'} ? 'page' : null">
-			Đã hủy <span class="tg-trips-count" th:text="${view.cancelledCount}">0</span>
-		</a>
+	<nav class="my-tabs" aria-label="Nhóm vé">
+		<a th:href="@{/my-trips(tab='upcoming')}" th:attr="aria-current=${view.tab == 'upcoming'} ? 'page' : null">Sắp đi<span class="my-count" th:text="${view.upcomingCount}">1</span></a>
+		<a th:href="@{/my-trips(tab='past')}" th:attr="aria-current=${view.tab == 'past'} ? 'page' : null">Đã đi<span class="my-count" th:text="${view.pastCount}">2</span></a>
+		<a th:href="@{/my-trips(tab='cancelled')}" th:attr="aria-current=${view.tab == 'cancelled'} ? 'page' : null">Đã hủy<span class="my-count" th:text="${view.cancelledCount}">0</span></a>
 	</nav>
 
-	<ul class="tg-trip-cards" th:unless="${#lists.isEmpty(view.cards)}">
+	<ul class="my-cards" th:unless="${#lists.isEmpty(view.cards)}">
 		<li th:each="card : ${view.cards}">
-			<a class="tg-trip-card" th:href="@{/my-trips/{id}(id=${card.id})}">
-				<span class="tg-trip-card-head">
-					<span class="tg-trip-route" th:text="${card.routeLabel}">Ga Hà Nội → Ga Huế</span>
-					<span class="tg-status" th:classappend="${card.statusCss}" th:text="${card.statusLabel}">Đã thanh toán</span>
+			<a class="card my-card" th:href="@{/my-trips/{id}(id=${card.id})}">
+				<span class="my-card-head">
+					<span class="my-route" th:text="${card.routeLabel}">Ga Hà Nội → Ga Huế</span>
+					<span class="badge" th:classappend="|badge-${card.statusCss}|" th:text="${card.statusLabel}">Đã thanh toán</span>
 				</span>
-				<span class="tg-trip-when">
-					<i class="bi bi-calendar3" aria-hidden="true"></i>
-					<span th:text="${card.departureLabel}">Thứ Năm, 29/10/2026 · 08:00</span>
-					<span class="tg-train-code" th:text="${card.trainCode}">SE1</span>
-				</span>
-				<span class="tg-trip-seats">
-					<i class="bi bi-person-fill" aria-hidden="true"></i>
-					<span th:text="${card.seatsLabel}">Toa 1 · A05, Toa 3 · B02</span>
-				</span>
-				<span class="tg-trip-card-foot">
-					<span th:text="|${card.ticketCount} vé · ${#numbers.formatInteger(card.totalPrice, 0, 'POINT')}đ|">2 vé · 820.000đ</span>
-					<span class="tg-booking-code" th:text="${card.code}">BK202610001</span>
+				<span class="my-line"><i class="bi bi-calendar3" aria-hidden="true"></i><span th:text="${card.departureLabel}">Thứ Năm, 29/10/2026 · 08:00</span><span th:text="|Tàu ${card.trainCode}|">Tàu SE1</span></span>
+				<span class="my-line"><i class="bi bi-person" aria-hidden="true"></i><span th:text="${card.seatsLabel}">Toa 1 · A05, Toa 3 · B02</span></span>
+				<span class="my-card-foot">
+					<span th:text="|${card.ticketCount} vé · ${#numbers.formatInteger(card.totalPrice, 0, 'POINT')} đ|">2 vé · 820.000 đ</span>
+					<span class="my-code" th:text="${card.code}">BK202610001</span>
 				</span>
 			</a>
 		</li>
 	</ul>
 
-	<section class="tg-trips-empty" th:if="${#lists.isEmpty(view.cards)}">
-		<i class="bi bi-ticket-perforated" aria-hidden="true"></i>
+	<section class="card state" th:if="${#lists.isEmpty(view.cards)}">
+		<span class="state-icon"><i class="bi bi-ticket-perforated" aria-hidden="true"></i></span>
 		<p th:switch="${view.tab}">
 			<span th:case="'past'">Bạn chưa có chuyến nào đã đi.</span>
 			<span th:case="'cancelled'">Bạn chưa hủy booking nào.</span>
 			<span th:case="*">Bạn chưa có chuyến sắp đi. Tìm một chuyến và đặt chỗ trong vài phút.</span>
 		</p>
-		<a class="btn btn-primary btn-lg" th:href="@{/trips}">
-			<i class="bi bi-search" aria-hidden="true"></i>Tìm chuyến
-		</a>
+		<a class="btn btn-cta" th:href="@{/trips}"><i class="bi bi-search" aria-hidden="true"></i>Tìm chuyến</a>
 	</section>
-
+</div>
 </main>
 </body>
 </html>

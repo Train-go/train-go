@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import com.voyagego.traingo.common.exception.DuplicateEmailException;
 import com.voyagego.traingo.entity.User;
+import com.voyagego.traingo.model.request.ProfileRequest;
 import com.voyagego.traingo.model.request.RegisterRequest;
 import com.voyagego.traingo.repository.UserRepository;
 import jakarta.validation.Valid;
@@ -49,6 +50,13 @@ public class UserService {
 			}
 			throw exception;
 		}
+	}
+
+	@Transactional
+	public User updateProfile(long userId, @NotNull @Valid ProfileRequest form) {
+		User user = users.findById(userId).orElseThrow();
+		user.updateProfile(form.getFullName(), form.getPhoneNumber());
+		return user;
 	}
 
 	private boolean isEmailConstraint(String name) {

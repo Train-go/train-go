@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
+<head>
+	<title>Hồ sơ · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/profile.css}">
+</head>
+<body>
+<main class="page">
+<div class="container profile">
+
+	<h1>Hồ sơ</h1>
+
+	<div th:if="${successMessage}" class="alert alert-success" role="status">
+		<i class="bi bi-check-circle" aria-hidden="true"></i>
+		<span th:text="${successMessage}">Đã lưu hồ sơ.</span>
+	</div>
+
+	<form class="card profile-form" method="post" th:action="@{/profile}" th:object="${profileForm}" novalidate>
+		<div class="field">
+			<label class="field-label" for="fullName">Họ tên</label>
+			<div class="control" th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'">
+				<i class="bi bi-person" aria-hidden="true"></i>
+				<input th:field="*{fullName}" type="text" required maxlength="100" autocomplete="name"
+					th:attr="aria-invalid=${#fields.hasErrors('fullName')} ? 'true' : null, aria-describedby=${#fields.hasErrors('fullName')} ? 'fullName-error' : null">
+			</div>
+			<p class="field-error" id="fullName-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}">Vui lòng nhập họ tên.</p>
+		</div>
+
+		<div class="field-row">
+			<div class="field">
+				<label class="field-label" for="email">Email</label>
+				<div class="control">
+					<i class="bi bi-envelope" aria-hidden="true"></i>
+					<input id="email" type="email" disabled th:value="${currentUser.email}">
+				</div>
+			</div>
+			<div class="field">
+				<label class="field-label" for="phoneNumber">Số điện thoại</label>
+				<div class="control" th:classappend="${#fields.hasErrors('phoneNumber')} ? 'is-invalid'">
+					<i class="bi bi-telephone" aria-hidden="true"></i>
+					<input th:field="*{phoneNumber}" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="0xx xxx xxxx"
+						th:attr="aria-invalid=${#fields.hasErrors('phoneNumber')} ? 'true' : null, aria-describedby=${#fields.hasErrors('phoneNumber')} ? 'phoneNumber-error' : null">
+				</div>
+				<p class="field-error" id="phoneNumber-error" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}">Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.</p>
+			</div>
+		</div>
+
+		<button class="btn btn-primary profile-save" type="submit">Lưu thay đổi</button>
+	</form>
+
+</div>
+</main>
+</body>
+</html>

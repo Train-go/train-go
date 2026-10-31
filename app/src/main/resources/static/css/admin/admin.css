@@ -196,7 +196,7 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
 	padding: 18px 10px 14px;
 	border-right: 1px solid var(--line); background: var(--surface);
 }
-.admin-side .brand { padding: 0 10px 14px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; color: var(--ink); }
+.admin-side .brand { display: flex; align-items: center; gap: 8px; padding: 0 10px 14px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; color: var(--ink); }
 .admin-side .brand:hover { text-decoration: none; }
 .admin-side nav { display: grid; align-content: start; gap: 14px; }
 .admin-side .grp { display: grid; gap: 1px; }

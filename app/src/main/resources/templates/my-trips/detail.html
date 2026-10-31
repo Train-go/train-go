@@ -1,101 +1,83 @@
 <!DOCTYPE html>
 <!--
-	One of the customer's bookings (#31), as a receipt like
-	docs/reports/ui-mau/client/thanh-toan.html. "Hủy booking" opens a <dialog>
+	One of the customer's bookings (#31), as a receipt. "Hủy booking" opens a <dialog>
 	(static/js/my-trips.js) that holds the POST form, so nothing is cancelled
 	without the customer confirming it. The result of a cancel comes back as a
 	flash message: the customer layout has no place of its own for one.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
 	<title th:text="|${booking.code} · Vé của tôi · TrainGo|">BK202610001 · Vé của tôi · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/my-trips.css}">
 </head>
 <body>
-<main class="container tg-trips-page tg-booking-page">
+<main class="page">
+<div class="container my-trips">
+	<a class="link-back mt-0 mb-3" th:href="@{/my-trips}"><i class="bi bi-chevron-left" aria-hidden="true"></i>Vé của tôi</a>
 
-	<a class="tg-back" th:href="@{/my-trips}"><i class="bi bi-arrow-left" aria-hidden="true"></i>Vé của tôi</a>
-
-	<div th:if="${successMessage}" class="alert alert-success d-flex gap-2" role="status">
-		<i class="bi bi-check-circle-fill" aria-hidden="true"></i>
+	<div th:if="${successMessage}" class="alert alert-success" role="status">
+		<i class="bi bi-check-circle" aria-hidden="true"></i>
 		<span th:text="${successMessage}">Đã hủy booking BK202610001.</span>
 	</div>
-	<div th:if="${errorMessage}" class="alert alert-danger d-flex gap-2" role="alert">
-		<i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+	<div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+		<i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
 		<span th:text="${errorMessage}">Không hủy được: chuyến đã khởi hành.</span>
 	</div>
 
-	<article class="tg-receipt" aria-labelledby="booking-code">
-		<header class="tg-receipt-head">
-			<span class="tg-receipt-brand"><i class="bi bi-train-front" aria-hidden="true"></i>TrainGo</span>
-			<span class="tg-status tg-stamp" th:classappend="${booking.statusCss}" th:text="${booking.statusLabel}">Đã thanh toán</span>
+	<article class="card my-detail" aria-labelledby="booking-code">
+		<header class="my-detail-head">
+			<span class="brand"><img class="brand-mark" th:src="@{/images/brand/logo.svg}" width="40" height="40" alt="">TrainGo</span>
+			<span class="badge" th:classappend="|badge-${booking.statusCss}|" th:text="${booking.statusLabel}">Đã thanh toán</span>
 		</header>
-		<p class="tg-receipt-label">Mã booking</p>
+		<p class="my-label">Mã booking</p>
 		<h1 id="booking-code" th:text="${booking.code}">BK202610001</h1>
 
-		<div class="tg-receipt-trip">
-			<span class="tg-trip-route" th:text="${booking.routeLabel}">Ga Hà Nội → Ga Huế</span>
-			<span th:text="|${booking.departureLabel} → ${booking.arrivalLabel}|">Thứ Năm, 29/10/2026 · 08:00 → 21:30</span>
-			<span>Tàu <b th:text="${booking.trainLabel}">SE1 Thống Nhất 1</b></span>
+		<div class="my-trip">
+			<span class="my-route" th:text="${booking.routeLabel}">Ga Hà Nội → Ga Huế</span>
+			<span class="my-line" th:text="|${booking.departureLabel} → ${booking.arrivalLabel}|">Thứ Năm, 29/10/2026 · 08:00 → 21:30</span>
+			<span class="my-line" th:text="|Tàu ${booking.trainLabel}|">Tàu SE1 Thống Nhất 1</span>
 		</div>
 
-		<h2 class="tg-receipt-sub">Vé</h2>
-		<div class="table-responsive">
-			<table class="table align-middle tg-ticket-table">
+		<h2>Vé</h2>
+		<div class="my-scroll">
+			<table class="my-lines">
 				<thead>
-					<tr>
-						<th scope="col">Mã vé</th>
-						<th scope="col">Hành khách</th>
-						<th scope="col">Chỗ</th>
-						<th scope="col" class="text-end">Giá</th>
-					</tr>
+					<tr><th scope="col">Mã vé</th><th scope="col">Hành khách</th><th scope="col">Chỗ</th><th scope="col" class="num">Giá</th></tr>
 				</thead>
 				<tbody>
 					<tr th:each="ticket : ${booking.tickets}">
-						<td class="tg-mono"><a th:href="@{/tickets/{id}(id=${ticket.id})}" th:text="${ticket.ticketCode}">TK202610001-01</a></td>
-						<td>
-							<span th:text="${ticket.fullName}">Nguyễn Văn An</span>
-							<small class="d-block text-body-secondary tg-mono" th:text="|CCCD ${ticket.idMask}|">CCCD •••• 1234</small>
-						</td>
+						<td><a th:href="@{/tickets/{id}(id=${ticket.id})}" th:text="${ticket.ticketCode}">TK202610001-01</a></td>
+						<td><th:block th:text="${ticket.fullName}">Nguyễn Văn An</th:block><small th:text="|CCCD ${ticket.idMask}|">CCCD •••• 1234</small></td>
 						<td class="text-nowrap" th:text="${ticket.seatLabel}">Toa 3 · B02</td>
-						<td class="text-end text-nowrap" th:text="${#numbers.formatInteger(ticket.price, 0, 'POINT')} + 'đ'">410.000đ</td>
+						<td class="num" th:text="${#numbers.formatInteger(ticket.price, 0, 'POINT')} + ' đ'">410.000 đ</td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
 
-		<div class="tg-receipt-sum">
-			<span>Tổng tiền</span>
-			<strong th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + 'đ'">820.000đ</strong>
+		<div class="my-sum"><span>Tổng tiền</span><b th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + ' đ'">820.000 đ</b></div>
+		<p class="my-paid" th:if="${booking.paidLabel != null}" th:text="|Thanh toán lúc ${booking.paidLabel}|">Thanh toán lúc 20/10/2026 14:05</p>
+
+		<div class="my-actions">
+			<a class="btn btn-primary btn-block" th:href="@{/my-trips/{id}/tickets(id=${booking.id})}"><i class="bi bi-ticket-perforated" aria-hidden="true"></i>Xem vé</a>
+			<button type="button" class="btn btn-outline-danger btn-block" th:if="${booking.cancellable}" data-cancel-open="cancel-dialog">Hủy booking</button>
 		</div>
-		<p class="tg-receipt-paid" th:if="${booking.paidLabel != null}"
-			th:text="|Thanh toán lúc ${booking.paidLabel}|">Thanh toán lúc 20/10/2026 14:05</p>
-
-		<a class="btn btn-primary btn-lg w-100 mt-3" th:href="@{/my-trips/{id}/tickets(id=${booking.id})}">
-			<i class="bi bi-ticket-perforated" aria-hidden="true"></i> Xem vé
-		</a>
-
-		<button type="button" class="btn btn-outline-danger btn-lg w-100 mt-3" th:if="${booking.cancellable}"
-			data-cancel-open="cancel-dialog">
-			<i class="bi bi-x-circle" aria-hidden="true"></i>Hủy booking
-		</button>
 	</article>
 
-	<dialog class="tg-dialog" id="cancel-dialog" aria-labelledby="cancel-title" th:if="${booking.cancellable}">
+	<dialog class="my-dialog" id="cancel-dialog" aria-labelledby="cancel-title" th:if="${booking.cancellable}">
 		<form method="post" th:action="@{/my-trips/{id}/cancel(id=${booking.id})}">
 			<h2 id="cancel-title">Hủy booking này?</h2>
-			<p th:text="${booking.cancelQuestion}">2 chỗ trên chuyến SE1 Ga Hà Nội → Ga Huế, 08:00 29/10 sẽ mở bán lại.
-				Thanh toán chỉ là mô phỏng nên không có hoàn tiền.</p>
-			<div class="tg-dialog-actions">
+			<p th:text="${booking.cancelQuestion}">2 chỗ trên chuyến SE1 Ga Hà Nội → Ga Huế, 08:00 29/10 sẽ mở bán lại.</p>
+			<div class="my-dialog-actions">
 				<!-- First in the form, so it has focus when the dialog opens: Enter keeps the booking. -->
-				<button type="button" class="btn btn-outline-secondary" data-cancel-close>Giữ booking</button>
+				<button type="button" class="btn btn-outline" data-cancel-close>Giữ booking</button>
 				<button type="submit" class="btn btn-danger">Hủy booking</button>
 			</div>
 		</form>
 	</dialog>
-
+</div>
 	<script th:src="@{/js/my-trips.js}" defer></script>
-
 </main>
 </body>
 </html>
