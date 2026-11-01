@@ -108,6 +108,11 @@ Ngày 24/10/2026, nhánh `feat/auth-ui` (bằng chứng ở
 - Navbar: khách thấy Đăng nhập/Đăng ký; người đã đăng nhập thấy họ tên, nút
   Quản trị (chỉ ADMIN) và Đăng xuất (POST có CSRF). Sidebar admin hiện họ tên.
 - `DuplicateEmailException` đã kế thừa `BusinessRuleException`.
+- Từ 31/10/2026: menu nằm giữa header; Hồ sơ, Đăng xuất và Quản trị (chỉ ADMIN)
+  nằm trong dropdown tài khoản. Trang `/profile` (cần đăng nhập, cả CUSTOMER và ADMIN) cho đổi họ tên và
+  số điện thoại theo cùng luật với đăng ký; email là tên đăng nhập nên chỉ hiện,
+  không sửa được. Sau khi lưu, bản sao thông tin người dùng trong session được
+  làm mới. Chưa có chức năng đổi mật khẩu.
 
 Chưa kiểm chứng: case tự đăng nhập lỗi sau commit (chưa tái hiện được, xem hồ sơ
 tiến độ), thao tác bằng bàn phím, chế độ tắt JavaScript.

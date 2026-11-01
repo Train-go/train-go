@@ -1,0 +1,23 @@
+/* Đặt vé thành công: booking/success.html. */
+
+.container.done { max-width: calc(880px + 2 * var(--gutter)); }
+.done-head h1 { font-size: clamp(1.75rem, 1.2vw + 1.2rem, 2.25rem); }
+/* The booking's facts on the left, the paid badge on the same row at the right. */
+.done-meta { display: flex; align-items: center; justify-content: space-between; gap: var(--space-lg); margin-top: var(--space-sm); }
+.done-meta .trip-facts { flex: 1; min-width: 0; margin: 0; }
+.done-meta dt, .done-meta dd { white-space: nowrap; }
+/* A narrow phone: each fact puts its value under its label, so the badge keeps its place on the right. */
+@media (max-width: 420px) {
+	.done-meta { gap: var(--space-md); }
+	.done-meta .trip-facts { column-gap: var(--space-lg); }
+	.done-meta .trip-facts div { flex-direction: column; align-items: flex-start; gap: 0; }
+}
+
+.done-actions { display: flex; flex-wrap: wrap; gap: var(--space-md); margin-top: var(--space-xl); }
+
+@media print {
+	.site-header, .done-actions, .footer-legal-compact { display: none; }
+	body { background: var(--color-card); }
+	.page { padding: 0; }
+	.ticket { filter: none; break-inside: avoid; }
+}

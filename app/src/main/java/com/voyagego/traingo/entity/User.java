@@ -75,6 +75,11 @@ public class User {
 		return user;
 	}
 
+	public void updateProfile(String fullName, String phoneNumber) {
+		this.fullName = fullName;
+		this.phoneNumber = phoneNumber;
+	}
+
 	public String getPhoneNumber() {
 		return phoneNumber;
 	}

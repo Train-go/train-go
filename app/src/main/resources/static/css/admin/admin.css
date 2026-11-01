@@ -194,7 +194,7 @@ b, strong { font-weight: 700; }
 	padding: var(--space-lg) var(--space-md);
 	border-right: 1px solid var(--line); background: var(--surface); color: var(--ink-2);
 }
-.admin-side .brand { padding: 0 var(--space-sm); color: var(--ink); font-size: 1.0625rem; font-weight: 800; letter-spacing: -0.03em; }
+.admin-side .brand { display: flex; align-items: center; gap: var(--space-sm); padding: 0 var(--space-sm); color: var(--ink); font-size: 1.0625rem; font-weight: 800; letter-spacing: -0.03em; }
 .admin-side .brand:hover { text-decoration: none; }
 .admin-side nav.admin-nav { display: grid; gap: var(--space-md); }
 .admin-side .grp { display: grid; gap: 2px; }

@@ -2,8 +2,11 @@
 <!--
 	Shared page shell. A page uses it like this:
 
-		<html th:replace="~{layout/base :: page(~{::title}, ~{::main})}">
-		<head><title>...</title></head>
+		<html th:replace="~{layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
+		<head>
+			<title>...</title>
+			<link rel="stylesheet" th:href="@{/css/pages/....css}">
+		</head>
 		<body><main> ... </main></body>
 		</html>
 
@@ -13,11 +16,13 @@
 	The booking pages and the error pages want the one-line footer. They pass
 	it by name, which Thymeleaf turns into a local variable here:
 
-		page(title=~{::title}, content=~{::main}, compactFooter=true)
+		page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)
+
+	The homepage's header floats over its photo: page(..., overPhoto=true).
 
 	Never link css/admin/admin.css from a page built on this shell.
 -->
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, content)">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, styles, content)">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
@@ -34,10 +39,11 @@
 	<link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
 	<link rel="stylesheet" th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}">
 	<link rel="stylesheet" th:href="@{/css/app.css}">
+	<link th:replace="${styles}">
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-<a class="tg-skip visually-hidden-focusable" href="#main">Bỏ qua điều hướng</a>
+<a class="skip" href="#main">Chuyển đến nội dung chính</a>
 
 <header th:replace="~{fragments/navbar :: navbar}"></header>
 
@@ -45,7 +51,7 @@
 	A div, not a <main>: every page brings its own <main>, and one <main>
 	inside another is invalid. The skip link above lands here.
 -->
-<div class="flex-grow-1" id="main" tabindex="-1">
+<div class="flex-grow-1 d-flex flex-column" id="main" tabindex="-1">
 	<main th:replace="${content}"></main>
 </div>
 

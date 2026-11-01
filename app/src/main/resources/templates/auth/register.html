@@ -7,97 +7,93 @@
 	written back into the HTML.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
 	<title>Đăng ký · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/auth.css}">
 </head>
 <body>
-<main class="container py-4 py-md-5">
-	<div class="row justify-content-center">
-		<div class="col-12 col-sm-10 col-md-7 col-lg-5">
-			<div class="card">
-				<div class="card-body p-4">
-					<h1 class="h3 mb-4">Đăng ký</h1>
+<main class="auth auth-register">
+	<div class="auth-main">
+		<div class="auth-card">
+			<h1>Tạo tài khoản</h1>
 
-					<div class="alert alert-danger" role="alert" th:if="${!fieldErrors.isEmpty()}">
-						Vui lòng kiểm tra lại các thông tin bên dưới.
+			<form class="auth-form" th:action="@{/register}" method="post">
+				<div class="alert alert-danger" role="alert" th:if="${!fieldErrors.isEmpty()}">Vui lòng kiểm tra lại các thông tin bên dưới.</div>
+
+				<div class="field">
+						<label class="field-label" for="fullName">Họ tên</label>
+						<div class="control" th:classappend="${fieldErrors['fullName'] != null} ? 'is-invalid'">
+							<i class="bi bi-person" aria-hidden="true"></i>
+							<input id="fullName" name="fullName" type="text" required maxlength="100" autocomplete="name" placeholder="Họ và tên đầy đủ" th:value="${registerForm.fullName}"
+								th:attr="aria-invalid=${fieldErrors['fullName'] != null} ? 'true' : null, aria-describedby=${fieldErrors['fullName'] != null} ? 'fullName-error' : null">
+						</div>
+						<p class="field-error" id="fullName-error" th:text="${fieldErrors['fullName']}"></p>
 					</div>
 
-					<form th:action="@{/register}" method="post">
-						<div class="mb-3">
-							<label for="fullName" class="form-label">Họ tên</label>
-							<input type="text" class="form-control" id="fullName" name="fullName" required maxlength="100"
-								autocomplete="name" th:value="${registerForm.fullName}"
-								th:classappend="${fieldErrors['fullName'] != null} ? 'is-invalid'"
-								th:attr="aria-invalid=${fieldErrors['fullName'] != null} ? 'true' : null,
-									aria-describedby=${fieldErrors['fullName'] != null} ? 'fullName-error' : null">
-							<div class="invalid-feedback" id="fullName-error" th:text="${fieldErrors['fullName']}"></div>
+				<div class="field-row">
+					<div class="field">
+						<label class="field-label" for="email">Email</label>
+						<div class="control" th:classappend="${fieldErrors['email'] != null} ? 'is-invalid'">
+							<i class="bi bi-envelope" aria-hidden="true"></i>
+							<input id="email" name="email" type="email" required maxlength="255" autocomplete="email" placeholder="ban@example.com" th:value="${registerForm.email}"
+								th:attr="aria-invalid=${fieldErrors['email'] != null} ? 'true' : null, aria-describedby=${fieldErrors['email'] != null} ? 'email-error' : null">
 						</div>
-
-						<div class="mb-3">
-							<label for="email" class="form-label">Email</label>
-							<input type="email" class="form-control" id="email" name="email" required maxlength="255"
-								autocomplete="email" th:value="${registerForm.email}"
-								th:classappend="${fieldErrors['email'] != null} ? 'is-invalid'"
-								th:attr="aria-invalid=${fieldErrors['email'] != null} ? 'true' : null,
-									aria-describedby=${fieldErrors['email'] != null} ? 'email-error' : null">
-							<div class="invalid-feedback" id="email-error" th:text="${fieldErrors['email']}"></div>
+						<p class="field-error" id="email-error" th:text="${fieldErrors['email']}"></p>
+					</div>
+					<div class="field">
+						<label class="field-label" for="phoneNumber">Số điện thoại</label>
+						<div class="control" th:classappend="${fieldErrors['phoneNumber'] != null} ? 'is-invalid'">
+							<i class="bi bi-telephone" aria-hidden="true"></i>
+							<input id="phoneNumber" name="phoneNumber" type="tel" required inputmode="numeric" autocomplete="tel" placeholder="0901234567" th:value="${registerForm.phoneNumber}"
+								th:attr="aria-invalid=${fieldErrors['phoneNumber'] != null} ? 'true' : null, aria-describedby=${fieldErrors['phoneNumber'] != null} ? 'phoneNumber-error' : null">
 						</div>
-
-						<div class="mb-3">
-							<label for="phoneNumber" class="form-label">Số điện thoại</label>
-							<input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" required
-								inputmode="numeric" autocomplete="tel" th:value="${registerForm.phoneNumber}"
-								th:classappend="${fieldErrors['phoneNumber'] != null} ? 'is-invalid'"
-								th:attr="aria-invalid=${fieldErrors['phoneNumber'] != null} ? 'true' : null,
-									aria-describedby=${fieldErrors['phoneNumber'] != null} ? 'phoneNumber-help phoneNumber-error' : 'phoneNumber-help'">
-							<div class="invalid-feedback" id="phoneNumber-error" th:text="${fieldErrors['phoneNumber']}"></div>
-							<div class="form-text" id="phoneNumber-help">10 chữ số, bắt đầu bằng 0.</div>
-						</div>
-
-						<div class="mb-3">
-							<label for="password" class="form-label">Mật khẩu</label>
-							<div class="input-group has-validation">
-								<input type="password" class="form-control" id="password" name="password" required minlength="8"
-									autocomplete="new-password"
-									th:classappend="${fieldErrors['password'] != null} ? 'is-invalid'"
-									th:attr="aria-invalid=${fieldErrors['password'] != null} ? 'true' : null,
-										aria-describedby=${fieldErrors['password'] != null} ? 'password-help password-error' : 'password-help'">
-								<button type="button" class="btn btn-outline-secondary d-none" data-password-toggle="password"
-									aria-controls="password" aria-pressed="false" aria-label="Hiện mật khẩu">
-									<i class="bi bi-eye" aria-hidden="true"></i>
-								</button>
-								<div class="invalid-feedback" id="password-error" th:text="${fieldErrors['password']}"></div>
-							</div>
-							<div class="form-text" id="password-help">Ít nhất 8 ký tự, tối đa 72 byte UTF-8 (ký tự có dấu chiếm nhiều byte hơn).</div>
-						</div>
-
-						<div class="mb-4">
-							<label for="confirmPassword" class="form-label">Nhập lại mật khẩu</label>
-							<div class="input-group has-validation">
-								<input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required
-									autocomplete="new-password"
-									th:classappend="${fieldErrors['confirmPassword'] != null} ? 'is-invalid'"
-									th:attr="aria-invalid=${fieldErrors['confirmPassword'] != null} ? 'true' : null,
-										aria-describedby=${fieldErrors['confirmPassword'] != null} ? 'confirmPassword-error' : null">
-								<button type="button" class="btn btn-outline-secondary d-none" data-password-toggle="confirmPassword"
-									aria-controls="confirmPassword" aria-pressed="false" aria-label="Hiện mật khẩu nhập lại">
-									<i class="bi bi-eye" aria-hidden="true"></i>
-								</button>
-								<div class="invalid-feedback" id="confirmPassword-error" th:text="${fieldErrors['confirmPassword']}"></div>
-							</div>
-						</div>
-
-						<button type="submit" class="btn btn-primary w-100">Đăng ký</button>
-					</form>
-
-					<p class="text-center mt-4 mb-0">
-						Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a>
-					</p>
+						<p class="field-error" id="phoneNumber-error" th:text="${fieldErrors['phoneNumber']}"></p>
+					</div>
 				</div>
-			</div>
+
+				<div class="field-row">
+					<div class="field">
+						<label class="field-label" for="password">Mật khẩu</label>
+						<div class="control" th:classappend="${fieldErrors['password'] != null} ? 'is-invalid'">
+							<i class="bi bi-lock" aria-hidden="true"></i>
+							<input id="password" name="password" type="password" required minlength="8" autocomplete="new-password"
+								th:attr="aria-invalid=${fieldErrors['password'] != null} ? 'true' : null, aria-describedby=${fieldErrors['password'] != null} ? 'password-hint password-error' : 'password-hint'">
+							<button class="reveal d-none" type="button" data-password-toggle="password" aria-controls="password" aria-pressed="false" aria-label="Hiện mật khẩu"><i class="bi bi-eye" aria-hidden="true"></i></button>
+						</div>
+						<p class="field-hint" id="password-hint">Ít nhất 8 ký tự.</p>
+						<p class="field-error" id="password-error" th:text="${fieldErrors['password']}"></p>
+					</div>
+					<div class="field">
+						<label class="field-label" for="confirmPassword">Nhập lại mật khẩu</label>
+						<div class="control" th:classappend="${fieldErrors['confirmPassword'] != null} ? 'is-invalid'">
+							<i class="bi bi-lock" aria-hidden="true"></i>
+							<input id="confirmPassword" name="confirmPassword" type="password" required autocomplete="new-password"
+								th:attr="aria-invalid=${fieldErrors['confirmPassword'] != null} ? 'true' : null, aria-describedby=${fieldErrors['confirmPassword'] != null} ? 'confirmPassword-error' : null">
+							<button class="reveal d-none" type="button" data-password-toggle="confirmPassword" aria-controls="confirmPassword" aria-pressed="false" aria-label="Hiện mật khẩu nhập lại"><i class="bi bi-eye" aria-hidden="true"></i></button>
+						</div>
+						<p class="field-error" id="confirmPassword-error" th:text="${fieldErrors['confirmPassword']}"></p>
+					</div>
+				</div>
+
+				<button class="btn btn-cta btn-block" type="submit">Đăng ký</button>
+			</form>
+
+			<p class="auth-foot">Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a></p>
 		</div>
 	</div>
+
+	<aside class="auth-visual" aria-hidden="true">
+		<img th:src="@{/images/home/ga-hue.jpg}" width="960" height="634" alt="">
+		<div class="auth-glass">
+			<h2>Bắt đầu hành trình theo cách của bạn</h2>
+			<ul class="auth-perks">
+				<li><i class="bi bi-check-circle" aria-hidden="true"></i>Tìm chuyến tàu và chọn chỗ ngồi chỉ với vài thao tác.</li>
+				<li><i class="bi bi-check-circle" aria-hidden="true"></i>Lưu trữ vé trực tuyến, tiện lợi khi tra cứu.</li>
+				<li><i class="bi bi-check-circle" aria-hidden="true"></i>Thay đổi kế hoạch? Chủ động hủy vé ngay trên website.</li>
+			</ul>
+		</div>
+	</aside>
 	<script th:src="@{/js/auth.js}" defer></script>
 </main>
 </body>

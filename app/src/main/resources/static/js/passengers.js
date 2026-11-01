@@ -27,10 +27,9 @@
 	function sync(ticket) {
 		var name = ticket.querySelector('[data-name]').value;
 		var mine = name.trim() === accountName;
-		ticket.querySelector('[data-person]').textContent = name.trim() || '—';
+		ticket.querySelector('[data-person]').textContent = name.trim() || 'Chưa nhập tên';
 		var avatar = ticket.querySelector('[data-avatar]');
 		avatar.textContent = initials(name);
-		avatar.classList.toggle('is-other', !mine);
 		var phone = ticket.querySelector('[data-phone]');
 		if (phone) {
 			phone.hidden = !mine;
@@ -38,21 +37,19 @@
 	}
 
 	form.querySelectorAll('[data-ticket]').forEach(function (ticket) {
-		var box = ticket.querySelector('[data-edit-box]');
 		var edit = ticket.querySelector('[data-edit]');
 		var name = ticket.querySelector('[data-name]');
 		var identity = ticket.querySelector('[data-identity]');
 
 		function open(shown) {
-			box.hidden = !shown;
-			edit.setAttribute('aria-expanded', String(shown));
+			ticket.classList.toggle('is-editing', shown);
 			if (shown) {
 				name.focus();
 			}
 		}
 
 		edit.addEventListener('click', function () {
-			open(box.hidden);
+			open(true);
 		});
 		ticket.querySelector('[data-mine]').addEventListener('click', function () {
 			name.value = accountName;
@@ -72,7 +69,7 @@
 	});
 
 	// A ticket with an error keeps its own message on screen: bring the first one into view.
-	var firstBad = form.querySelector('.tg-field.is-bad');
+	var firstBad = form.querySelector('.control.is-invalid');
 	if (firstBad) {
 		firstBad.scrollIntoView({ block: 'center' });
 		var field = firstBad.querySelector('input');

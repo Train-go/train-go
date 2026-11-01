@@ -5,21 +5,20 @@
 	Built on the customer shell with the one-line footer.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{layout/base :: page(title=~{::title}, content=~{::main}, compactFooter=true)}">
+	th:replace="~{layout/base :: page(title=~{::title}, styles=~{::link}, content=~{::main}, compactFooter=true)}">
 <head>
 	<title>Không tìm thấy trang · TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/pages/error.css}">
 </head>
 <body>
-<main class="container">
-	<section class="tg-error">
-		<span class="tg-error-code">Lỗi 404</span>
+<main class="error-page container">
+	<section class="card state">
+		<span class="state-code">Lỗi 404</span>
 		<h1>Không tìm thấy trang</h1>
 		<!-- notFoundMessage: set by PageExceptionHandler for a missing station, trip or booking. -->
 		<p th:text="${notFoundMessage} ?: 'Đường dẫn có thể đã sai, hoặc trang này không còn nữa.'">
 			Đường dẫn có thể đã sai, hoặc trang này không còn nữa.</p>
-		<div class="tg-error-actions">
-			<a class="btn btn-primary btn-lg" th:href="@{/}">Về trang chủ</a>
-		</div>
+		<a class="btn btn-primary" th:href="@{/}">Về trang chủ</a>
 	</section>
 </main>
 </body>

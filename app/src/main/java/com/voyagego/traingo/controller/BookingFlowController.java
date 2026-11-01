@@ -32,6 +32,7 @@ import com.voyagego.traingo.service.MyTripsService;
 import com.voyagego.traingo.service.PaymentFacade;
 import com.voyagego.traingo.service.PaymentService;
 import com.voyagego.traingo.service.SeatMapService;
+import com.voyagego.traingo.service.TicketService;
 import com.voyagego.traingo.service.TrainGoUserDetails;
 import com.voyagego.traingo.service.TripSearchService;
 
@@ -67,16 +68,18 @@ public class BookingFlowController {
 	private final PaymentService paymentService;
 	private final PaymentFacade paymentFacade;
 	private final MyTripsService myTripsService;
+	private final TicketService ticketService;
 
 	public BookingFlowController(SeatMapService seatMapService, BookingDraftService bookingDraftService,
 			BookingDraftStore bookingDraftStore, PaymentService paymentService, PaymentFacade paymentFacade,
-			MyTripsService myTripsService) {
+			MyTripsService myTripsService, TicketService ticketService) {
 		this.seatMapService = seatMapService;
 		this.bookingDraftService = bookingDraftService;
 		this.bookingDraftStore = bookingDraftStore;
 		this.paymentService = paymentService;
 		this.paymentFacade = paymentFacade;
 		this.myTripsService = myTripsService;
+		this.ticketService = ticketService;
 	}
 
 	/** Every booking page highlights the search item of the navbar. */
@@ -229,6 +232,7 @@ public class BookingFlowController {
 	public String success(@PathVariable long bookingId, @AuthenticationPrincipal TrainGoUserDetails user,
 			Model model) {
 		model.addAttribute("booking", myTripsService.detail(user.getUserId(), bookingId, LocalDateTime.now()));
+		model.addAttribute("tickets", ticketService.ticketsOfBooking(user.getUserId(), bookingId));
 		return SUCCESS_VIEW;
 	}
 

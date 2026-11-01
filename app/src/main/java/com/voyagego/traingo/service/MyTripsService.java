@@ -109,7 +109,7 @@ public class MyTripsService {
 		String cancelQuestion = cancellable
 				? tickets.size() + " chỗ trên chuyến " + trip.getTrain().getCode() + " " + routeLabel(trip) + ", "
 						+ trip.getDepartureAt().format(TIME) + " " + trip.getDepartureAt().format(DAY_MONTH)
-						+ " sẽ mở bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền."
+						+ " sẽ mở bán lại."
 				: null;
 		return new BookingDetail(booking.getId(), booking.getBookingCode(), routeLabel(trip), departureLabel(trip),
 				arrivalLabel(trip), trip.getTrain().getCode() + " " + trip.getTrain().getName(), tickets,

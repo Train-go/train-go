@@ -1,0 +1,159 @@
+/* Chọn chỗ: booking/seats.html. */
+
+/* Seat page */
+/* The trip in one line above the map. */
+.trip-summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-xs) var(--space-lg); padding: var(--space-lg); }
+.trip-change { display: inline-flex; align-items: center; min-height: 44px; font-weight: 600; text-decoration: none; }
+.trip-change:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.trip-line { display: flex; flex-wrap: wrap; align-items: center; margin: var(--space-xs) 0 0; padding: 0; list-style: none; color: var(--color-muted-fg); }
+.trip-line b { color: var(--color-heading); }
+.trip-line li:not(:first-child):not(:empty)::before { content: "·"; margin-inline: var(--space-sm); }
+/* A phone: the link beside the route, then train and day on one line, time and price on the next. */
+@media (max-width: 640px) {
+	.trip-summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: var(--space-md); }
+	.trip-summary > div { display: contents; }
+	.trip-summary h1 { grid-row: 1; grid-column: 1; }
+	.trip-change { grid-row: 1; grid-column: 2; }
+	.trip-line { grid-row: 2; grid-column: 1 / -1; margin-top: 0; }
+	.trip-line li:nth-child(2) { flex-basis: calc(100% - 4rem); }
+	.trip-line li:nth-child(3)::before { display: none; }
+}
+.trip-summary h1 { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-sm); font-size: clamp(1.375rem, 1vw + 1rem, 1.75rem); }
+.trip-summary h1 .bi { width: 22px; height: 22px; color: var(--color-muted-fg); }
+
+.coach { margin-top: var(--space-md); padding: var(--space-xl); }
+.coach-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-md); margin-bottom: var(--space-lg); }
+.coach-head h2 { font-size: 1.125rem; }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-md); margin: 0; padding: 0; list-style: none; font-size: 0.875rem; color: var(--color-muted-fg); }
+.legend li { display: inline-flex; align-items: center; gap: var(--space-xs); }
+.legend .swatch { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--color-border-strong); background: var(--color-card); }
+.legend .swatch.is-booked { background: var(--color-muted); border-color: var(--color-muted); color: var(--color-muted-fg); }
+.legend .swatch.is-picked { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+.legend .swatch .bi { width: 14px; height: 14px; }
+
+.carriage { position: relative; padding: var(--space-lg); border: 2px solid var(--color-border); border-radius: 28px 28px var(--radius-lg) var(--radius-lg); background: var(--color-bg); }
+.carriage-ends { display: flex; justify-content: space-between; margin-bottom: var(--space-md); font-size: 0.8125rem; font-weight: 600; color: var(--color-muted-fg); }
+.carriage-ends span { display: inline-flex; align-items: center; gap: var(--space-xs); }
+
+.seats { --seat: 48px; display: grid; grid-template-columns: repeat(8, var(--seat)); grid-template-rows: repeat(2, var(--seat)) 2.25rem repeat(2, var(--seat)); gap: var(--space-sm); justify-content: space-between; }
+.seats .seat { grid-row: var(--dr); grid-column: var(--dc); }
+.aisle { grid-row: 3; grid-column: 1 / -1; display: grid; place-items: center; font-size: 0.75rem; font-weight: 600; color: var(--color-muted-fg); border-block: 1px dashed var(--color-border); }
+@media (max-width: 640px) {
+	.seats { --seat: 52px; grid-template-columns: repeat(2, var(--seat)) 2rem repeat(2, var(--seat)); grid-template-rows: repeat(8, var(--seat)); justify-content: center; }
+	.seats .seat { grid-row: var(--mr); grid-column: var(--mc); }
+	.aisle { grid-row: 1 / -1; grid-column: 3; border-block: 0; border-inline: 1px dashed var(--color-border); writing-mode: vertical-rl; }
+	.carriage { border-radius: 28px 28px var(--radius-lg) var(--radius-lg); padding: var(--space-md); }
+	.carriage-ends { flex-direction: column; align-items: center; gap: var(--space-xs); }
+}
+
+.cabins { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-md); }
+.cabin { display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); padding: var(--space-md) var(--space-lg); border-radius: var(--radius-md); background: var(--color-card); border: 1px solid var(--color-border); }
+.cabin h3 { margin: 0; }
+.cabin h3 { margin-bottom: var(--space-sm); font-size: 0.9375rem; }
+.cabin-tiers { display: grid; grid-template-columns: auto repeat(2, 48px); gap: var(--space-sm); align-items: center; justify-content: start; }
+.cabin-tiers span { padding-right: var(--space-xs); white-space: nowrap; font-size: 0.75rem; font-weight: 600; color: var(--color-muted-fg); }
+@media (max-width: 480px) { .cabins { grid-template-columns: minmax(0, 1fr); } .cabin { display: flex; align-items: center; justify-content: space-between; } .cabin h3 { margin: 0; } }
+
+.seat {
+	position: relative; display: grid; place-items: center; width: 48px; height: 48px; padding: 0;
+	border: 1px solid var(--color-border-strong); border-radius: 10px 10px 8px 8px; background: var(--color-card);
+	font-size: 0.8125rem; font-weight: 700; color: var(--color-heading); cursor: pointer;
+	transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.seats .seat { width: var(--seat); height: var(--seat); }
+.seat::before { content: ""; position: absolute; left: 8px; right: 8px; top: 4px; height: 4px; border-radius: var(--radius-pill); background: var(--color-border); }
+.seat:hover:not(:disabled) { border-color: var(--color-primary); background: var(--color-primary-soft); box-shadow: var(--shadow-md); }
+.seat:active:not(:disabled) { transform: scale(0.95); }
+.seat[aria-pressed="true"] { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-on-primary); box-shadow: var(--shadow-md); }
+.seat[aria-pressed="true"]::before { background: rgba(255, 255, 255, 0.45); }
+.seat:disabled { border-color: var(--color-muted); background: var(--color-muted); color: var(--color-muted-fg); cursor: not-allowed; font-weight: 500; }
+.seat:disabled::before { content: none; }
+.seat:disabled::after { content: ""; position: absolute; left: 10px; right: 10px; top: 50%; height: 1.5px; background: var(--color-muted-fg); transform: rotate(-35deg); opacity: 0.55; }
+.seat.is-gone, .seat.is-gone:disabled { border-color: var(--color-destructive); background: var(--color-destructive-soft); color: var(--color-destructive); }
+
+
+/* ---------- the train as the coach picker ---------- */
+
+:root {
+	--car-body: var(--color-card);
+	--car-line: var(--color-border-strong);
+	--car-glass: color-mix(in oklab, var(--color-primary) 14%, var(--color-card));
+	--car-glass-line: var(--color-card);
+	--car-picked-body: var(--color-primary-soft);
+	--car-picked-glass: color-mix(in oklab, var(--color-primary) 38%, var(--color-card));
+	--loco-body: var(--color-primary);
+	--loco-ink: var(--color-on-primary);
+	--loco-glass: color-mix(in oklab, var(--color-card) 75%, var(--color-primary));
+	--car-gap: var(--space-sm);
+}
+
+.consist { display: flex; align-items: stretch; gap: var(--car-gap); }
+.consist-cars { display: flex; flex: 1; gap: var(--car-gap); min-width: 0; }
+
+/* The locomotive: rounded nose on the left, the same side the seat map calls "Phía đầu tàu". */
+.loco {
+	position: relative; flex: 0 0 76px; display: grid; align-content: start; gap: var(--space-sm);
+	padding: var(--space-md) var(--space-sm) var(--space-md) var(--space-md);
+	border-radius: 44px 14px 10px 10px; background: var(--loco-body); color: var(--loco-ink);
+}
+.loco-glass { height: 26px; border-radius: 18px 6px 6px 6px; background: var(--loco-glass); }
+.loco small { font-size: 0.75rem; font-weight: 600; line-height: 1.3; }
+
+.car {
+	position: relative; flex: 1 1 0; min-width: 0; display: grid; gap: var(--space-sm); align-content: start;
+	padding: var(--space-md); border: 1px solid var(--car-line); border-radius: 14px 14px 10px 10px;
+	background: var(--car-body); color: var(--color-fg); text-align: left; font: inherit; cursor: pointer;
+	transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.car-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-xs); min-height: 26px; }
+.car-top b { display: inline-flex; align-items: center; gap: var(--space-xs); color: var(--color-heading); font-size: 1rem; white-space: nowrap; }
+.car-top b .bi { width: 18px; height: 18px; color: var(--color-muted-fg); }
+.car-top .badge { min-height: 22px; padding: 0 var(--space-xs); font-size: 0.75rem; }
+
+/* Window strip, split into the coach's real rows (seats) or cabins (berths). */
+.car-glass {
+	height: 22px; border-radius: 6px;
+	background: repeating-linear-gradient(90deg, var(--car-glass) 0 calc(100% / var(--panes) - 3px), var(--car-glass-line) calc(100% / var(--panes) - 3px) calc(100% / var(--panes)));
+}
+.car-seat { --panes: 8; }
+.car-bed { --panes: 4; }
+.car-info { display: grid; gap: 2px; }
+.car-info small { font-size: 0.8125rem; color: var(--color-muted-fg); }
+.car-info strong { font-size: 0.9375rem; font-weight: 700; color: var(--color-heading); white-space: nowrap; }
+
+/* States: hover, focus, pressed, the open coach, picks made (success), full (disabled), loading, error. */
+.car:hover, .car.is-hover { border-color: var(--color-border-hover); }
+.car:hover .car-glass, .car.is-hover .car-glass { --car-glass: var(--car-picked-glass); }
+.car:focus-visible, .car.is-focus { outline: 2px solid var(--color-ring); outline-offset: 2px; z-index: 1; }
+.car:active, .car.is-active { transform: translateY(0) scale(0.99); box-shadow: none; }
+.car[aria-selected="true"] { border-color: var(--color-primary); background: var(--car-picked-body); box-shadow: var(--shadow-sm); }
+.car[aria-selected="true"] .car-glass { --car-glass: var(--car-picked-glass); --car-glass-line: var(--car-picked-body); }
+.car[aria-selected="true"] .car-top b, .car[aria-selected="true"] .car-top b .bi { color: var(--color-primary); }
+.car.is-success .car-top .badge { background: var(--color-primary); color: var(--color-on-primary); }
+.car:disabled, .car[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+.car[aria-busy="true"] .car-info small, .car[aria-busy="true"] .car-info strong { color: transparent; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--color-muted) 0%, var(--color-bg) 50%, var(--color-muted) 100%); background-size: 200% 100%; animation: car-shimmer 1.2s linear infinite; }
+@keyframes car-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* A full coach can still be opened to look at; it only steps back visually. */
+.car.is-full:not([aria-selected="true"]) .car-glass, .car.is-full:not([aria-selected="true"]) .car-top b { opacity: 0.55; }
+.car.is-full .car-info strong { color: var(--color-muted-fg); }
+.car.is-error { border-color: var(--color-destructive); }
+.car.is-error .car-info strong { color: var(--color-destructive); }
+
+/* A phone shows the train as a rail: it scrolls sideways, each car keeps a readable width. */
+@media (max-width: 760px) {
+	.consist { overflow-x: auto; scroll-snap-type: x proximity; padding-top: var(--space-xs); scrollbar-width: thin; }
+	.consist-cars { flex: none; }
+	.car { flex: 0 0 156px; scroll-snap-align: start; }
+	.loco { flex-basis: 64px; scroll-snap-align: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.car { transition: none; }
+	.car[aria-busy="true"] .car-info small, .car[aria-busy="true"] .car-info strong { animation: none; }
+}
+
+.trip-summary h1 .bi { font-size: 22px; color: var(--color-muted-fg); }
+.car-top b .bi { font-size: 18px; }
+.seats-loading { display: grid; justify-items: center; gap: var(--space-sm); padding: var(--space-2xl) 0; color: var(--color-muted-fg); }
+.picks .icon-btn .bi { font-size: 14px; }
+.seat[aria-pressed="true"]:hover:not(:disabled) { background: var(--color-primary-hover); color: var(--color-on-primary); }

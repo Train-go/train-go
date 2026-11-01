@@ -1,10 +1,9 @@
 package com.voyagego.traingo.model.response;
 
 /**
- * A route shown on the landing page. Carries no price or duration: those
- * come from a real Trip, and inventing them here would put numbers on screen
- * that no one can trace back to data. The two station codes build the card's
- * link to the trip list.
+ * A route shown on the landing page, with its next departure and lowest price
+ * taken from its upcoming trips. The two station codes build the card's link to
+ * the trip list.
  */
 public class PopularRoute {
 
@@ -14,16 +13,38 @@ public class PopularRoute {
 	private final String destination;
 	private final String note;
 	private final StationPhoto photo;
+	private final String durationLabel;
+	private final String nextLabel;
+	private final long price;
 
-	/** {@code photo} is the destination's, or null when there is none. */
+	/**
+	 * @param photo the destination's, or null when there is none
+	 * @param nextLabel "Hôm nay, 08:00", the next departure
+	 * @param price the lowest price of the upcoming trips
+	 */
 	public PopularRoute(String originCode, String origin, String destinationCode, String destination, String note,
-			StationPhoto photo) {
+			StationPhoto photo, String durationLabel, String nextLabel, long price) {
 		this.originCode = originCode;
 		this.origin = origin;
 		this.destinationCode = destinationCode;
 		this.destination = destination;
 		this.note = note;
 		this.photo = photo;
+		this.durationLabel = durationLabel;
+		this.nextLabel = nextLabel;
+		this.price = price;
+	}
+
+	public String getDurationLabel() {
+		return durationLabel;
+	}
+
+	public String getNextLabel() {
+		return nextLabel;
+	}
+
+	public long getPrice() {
+		return price;
 	}
 
 	public String getOriginCode() {

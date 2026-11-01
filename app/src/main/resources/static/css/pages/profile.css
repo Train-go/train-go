@@ -1,0 +1,11 @@
+/* Hồ sơ: profile/index.html. */
+
+.profile { max-width: 720px; }
+.profile h1 { margin-bottom: var(--space-lg); font-size: clamp(1.75rem, 1.2vw + 1.2rem, 2.25rem); }
+.profile-form { display: grid; gap: var(--space-lg); padding: var(--space-xl); }
+.profile-save { justify-self: start; }
+@media (max-width: 560px) {
+	.profile .field-row { grid-template-columns: minmax(0, 1fr); }
+	.profile-form { padding: var(--space-lg); }
+	.profile-save { justify-self: stretch; }
+}
