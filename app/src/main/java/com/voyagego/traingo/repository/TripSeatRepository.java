@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import com.voyagego.traingo.entity.TripSeat;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.dto.SeatAvailability;
+import com.voyagego.traingo.model.dto.TripCoachCount;
 
 import jakarta.persistence.LockModeType;
 
@@ -24,6 +25,14 @@ public interface TripSeatRepository extends JpaRepository<TripSeat, Long> {
 			and s.status = com.voyagego.traingo.entity.TripSeatStatus.BOOKED
 			group by s.trip.id""")
 	List<IdCount> countBookedByTrain(@Param("trainId") Long trainId);
+
+	/** Booked seats per coach of the given trips, for the coach bars of one page in one query. */
+	@Query("""
+			select s.trip.id as tripId, s.coachNumber as coachNumber, count(s) as total from TripSeat s
+			where s.trip.id in :tripIds
+			and s.status = com.voyagego.traingo.entity.TripSeatStatus.BOOKED
+			group by s.trip.id, s.coachNumber""")
+	List<TripCoachCount> countBookedByTripAndCoach(@Param("tripIds") Collection<Long> tripIds);
 
 	/**
 	 * Free seats per trip and coach type, for every trip of a result page in

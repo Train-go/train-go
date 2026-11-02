@@ -18,12 +18,14 @@ import com.voyagego.traingo.model.dto.TrainPosition;
  * @param scheduledUntil "T3 04/11 09:45", the arrival of {@code chainEnd}, or
  *        null without it
  * @param earliestDeparture when the next leg may depart at the earliest
- * @param earliestDepartureLabel {@code earliestDeparture} as "04/11 10:15"
+ * @param earliestDepartureLabel {@code earliestDeparture} as "10:15 04/11"
  * @param pastCount how many trips have already arrived; the page hides them
  *        until the admin asks for them
+ * @param hours the same trips on the hour chart of "Theo ngày"
  */
 public record TrainScheduleView(Train train, TrainPosition position, Trip chainEnd, String scheduledUntil,
-		LocalDateTime earliestDeparture, String earliestDepartureLabel, List<ScheduleDay> days, int pastCount) {
+		LocalDateTime earliestDeparture, String earliestDepartureLabel, List<ScheduleDay> days, int pastCount,
+		TrainHoursView hours) {
 
 	public boolean hasTrips() {
 		return !days.isEmpty();
@@ -41,7 +43,7 @@ public record TrainScheduleView(Train train, TrainPosition position, Trip chainE
 	/**
 	 * One trip of the schedule.
 	 *
-	 * @param arrivalLabel "05:35", or "T5 22/10 05:35" when the trip arrives on
+	 * @param arrivalLabel "05:35", or "05:35 T5, 22/10" when the trip arrives on
 	 *        a later day than it departs
 	 * @param phaseCss the .tag modifier of {@code phaseLabel}: scheduled,
 	 *        running, done or cancelled

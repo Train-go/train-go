@@ -6,50 +6,43 @@
 	the view. The add and edit sheet saves through /api/admin/trains.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title th:text="${train != null} ? |Tàu ${train.code} · Quản trị TrainGo| : 'Tàu · Quản trị TrainGo'">Tàu · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/train.css}">
 </head>
 <body>
-<main>
+<main class="admin-wrap">
 
-	<div class="page-head train-head">
-		<h1>Tàu</h1>
-		<nav class="nav nav-pills train-tabs" aria-label="Chọn tàu" th:if="${!#lists.isEmpty(trains)}">
-			<a th:each="t : ${trains}" class="nav-link" th:href="@{/admin/trains/{id}(id=${t.id}, view=${view == 'bang' ? 'bang' : 'ngay'})}"
-				th:classappend="${train != null and t.id == train.id} ? 'active'"
-				th:attr="aria-current=${train != null and t.id == train.id} ? 'page' : null">
-				<span class="mono" th:text="${t.code}">SE1</span>
-				<span class="train-tab-name" th:text="${t.name}">Thống Nhất 1</span>
-			</a>
-		</nav>
-		<div class="head-tools">
+	<div class="dc-head">
+		<div>
+			<h1>Tàu</h1>
+			<p class="dc-date" th:text="${todayLabel}">Thứ Sáu, 30/10/2026</p>
+		</div>
+		<div class="tr-head-actions">
 			<!-- train.js remembers the last choice, so the Tàu menu opens it again. -->
-			<nav class="view-seg" aria-label="Cách xem lịch tàu" th:if="${train != null}" data-view-seg>
+			<nav class="view-seg" aria-label="Cách xem lịch chạy" th:if="${train != null}" data-view-seg>
 				<a th:href="@{/admin/trains/{id}(id=${train.id}, view='ngay')}" data-view="ngay"
 					th:classappend="${view != 'bang'} ? 'active'"
-					th:attr="aria-current=${view != 'bang'} ? 'page' : null">
-					<i class="bi bi-calendar-week" aria-hidden="true"></i>Theo ngày
-				</a>
+					th:attr="aria-current=${view != 'bang'} ? 'page' : null">Theo ngày</a>
 				<a th:href="@{/admin/trains/{id}(id=${train.id}, view='bang')}" data-view="bang"
 					th:classappend="${view == 'bang'} ? 'active'"
-					th:attr="aria-current=${view == 'bang'} ? 'page' : null">
-					<i class="bi bi-table" aria-hidden="true"></i>Bảng tính
-				</a>
+					th:attr="aria-current=${view == 'bang'} ? 'page' : null">Bảng tính</a>
 			</nav>
-			<button type="button" class="btn btn-link" th:if="${train != null}" data-train-edit
-				th:data-id="${train.id}" th:data-code="${train.code}" th:data-name="${train.name}"
-				th:data-has-trips="${hasTrips}">
-				<i class="bi bi-pencil" aria-hidden="true"></i>Sửa tàu
-			</button>
 			<button type="button" class="btn btn-outline-secondary" data-train-add>
 				<i class="bi bi-plus-lg" aria-hidden="true"></i>Thêm tàu
 			</button>
 		</div>
 	</div>
 
-	<div class="empty" th:if="${train == null}">
-		<i class="bi bi-train-front" aria-hidden="true"></i>
+	<nav class="tr-tabs" aria-label="Chọn tàu" th:if="${!#lists.isEmpty(trains)}">
+		<a th:each="t : ${trains}" th:href="@{/admin/trains/{id}(id=${t.id}, view=${view == 'bang' ? 'bang' : 'ngay'})}"
+			th:attr="aria-current=${train != null and t.id == train.id} ? 'page' : null">
+			<b th:text="${t.code}">SE1</b><span th:text="${t.name}">Thống Nhất 1</span>
+		</a>
+	</nav>
+
+	<div class="dc-card tr-empty" th:if="${train == null}">
 		<b>Chưa có tàu nào.</b>
 	</div>
 
@@ -79,10 +72,6 @@
 			<div>
 				<label class="form-label" for="train-name">Tên tàu</label>
 				<input class="form-control" id="train-name" name="name" maxlength="100" autocomplete="off">
-			</div>
-			<div class="alert alert-secondary mb-0">
-				<i class="bi bi-info-circle" aria-hidden="true"></i>
-				<span>Mọi tàu dùng chung một cấu hình: toa 1-2 ghế ngồi 32 chỗ, toa 3-4 giường nằm 16 chỗ.</span>
 			</div>
 		</form>
 		<div class="offcanvas-footer">

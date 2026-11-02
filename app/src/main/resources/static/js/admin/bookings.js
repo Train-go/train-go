@@ -9,37 +9,9 @@
 (function () {
 	'use strict';
 
-	const SEARCH_DELAY_MS = 300;
-
-	/* ---------- search: submits 300ms after the last keystroke ---------- */
-
 	const search = document.querySelector('[data-booking-search]');
 	if (search) {
-		const input = search.elements.namedItem('q');
-		const customer = search.elements.namedItem('customer');
-		let timer = null;
-		function submitSoon() {
-			if (customer) {
-				customer.remove();
-			}
-			clearTimeout(timer);
-			timer = setTimeout(function () {
-				search.requestSubmit();
-			}, SEARCH_DELAY_MS);
-		}
-		// A Telex or VNI word is not finished until composition ends; submitting
-		// half of it would reload the page and lose it.
-		input.addEventListener('input', function (event) {
-			if (!event.isComposing) {
-				submitSoon();
-			}
-		});
-		input.addEventListener('compositionend', submitSoon);
-		// The page reloads on every search, so give the caret back to the box.
-		if (new URLSearchParams(location.search).get('q')) {
-			input.focus();
-			input.setSelectionRange(input.value.length, input.value.length);
-		}
+		TG.searchBox(search, search.elements.namedItem('q'));
 	}
 
 	/* ---------- detail sheet ---------- */
@@ -50,7 +22,6 @@
 	}
 	const apiUrl = sheet.dataset.apiUrl;
 	const money = new Intl.NumberFormat('vi-VN');
-	const CANCEL_NOTE = 'Hủy booking sẽ trả các chỗ về trạng thái còn trống.';
 	// The booking on show.
 	let current = null;
 	// What had focus when the sheet opened, so a declined cancel can give it back.
@@ -94,11 +65,9 @@
 		field('payment').textContent = money.format(booking.totalPrice) + 'đ'
 				+ (booking.paidLabel ? ' · ' + booking.paidLabel : '');
 
-		// A cancelled booking has nothing left to do; otherwise the reason it cannot be
-		// cancelled replaces the usual note and disables the button.
-		field('footer').hidden = booking.cancelled;
-		field('cancel-note').textContent = booking.cancelBlockReason || CANCEL_NOTE;
-		field('cancel').disabled = Boolean(booking.cancelBlockReason);
+		// A booking that cannot be cancelled simply has no button.
+		field('footer').hidden = booking.cancelled || Boolean(booking.cancelBlockReason);
+		field('cancel').disabled = false;
 
 		const body = field('tickets');
 		body.replaceChildren();
@@ -155,7 +124,7 @@
 			const yes = await TG.confirm({
 				title: 'Hủy booking ' + booking.code + '?',
 				body: booking.tickets.length + ' chỗ trên chuyến ' + booking.trainCode + ' ' + booking.departureLabel
-						+ ' sẽ mở bán lại. Thanh toán chỉ là mô phỏng nên không có hoàn tiền.',
+						+ ' sẽ mở bán lại.',
 				confirmLabel: 'Hủy booking',
 				danger: true
 			});

@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- One trip's fill split by coach: each coach as wide as its seats. -->
+<span th:fragment="bar(coaches)" class="cc-coaches" role="img"
+	th:attr="aria-label=${#strings.listJoin(coaches.![ 'Toa ' + number + ' ' + sold + '/' + capacity ], ', ')}">
+	<i th:each="coach : ${coaches}" th:style="|--cap:${coach.capacity};--p:${coach.percent}%|"
+		th:title="|Toa ${coach.number}, ${coach.sold}/${coach.capacity}|"><b th:text="${coach.number}">1</b></i>
+</span>
+</body>
+</html>

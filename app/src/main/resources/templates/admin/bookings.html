@@ -1,81 +1,86 @@
 <!DOCTYPE html>
 <!--
-	The Booking page (docs/product/admin.md, "Quản lý booking"). BookingListView
-	carries every label ready to print. A row opens the detail sheet, which
+	The Booking page (docs/product/admin.md, "Quản lý booking"): bookings under
+	the trip they travel on. BookingListView carries every label ready to print.
+	A line opens the detail sheet, which
 	bookings.js fills from /api/admin/bookings/{code}; ?open=BK... opens it on
 	load so a link can point at one booking.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title>Booking · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/bookings.css}">
 </head>
 <body>
-<main>
+<main class="admin-wrap">
 
 	<div class="page-head">
 		<h1>Booking</h1>
 	</div>
 
-	<div class="toolbar">
-		<nav class="tab-seg" aria-label="Nhóm booking">
-			<a th:each="t : ${#strings.arraySplit('upcoming,past,cancelled', ',')}" class="tab-seg-link"
-				th:with="count=${t == 'upcoming' ? view.upcomingCount : (t == 'past' ? view.pastCount : view.cancelledCount)}"
-				th:href="@{/admin/bookings(tab=${t}, q=${view.searching ? view.q : null}, customer=${view.customerId})}"
-				th:classappend="${view.tab == t} ? 'active'"
-				th:attr="aria-current=${view.tab == t} ? 'page' : null">
-				<span th:text="${t == 'upcoming' ? 'Sắp đi' : (t == 'past' ? 'Đã đi' : 'Đã hủy')}">Sắp đi</span>
-				<span class="count" th:text="${count}">3</span>
-			</a>
-		</nav>
-		<span class="grow"></span>
-		<!-- bookings.js submits this 300ms after the last keystroke. -->
-		<form class="search" method="get" th:action="@{/admin/bookings}" data-booking-search>
-			<input type="hidden" name="tab" th:value="${view.tab}">
-			<input type="hidden" name="customer" th:if="${view.customerId != null}" th:value="${view.customerId}">
-			<i class="bi bi-search" aria-hidden="true"></i>
-			<label class="visually-hidden" for="booking-q">Tìm booking</label>
-			<input type="search" class="form-control" id="booking-q" name="q" th:value="${view.q}"
-				placeholder="Mã booking hoặc tên khách" autocomplete="off">
-		</form>
+	<section class="dc-card bm-bar" aria-label="Lọc booking">
+		<div class="cv-bar">
+			<nav class="cv-tabs" aria-label="Nhóm booking">
+				<a th:each="t : ${#strings.arraySplit('upcoming,past,cancelled', ',')}"
+					th:with="count=${t == 'upcoming' ? view.upcomingCount : (t == 'past' ? view.pastCount : view.cancelledCount)}"
+					th:href="@{/admin/bookings(tab=${t}, q=${view.searching ? view.q : null}, customer=${view.customerId})}"
+					th:attr="aria-current=${view.tab == t} ? 'page' : null">
+					<th:block th:text="${t == 'upcoming' ? 'Sắp đi' : (t == 'past' ? 'Đã đi' : 'Đã hủy')}">Sắp đi</th:block>
+					<span class="cv-count" th:text="${count}">3</span>
+				</a>
+			</nav>
+			<!-- TG.searchBox submits this shortly after the last keystroke. -->
+			<form class="search cv-search bk-search" method="get" th:action="@{/admin/bookings}" data-booking-search>
+				<input type="hidden" name="tab" th:value="${view.tab}">
+				<input type="hidden" name="customer" th:if="${view.customerId != null}" th:value="${view.customerId}">
+				<i class="bi bi-search" aria-hidden="true"></i>
+				<input type="search" class="form-control" name="q" th:value="${view.q}" autocomplete="off"
+					placeholder="Mã booking, khách hoặc hành khách" aria-label="Tìm theo mã booking, tên khách hoặc tên hành khách">
+			</form>
+		</div>
+		<p class="bk-customer" th:if="${view.customerId != null}">
+			<i class="bi bi-person" aria-hidden="true"></i>
+			<span>Booking của <b th:text="${view.customerName}">Nguyễn Văn An</b></span>
+			<a th:href="@{/admin/bookings(tab=${view.tab})}">Xem tất cả</a>
+		</p>
+	</section>
+
+	<div class="bm-trips" th:unless="${#lists.isEmpty(view.trips)}">
+		<th:block th:each="trip : ${view.trips}">
+			<h2 class="bm-day" th:if="${trip.dayLabel != null}"><th:block th:text="${trip.dayLabel}">Hôm nay</th:block><span th:text="${trip.dayDate}">30/10/2026</span></h2>
+			<section class="dc-card bm-trip" th:attr="aria-label=|${trip.trainCode} ${trip.route}, ${trip.time} ${trip.dayDate}|">
+				<header class="bm-head">
+					<button class="bm-time" type="button" th:data-trip-id="${trip.tripId}"><b th:text="${trip.time}">08:00</b><span th:text="${trip.trainCode}">SE1</span></button>
+					<div class="bm-route"><b th:text="${trip.route}">Ga Hà Nội → Ga Huế</b><small th:text="${trip.summary}">12/96</small></div>
+					<th:block th:if="${trip.coaches != null}"><span th:replace="~{admin/fragments/coach-bar :: bar(${trip.coaches})}"></span></th:block>
+				</header>
+				<ul class="bm-list">
+					<li class="bm-booking" th:each="booking : ${trip.bookings}" th:classappend="${booking.cancelled} ? 'is-off'"
+						data-booking-row th:data-code="${booking.code}">
+						<!-- The link is what keyboards and screen readers use; without JavaScript it opens the sheet too. -->
+						<a class="cc-open bm-code" th:text="${booking.code}"
+							th:href="@{/admin/bookings(tab=${view.tab}, q=${view.searching ? view.q : null}, customer=${view.customerId}, open=${booking.code})}">BK202610001</a>
+						<div class="bm-who"><b th:text="${booking.customerName}">Nguyễn Văn An</b><small th:text="${booking.customerEmail}">an.nguyen@example.com</small></div>
+						<ul class="bm-people" th:attr="aria-label=|Hành khách của ${booking.code}|">
+							<li th:each="person : ${booking.passengers}"><span th:text="${person.name}">Nguyễn Văn An</span><small th:text="${person.seat}">Toa 1, A05</small></li>
+						</ul>
+						<span class="bm-total" th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + 'đ'">360.000đ</span>
+					</li>
+				</ul>
+			</section>
+		</th:block>
+		<div class="cv-more" th:if="${view.tripTotal > view.trips.size()}">
+			<a class="btn btn-outline-secondary" th:href="@{/admin/bookings(tab=${view.tab}, q=${view.searching ? view.q : null}, customer=${view.customerId}, limit=${view.limit + 10})}"
+				th:text="|Hiện thêm ${view.more()} chuyến|">Hiện thêm 10 chuyến</a>
+		</div>
 	</div>
 
-	<div class="panel table-responsive" th:if="${!#lists.isEmpty(view.rows)}">
-		<table class="table table-hover align-middle">
-			<thead>
-				<tr>
-					<th scope="col">Mã</th>
-					<th scope="col">Khách</th>
-					<th scope="col">Chuyến</th>
-					<th scope="col" class="num">Vé</th>
-					<th scope="col" class="num">Tổng tiền</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="row : ${view.rows}" class="clickable" data-booking-row th:data-code="${row.code}">
-					<!-- The link is what keyboards and screen readers use; without JavaScript it opens the sheet too. -->
-					<td><a class="code" th:text="${row.code}"
-						th:href="@{/admin/bookings(tab=${view.tab}, q=${view.searching ? view.q : null}, customer=${view.customerId}, open=${row.code})}">BK202610001</a></td>
-					<td>
-						<span th:text="${row.customerName}">Nguyễn Văn An</span>
-						<span class="sub" th:text="${row.customerEmail}">an.nguyen@example.com</span>
-					</td>
-					<td>
-						<span th:text="|${row.trainCode} · ${row.routeLabel}|">SE1 · Ga Hà Nội → Ga Thanh Hóa</span>
-						<span class="sub" th:text="${row.departureLabel}">T5, 22/10 08:00</span>
-					</td>
-					<td class="num" th:text="${row.ticketCount}">2</td>
-					<td class="num text-nowrap" th:text="${#numbers.formatInteger(row.totalPrice, 0, 'POINT')} + 'đ'">360.000đ</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
-
-	<div class="empty" th:if="${#lists.isEmpty(view.rows)}">
-		<i class="bi bi-ticket-perforated" aria-hidden="true"></i>
-		<b th:text="${view.searching} ? |Không có booking nào khớp &quot;${view.q}&quot;.| : 'Không có booking nào trong nhóm này.'">Không có booking nào trong nhóm này.</b>
+	<div class="dc-card cv-empty" th:if="${#lists.isEmpty(view.trips)}">
+		<i class="bi" th:classappend="${view.searching} ? 'bi-search' : 'bi-ticket-perforated'" aria-hidden="true"></i>
+		<b th:text="${view.searching} ? 'Không có booking nào khớp tìm kiếm' : (${view.tab == 'upcoming'} ? 'Chưa có booking sắp đi' : (${view.tab == 'past'} ? 'Chưa có booking đã đi' : 'Chưa có booking bị hủy'))">Chưa có booking sắp đi</b>
 		<a class="btn btn-outline-secondary btn-sm" th:if="${view.searching}"
-			th:href="@{/admin/bookings(tab=${view.tab}, q='')}">Bỏ tìm kiếm</a>
+			th:href="@{/admin/bookings(tab=${view.tab}, customer=${view.customerId})}">Bỏ tìm kiếm</a>
 	</div>
 
 	<!-- Filled and opened by bookings.js. -->
@@ -94,7 +99,7 @@
 				<dt>Khách</dt><dd data-field="customer"></dd>
 				<dt>Chuyến</dt>
 				<dd><button type="button" class="btn btn-link btn-sm" data-field="trip"></button></dd>
-				<dt>Khởi hành</dt><dd data-field="departure"></dd>
+				<dt>Giờ đi</dt><dd data-field="departure"></dd>
 				<dt>Thanh toán</dt><dd data-field="payment"></dd>
 			</dl>
 			<div class="table-responsive">
@@ -112,7 +117,7 @@
 			</div>
 		</div>
 		<div class="offcanvas-footer" data-field="footer" hidden>
-			<span class="grow text-body-secondary" data-field="cancel-note"></span>
+			<span class="grow"></span>
 			<button type="button" class="btn btn-outline-danger" data-field="cancel">Hủy booking</button>
 		</div>
 	</div>

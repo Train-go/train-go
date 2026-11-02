@@ -7,9 +7,11 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -25,10 +27,16 @@ import com.voyagego.traingo.entity.Station;
 import com.voyagego.traingo.entity.Train;
 import com.voyagego.traingo.entity.Trip;
 import com.voyagego.traingo.entity.TripStatus;
+import com.voyagego.traingo.model.dto.CoachLayout;
 import com.voyagego.traingo.model.dto.IdCount;
 import com.voyagego.traingo.model.dto.TrainPosition;
 import com.voyagego.traingo.model.response.NextLegOptions;
 import com.voyagego.traingo.model.response.PlannedLeg;
+import com.voyagego.traingo.model.response.TrainHoursView;
+import com.voyagego.traingo.model.response.TrainHoursView.Fact;
+import com.voyagego.traingo.model.response.TrainHoursView.Leg;
+import com.voyagego.traingo.model.response.TrainHoursView.Slot;
+import com.voyagego.traingo.model.response.TrainHoursView.Timeline;
 import com.voyagego.traingo.model.response.TrainScheduleView;
 import com.voyagego.traingo.model.response.TrainScheduleView.ScheduleDay;
 import com.voyagego.traingo.model.response.TrainScheduleView.ScheduleItem;
@@ -304,10 +312,112 @@ public class TrainScheduleService {
 			days.add(toDay(day, items, now));
 		}
 
-		String scheduledUntil = end == null ? null : dayLabel(end.getArrivalAt()) + " " + end.getArrivalAt().format(TIME);
-		String earliestLabel = earliest.format(DAY_MONTH) + " " + earliest.format(TIME);
+		String scheduledUntil = end == null ? null : end.getArrivalAt().format(TIME) + " " + dayLabel(end.getArrivalAt()).replace(" ", ", ");
+		String earliestLabel = earliest.format(TIME) + " " + earliest.format(DAY_MONTH);
 		return new TrainScheduleView(train, positionOf(trips, now), end, scheduledUntil, earliest, earliestLabel, days,
-				pastCount);
+				pastCount, hours(trips, end, earliest, bookedByTrip, now));
+	}
+
+	/** What the timeline of "Theo ngày" draws, as the page left it a moment ago. */
+	public Timeline timelineOf(long trainId, LocalDateTime now) {
+		return scheduleOf(trainId, now).hours().timeline();
+	}
+
+	/** {@code trips} ordered by departure, cancelled ones included. */
+	private static TrainHoursView hours(List<Trip> trips, Trip end, LocalDateTime earliest, Map<Long, Integer> booked,
+			LocalDateTime now) {
+		List<Trip> live = trips.stream().filter(trip -> !trip.isCancelled()).toList();
+		Map<Long, Trip> broken = chainBreaks(trips, live);
+		List<Leg> legs = new ArrayList<>();
+		for (Trip trip : trips) {
+			legs.add(timelineLeg(trip, broken.containsKey(trip.getId()), booked.getOrDefault(trip.getId(), 0), now));
+		}
+		List<String> alerts = broken.values().stream().distinct()
+				.sorted(Comparator.comparing(Trip::getDepartureAt))
+				.map(gone -> "Chuỗi chuyến bị ngắt do chuyến " + gone.getRoute().getOriginStation().getName() + " → "
+						+ gone.getRoute().getDestinationStation().getName() + " (" + when(gone.getDepartureAt()) + ") đã hủy.")
+				.toList();
+		Slot slot = end == null ? null
+				: new Slot(earliest.toString(), "Chuyến mới " + earliest.format(TIME),
+						"Thêm chuyến từ " + end.getRoute().getDestinationStation().getName() + ", sớm nhất " + when(earliest));
+		return new TrainHoursView(facts(live, end, earliest, booked, now), new Timeline(legs, slot, alerts));
+	}
+
+	/** Where the chain of legs breaks because a trip in between was cancelled: next leg to the cancelled trip. */
+	private static Map<Long, Trip> chainBreaks(List<Trip> trips, List<Trip> live) {
+		Map<Long, Trip> found = new HashMap<>();
+		for (int i = 0; i + 1 < live.size(); i++) {
+			Trip leg = live.get(i);
+			Trip next = live.get(i + 1);
+			if (next.getRoute().getOriginStation().getId().equals(leg.getRoute().getDestinationStation().getId())) {
+				continue;
+			}
+			trips.stream()
+					.filter(trip -> trip.isCancelled() && !trip.getDepartureAt().isBefore(leg.getArrivalAt())
+							&& !trip.getDepartureAt().isAfter(next.getDepartureAt()))
+					.findFirst().ifPresent(gone -> found.put(next.getId(), gone));
+		}
+		return found;
+	}
+
+	private static Leg timelineLeg(Trip trip, boolean chainBroken, int sold, LocalDateTime now) {
+		String origin = trip.getRoute().getOriginStation().getName();
+		String destination = trip.getRoute().getDestinationStation().getName();
+		String phase = trip.isCancelled() ? "is-off" : !trip.hasDeparted(now) ? "is-up" : trip.isRunning(now) ? "is-run" : "is-done";
+		int seats = CoachLayout.totalSeats();
+		String aria = when(trip.getDepartureAt()) + ", " + origin + " đi " + destination + ", đến " + when(trip.getArrivalAt())
+				+ ", " + (trip.isCancelled() ? "" : "đã bán " + sold + "/" + seats + ", ") + trip.phaseLabel(now)
+				+ (chainBroken ? ", chuỗi chuyến bị ngắt trước chuyến này" : "");
+		return new Leg(trip.getId(), trip.getDepartureAt().toString(), trip.getArrivalAt().toString(),
+				phase + (chainBroken ? " is-break" : ""), !trip.isCancelled() && !trip.getArrivalAt().isAfter(now),
+				trip.isCancelled(), trip.getDepartureAt().format(TIME), trip.getArrivalAt().format(TIME),
+				origin + " → " + destination, trip.isCancelled() ? null : "Đã bán " + sold + "/" + seats,
+				trip.isCancelled() ? null : (int) Math.round(sold * 100.0 / seats), aria);
+	}
+
+	/** What the head of the page states: where the train is, its next trip, where a new leg starts, how its coming trips sell. */
+	private static List<Fact> facts(List<Trip> live, Trip end, LocalDateTime earliest, Map<Long, Integer> booked,
+			LocalDateTime now) {
+		Trip running = live.stream().filter(trip -> trip.isRunning(now)).findFirst().orElse(null);
+		Trip lastDone = null;
+		List<Trip> ahead = new ArrayList<>();
+		for (Trip trip : live) {
+			if (!trip.getArrivalAt().isAfter(now)) {
+				lastDone = trip;
+			}
+			if (trip.getDepartureAt().isAfter(now)) {
+				ahead.add(trip);
+			}
+		}
+		Fact position;
+		if (running != null) {
+			position = new Fact("Vị trí", running.getRoute().getOriginStation().getName() + " → " + running.getRoute().getDestinationStation().getName(),
+					"Đang chạy, đến " + when(running.getArrivalAt()), null, null, true);
+		} else if (lastDone != null) {
+			position = new Fact("Vị trí", lastDone.getRoute().getDestinationStation().getName(), "Ở ga từ " + when(lastDone.getArrivalAt()), null, null, false);
+		} else if (!live.isEmpty()) {
+			position = new Fact("Vị trí", live.get(0).getRoute().getOriginStation().getName(), "Chưa chạy chuyến nào", null, null, false);
+		} else {
+			position = new Fact("Vị trí", "Chưa có chuyến", null, null, null, false);
+		}
+		Trip next = ahead.isEmpty() ? null : ahead.get(0);
+		Fact coming = next == null ? new Fact("Chuyến sắp tới", "Chưa xếp", null, null, null, false)
+				: new Fact("Chuyến sắp tới", when(next.getDepartureAt()), next.getRoute().getOriginStation().getName() + " → "
+						+ next.getRoute().getDestinationStation().getName(), null, null, false);
+		Fact newLeg = end == null ? new Fact("Chuyến mới đi từ", "Chọn ga xuất phát", "Tàu cần chuyến đầu tiên", null, null, false)
+				: new Fact("Chuyến mới đi từ", end.getRoute().getDestinationStation().getName(), "Có thể tạo từ " + when(earliest),
+						null, null, false);
+		long sold = ahead.stream().mapToLong(trip -> booked.getOrDefault(trip.getId(), 0)).sum();
+		long seats = ahead.size() * (long) CoachLayout.totalSeats();
+		int fill = seats == 0 ? 0 : (int) Math.round(sold * 100.0 / seats);
+		Fact selling = seats == 0 ? new Fact("Vé đã bán (chuyến sắp chạy)", "Chưa có", null, null, null, false)
+				: new Fact("Vé đã bán (chuyến sắp chạy)", fill + "%", sold + "/" + seats + " chỗ, " + ahead.size() + " chuyến", null, fill, false);
+		return List.of(position, coming, newLeg, selling);
+	}
+
+	/** "08:00 29/10". */
+	private static String when(LocalDateTime time) {
+		return time.format(TIME) + " " + time.format(DAY_MONTH);
 	}
 
 	private static LocalDateTime earliestDeparture(Trip end, LocalDateTime now) {
@@ -372,7 +482,7 @@ public class TrainScheduleService {
 		LocalDateTime arrival = trip.getArrivalAt();
 		String arrivalLabel = arrival.format(TIME);
 		if (!arrival.toLocalDate().equals(departure.toLocalDate())) {
-			arrivalLabel = dayLabel(arrival) + " " + arrivalLabel;
+			arrivalLabel = arrivalLabel + " " + dayLabel(arrival).replace(" ", ", ");
 		}
 		boolean past = !trip.isCancelled() && !arrival.isAfter(now);
 		int plusDays = (int) ChronoUnit.DAYS.between(departure.toLocalDate(), arrival.toLocalDate());

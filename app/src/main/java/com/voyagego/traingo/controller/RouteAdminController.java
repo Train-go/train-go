@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.voyagego.traingo.common.exception.DuplicateRouteException;
-import com.voyagego.traingo.common.exception.RouteInUseException;
 import com.voyagego.traingo.entity.Route;
 import com.voyagego.traingo.model.request.RouteCreateRequest;
 import com.voyagego.traingo.model.request.RouteDistanceRequest;
@@ -26,16 +25,16 @@ import com.voyagego.traingo.service.StationService;
 import jakarta.validation.Valid;
 
 /**
- * Route management using Post/Redirect/Get. Invalid forms keep the submitted
- * values; successful changes return to the list with a flash message.
+ * The add and edit forms of a route, using Post/Redirect/Get. Invalid forms keep
+ * the submitted values; successful changes return to "Ga và tuyến", which lists
+ * every route, with a flash message.
  */
 @Controller
 @RequestMapping("/admin/routes")
 public class RouteAdminController {
 
-	private static final String LIST_VIEW = "admin/routes";
 	private static final String FORM_VIEW = "admin/route-form";
-	private static final String REDIRECT_TO_LIST = "redirect:/admin/routes";
+	private static final String REDIRECT_TO_LIST = "redirect:/admin/stations";
 
 	private final RouteService routeService;
 	private final StationService stationService;
@@ -48,14 +47,12 @@ public class RouteAdminController {
 	/** Every page of this controller highlights the same sidebar entry. */
 	@ModelAttribute("activeNav")
 	String activeNav() {
-		return "routes";
+		return "stations";
 	}
 
 	@GetMapping
-	public String list(@RequestParam(defaultValue = "") String q, Model model) {
-		model.addAttribute("routes", routeService.search(q));
-		model.addAttribute("q", q.strip());
-		return LIST_VIEW;
+	public String list() {
+		return REDIRECT_TO_LIST;
 	}
 
 	@GetMapping("/new")
@@ -111,17 +108,6 @@ public class RouteAdminController {
 		// Use the detached row: changeDistance returns a route with lazy stations.
 		redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật tuyến " + route.getOriginName()
 				+ " → " + route.getDestinationName() + ".");
-		return REDIRECT_TO_LIST;
-	}
-
-	@PostMapping("/{id}/delete")
-	public String delete(@PathVariable long id, RedirectAttributes redirectAttributes) {
-		try {
-			routeService.delete(id);
-			redirectAttributes.addFlashAttribute("successMessage", "Đã xóa tuyến.");
-		} catch (RouteInUseException ex) {
-			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
-		}
 		return REDIRECT_TO_LIST;
 	}
 

@@ -12,6 +12,7 @@
  *   TG.toastAfterReload(message, action)                 survives location.reload()
  *   TG.api(url, { method, body })                        JSON + CSRF, throws { message, fields }
  *   TG.showFieldErrors(form, fields) / TG.clearFieldErrors(form)
+ *   TG.searchBox(form, input)                            GET form that submits itself
  *
  * See docs/decisions/0012-giao-dien-admin-moi.md.
  */
@@ -19,6 +20,7 @@
 	'use strict';
 
 	const TOAST_LIMIT = 2;
+	const SEARCH_DELAY_MS = 300;
 	const TOAST_DELAY_MS = 6000;
 	const RELOAD_TOAST_KEY = 'tg.toastAfterReload';
 	const GENERIC_ERROR = 'Có lỗi xảy ra, vui lòng thử lại.';
@@ -330,6 +332,31 @@
 		}
 	}
 
+	/* ---------- search box: submits 300ms after the last keystroke ---------- */
+
+	function searchBox(form, input) {
+		let timer = null;
+		function submitSoon() {
+			clearTimeout(timer);
+			timer = setTimeout(function () {
+				form.requestSubmit();
+			}, SEARCH_DELAY_MS);
+		}
+		// A Telex or VNI word is not finished until composition ends; submitting
+		// half of it would reload the page and lose it.
+		input.addEventListener('input', function (event) {
+			if (!event.isComposing) {
+				submitSoon();
+			}
+		});
+		input.addEventListener('compositionend', submitSoon);
+		// The page reloads on every search, so give the caret back to the box.
+		if (new URLSearchParams(location.search).get(input.name)) {
+			input.focus();
+			input.setSelectionRange(input.value.length, input.value.length);
+		}
+	}
+
 	/* ---------- clock in the side menu ---------- */
 
 	const weekdayFormat = new Intl.DateTimeFormat('vi-VN', { weekday: 'long' });
@@ -366,14 +393,36 @@
 
 	/* ---------- start ---------- */
 
+	/*
+	 * The coach card of fragments/coach-card.html, built in JS for the trip sheet's
+	 * tabs. tag is "button" for a tab and "li" for a plain card.
+	 */
+	function coachCard(tag, number, typeLabel, info, sleeper) {
+		const card = document.createElement(tag);
+		card.className = 'coach-card' + (sleeper ? ' is-bed' : '');
+		const icon = document.createElement('i');
+		icon.className = 'bi ' + (sleeper ? 'bi-moon-stars' : 'bi-person-workspace');
+		icon.setAttribute('aria-hidden', 'true');
+		const text = document.createElement('span');
+		const name = document.createElement('b');
+		name.textContent = 'Toa ' + number;
+		const detail = document.createElement('small');
+		detail.textContent = typeLabel + ' · ' + info;
+		text.append(name, detail);
+		card.append(icon, text);
+		return card;
+	}
+
 	window.TG = {
+		coachCard: coachCard,
 		sheet: sheet,
 		confirm: confirm,
 		toast: toast,
 		toastAfterReload: toastAfterReload,
 		api: api,
 		showFieldErrors: showFieldErrors,
-		clearFieldErrors: clearFieldErrors
+		clearFieldErrors: clearFieldErrors,
+		searchBox: searchBox
 	};
 
 	startClock();
@@ -390,7 +439,7 @@
 	 * cut off by the width the real font adds.
 	 */
 	function centreCurrentLink() {
-		const nav = document.querySelector('.admin-side nav');
+		const nav = document.querySelector('.admin-side .admin-nav');
 		const current = nav && nav.querySelector('a[aria-current="page"]');
 		if (current && nav.scrollWidth > nav.clientWidth) {
 			const navBox = nav.getBoundingClientRect();

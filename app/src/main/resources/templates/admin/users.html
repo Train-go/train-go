@@ -5,61 +5,81 @@
 	"N booking" links to the Booking page filtered to that customer.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title>Người dùng · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/users.css}">
 </head>
 <body>
-<main>
+<main class="admin-wrap">
 
 	<div class="page-head">
 		<h1>Người dùng</h1>
 	</div>
 
-	<div class="toolbar">
-		<nav class="tab-seg" aria-label="Vai trò">
-			<a class="tab-seg-link" th:href="@{/admin/users(role='CUSTOMER')}"
-				th:classappend="${view.role.name() == 'CUSTOMER'} ? 'active'"
-				th:attr="aria-current=${view.role.name() == 'CUSTOMER'} ? 'page' : null">
-				<span>Khách hàng</span><span class="count" th:text="${view.customerCount}">11</span>
-			</a>
-			<a class="tab-seg-link" th:href="@{/admin/users(role='ADMIN')}"
-				th:classappend="${view.role.name() == 'ADMIN'} ? 'active'"
-				th:attr="aria-current=${view.role.name() == 'ADMIN'} ? 'page' : null">
-				<span>Quản trị</span><span class="count" th:text="${view.adminCount}">1</span>
-			</a>
-		</nav>
-	</div>
+	<section class="dc-card us-wrap" aria-label="Danh sách người dùng">
+		<div class="cv-bar">
+			<nav class="cv-tabs" aria-label="Nhóm người dùng">
+				<a th:href="@{/admin/users(role='CUSTOMER', q=${view.filtered ? view.q : null})}"
+					th:attr="aria-current=${view.role.name() == 'CUSTOMER'} ? 'page' : null">
+					Khách hàng<span class="cv-count" th:text="${view.customerCount}">11</span>
+				</a>
+				<a th:href="@{/admin/users(role='ADMIN', q=${view.filtered ? view.q : null})}"
+					th:attr="aria-current=${view.role.name() == 'ADMIN'} ? 'page' : null">
+					Quản trị<span class="cv-count" th:text="${view.adminCount}">1</span>
+				</a>
+			</nav>
+			<form class="search cv-search" method="get" th:action="@{/admin/users}" data-user-search>
+				<input type="hidden" name="role" th:value="${view.role}">
+				<i class="bi bi-search" aria-hidden="true"></i>
+				<input type="search" class="form-control" name="q" th:value="${view.q}" autocomplete="off"
+					placeholder="Tên, email hoặc số điện thoại" aria-label="Tìm người dùng theo tên, email hoặc số điện thoại">
+			</form>
+		</div>
 
-	<div class="panel table-responsive">
-		<table class="table table-hover align-middle">
-			<thead>
-				<tr>
-					<th scope="col">Họ tên</th>
-					<th scope="col">Email</th>
-					<th scope="col">Số điện thoại</th>
-					<th scope="col">Ngày tạo</th>
-					<th scope="col" class="num">Booking</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr th:each="user : ${view.rows}">
-					<td class="fw-bold" th:text="${user.fullName}">Nguyễn Văn An</td>
-					<td th:text="${user.email}">an.nguyen@example.com</td>
-					<td class="text-nowrap" th:text="${user.phoneNumber != null} ? ${user.phoneNumber} : '—'">0901234567</td>
-					<td class="text-nowrap" th:text="${user.createdLabel}">12/08/2026</td>
-					<td class="num">
-						<a class="btn btn-link btn-sm" th:if="${user.bookingCount > 0}"
-							th:href="@{/admin/bookings(customer=${user.id})}" th:text="|${user.bookingCount} booking|">2 booking</a>
-						<span class="text-body-secondary" th:unless="${user.bookingCount > 0}">Chưa có</span>
-					</td>
-				</tr>
-				<tr th:if="${#lists.isEmpty(view.rows)}">
-					<td colspan="5" class="text-center text-body-secondary">Chưa có tài khoản nào.</td>
-				</tr>
-			</tbody>
-		</table>
-	</div>
+		<div class="dc-scroll" th:unless="${#lists.isEmpty(view.rows)}">
+			<table class="cc-table us-table">
+				<thead>
+					<tr>
+						<th scope="col">Họ tên</th>
+						<th scope="col">Email</th>
+						<th scope="col">Số điện thoại</th>
+						<th scope="col" class="cc-n">Ngày tạo</th>
+						<th scope="col" class="cc-n" th:if="${view.role.name() == 'CUSTOMER'}">Booking</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="us-row" th:each="user : ${view.rows}">
+						<td><span class="us-person"><span class="us-avatar" aria-hidden="true" th:text="${user.initials}">VA</span><b th:text="${user.fullName}">Nguyễn Văn An</b></span></td>
+						<td th:text="${user.email}">an.nguyen@example.com</td>
+						<td class="us-phone">
+							<th:block th:if="${user.phoneLabel != null}" th:text="${user.phoneLabel}">0901 234 567</th:block>
+							<span class="us-quiet" th:unless="${user.phoneLabel != null}">Chưa có</span>
+						</td>
+						<td class="cc-n" th:text="${user.createdLabel}">12/08/2026</td>
+						<td class="cc-n" th:if="${view.role.name() == 'CUSTOMER'}">
+							<a th:if="${user.bookingCount > 0}" th:href="@{/admin/bookings(customer=${user.id})}"
+								th:text="|${user.bookingCount} booking|">2 booking</a>
+							<span class="us-quiet" th:unless="${user.bookingCount > 0}">Chưa có</span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="cv-more" th:if="${view.total > view.rows.size()}">
+			<a class="btn btn-outline-secondary" th:href="@{/admin/users(role=${view.role}, q=${view.filtered ? view.q : null}, limit=${view.limit + 40})}"
+				th:text="|Hiện thêm ${view.more()} người|">Hiện thêm 40 người</a>
+		</div>
+
+		<div class="cv-empty" th:if="${#lists.isEmpty(view.rows)}">
+			<i class="bi" th:classappend="${view.filtered} ? 'bi-search' : 'bi-people'" aria-hidden="true"></i>
+			<b th:text="${view.filtered} ? |Không có ai khớp &quot;${view.q}&quot;| : 'Chưa có người dùng trong nhóm này'">Chưa có người dùng trong nhóm này</b>
+			<a class="btn btn-outline-secondary btn-sm" th:if="${view.filtered}" th:href="@{/admin/users(role=${view.role})}">Xóa tìm kiếm</a>
+		</div>
+	</section>
+
+	<script defer th:src="@{/js/admin/users.js}"></script>
 
 </main>
 </body>

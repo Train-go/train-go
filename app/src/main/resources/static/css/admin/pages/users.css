@@ -1,0 +1,33 @@
+/* Người dùng: admin/users.html, the directory. */
+
+.us-wrap { overflow: clip; }
+.us-wrap .cv-search { width: 20rem; }
+.us-table { min-width: 0; }
+.us-table td small { display: block; color: var(--color-muted-fg); font-size: 0.8125rem; }
+.us-person { display: inline-flex; align-items: center; gap: var(--space-sm); min-width: 0; color: var(--color-heading); }
+.us-person b { font-weight: 600; }
+.us-person span:last-child { min-width: 0; }
+.us-avatar { display: inline-grid; flex: none; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-soft); color: var(--color-primary); font-size: 0.75rem; font-weight: 700; }
+.us-avatar.is-lg { width: 44px; height: 44px; font-size: 0.9375rem; }
+.us-phone { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.us-table a { font-weight: 600; text-decoration: none; }
+.us-table a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+.us-quiet { color: var(--color-muted-fg); font-size: 0.875rem; }
+
+@media (max-width: 760px) {
+	.us-wrap .cv-search { width: 100%; }
+	.us-table { min-width: 0; }
+	.us-table thead { display: none; }
+	.us-table, .us-table tbody { display: block; }
+	.us-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2px var(--space-sm); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border); }
+	.us-table td, .us-table td:first-child { padding: 0; border: 0; text-align: left; }
+	.us-table td:empty { display: none; }
+	/* A and B: name, then email whole width, then phone and date on the left with the bookings link on the right. */
+	.us-table:not(.uc-table) td:nth-child(1), .us-table:not(.uc-table) td:nth-child(2) { grid-column: 1 / -1; }
+	.us-table:not(.uc-table) td:nth-child(2) { overflow: hidden; color: var(--color-muted-fg); font-size: 0.875rem; text-overflow: ellipsis; white-space: nowrap; }
+	.us-table:not(.uc-table) td:nth-child(3), .us-table:not(.uc-table) td:nth-child(4) { grid-column: 1; color: var(--color-muted-fg); font-size: 0.875rem; }
+	.us-table:not(.uc-table) td:nth-child(4)::before { content: "Ngày tạo "; }
+	.us-table:not(.uc-table) td:nth-child(5) { grid-column: 2; grid-row: 3 / span 2; text-align: right; }
+	.us-table.cc-table td.cc-n { text-align: left; }
+	.us-table.cc-table td:nth-child(5) { text-align: right; }
+}

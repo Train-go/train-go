@@ -1,0 +1,54 @@
+/* Chuyến: admin/trips.html, the seat inventory. */
+
+.cc-wrap { overflow: clip; }
+.cc-stn { white-space: nowrap; }
+
+/* ---------- The seat inventory ---------- */
+
+.cc-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm); padding: var(--space-md) var(--space-lg) 0; }
+.cc-chips { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+.cc-chip:hover { text-decoration: none; }
+.cc-chip {
+	display: inline-flex; align-items: center; gap: var(--space-sm); min-height: 36px; padding: 0 var(--space-md); border: 1px solid var(--color-border); border-radius: var(--radius-pill);
+	background: var(--color-card); color: var(--color-fg); font-size: 0.875rem; font-weight: 600; cursor: pointer;
+	transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.cc-chip span { color: var(--color-muted-fg); font-variant-numeric: tabular-nums; }
+.cc-chip:hover { border-color: var(--color-primary); }
+.cc-chip:active { background: var(--color-primary-soft); }
+.cc-chip:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.cc-chip[aria-current="true"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.cc-chip[aria-current="true"] span { color: var(--color-primary); }
+.cc-sort { width: 12.5rem; min-height: 36px; }
+.cc-table { min-width: 58rem; margin-top: var(--space-sm); }
+.cc-group th { padding-top: var(--space-md); background: var(--color-bg); color: var(--color-heading); font-size: 0.9375rem; font-weight: 700; }
+.cc-group th span { margin-left: var(--space-sm); color: var(--color-muted-fg); font-size: 0.875rem; font-weight: 400; }
+.cc-row { cursor: pointer; }
+.cc-row:hover { background: var(--color-bg); }
+.cc-row.is-done, .cc-row.is-off { color: var(--color-muted-fg); }
+.cc-bar { width: 40%; }
+.cc-pct { font-weight: 700; }
+.cc-pct.is-full { color: var(--color-success); }
+.cc-pct.is-slow { color: var(--color-warning); }
+.cc-band { font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
+.cc-band.is-full { color: var(--color-success); }
+.cc-band.is-slow { color: var(--color-warning); }
+
+@media (max-width: 760px) {
+	.cc-tools { padding-inline: var(--space-md); }
+	.cc-sort { width: 100%; }
+	.cc-table { min-width: 0; }
+	.cc-table thead { display: none; }
+	.cc-table, .cc-table tbody { display: block; }
+	.cc-group, .cc-group th { display: block; }
+	.cc-row { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto; gap: var(--space-xs) var(--space-sm); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border); }
+	.cc-row td, .cc-table td:first-child { padding: 0; border: 0; }
+	.cc-row td:nth-child(1) { grid-column: 1; grid-row: 1 / span 2; }
+	.cc-row td:nth-child(2) { grid-column: 3; grid-row: 1; text-align: right; }
+	.cc-row td:nth-child(3) { grid-column: 2; grid-row: 1; }
+	.cc-row td.cc-bar { grid-column: 2; grid-row: 2; width: auto; }
+	.cc-row td.cc-pct { grid-column: 3; grid-row: 2; }
+	.cc-row td.cc-sold { grid-column: 2; grid-row: 3; text-align: left; color: var(--color-muted-fg); font-size: 0.8125rem; }
+	.cc-row td.cc-last { grid-column: 3; grid-row: 3; text-align: right; }
+	.cc-coaches { min-width: 0; }
+}

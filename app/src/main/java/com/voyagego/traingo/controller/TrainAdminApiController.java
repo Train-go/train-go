@@ -22,6 +22,7 @@ import com.voyagego.traingo.model.request.CreateTripsRequest;
 import com.voyagego.traingo.model.request.TrainRequest;
 import com.voyagego.traingo.model.response.NextLegOptions;
 import com.voyagego.traingo.model.response.PlannedLeg;
+import com.voyagego.traingo.model.response.TrainHoursView.Timeline;
 import com.voyagego.traingo.service.TrainScheduleService;
 import com.voyagego.traingo.service.TrainScheduleService.Pace;
 import com.voyagego.traingo.service.TrainService;
@@ -71,6 +72,12 @@ public class TrainAdminApiController {
 	@PostMapping("/{id}/restore")
 	public Map<String, Long> restore(@PathVariable long id) {
 		return Map.of("id", trainService.restore(id).getId());
+	}
+
+	/** The trips of the train page's timeline ("Theo ngày"), fetched by train-timeline.js; 404 for an unknown train. */
+	@GetMapping("/{id}/timeline")
+	public Timeline timeline(@PathVariable long id) {
+		return trainScheduleService.timelineOf(id, LocalDateTime.now());
 	}
 
 	/**

@@ -2,8 +2,11 @@
 <!--
 	Shared shell for the admin area. An admin page uses it like this:
 
-		<html th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
-		<head><title>...</title></head>
+		<html th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
+		<head>
+			<title>...</title>
+			<link rel="stylesheet" th:href="@{/css/admin/pages/....css}">
+		</head>
 		<body><main> ... </main></body>
 		</html>
 
@@ -14,7 +17,7 @@
 	themes it for the admin (docs/decisions/0012-giao-dien-admin-moi.md).
 	Never link admin.css and css/app.css from the same page.
 -->
-<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, content)">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, styles, content)">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -27,6 +30,7 @@
 	<link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
 	<link rel="stylesheet" th:href="@{/vendor/bootstrap-icons/bootstrap-icons.css}">
 	<link rel="stylesheet" th:href="@{/css/admin/admin.css}">
+	<link th:replace="${styles}">
 </head>
 <body>
 
@@ -47,7 +51,7 @@
 		<!-- admin.js turns this into a toast and removes it. -->
 		<div th:if="${successMessage}" hidden data-flash-success th:text="${successMessage}">Đã thêm ga.</div>
 
-		<main th:replace="${content}"></main>
+		<main class="admin-wrap" th:replace="${content}"></main>
 	</div>
 </div>
 

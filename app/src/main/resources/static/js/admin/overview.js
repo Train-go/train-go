@@ -1,9 +1,9 @@
 /*
- * The two charts of the admin overview (templates/admin/overview.html) and
+ * The three tracks of the admin overview (templates/admin/overview.html) and
  * the filter they share: quick ranges (7 days, 30 days, this month,
  * last month), any from-to dates, and day / week / month grouping, all
  * applied the moment they change.
- * Each chart fetches its own numbers for the chosen range; the rest of the
+ * They fetch their numbers for the chosen range; the rest of the
  * page is printed by the server. The range is kept in the address (?from=
  * &to=&group=), so a reload or a shared link shows the same charts.
  */
@@ -14,7 +14,7 @@
 	if (!root) return;
 
 	const MAX_DAYS = 366;
-	const GROUP_NAMES = { day: 'theo ngày', week: 'theo tuần', month: 'theo tháng' };
+	const EMPTY = 'Chưa có dữ liệu trong khoảng này.';
 	const form = root.querySelector('[data-filter]');
 	const errorLine = form.querySelector('[data-filter-error]');
 	const today = parse(form.dataset.today);
@@ -36,81 +36,74 @@
 		lastmonth: () => [new Date(today.getFullYear(), today.getMonth() - 1, 1), new Date(today.getFullYear(), today.getMonth(), 0)]
 	};
 
-	const charts = {
-		sales: {
-			url: '/api/admin/overview/sales',
-			summary: data => `${data.bookings} booking · ${TG.money(data.revenue)}`,
-			spec: data => ({
-				label: `Doanh thu và số booking đã bán ${GROUP_NAMES[data.group]}, từ ${shown(data.from)} đến ${shown(data.to)}`,
-				labels: data.points.map(point => point.label),
-				titles: data.points.map(point => point.title),
-				bars: { name: 'Doanh thu', values: data.points.map(point => point.revenue), format: TG.money, tick: TG.shortMoney },
-				line: { name: 'Booking', values: data.points.map(point => point.bookings), format: String, tick: String, integer: true },
-				empty: 'Chưa có booking trong khoảng này.'
-			})
-		},
-		users: {
-			url: '/api/admin/overview/users',
-			summary: data => `${data.newUsers} người dùng mới · hiện có ${data.total}`,
-			spec: data => ({
-				label: `Người dùng đăng ký mới ${GROUP_NAMES[data.group]} và tổng số người dùng, từ ${shown(data.from)} đến ${shown(data.to)}`,
-				labels: data.points.map(point => point.label),
-				titles: data.points.map(point => point.title),
-				bars: { name: 'Người dùng mới', values: data.points.map(point => point.newUsers), format: String, tick: String, integer: true },
-				line: { name: 'Tổng người dùng', values: data.points.map(point => point.total), format: String, tick: String, integer: true },
-				empty: 'Chưa có người dùng nào.'
-			})
-		}
-	};
-
-	Object.entries(charts).forEach(([name, chart]) => {
-		chart.box = root.querySelector(`[data-chart=${name}]`);
-		chart.plot = chart.box.querySelector('[data-plot]');
-		chart.data = null;
-	});
+	const count = value => Math.round(value).toLocaleString('vi-VN');
+	const slot = name => root.querySelector(`[data-chart="${name}"]`);
+	const sum = name => root.querySelector(`[data-sum="${name}"]`);
 
 	let current = { from: '', to: '', group: '' };
+	let sales = null;
+	let users = null;
 
-	function draw(chart) {
-		if (!chart.data) return;
-		const data = chart.data;
-		chart.box.querySelector('[data-summary]').textContent =
-			`${shown(data.from)} - ${shown(data.to)}, ${GROUP_NAMES[data.group]}: ${chart.summary(data)}`;
-		TG.chart(chart.plot, chart.spec(data));
+	function draw() {
+		if (!sales || !users) return;
+		const range = `từ ${shown(sales.from)} đến ${shown(sales.to)}`;
+		const titles = sales.points.map(point => point.title);
+		TG.track(slot('revenue'), {
+			kind: 'area', height: 200, name: 'Doanh thu', titles, values: sales.points.map(point => point.revenue),
+			format: TG.money, tick: TG.shortMoney, label: `Doanh thu ${range}`, empty: EMPTY
+		});
+		TG.track(slot('bookings'), {
+			kind: 'bars', height: 96, name: 'Booking', titles, values: sales.points.map(point => point.bookings),
+			format: String, tick: String, integer: true, divisions: 2, label: `Số booking đã bán ${range}`, empty: EMPTY
+		});
+		TG.track(slot('users'), {
+			kind: 'lolli', height: 130, name: 'Người dùng mới', titles, labels: users.points.map(point => point.label),
+			values: users.points.map(point => point.newUsers), format: String, tick: String, integer: true, divisions: 2,
+			label: `Người dùng đăng ký mới ${range}`, empty: EMPTY
+		});
+		sum('revenue').textContent = TG.money(sales.revenue);
+		sum('bookings').textContent = count(sales.bookings);
+		sum('users').textContent = count(users.newUsers);
 	}
 
-	function showError(chart, message) {
-		chart.data = null;
-		chart.box.querySelector('[data-summary]').textContent = '';
-		chart.plot.replaceChildren();
+	function showError(message) {
+		sales = null;
+		users = null;
+		['revenue', 'bookings', 'users'].forEach(name => {
+			sum(name).textContent = '';
+			slot(name).replaceChildren();
+		});
 		const line = document.createElement('p');
-		line.className = 'ov-empty';
+		line.className = 'ov-retry';
 		line.textContent = message || 'Không tải được biểu đồ. ';
 		if (!message) {
 			const button = document.createElement('button');
 			button.type = 'button';
 			button.className = 'btn btn-outline-secondary btn-sm';
 			button.textContent = 'Thử lại';
-			button.addEventListener('click', () => loadChart(chart));
+			button.addEventListener('click', load);
 			line.append(button);
 		}
-		chart.plot.append(line);
+		slot('revenue').append(line);
 	}
 
-	async function loadChart(chart) {
+	async function load() {
 		const query = new URLSearchParams({ from: current.from, to: current.to });
 		if (current.group) query.set('group', current.group);
 		try {
-			chart.data = await TG.api(`${chart.url}?${query}`);
-			draw(chart);
+			[sales, users] = await Promise.all([
+				TG.api(`/api/admin/overview/sales?${query}`),
+				TG.api(`/api/admin/overview/users?${query}`)
+			]);
+			draw();
 		} catch (error) {
 			// A range the server refuses is the admin's to fix: say why, once, under the filter.
 			if (error && error.message && /ngày/.test(error.message)) {
 				errorLine.textContent = error.message;
 				errorLine.hidden = false;
-				showError(chart, 'Chọn lại khoảng thời gian.');
+				showError('Chọn lại khoảng thời gian.');
 			} else {
-				showError(chart);
+				showError();
 			}
 		}
 	}
@@ -138,13 +131,12 @@
 		form.querySelectorAll('[data-preset]').forEach(button => {
 			const [start, end] = PRESETS[button.dataset.preset]();
 			const on = ymd(start) === from && ymd(end) === to;
-			button.classList.toggle('active', on);
 			button.setAttribute('aria-pressed', String(on));
 		});
 		const query = new URLSearchParams({ from, to });
 		if (group) query.set('group', group);
 		history.replaceState(null, '', `${location.pathname}?${query}`);
-		Object.values(charts).forEach(loadChart);
+		load();
 		return true;
 	}
 
@@ -171,9 +163,9 @@
 	let timer = null;
 	const observer = new ResizeObserver(() => {
 		clearTimeout(timer);
-		timer = setTimeout(() => Object.values(charts).forEach(draw), 120);
+		timer = setTimeout(draw, 120);
 	});
-	Object.values(charts).forEach(chart => observer.observe(chart.plot));
+	observer.observe(slot('revenue'));
 
 	// Start from the address if it names a range, else from the last 30 days.
 	const params = new URLSearchParams(location.search);

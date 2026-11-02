@@ -35,8 +35,9 @@ public class BookingAdminController {
 	@GetMapping
 	public String list(@RequestParam(required = false) String tab, @RequestParam(required = false) String q,
 			@RequestParam(name = "customer", required = false) Long customerId,
+			@RequestParam(defaultValue = "" + BookingAdminService.PAGE) int limit,
 			@RequestParam(required = false) String open, Model model) {
-		model.addAttribute("view", bookingAdminService.list(tab, q, customerId, LocalDateTime.now()));
+		model.addAttribute("view", bookingAdminService.list(tab, q, customerId, limit, LocalDateTime.now()));
 		model.addAttribute("open", open);
 		return "admin/bookings";
 	}

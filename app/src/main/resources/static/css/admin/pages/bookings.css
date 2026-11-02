@@ -1,0 +1,64 @@
+/* Booking: admin/bookings.html, the manifest by trip. */
+
+.bk-search { width: 18rem; }
+.bk-customer { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs) var(--space-sm); margin: 0; padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--color-border); background: var(--color-primary-soft); color: var(--color-fg); font-size: 0.875rem; }
+.bk-customer svg { flex: none; color: var(--color-primary); }
+.bk-customer a { margin-left: auto; font-weight: 600; }
+.bk-quiet, .us-quiet { color: var(--color-muted-fg); font-size: 0.875rem; }
+.bk-detail { display: grid; align-content: start; gap: var(--space-lg); }
+.bk-detail h3 { margin: 0 0 var(--space-sm); font-size: 1rem; }
+.bk-trip {
+	display: flex; align-items: center; justify-content: space-between; gap: var(--space-md); width: 100%; padding: var(--space-md); border: 1px solid var(--color-border); border-radius: var(--radius-md);
+	background: var(--color-card); color: var(--color-fg); text-align: left; cursor: pointer; transition: border-color var(--dur) var(--ease);
+}
+.bk-trip span { display: grid; gap: 2px; }
+.bk-trip b { color: var(--color-heading); }
+.bk-trip small { color: var(--color-muted-fg); font-size: 0.875rem; }
+.bk-trip svg { flex: none; color: var(--color-muted-fg); }
+.bk-trip:hover { border-color: var(--color-primary); }
+.bk-trip:active { background: var(--color-primary-soft); }
+.bk-trip:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
+.bk-tickets td small { display: block; color: var(--color-muted-fg); font-size: 0.8125rem; }
+.bm-trip { overflow: clip; }
+.bm-bar { margin-bottom: var(--space-lg); }
+.bm-trips { display: grid; gap: var(--space-md); }
+.bm-day { display: flex; align-items: baseline; gap: var(--space-sm); margin: var(--space-sm) 0 0; font-size: 1rem; text-wrap: balance; }
+.bm-day span { color: var(--color-muted-fg); font-size: 0.875rem; font-weight: 400; }
+.bm-head { display: grid; grid-template-columns: auto minmax(0, 1fr) minmax(10rem, 16rem); align-items: center; gap: var(--space-md) var(--space-lg); padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--color-border); background: var(--color-bg); }
+.bm-time { display: grid; justify-items: start; min-height: 44px; padding: 0 var(--space-sm) 0 0; border: 0; background: transparent; color: var(--color-heading); text-align: left; cursor: pointer; font-variant-numeric: tabular-nums; }
+.bm-time b { font-size: 1.375rem; line-height: 1.2; }
+.bm-time span { color: var(--color-primary); font-size: 0.875rem; font-weight: 700; }
+.bm-time:hover b { color: var(--color-primary); }
+.bm-time:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+.bm-route { display: grid; gap: 2px; min-width: 0; }
+.bm-route b { color: var(--color-heading); }
+.bm-route small { color: var(--color-muted-fg); font-size: 0.875rem; }
+.bm-list { margin: 0; padding: 0; list-style: none; }
+.bm-booking { display: grid; grid-template-columns: 9.5rem minmax(10rem, 1fr) minmax(14rem, 1.4fr) 7rem; align-items: start; gap: var(--space-xs) var(--space-lg); padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--color-border); cursor: pointer; transition: background-color var(--dur) var(--ease); }
+.bm-booking:last-child { border-bottom: 0; }
+.bm-booking:hover { background: var(--color-bg); }
+.bm-booking.is-off { color: var(--color-muted-fg); }
+.bm-code { min-height: 36px; font-size: 0.9375rem; }
+.bm-code:hover { text-decoration: none; }
+.bm-who { display: grid; min-width: 0; padding-top: var(--space-xs); }
+.bm-who b { color: var(--color-heading); font-weight: 600; }
+.bm-who small { overflow: hidden; color: var(--color-muted-fg); font-size: 0.8125rem; text-overflow: ellipsis; white-space: nowrap; }
+.bm-people { display: grid; gap: 2px; margin: 0; padding: var(--space-xs) 0 0; list-style: none; font-size: 0.875rem; }
+.bm-people li { display: grid; grid-template-columns: minmax(0, 11rem) auto; gap: var(--space-md); }
+.bm-people small { color: var(--color-fg); font-size: 0.875rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bm-total { padding-top: var(--space-xs); color: var(--color-heading); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.bk-match { color: var(--color-primary); }
+
+@media (max-width: 1099px) {
+	.bm-booking { grid-template-columns: 8.5rem minmax(0, 1fr) 6.5rem; }
+	.bm-people { grid-column: 2 / -1; grid-row: 2; }
+}
+@media (max-width: 760px) {
+	.bk-search { width: 100%; }
+	.bm-head { grid-template-columns: auto minmax(0, 1fr); padding: var(--space-md); }
+	.bm-head .cc-coaches { grid-column: 1 / -1; }
+	.bm-booking { grid-template-columns: minmax(0, 1fr) auto; padding: var(--space-sm) var(--space-md); }
+	.bm-code { grid-column: 1; }
+	.bm-total { grid-column: 2; grid-row: 1; }
+	.bm-who, .bm-people { grid-column: 1 / -1; grid-row: auto; }
+}

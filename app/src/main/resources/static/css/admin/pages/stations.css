@@ -1,0 +1,157 @@
+/* Ga và tuyến: admin/stations.html. */
+
+.panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm) var(--space-md); padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--color-border); }
+.panel-head h2 { font-size: 1rem; }
+.panel-head .net-search { flex: 0 1 16rem; }
+.ok-mark { display: inline-flex; align-items: center; gap: var(--space-xs); color: var(--color-success); font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
+.miss-mark { display: inline-flex; align-items: center; gap: var(--space-xs); color: var(--color-warning); font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
+.net { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--space-md); align-items: start; }
+@media (max-width: 1199px) { .net { grid-template-columns: minmax(0, 1fr); } }
+
+.gap-banner { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); padding: var(--space-sm) var(--space-lg); border-bottom: 1px solid var(--color-border); background: var(--color-warning-soft); color: var(--color-warning); font-size: 0.875rem; font-weight: 600; }
+.gap-banner .btn { margin-left: auto; }
+
+/* The line: stations by km, and between two of them the segment and its routes. */
+.line { margin: 0; padding: var(--space-sm) var(--space-lg) var(--space-lg); list-style: none; }
+.stop-btn {
+	position: relative; display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: var(--space-sm);
+	width: 100%; min-height: 44px; padding: 0 var(--space-sm); border: 0; border-radius: var(--radius-md); background: transparent;
+	color: var(--color-heading); text-align: left; cursor: pointer; transition: background-color var(--dur-fast) var(--ease);
+}
+.stop-btn:hover { background: var(--color-bg); }
+.stop-btn:active { background: var(--color-muted); }
+.stop-btn:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 0; }
+.stop-dot { justify-self: center; width: 14px; height: 14px; border: 3px solid var(--color-primary); border-radius: 50%; background: var(--color-card); }
+.stop-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 var(--space-sm); min-width: 0; font-weight: 600; }
+.stop-name small { color: var(--color-muted-fg); font-size: 0.8125rem; font-weight: 400; }
+.stop-km { color: var(--color-muted-fg); font-size: 0.875rem; }
+
+.link-seg { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: var(--space-sm); min-height: 44px; padding: 0 var(--space-sm); }
+.link-seg::before { content: ""; justify-self: center; width: 3px; height: 100%; min-height: 44px; border-radius: 2px; background: var(--color-primary); }
+/* Connector only: both directions exist, so no row of text between the stations. */
+.link-seg.is-ok { min-height: 24px; }
+.link-seg.is-ok::before { min-height: 24px; }
+.link-seg.is-partial::before { background: repeating-linear-gradient(180deg, var(--color-primary) 0 6px, transparent 6px 10px); }
+.link-seg.is-missing::before { background: repeating-linear-gradient(180deg, var(--color-border-strong) 0 4px, transparent 4px 8px); }
+.link-seg-info { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--space-md); min-width: 0; font-size: 0.875rem; }
+.link-seg .btn { white-space: nowrap; }
+.link-seg-info .miss-mark { display: inline; white-space: normal; }
+.link-seg-info .miss-mark .bi { margin-right: var(--space-xs); }
+
+.pair-name { font-weight: 600; color: var(--color-heading); }
+
+/* The route table: one line a route, both directions in one cell, the route's name opens it. */
+.route-table td { height: 56px; }
+.route-table th, .route-table td { padding-inline: var(--space-sm); }
+.route-table th:first-child, .route-table td:first-child { padding-left: var(--space-md); }
+.route-table th:last-child, .route-table td:last-child { padding-right: var(--space-md); }
+/* The three right-hand columns share one width and centre under their heads, so the table does not crowd to the right. */
+.route-table { table-layout: fixed; }
+.route-table th:not(:first-child), .route-table td:not(:first-child) { width: 7.25rem; text-align: center; }
+.route-table td:nth-child(2), .route-table td:nth-child(4) { white-space: nowrap; }
+.route-table th:last-child { min-width: 5.5rem; white-space: normal; }
+/* Beside the line the table is narrow and the last head may wrap; on its own, under 1200px, it has room. */
+@media (max-width: 1199px) { .route-table th:last-child { white-space: nowrap; } }
+.route-table tr.is-gap td:first-child { box-shadow: inset 3px 0 0 var(--color-warning); }
+.route-name { display: grid; justify-items: start; gap: 2px; padding: var(--space-xs) 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.route-name small { color: var(--color-muted-fg); font-size: 0.8125rem; }
+.route-stn { white-space: nowrap; }
+@media (min-width: 761px) { .route-table .pair-name { white-space: nowrap; } }
+.route-name:hover .pair-name { color: var(--color-primary); }
+.route-name:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+.route-both { display: inline-flex; align-items: center; gap: var(--space-xs); color: var(--color-muted-fg); font-size: 0.875rem; white-space: nowrap; }
+.route-both svg { color: var(--color-success); }
+.route-dirs { display: grid; justify-items: start; gap: 2px; }
+.route-dirs .link-btn { font-size: 0.875rem; }
+.route-quiet { color: var(--color-muted-fg); font-size: 0.875rem; }
+.route-unit { display: none; }
+
+.net-line, .net-routes { overflow: clip; }
+.net-search { flex: 0 1 16rem; }
+.route-table td { height: 56px; }
+.route-table td .btn-link { padding-inline: 0; min-height: 28px; }
+.route-table tr[data-pair] { cursor: pointer; }
+.route-table tr[data-pair]:hover { background: var(--color-bg); }
+.stop-name small .code { padding: 0; background: none; font-size: inherit; font-weight: 400; color: inherit; }
+.link-seg-act { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-xs); }
+#net-sheet .net-panel { min-width: 0; overflow-wrap: anywhere; }
+#net-sheet .panel-body { padding: 0; }
+#net-sheet .offcanvas-header { padding-bottom: 0; border-bottom: 0; }
+
+@media (max-width: 760px) {
+	.route-table thead { display: none; }
+	.route-table, .route-table tbody { display: block; }
+	.route-table tr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--space-sm); padding: var(--space-sm) var(--space-md); border-bottom: 1px solid var(--color-border); }
+	.route-table td, .route-table td:first-child { height: auto; padding: 0; border: 0; text-align: left; }
+	.route-table td:nth-child(1), .route-table td:nth-child(3) { grid-column: 1 / -1; }
+	.route-table td:nth-child(4) { grid-column: 1 / -1; color: var(--color-muted-fg); font-size: 0.875rem; }
+	.route-unit { display: inline; }
+	.link-seg { grid-template-columns: 20px minmax(0, 1fr); }
+	.link-seg-act { grid-column: 2; justify-content: flex-start; }
+}
+
+/* Component display rules must not override hidden on panels, alerts or controls. */
+#station-network [hidden] { display: none !important; }
+.net-panel { min-width: 0; scroll-margin-top: 64px; overflow-wrap: anywhere; }
+.net-panel .panel-body { gap: 16px; }
+.net-panel .panel-title { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.net-panel h2 { font-size: 19px; }
+.net-panel .facts { display: flex; flex-wrap: wrap; gap: 4px 18px; color: var(--ink-2); }
+.net-panel .pane-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.net-panel .form-control, .net-panel .form-select { min-width: 0; }
+.net-panel input[readonly] { background: var(--sunk); }
+.net-directions { display: grid; gap: 16px; }
+.net-direction { display: grid; justify-items: start; gap: 10px; padding-top: 16px; border-top: 1px solid var(--line); min-width: 0; }
+.net-direction [data-distance-field] { width: 100%; max-width: 240px; }
+.net-direction .form-text { margin: 0; }
+.net-direction .code { white-space: normal; }
+#net-load-error { flex-wrap: wrap; align-items: center; }
+
+
+/* ---------- smart station insert and route suggestions (#38) ---------- */
+
+/* Name combobox: the real stations of the line that the system lacks. */
+.combo { position: relative; }
+.combo-list { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--r-control); box-shadow: var(--shadow-pop); max-height: 280px; overflow-y: auto; }
+.combo-list[hidden] { display: none; }
+.combo-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: center; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.combo-list li small { grid-column: 1; color: var(--muted); font-weight: 600; font-size: 12px; }
+.combo-list li .in-range { grid-row: 1 / 3; grid-column: 2; padding: 2px 6px; border-radius: var(--r-tag); background: var(--accent-soft); color: var(--accent-strong); font-size: 11.5px; font-weight: 700; }
+.combo-list li[aria-selected="true"] { background: var(--accent-soft); }
+
+/* What the form filled in for the admin, under the km field. */
+.draft-notes { display: grid; gap: 2px; }
+.draft-notes .form-text { margin: 4px 0 0; }
+.draft-notes .btn-link { justify-self: start; min-height: 32px; padding: 0 8px; font-size: 13px; }
+
+/* "Nối [ga] vào tuyến": checklist of routes worth creating. */
+.route-sug { display: grid; gap: 10px; }
+.sug-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.sug-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border-radius: var(--r-control); background: var(--sunk); }
+.sug-list li.on { background: var(--accent-soft); }
+.sug-pair { display: flex; align-items: flex-start; gap: 10px; flex: 1 1 220px; min-width: 0; cursor: pointer; }
+.sug-pair input { flex: none; width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); }
+.sug-pair span { display: grid; min-width: 0; }
+.sug-pair small { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.sug-dirs { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.dir-pill { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; padding: 0 8px; border: 1px solid var(--line-strong); border-radius: var(--r-tag); background: var(--surface); color: var(--ink-2); font: 600 12px var(--mono); cursor: pointer; }
+.dir-pill[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fff; }
+.dir-pill.has { border-style: dashed; background: transparent; color: var(--muted); cursor: default; }
+.sug-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+/* ---------- routes from one station to many (#39) ---------- */
+
+.fan { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.fan-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.fan-h h3 { margin: 0; font-size: 16px; font-weight: 700; }
+/* A long network scrolls inside the list instead of stretching the panel. */
+.fan-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; max-height: 340px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.fan-list li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 8px; padding: 8px 10px; border-radius: var(--r-control); background: var(--sunk); }
+.fan-list li:has(input:checked:not(:disabled)) { background: var(--accent-soft); }
+.fan-check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.fan-check input { flex: none; width: 18px; height: 18px; accent-color: var(--accent); }
+.fan-check.done { color: var(--muted); cursor: default; }
+.fan-name { display: grid; line-height: 1.25; }
+.fan-name small { color: var(--muted); font-size: 12px; font-weight: 600; }
+.fan-st { color: var(--muted); font-size: 12px; font-weight: 600; }
+

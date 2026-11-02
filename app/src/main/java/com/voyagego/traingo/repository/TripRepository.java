@@ -207,4 +207,16 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
 			order by t.departureAt""")
 	List<Trip> findUpcomingBetween(@Param("now") LocalDateTime now, @Param("to") LocalDateTime to);
 
+	/** Trips that are not cancelled leaving in [from, to), for the week grid of the overview. */
+	@Query("""
+			select t from Trip t
+			join fetch t.train
+			join fetch t.route r
+			join fetch r.originStation
+			join fetch r.destinationStation
+			where t.status <> com.voyagego.traingo.entity.TripStatus.CANCELLED
+			and t.departureAt >= :from and t.departureAt < :to
+			order by t.departureAt""")
+	List<Trip> findLiveBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
 }

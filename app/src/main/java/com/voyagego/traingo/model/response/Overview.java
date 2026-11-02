@@ -37,6 +37,24 @@ public record Overview(long bookings, long cancelledBookings, long trips, long u
 			return current - previous;
 		}
 
+		/** The size of the change, for a label that shows its direction apart. */
+		public long change() {
+			return Math.abs(delta());
+		}
+
+		/** This week's bar, as a percentage of the longer of the two. */
+		public double currentWidth() {
+			return width(current);
+		}
+
+		public double previousWidth() {
+			return width(previous);
+		}
+
+		private double width(long value) {
+			return value * 100.0 / Math.max(1L, Math.max(current, previous));
+		}
+
 	}
 
 	/**
@@ -52,10 +70,19 @@ public record Overview(long bookings, long cancelledBookings, long trips, long u
 	}
 
 	/**
-	 * One train's week: trips on each of the seven days, in the order of
+	 * One train's week: its trips on each of the seven days, in the order of
 	 * {@code week}. {@code level} is the worst alert of the train, or null.
 	 */
-	public record TrainWeek(long id, String code, String name, List<Integer> trips, String level) {
+	public record TrainWeek(long id, String code, String name, List<List<WeekTrip>> days, String level) {
+
+		public long emptyDays() {
+			return days.stream().filter(List::isEmpty).count();
+		}
+
+	}
+
+	/** A trip in the train grid. {@code percent} is the share of seats sold. */
+	public record WeekTrip(String time, String route, long sold, int seats, int percent, boolean past) {
 	}
 
 }

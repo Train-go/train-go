@@ -29,6 +29,7 @@ import com.voyagego.traingo.entity.TripSeat;
 import com.voyagego.traingo.entity.TripStatus;
 import com.voyagego.traingo.model.dto.CoachLayout;
 import com.voyagego.traingo.model.dto.IdCount;
+import com.voyagego.traingo.model.response.CoachFill;
 import com.voyagego.traingo.model.response.TripDetail;
 import com.voyagego.traingo.model.response.TripListView;
 import com.voyagego.traingo.repository.BookingRepository;
@@ -54,6 +55,14 @@ public class TripAdminService {
 	public static final String TAB_UPCOMING = "upcoming";
 	public static final String TAB_DEPARTED = "departed";
 	public static final String TAB_CANCELLED = "cancelled";
+	/** Trips a page of the list shows, and the most "Hiện thêm" can ask for. */
+	public static final int PAGE = 40;
+	private static final int MAX_SHOWN = 2000;
+	private static final String BAND_FULL = "full";
+	private static final String BAND_SLOW = "slow";
+	private static final String SORT_TIME = "time";
+	private static final String SORT_HIGH = "high";
+	private static final String SORT_LOW = "low";
 
 	private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
@@ -154,7 +163,7 @@ public class TripAdminService {
 	 * do for every letter.
 	 */
 	@Transactional(readOnly = true)
-	public TripListView list(String tab, Long trainId, String q, LocalDateTime now) {
+	public TripListView list(String tab, Long trainId, String q, String band, String sort, int limit, LocalDateTime now) {
 		String selected = switch (tab == null ? "" : tab) {
 			case TAB_DEPARTED, TAB_CANCELLED -> tab;
 			default -> TAB_UPCOMING;
@@ -171,20 +180,50 @@ public class TripAdminService {
 
 		Map<Long, Long> soldByTrip = ticketRepository.countConfirmedByTrip().stream()
 				.collect(Collectors.toMap(IdCount::getId, IdCount::getTotal));
+		Function<Trip, Long> sold = trip -> soldByTrip.getOrDefault(trip.getId(), 0L);
+		List<Trip> scoped = trips;
+		int fullCount = (int) scoped.stream().filter(trip -> BAND_FULL.equals(bandOf(trip, sold.apply(trip), now))).count();
+		int slowCount = (int) scoped.stream().filter(trip -> BAND_SLOW.equals(bandOf(trip, sold.apply(trip), now))).count();
+
+		String chosenBand = BAND_FULL.equals(band) || BAND_SLOW.equals(band) ? band : "";
+		if (!chosenBand.isEmpty()) {
+			trips = trips.stream().filter(trip -> chosenBand.equals(bandOf(trip, sold.apply(trip), now))).toList();
+		}
+		String chosenSort = SORT_HIGH.equals(sort) || SORT_LOW.equals(sort) ? sort : SORT_TIME;
+		if (!SORT_TIME.equals(chosenSort)) {
+			Comparator<Trip> bySold = Comparator.comparing(sold);
+			trips = trips.stream()
+					.sorted((SORT_HIGH.equals(chosenSort) ? bySold.reversed() : bySold).thenComparing(Trip::getDepartureAt))
+					.toList();
+		}
+		int total = trips.size();
+		int shown = Math.max(PAGE, Math.min(limit, MAX_SHOWN));
+		List<Trip> page = trips.stream().limit(shown).toList();
+		Map<Long, List<CoachFill>> fills = page.isEmpty() ? Map.of()
+				: CoachFill.byTrip(tripSeatRepository.countBookedByTripAndCoach(page.stream().map(Trip::getId).toList()));
+
+		boolean grouped = SORT_TIME.equals(chosenSort);
 		int totalSeats = CoachLayout.totalSeats();
 		Map<LocalDate, List<TripListView.Row>> rowsByDay = new LinkedHashMap<>();
-		for (Trip trip : trips) {
-			rowsByDay.computeIfAbsent(trip.getDepartureAt().toLocalDate(), day -> new ArrayList<>())
-					.add(new TripListView.Row(trip.getId(), timeRange(trip), trip.getTrain().getCode(),
-							trip.getRoute().getOriginStation().getName() + " → "
-									+ trip.getRoute().getDestinationStation().getName(),
-							trip.getBasePrice(), soldByTrip.getOrDefault(trip.getId(), 0L), totalSeats,
-							phaseCss(trip, now), trip.phaseLabel(now)));
+		List<TripListView.Row> flat = new ArrayList<>();
+		for (Trip trip : page) {
+			long count = sold.apply(trip);
+			TripListView.Row row = new TripListView.Row(trip.getId(), trip.getDepartureAt().format(TIME),
+					grouped ? null : trip.getDepartureAt().format(DAY_MONTH), trip.getTrain().getCode(),
+					trip.getRoute().getOriginStation().getName(), trip.getRoute().getDestinationStation().getName(), count,
+					totalSeats, (int) Math.round(count * 100.0 / totalSeats), bandOf(trip, count, now),
+					fills.getOrDefault(trip.getId(), CoachFill.of(Map.of())), trip.isCancelled(),
+					phaseCss(trip, now), trip.phaseLabel(now));
+			if (grouped) {
+				rowsByDay.computeIfAbsent(trip.getDepartureAt().toLocalDate(), day -> new ArrayList<>()).add(row);
+			} else {
+				flat.add(row);
+			}
 		}
-		List<TripListView.DayGroup> days = rowsByDay.entrySet().stream()
+		List<TripListView.DayGroup> days = grouped ? rowsByDay.entrySet().stream()
 				.map(entry -> new TripListView.DayGroup(dayLabel(entry.getKey(), now.toLocalDate()),
 						entry.getKey().format(DATE), entry.getValue()))
-				.toList();
+				.toList() : flat.isEmpty() ? List.of() : List.of(new TripListView.DayGroup(null, null, flat));
 
 		// Deleted trains keep their trips in the list but are not offered as a filter.
 		List<TripListView.TrainOption> trains = trainRepository.findAllByDeletedFalseOrderByCodeAsc().stream()
@@ -192,7 +231,25 @@ public class TripAdminService {
 				.toList();
 		return new TripListView(selected, trainId, needle.isEmpty() ? null : q.strip(),
 				tripRepository.countUpcoming(now), tripRepository.countDeparted(now),
-				tripRepository.countByStatus(TripStatus.CANCELLED), trains, days);
+				tripRepository.countByStatus(TripStatus.CANCELLED), trains, chosenBand, chosenSort, shown, total,
+				scoped.size(), fullCount, slowCount, days);
+	}
+
+	/**
+	 * "Sắp đầy" and "Bán chậm" count what the overview's alerts count: at least
+	 * 90% sold, or under 30% sold and leaving within 48 hours.
+	 */
+	private static String bandOf(Trip trip, long sold, LocalDateTime now) {
+		if (trip.isCancelled()) {
+			return "";
+		}
+		long percent = Math.round(sold * 100.0 / CoachLayout.totalSeats());
+		if (percent >= OverviewService.FULL_FILL_PERCENT) {
+			return BAND_FULL;
+		}
+		boolean leavingSoon = trip.getDepartureAt().isAfter(now)
+				&& !trip.getDepartureAt().isAfter(now.plusHours(OverviewService.FILL_WINDOW_HOURS));
+		return percent < OverviewService.LOW_FILL_PERCENT && leavingSoon ? BAND_SLOW : "";
 	}
 
 	/** The sentences of the sheet's footer (AC4), checked in the mockup's order. */
@@ -235,7 +292,12 @@ public class TripAdminService {
 		return rest == 0 ? hours + " giờ" : hours + " giờ " + String.format(Locale.ROOT, "%02d", rest) + " phút";
 	}
 
-	private static String dayLabel(LocalDate day, LocalDate today) {
+	/** "Thứ Sáu, 30/10/2026". */
+	public static String longDay(LocalDate day) {
+		return WEEKDAYS[day.getDayOfWeek().getValue() - 1] + ", " + day.format(DATE);
+	}
+
+	static String dayLabel(LocalDate day, LocalDate today) {
 		if (day.equals(today)) {
 			return "Hôm nay";
 		}

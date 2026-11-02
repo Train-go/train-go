@@ -13,6 +13,6 @@ import jakarta.validation.constraints.Size;
  * message next to the right row.
  */
 public record CreateTripsRequest(
-		@NotEmpty(message = "Chọn ít nhất một chặng.") @Size(max = 14, message = "Thêm tối đa 14 chặng một lần.")
-		List<@NotNull(message = "Chặng không hợp lệ.") @Valid LegRequest> legs) {
+		@NotEmpty(message = "Chọn ít nhất một chuyến.") @Size(max = 14, message = "Thêm tối đa 14 chuyến một lần.")
+		List<@NotNull(message = "Chuyến không hợp lệ.") @Valid LegRequest> legs) {
 }

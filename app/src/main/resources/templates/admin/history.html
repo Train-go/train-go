@@ -4,12 +4,13 @@
 	through POST /api/admin/trains/{id}/restore and opens the train's page.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
-	th:replace="~{admin/layout/base :: page(~{::title}, ~{::main})}">
+	th:replace="~{admin/layout/base :: page(~{::title}, ~{::link}, ~{::main})}">
 <head>
 	<title>Lịch sử · Quản trị TrainGo</title>
+	<link rel="stylesheet" th:href="@{/css/admin/pages/history.css}">
 </head>
 <body>
-<main>
+<main class="admin-wrap">
 
 	<div class="page-head">
 		<h1>Lịch sử</h1>
@@ -19,7 +20,7 @@
 		th:data-api-url="@{/api/admin/trains}" th:data-page-url="@{/admin/trains}">
 		<h2 id="deleted-trains-title">Tàu đã xóa</h2>
 
-		<div class="panel table-responsive" th:if="${!#lists.isEmpty(deletedTrains)}">
+		<div class="dc-card table-responsive" th:if="${!#lists.isEmpty(deletedTrains)}">
 			<table class="table align-middle">
 				<thead>
 					<tr>
@@ -43,7 +44,7 @@
 			</table>
 		</div>
 
-		<div class="empty" th:if="${#lists.isEmpty(deletedTrains)}">
+		<div class="dc-card cv-empty" th:if="${#lists.isEmpty(deletedTrains)}">
 			<i class="bi bi-clock-history" aria-hidden="true"></i>
 			<b>Chưa có tàu nào bị xóa.</b>
 		</div>

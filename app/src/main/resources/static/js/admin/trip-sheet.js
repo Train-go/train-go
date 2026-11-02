@@ -86,7 +86,7 @@
 		slot('schedule').textContent = detail.schedule;
 		slot('distance').textContent = detail.distanceKm + ' km · ' + detail.duration;
 		slot('price').textContent = money(detail.basePrice);
-		slot('sold').textContent = detail.soldSeats + '/' + detail.totalSeats + ' chỗ';
+		slot('sold').textContent = detail.soldSeats + '/' + detail.totalSeats;
 
 		renderCoachTabs();
 		renderSeats();
@@ -98,15 +98,11 @@
 		const tabs = slot('coach-tabs');
 		tabs.replaceChildren();
 		trip.coaches.forEach(function (coach) {
-			const button = document.createElement('button');
+			const button = TG.coachCard('button', coach.number, coach.typeLabel, coach.sold + '/' + coach.capacity,
+				coach.type === 'SLEEPER');
 			button.type = 'button';
 			button.setAttribute('role', 'tab');
 			button.setAttribute('aria-selected', String(coach.number === coachNumber));
-			const name = document.createElement('b');
-			name.textContent = 'Toa ' + coach.number;
-			const info = document.createElement('small');
-			info.textContent = coach.typeLabel + ' · ' + coach.sold + '/' + coach.capacity;
-			button.append(name, info);
 			button.addEventListener('click', function () {
 				selectCoach(coach.number);
 			});
@@ -221,10 +217,10 @@
 	}
 
 	function renderFooter() {
-		const reason = trip.cancelBlockReason;
-		slot('cancel-note').textContent = reason || 'Chưa có booking nào, có thể hủy chuyến.';
-		cancelButton.hidden = trip.cancelled;
-		cancelButton.disabled = reason !== null;
+		// A trip that cannot be cancelled simply has no button; the server still refuses it.
+		cancelButton.hidden = trip.cancelled || trip.cancelBlockReason !== null;
+		cancelButton.disabled = false;
+		slot('footer').hidden = cancelButton.hidden;
 	}
 
 	/* ---------- cancel ---------- */
@@ -237,7 +233,7 @@
 		const yes = await TG.confirm({
 			title: 'Hủy chuyến này?',
 			body: shown.trainCode + ' ' + route(shown) + ', ' + shown.departureShort
-				+ '. Khách sẽ không đặt được chuyến này nữa. Lịch của tàu bị đứt ở chặng này.',
+				+ '. Khách sẽ không đặt được chuyến này nữa. Lịch của tàu bị đứt ở chuyến này.',
 			confirmLabel: 'Hủy chuyến',
 			danger: true
 		});

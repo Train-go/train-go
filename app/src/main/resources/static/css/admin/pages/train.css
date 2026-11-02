@@ -1,0 +1,245 @@
+/* Tàu: admin/train.html, both views. */
+
+/* ---------- Head and tabs ---------- */
+
+.tr-head-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm) var(--space-md); }
+.tr-tabs { display: flex; gap: var(--space-xs); margin-bottom: var(--space-lg); overflow-x: auto; scrollbar-width: none; }
+.tr-tabs::-webkit-scrollbar { display: none; }
+.tr-tabs a {
+	display: inline-flex; align-items: center; gap: var(--space-sm); min-height: 44px; padding: calc(var(--space-sm) - 1px) var(--space-md) calc(var(--space-sm) + 1px); /* 1px up: the font's capitals sit low in the line box */
+	border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: var(--color-card); color: var(--color-muted-fg);
+	white-space: nowrap; text-decoration: none; transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.tr-tabs a b { color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.tr-tabs a span { font-size: 0.875rem; }
+.tr-tabs a:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.tr-tabs a:active { background: var(--color-primary-soft); }
+.tr-tabs a[aria-current="page"] { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
+.tr-tabs a[aria-current="page"] b { color: var(--color-primary); }
+
+.tr-stack { display: grid; gap: var(--space-lg); }
+.tr-stack > * { min-width: 0; }
+
+/* ---------- The facts and the consist ---------- */
+
+.tr-top { overflow: clip; }
+.tr-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
+.tr-fact { display: grid; align-content: start; gap: var(--space-xs); min-width: 0; padding: var(--space-md) var(--space-lg); border-left: 1px solid var(--color-border); }
+.tr-fact:first-child { border-left: 0; }
+.tr-fact dt { color: var(--color-muted-fg); font-size: 0.875rem; font-weight: 600; }
+.tr-fact dd { display: grid; gap: var(--space-xs); margin: 0; }
+.tr-fact dd b { color: var(--color-heading); font-size: 1.125rem; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.tr-fact dd small { color: var(--color-muted-fg); font-size: 0.875rem; line-height: 1.45; }
+.tr-fact.is-run dd b { color: var(--color-warning); }
+.tr-fact .dc-meter { max-width: 12rem; }
+
+.tr-consist { padding: var(--space-lg); }
+.tr-sub { color: var(--color-muted-fg); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+.tr-cars { display: grid; grid-template-columns: 5.5rem repeat(4, minmax(0, 1fr)); gap: var(--space-xs); margin: 0; padding: 0; list-style: none; }
+.tr-loco { display: grid; place-items: center; min-height: 4.5rem; border-radius: var(--radius-xl) var(--radius-sm) var(--radius-sm) var(--radius-xl); background: var(--color-primary); color: var(--color-on-primary); font-size: 0.875rem; font-weight: 700; }
+.tr-cars .coach-card { min-height: 4.5rem; }
+
+/* ---------- Theo ngày: a day per row, the hours across ---------- */
+
+.tb-wrap { overflow: clip; }
+.tb-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm) var(--space-lg); padding: var(--space-lg) var(--space-lg) var(--space-sm); }
+.tb-head h2 { text-wrap: balance; }
+.tb-head .tr-past { margin: 0; }
+.tb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); }
+.tb-toggles { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs) var(--space-sm); }
+
+/* ---------- Lịch theo giờ: FullCalendar week grid, themed with the page's tokens ---------- */
+.tl {
+	--fc-border-color: var(--color-border);
+	--fc-page-bg-color: var(--color-card);
+	--fc-neutral-bg-color: var(--color-bg);
+	--fc-today-bg-color: color-mix(in srgb, var(--color-primary-soft) 45%, transparent);
+	--fc-now-indicator-color: var(--color-warning);
+	--fc-list-event-hover-bg-color: var(--color-bg);
+	padding: 0 var(--space-lg) var(--space-sm);
+}
+.tl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+/* The range button opens the hidden native date field under it (showPicker); a browser without showPicker shows the field. */
+.tl-pick { position: relative; }
+.tl-pick .btn { display: inline-flex; align-items: center; gap: var(--space-sm); color: var(--color-heading); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tl-pick .btn .bi-chevron-down { color: var(--color-muted-fg); font-size: 0.75rem; }
+.tl-date { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.tl-pick.is-plain .tl-date { position: static; height: auto; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); opacity: 1; pointer-events: auto; }
+.tl-pick.is-plain .btn { display: none; }
+.tl-mode { width: auto; }
+.tl .fc { color: var(--color-muted-fg); font-size: 0.8125rem; }
+.tl .fc .fc-scrollgrid, .tl .fc .fc-list { border-radius: var(--radius-sm); overflow: hidden; }
+.tl .fc .fc-col-header-cell-cushion { display: block; padding: var(--space-xs); color: var(--color-heading); text-decoration: none; }
+.tl-dayhead { display: inline-flex; align-items: baseline; gap: var(--space-xs); color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.tl-dayhead small { color: var(--color-muted-fg); font-size: 0.75rem; font-weight: 600; }
+.tl-dayhead b { font-weight: 600; }
+.tl .fc .fc-day-today .tl-dayhead, .tl .fc .fc-day-today .tl-dayhead small { color: var(--color-primary); }
+/* An hour is 3rem tall, so a 30-minute trip still holds a line of text. */
+.tl .fc .fc-timegrid-slot { height: 3rem; }
+.tl .fc .fc-timegrid-slot-label-cushion { color: var(--color-muted-fg); font-variant-numeric: tabular-nums; }
+.tl .fc .fc-timegrid-col-events { margin: 0 3px; }
+/* A trip: as long as it runs, coloured by where it stands. */
+.tl-canvas .fc-event { border-radius: var(--radius-sm); cursor: pointer; transition: box-shadow var(--dur) var(--ease); }
+.tl-canvas .fc-v-event { box-shadow: none; }
+.tl-canvas .fc-event:hover { box-shadow: var(--shadow-md); z-index: 2; }
+.tl-canvas .fc-event:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; z-index: 3; }
+.tl-canvas .fc-v-event .fc-event-main { padding: 0; }
+.tl-canvas .fc-event.is-up { --fc-event-bg-color: var(--color-primary-soft); --fc-event-border-color: var(--color-primary); --fc-event-text-color: var(--color-primary); }
+.tl-canvas .fc-event.is-run { --fc-event-bg-color: var(--color-warning-soft); --fc-event-border-color: var(--color-warning); --fc-event-text-color: var(--color-warning); }
+.tl-canvas .fc-event.is-done { --fc-event-bg-color: var(--color-bg); --fc-event-border-color: var(--color-border-strong); --fc-event-text-color: var(--color-muted-fg); }
+.tl-canvas .fc-event.is-off { --fc-event-bg-color: var(--color-destructive-soft); --fc-event-border-color: var(--color-destructive); --fc-event-text-color: var(--color-destructive); border-style: dashed; }
+.tl-canvas .fc-event.is-off .tl-ev b, .tl-canvas .fc-event.is-off .tl-ev span { text-decoration: line-through; text-decoration-thickness: 1px; }
+.tl-canvas .fc-v-event.is-break { box-shadow: inset 4px 0 0 var(--color-destructive); }
+.tl-canvas .fc-event.is-slot { --fc-event-bg-color: var(--color-card); --fc-event-border-color: var(--color-primary); --fc-event-text-color: var(--color-primary); border-style: dashed; font-weight: 600; }
+.tl-canvas .fc-v-event.is-slot:hover { --fc-event-bg-color: var(--color-primary-soft); }
+.tl-ev { position: relative; display: flex; flex-direction: column; gap: 1px; height: 100%; min-width: 0; padding: 3px 6px 6px; overflow: hidden; line-height: 1.25; }
+.tl-ev > * { flex: none; }
+.tl-ev b { overflow: hidden; font-weight: 600; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.tl-ev .tl-route { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+.tl-ev small { font-size: 0.75rem; font-variant-numeric: tabular-nums; opacity: 0.85; white-space: nowrap; }
+.tl-fill { position: absolute; inset: auto 0 0 0; height: 3px; background: linear-gradient(to right, currentColor var(--p), color-mix(in srgb, currentColor 15%, transparent) var(--p)); opacity: 0.8; }
+/* A block under about 90 minutes has room for the hours and one line of route, no more. */
+.tl-canvas .fc-timegrid-event { container-type: size; }
+@container (max-height: 74px) {
+	.tl-ev .tl-route { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.tl-ev small { display: none; }
+}
+/* A column under 120px drops the arrival clock so the departure stays whole. */
+@container (max-width: 120px) {
+	.tl-until { display: none; }
+}
+/* A short trip keeps one line: the hours, then as much of the route as fits. */
+.tl-canvas .fc-timegrid-event-short .tl-ev { flex-direction: row; align-items: center; gap: var(--space-xs); padding-block: 2px; white-space: nowrap; }
+.tl-canvas .fc-timegrid-event-short .tl-ev b { flex: none; }
+.tl-canvas .fc-timegrid-event-short .tl-ev .tl-route { display: block; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; }
+.tl-canvas .fc-timegrid-event-short .tl-ev small { display: none; }
+.tl-ev.tl-slot { flex-direction: row; align-items: center; gap: var(--space-xs); }
+.tl-slot .bi { flex: none; }
+/* Tháng: a cell per day, its first trips as one-line chips, then "+N chuyến". */
+.tl .fc .fc-daygrid-day-number { color: var(--color-heading); font-variant-numeric: tabular-nums; text-decoration: none; }
+.tl .fc .fc-day-today .fc-daygrid-day-number { color: var(--color-primary); font-weight: 600; }
+.tl .fc .fc-daygrid-day-frame { min-height: 6.5rem; }
+.tl .fc .fc-daygrid-event { margin-top: 2px; }
+.tl .fc .fc-daygrid-event .tl-ev { height: auto; padding: 1px 4px; }
+.tl-canvas .fc-h-event.is-break { box-shadow: inset 3px 0 0 var(--color-destructive); }
+.tl-ev.tl-line { flex-direction: row; align-items: baseline; gap: var(--space-xs); white-space: nowrap; }
+.tl-ev.tl-line span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tl .fc .fc-daygrid-more-link { color: var(--color-primary); font-weight: 600; }
+.tl .fc .fc-col-header-cell-cushion:hover { text-decoration: none; }
+/* The list that replaces the grid on a phone. */
+.tl .fc .fc-list-day-cushion { padding: var(--space-xs) var(--space-sm); color: var(--color-heading); font-weight: 600; }
+.tl .fc .fc-list-event td { padding: var(--space-sm); }
+.tl .fc .fc-list-event .tl-ev { gap: 2px; height: auto; padding: 0; overflow: visible; color: var(--color-heading); }
+.tl .fc .fc-list-event.is-done .tl-ev { color: var(--color-muted-fg); }
+.tl .fc .fc-list-event.is-off .tl-ev, .tl .fc .fc-list-event.is-slot .tl-ev { color: var(--fc-event-text-color); }
+.tl .fc .fc-list-empty { background: var(--color-card); }
+.tl-error { margin: 0; padding: var(--space-sm); border-radius: var(--radius-sm); background: var(--color-destructive-soft); color: var(--color-destructive); font-size: 0.875rem; }
+.tl-alerts { display: grid; gap: var(--space-xs); margin: var(--space-sm) 0 0; padding: 0; list-style: none; }
+.tl-alerts:empty { display: none; }
+.tl-alerts li { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); background: var(--color-destructive-soft); color: var(--color-destructive); font-size: 0.875rem; font-weight: 600; }
+.tl-alerts .bi { flex: none; }
+.tb-key { display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg); margin: 0; padding: var(--space-sm) var(--space-lg) var(--space-lg); color: var(--color-muted-fg); font-size: 0.8125rem; }
+.tb-key span { display: inline-flex; align-items: center; gap: var(--space-xs); }
+.tb-swatch { display: inline-block; width: 1.25rem; height: 0.75rem; border: 1px solid; border-radius: 3px; }
+.tb-swatch.is-up { border-color: var(--color-primary); background: var(--color-card); }
+.tb-swatch.is-run { border-color: var(--color-warning); background: var(--color-warning-soft); }
+.tb-swatch.is-done { border-color: var(--color-border-strong); background: var(--color-bg); }
+.tb-swatch.is-off { border-style: dashed; border-color: var(--color-destructive); background: var(--color-destructive-soft); }
+.tb-swatch.is-break { border-color: var(--color-primary); box-shadow: inset 4px 0 0 var(--color-destructive); }
+.tb-swatch.is-slot { border-style: dashed; border-color: var(--color-primary); }
+
+/* ---------- Bảng tính ---------- */
+
+/* The "Theo ngày / Bảng tính" switch next to the train tabs. */
+.view-seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--sunk); }
+.view-seg a { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border-radius: var(--r-control); color: var(--muted); font-size: 13px; font-weight: 700; text-decoration: none; }
+.view-seg a:hover { color: var(--ink); text-decoration: none; }
+.view-seg a.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 2px rgba(12, 44, 40, 0.12); }
+
+/* "Bảng tính": the schedule and the draft rows share one table, so columns line up. */
+/* minmax(0, 1fr): the wide table scrolls inside its panel instead of stretching the page. */
+.sheet-view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+.grid { width: 100%; margin: 0; border-collapse: collapse; font-size: 13.5px; }
+.grid > thead th { padding: 10px 12px; font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; text-align: left; border-bottom: 1px solid var(--line); }
+.grid > thead th.num { text-align: right; }
+.grid td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; white-space: nowrap; }
+.grid td.num { text-align: right; }
+.sched:not(.show-past) tr.past { display: none; }
+.sched tr.past { color: var(--muted); }
+.sched tr.clickable { cursor: pointer; }
+.sched tr.clickable:hover > td { background: var(--sunk); }
+/* The trips just added flash once, then settle. */
+.sched tr.fresh { animation: fresh-flash 1.6s ease-out; }
+@keyframes fresh-flash { from { background: var(--accent-soft); } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .sched tr.fresh { animation: none; background: var(--accent-soft); } }
+.empty-cell { color: var(--muted); white-space: normal; padding: 18px 12px; }
+.plus-day { margin-left: 4px; padding: 0 4px; border-radius: 4px; background: var(--warn-soft); color: var(--warn); font-size: 11.5px; font-weight: 700; }
+
+/* Draft rows: a tinted band under the schedule. */
+.drafts-h td { padding: 10px 12px; background: var(--accent-soft); border-top: 1px solid var(--accent-line); border-bottom: 1px solid var(--accent-line); color: var(--accent-strong); font-weight: 700; }
+tr.draft td { padding: 8px 8px; background: var(--surface); }
+tr.draft .form-select, tr.draft .form-control { min-width: 84px; }
+tr.draft .form-select[data-f="to"], tr.draft .form-select[data-f="origin-select"] { min-width: 150px; }
+tr.draft [data-f="time"], tr.draft [data-f="arr"] { width: 78px; min-width: 0; }
+tr.draft [data-f="price"] { width: 118px; text-align: right; }
+.locked-cell { display: inline-block; min-width: 110px; padding: 5px 10px; border-radius: var(--r-control); background: var(--sunk); color: var(--ink-2); font-weight: 600; }
+.arr-cell { display: flex; align-items: center; gap: 4px; }
+.icon-btn.sm { width: 28px; height: 28px; }
+.draft-help td { padding: 0 12px 10px; background: var(--surface); }
+.draft-errs { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; color: var(--danger); font-size: 13px; font-weight: 600; }
+.draft-errs li { display: flex; align-items: center; gap: 6px; white-space: normal; }
+.row-act { text-align: right; }
+
+/* Add, fill and save bar: sticks to the bottom on wide screens. */
+.draft-bar { position: sticky; bottom: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r-panel); background: var(--surface); box-shadow: 0 -6px 16px rgba(12, 44, 40, 0.06); }
+.draft-bar .grow { flex: 1; }
+.draft-bar .fill { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.draft-bar .fill label { font-weight: 600; color: var(--ink-2); }
+.draft-bar .form-select { width: auto; }
+.err-summary { color: var(--danger); font-weight: 700; }
+@media (max-width: 720px) { .draft-bar { position: static; box-shadow: none; } }
+#train-form .is-invalid ~ .form-text { display: none; }
+
+/* ---------- Narrow screens ---------- */
+
+@media (max-width: 1180px) {
+	.tr-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.tr-fact:nth-child(3) { border-left: 0; }
+	.tr-fact:nth-child(n + 3) { border-top: 1px solid var(--color-border); }
+}
+@media (max-width: 860px) {
+	.tr-cars { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+	.tr-loco { grid-column: 1 / -1; min-height: 2.5rem; border-radius: var(--radius-xl) var(--radius-xl) var(--radius-sm) var(--radius-sm); }
+}
+@media (max-width: 760px) {
+	.tr-tabs a span { display: none; }
+	.tr-submit { margin-left: 0; }
+
+	.tl { padding-inline: var(--space-md); }
+}
+/* A phone: the arrows on the first line, the range button and the span side by side on the second. */
+@media (max-width: 640px) {
+	.tl-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+	.tl-bar > .btn-group { grid-column: 1 / -1; justify-self: start; }
+	.tl-pick .btn { width: 100%; }
+	.tl-pick .btn .bi-chevron-down { margin-left: auto; }
+}
+@media (max-width: 640px) {
+	.tr-facts { grid-template-columns: minmax(0, 1fr); }
+	.tr-fact { padding: var(--space-md); border-left: 0; }
+	.tr-fact:nth-child(n + 2) { border-top: 1px solid var(--color-border); }
+	.tb-head, .tr-schedule, .tr-consist { padding: var(--space-md); }
+	.tr-empty { margin: 0 var(--space-md) var(--space-md); }
+}
+
+/* ---------- the view switch ---------- */
+
+.view-seg { display: inline-flex; gap: 2px; padding: 2px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-bg); }
+.view-seg a { min-height: 32px; padding: 0 var(--space-md); border-radius: var(--radius-sm); font-size: 0.875rem; font-weight: 600; }
+.view-seg a.active { background: var(--color-card); color: var(--color-primary); box-shadow: 0 0 0 1px var(--color-border); }
+.dc-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--space-md) var(--space-xl); margin-bottom: var(--space-lg); }
+.dc-date { margin-top: var(--space-xs); color: var(--color-muted-fg); font-size: 0.9375rem; }
+.sheet-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm); }
+/* Legs and days that have run, until "Hiện N chặng đã chạy". */
+.tr-tabs a:hover { text-decoration: none; }
+.past-toggle { justify-self: start; }

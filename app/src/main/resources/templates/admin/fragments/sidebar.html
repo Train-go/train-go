@@ -3,7 +3,7 @@
 <body>
 
 <!--
-	Admin navigation, grouped as in docs/reports/ui-mau/admin/index.html.
+	Admin navigation: a white menu in three groups.
 
 	Active state comes from the activeNav model attribute each controller sets,
 	not from the request path, so a nested route such as /admin/trains/7 still
@@ -12,9 +12,9 @@
 	The foot holds the clock (filled by admin.js) and the signed-in user.
 -->
 <aside th:fragment="sidebar" class="admin-side">
-	<a class="brand" th:href="@{/admin}"><img th:src="@{/images/brand/logo.svg}" width="32" height="32" alt="">TrainGo</a>
+	<a class="brand" th:href="@{/admin}" aria-label="Về trang Tổng quan"><img th:src="@{/images/brand/logo.svg}" width="32" height="32" alt="">TrainGo</a>
 
-	<nav aria-label="Điều hướng quản trị">
+	<nav class="admin-nav" aria-label="Điều hướng quản trị">
 		<div class="grp">
 			<a th:href="@{/admin}" th:attr="aria-current=${activeNav == 'overview'} ? 'page' : null">
 				<i class="bi bi-speedometer2" aria-hidden="true"></i>Tổng quan
@@ -30,12 +30,9 @@
 			</a>
 		</div>
 		<div class="grp">
-			<span>Dữ liệu nền</span>
+			<span>Danh mục</span>
 			<a th:href="@{/admin/stations}" th:attr="aria-current=${activeNav == 'stations'} ? 'page' : null">
 				<i class="bi bi-bezier2" aria-hidden="true"></i>Ga và tuyến
-			</a>
-			<a th:href="@{/admin/routes}" th:attr="aria-current=${activeNav == 'routes'} ? 'page' : null">
-				<i class="bi bi-grid-3x3" aria-hidden="true"></i>Tuyến
 			</a>
 		</div>
 		<div class="grp">
@@ -65,11 +62,13 @@
 			</a>
 		</nav>
 		<div class="admin-user">
+			<span class="admin-avatar" aria-hidden="true" th:if="${currentUser != null}"
+				th:text="${#strings.toUpperCase(#strings.substring(currentUser.fullName, currentUser.fullName.lastIndexOf(' ') + 1, currentUser.fullName.lastIndexOf(' ') + 2))}">A</span>
 			<span class="admin-user-name" th:text="${currentUser?.fullName}"></span>
 			<!-- Spring Security's logout only accepts POST, so this is a form. -->
 			<form th:action="@{/logout}" method="post">
 				<button type="submit" class="btn btn-link btn-sm admin-logout" title="Đăng xuất" aria-label="Đăng xuất">
-					<i class="bi bi-box-arrow-right" aria-hidden="true"></i><span class="admin-logout-label">Đăng xuất</span>
+					<i class="bi bi-box-arrow-right" aria-hidden="true"></i>
 				</button>
 			</form>
 		</div>
