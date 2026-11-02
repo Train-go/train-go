@@ -18,7 +18,7 @@ public class PopularRoute {
 	private final long price;
 
 	/**
-	 * @param photo the destination's, or null when there is none
+	 * @param photo the destination's, or StationPhoto.DEFAULT when it has none
 	 * @param nextLabel "Hôm nay, 08:00", the next departure
 	 * @param price the lowest price of the upcoming trips
 	 */

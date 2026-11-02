@@ -16,7 +16,10 @@
 <main>
 
 	<section class="hero" aria-labelledby="hero-title">
-		<img class="hero-photo" th:src="@{/images/home/hero-sa-pa.jpg}" width="1920" height="1080" alt="" fetchpriority="high">
+		<picture>
+			<source media="(max-width: 640px)" th:srcset="@{/images/home/hero-hai-van-doc.jpg}" width="1300" height="2600">
+			<img class="hero-photo" th:src="@{/images/home/hero-hai-van.jpg}" width="2880" height="1921" alt="" fetchpriority="high">
+		</picture>
 		<div class="container">
 			<h1 id="hero-title">Đặt vé tàu Bắc – Nam, chọn chỗ theo ý bạn</h1>
 			<p class="hero-lead">Tìm chuyến tàu phù hợp, lựa chọn ghế hoặc giường trên sơ đồ toa và nhận vé điện tử sau khi thanh toán.</p>
@@ -97,7 +100,7 @@
 			</div>
 			<ul class="routes" th:unless="${#lists.isEmpty(popular.routes)}">
 				<li class="card route" th:each="route, it : ${popular.routes}" th:classappend="${it.first} ? 'is-featured'">
-					<figure class="route-photo"><img th:if="${route.photo != null}" th:src="@{${route.photo.path}}" alt="" loading="lazy"></figure>
+					<figure class="route-photo"><img th:src="@{${route.photo.smallPath}}" th:attr="srcset=${route.photo.srcset}, sizes=${it.first} ? '(max-width: 640px) 150vw, 1400px' : '(max-width: 640px) 100vw, 420px'" alt="" loading="lazy"></figure>
 					<div class="route-body">
 						<h3 class="route-name"><th:block th:text="${route.originPlace}">Hà Nội</th:block> <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="visually-hidden">đến</span> <th:block th:text="${route.destinationPlace}">Sài Gòn</th:block></h3>
 						<p class="route-dur"><i class="bi bi-clock" aria-hidden="true"></i><th:block th:text="${route.durationLabel}">28 giờ 45 phút</th:block></p>
