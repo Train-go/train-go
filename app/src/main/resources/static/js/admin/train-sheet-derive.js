@@ -76,8 +76,12 @@ window.TrainSheetDerive = (function () {
 		return pad(d.getHours()) + ':' + pad(d.getMinutes());
 	}
 
+	function fmtDay(d) {
+		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1);
+	}
+
 	function fmtDayTime(d) {
-		return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' ' + fmtTime(d);
+		return fmtTime(d) + ' ' + fmtDay(d);
 	}
 
 	/** "T5 22/10". */
@@ -207,7 +211,7 @@ window.TrainSheetDerive = (function () {
 	return {
 		TURNAROUND_MIN: TURNAROUND_MIN, TIME_PATTERN: TIME_PATTERN,
 		parseIso: parseIso, toIso: toIso, startOfDay: startOfDay, addDays: addDays, daysBetween: daysBetween, atTime: atTime,
-		nextEight: nextEight, fmtTime: fmtTime, fmtDayTime: fmtDayTime, dayLabel: dayLabel,
+		nextEight: nextEight, fmtTime: fmtTime, fmtDay: fmtDay, fmtDayTime: fmtDayTime, dayLabel: dayLabel,
 		suggestedMinutes: suggestedMinutes, suggestedPrice: suggestedPrice,
 		blank: blank, derive: derive, lastOrigin: lastOrigin, nextFloor: nextFloor
 	};

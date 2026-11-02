@@ -46,9 +46,10 @@ là bảng tuyến; mọi thao tác mở trong ngăn kéo bên phải. Thao tác
 `/api/admin/stations`, `/api/admin/routes` và vẽ lại trang, không tải lại. Màn hình không in tổng
 số ga hay tuyến.
 
-- **Đường tàu:** các ga theo lý trình; giữa hai ga kề ghi km và trạng thái Hai chiều, Thiếu chiều
-  hoặc Chưa có tuyến. Đoạn thiếu có nút "Tạo tuyến" tạo ngay phần còn thiếu theo km lý trình, toast
-  có "Hoàn tác". Từ hai đoạn thiếu trở lên có "Tạo tất cả". Mỗi đoạn có "Chèn ga".
+- **Đường tàu:** các ga theo lý trình, mỗi ga ghi km từ ga đầu ("56 km"). Hai ga kề đã đủ hai chiều
+  thì chỉ nối bằng một đoạn vạch; đoạn thiếu hiện "Thiếu chiều ..." hoặc "Chưa có tuyến" kèm nút "Tạo
+  tuyến" tạo ngay phần còn thiếu theo km lý trình, toast có "Hoàn tác". Từ hai đoạn thiếu trở lên có
+  "Tạo tất cả". Thêm ga dùng nút "Thêm ga" ở đầu trang.
 - **Bảng tuyến:** mỗi cặp ga một dòng gồm Tuyến ("Nối thẳng" khi hai ga không kề), Khoảng cách,
   Chiều (thiếu chiều thì có nút "Tạo chiều ..."), Chuyến sắp chạy; ô tìm theo tên hoặc mã ga không
   phân biệt dấu. Bấm một dòng mở ngăn cặp ga.
@@ -60,7 +61,7 @@ số ga hay tuyến.
 - **Ngăn cặp ga:** hai chiều A → B, B → A với km và số chuyến sắp chạy, hoặc
   "Chưa có" kèm nút "Tạo chiều này" (km điền sẵn theo lý trình). Chiều đã có thì có
   "Sửa khoảng cách" và "Xóa"; xóa bị chặn khi tuyến đã có chuyến.
-- **Chèn ga:** km điền sẵn là km trống gần điểm giữa hai ga nhất; km ngoài khoảng
+- **Thêm ga:** km điền sẵn là km trống gần điểm giữa hai ga nhất; km ngoài khoảng
   hai ga thì cảnh báo nhưng vẫn cho lưu. Lưu xong ngăn chuyển sang ga mới.
 - Từ 1200px đường tàu và bảng tuyến nằm cạnh nhau; hẹp hơn thì xếp chồng.
 
@@ -80,7 +81,7 @@ Ga đã có đủ chiều cần tạo thì ô tích bị khóa. Nút "Tạo N tu
 toast "Hoàn tác" xóa đúng các tuyến vừa tạo. Quyết định 27/10/2026: không làm cách chọn
 nhiều ô trên ma trận vì dự án không có ma trận.
 
-**Chèn ga thông minh (#38).** Form chèn ga có ô tên dạng combobox gợi ý 13 ga có thật
+**Thêm ga thông minh (#38).** Form thêm ga có ô tên dạng combobox gợi ý 13 ga có thật
 của đường sắt Thống Nhất mà hệ thống chưa có (Phủ Lý, Nam Định, Ninh Bình, Đông Hà,
 Kim Liên, Tam Kỳ, Quảng Ngãi, Diêu Trì, Tuy Hòa, Tháp Chàm, Bình Thuận, Biên Hòa, Dĩ An;
 lý trình theo bảng ga Bắc - Nam, tỉnh theo tỉnh sau sáp nhập 2025), ga nằm trong khoảng
@@ -137,7 +138,7 @@ ra và hoàn tác của issue #24. REST tạo/xóa tuyến có từ #27 (trang "
 
 Danh sách tàu (mã, tên), thêm, sửa, và trang chi tiết. Trang chi tiết có hai phần:
 
-- **Lịch chạy:** các chuyến của tàu theo thời gian, nối chặng ga đến của chuyến
+- **Lịch chạy:** các chuyến của tàu theo thời gian, nối chuyến ga đến của chuyến
   trước với ga đi của chuyến sau. Nút thêm chuyến nằm ở đây (xem "Quản lý chuyến").
   Chỗ chuỗi bị đứt vì một chuyến đã hủy được đánh dấu.
 - **Sơ đồ toa:** chỉ để xem, vẽ cấu hình toa cố định mà mọi tàu dùng chung
@@ -153,16 +154,22 @@ View "Theo ngày" (lịch theo giờ, Phi chọn 30/10/2026):
 
 - `/admin/trains` mở tàu đầu tiên theo mã; mỗi tàu là một tab "mã + tên", trên
   điện thoại chỉ còn mã.
-- **Bốn ô thông tin:** Vị trí ("Đang chạy A → B" hoặc ga đang đứng), Chuyến tới, Chặng mới đi từ
-  (kèm "Sớm nhất ..." và "Lịch xếp đến ..."), Đã bán của các chuyến sắp chạy. Giờ sớm nhất là
+- **Bốn ô thông tin:** Vị trí ("Đang chạy A → B" hoặc ga đang đứng), Chuyến sắp tới (giờ đi và
+  chuyến, không đếm lùi), Chuyến mới đi từ (kèm "Có thể tạo từ ..."), Vé đã bán của các chuyến sắp chạy. Giờ đi sớm nhất là
   giờ đến của chuyến cuối cộng 30 phút; nếu mốc đó đã qua, hoặc tàu chưa có chuyến, thì lấy giờ
   hiện tại làm tròn lên 5 phút, vì chuyến mới phải khởi hành trong tương lai.
-- **Lịch theo giờ:** mỗi ngày một hàng, trục ngang 24 giờ, mỗi chặng là một thanh dài đúng thời
-  gian chạy (chặng qua đêm tách làm hai ở nửa đêm), dải dưới thanh là tỉ lệ đã bán. Màu theo trạng
-  thái Sắp chạy / Đang chạy / Đã chạy / Đã hủy theo D8. Có vạch "Bây giờ", nhãn chờ khi hai chặng
-  cách nhau từ 3 giờ, cột "Cuối ngày ở", ô nét đứt "Chặng mới" ở giờ sớm nhất (mở trình hướng dẫn),
-  và câu cảnh báo khi chuỗi chặng bị ngắt do một chuyến đã hủy. Bấm thanh mở ngăn chi tiết chuyến.
-  Chuyến đã đến nơi được ẩn sẵn sau nút "Hiện N chặng đã chạy".
+- **Lịch theo giờ:** lịch tuần dọc (thư viện FullCalendar,
+  `docs/decisions/0016-fullcalendar-cho-lich-theo-gio.md`): mỗi ngày một cột, giờ chạy từ trên xuống,
+  mỗi chuyến là một khối dài đúng thời gian chạy, ghi giờ đi – giờ đến, tuyến và "Đã bán n/96", dải
+  dưới khối là tỉ lệ đã bán. Chuyến trùng giờ đứng cạnh nhau. Màu theo trạng thái Sắp chạy / Đang
+  chạy / Đã chạy / Đã hủy theo D8. Có vạch giờ hiện tại. Thanh lọc gồm nút trước, sau, "Hôm nay",
+  nút chọn ngày ghi khoảng đang xem theo dd/mm và dropdown Ngày / Tuần / Tháng (mặc định Tuần, trình
+  duyệt nhớ lựa chọn cuối). Tuần là 7 ngày từ ngày chọn; Tháng là lưới tháng, mỗi ô tối đa ba chuyến
+  rồi "+N chuyến", bấm vào đó hoặc số ngày để xem ngày đó. Trên điện thoại Tuần và Tháng là danh sách
+  theo ngày. Ô nét đứt "Chuyến mới" nằm ở giờ
+  sớm nhất (mở trình hướng dẫn); dưới lịch là câu cảnh báo khi chuỗi chuyến bị ngắt do một chuyến đã
+  hủy. Bấm chuyến (hoặc Tab rồi Enter) mở ngăn chi tiết chuyến. Chuyến đã đến nơi và chuyến đã hủy ẩn
+  sẵn sau nút "Hiện N chuyến đã chạy" và "Hiện N chuyến đã hủy".
 - **Sơ đồ toa:** đầu tàu và bốn toa cố định, chỉ để xem.
 - Thêm và sửa tàu trong ngăn kéo, lưu qua `POST`/`PUT /api/admin/trains`. Mã gồm
   1-4 chữ cái rồi 1-4 chữ số, lưu viết hoa, không trùng; tên bắt buộc. Tàu đã có
@@ -194,29 +201,29 @@ Phi chốt ngày 26/10/2026, migration `V8__train_soft_delete.sql`:
 Đầu trang Tàu có nút chia đoạn "Theo ngày / Bảng tính"; `?view=ngay|bang` giữ view khi
 đổi tàu, và trình duyệt nhớ lựa chọn gần nhất trong `localStorage` (bị chặn thì mặc
 định "Theo ngày"), nên bấm menu Tàu mở lại view đó. View Bảng tính dành cho admin
-nhập nhiều chặng một lúc:
+nhập nhiều chuyến một lúc:
 
 - **Bảng lịch:** Ngày, Giờ đi, Từ, Đến, Giờ đến (`+N` khi khác ngày), Km, Giá, Đã bán (đã
-  bán/96), Trạng thái. Chặng đã chạy ẩn sau nút "Hiện N chặng đã chạy".
+  bán/96), Trạng thái. Chuyến đã chạy ẩn sau nút "Hiện N chuyến đã chạy".
 - **Dòng nháp** dưới bảng nối tiếp nhau: ga đi của dòng sau là ga đến của dòng trước,
   giờ đi sớm nhất là giờ đến cộng 30 phút. Giờ đi, giờ đến, giá tự tính theo công
   thức gợi ý (60 km/h làm tròn 5 phút; 1.000đ/km làm tròn 10.000đ) và sửa tay được;
   ô đã sửa tay không bị ghi đè khi chuỗi đổi. Lỗi hiện ngay dưới dòng (chưa có tuyến,
   đi sớm hơn quy định, giờ đến trước giờ đi, giá lẻ).
 - **Điền nhanh tới [ga cuối] [nhịp]:** tạo một dòng nháp cho mỗi đoạn giữa hai ga kề
-  trên đường đi, theo nhịp "mỗi ngày một chặng, 08:00" hoặc "chạy liên tục, nghỉ 30
+  trên đường đi, theo nhịp "mỗi ngày một chuyến, 08:00" hoặc "chạy liên tục, nghỉ 30
   phút". Gọi `GET /api/admin/trains/{id}/plan?from=&to=&pace=DAILY|NONSTOP&firstDeparture=`
   (`TrainScheduleService.planLegs`); thiếu tuyến giữa hai ga kề trả 409 "Thiếu tuyến giữa
   hai ga kề nhau trên đường đi." API này cũng là phần lập kế hoạch của chế độ "Nhiều
-  chặng tới một ga" ở trình hướng dẫn (#40).
+  chuyến tới một ga" ở trình hướng dẫn (#40).
 
 Nút "Thêm N chuyến" (chỉ tính các dòng đã chọn ga đến) gửi cả lô tới
 `POST /api/admin/trains/{id}/trips` (`TripCreationService.createLegs`) trong một
 transaction, hoặc tạo hết hoặc không tạo gì. Server khóa dòng tàu (sửa và xóa tàu cũng
-khóa dòng này), kiểm lại mọi luật nối chặng (ga đi trang gửi lên phải khớp ga đến của
+khóa dòng này), kiểm lại mọi luật nối chuyến (ga đi trang gửi lên phải khớp ga đến của
 chuyến cuối hiện tại, nếu không trả 409 để tải lại trang; giờ cắt về phút; giờ đi cách giờ đến ít nhất 30 phút và không ở
 quá khứ, có tuyến giữa hai ga, giờ đến sau giờ đi, giá chia hết 1.000) và sinh 96 chỗ
-`AVAILABLE` cho mỗi chuyến. Lỗi một chặng trả 409 kèm thông điệp dưới khóa
+`AVAILABLE` cho mỗi chuyến. Lỗi một chuyến trả 409 kèm thông điệp dưới khóa
 `legs[i].departureAt` (hoặc `destinationStationId`, `arrivalAt`, `basePrice`,
 `originStationId`) và hiện ngay dưới dòng nháp thứ i trong số các dòng đã gửi. Tạo xong
 trang tải lại với `?added=` để các dòng mới chớp màu, kèm toast "Đã thêm N chuyến cho
@@ -225,8 +232,8 @@ SE1." có nút "Xem" mở ngăn chi tiết chuyến. Bấm một dòng của b�
 ### Trình hướng dẫn thêm chuyến `/admin/trains/{id}/trips/new` (#28)
 
 Đầu lịch của view "Theo ngày" có nút "Thêm chuyến", hoặc "Thêm chuyến đầu tiên" khi tàu chưa
-có chuyến chưa hủy (Phi chốt 27/10/2026, thay chữ "Nối chặng" của issue #28 AC1: hành động
-tạo ra một chuyến, còn nối chặng là tên luật mà trình hướng dẫn tự áp). Nút mở trình hướng dẫn thêm **một** chặng vào cuối lịch, gồm 4 bước;
+có chuyến chưa hủy (Phi chốt 27/10/2026, thay chữ "Nối chuyến" của issue #28 AC1: hành động
+tạo ra một chuyến, còn nối chuyến là tên luật mà trình hướng dẫn tự áp). Nút mở trình hướng dẫn thêm **một** chuyến vào cuối lịch, gồm 4 bước;
 bấm một bước đã qua trên thanh bước để quay lại sửa. Tàu đã xóa trả trang 404.
 
 - **Đi đâu:** tàu đã có chuyến thì ghi "Tàu đang ở [ga]. Chuyến mới đi tới đâu?"; tàu chưa
@@ -247,33 +254,33 @@ bấm một bước đã qua trên thanh bước để quay lại sửa. Tàu đ
 - **Xác nhận:** "Ga đi → Ga đến · ngày giờ đi → giờ đến · giá", câu "1 chuyến, N km. Mỗi
   chuyến mở bán 96 chỗ." và nút "Thêm chuyến".
 
-Cột bên phải xem trước 2 chuyến chưa hủy cuối của tàu, chặng mới tô màu, và câu "Sau đó tàu
+Cột bên phải xem trước 2 chuyến chưa hủy cuối của tàu, chuyến mới tô màu, và câu "Sau đó tàu
 ở [ga] từ [ngày giờ]". Dưới 1000px cột này xuống dưới.
 
 Dữ liệu lấy từ `GET /api/admin/trains/{id}/next-leg?origin=` (`TrainScheduleService.nextLegOptions`;
 `origin` chỉ đọc khi tàu chưa có chuyến). Giờ sớm nhất là con số banner đang hiện. Thêm
-chuyến dùng chung `POST /api/admin/trains/{id}/trips` với View Bảng tính, gửi một chặng và
+chuyến dùng chung `POST /api/admin/trains/{id}/trips` với View Bảng tính, gửi một chuyến và
 luôn kèm `originStationId`, nên lịch bị admin khác đổi trong lúc đó trả 409 "Tàu đã ở [ga].
 Tải lại trang rồi thử lại." Lỗi `legs[0].x` từ server đưa admin về bước chứa ô x. Thêm xong
 hiện "Đã thêm chuyến A → B", "Tàu ở B từ …", nút "Thêm chuyến từ B" (tải lại lựa chọn và về
 bước 1) và "Về tàu SE1".
 
-**Nhiều chặng tới một ga và Tạo tuyến và chọn (#40).** Bước 1 có nút chia đoạn "Một chặng /
-Nhiều chặng tới một ga" (hiện khi đã có ga xuất phát). Ở chế độ nhiều chặng, mỗi ga trừ ga
+**Nhiều chuyến tới một ga và Tạo tuyến và chọn (#40).** Bước 1 có nút chia đoạn "Một chuyến /
+Nhiều chuyến tới một ga" (hiện khi đã có ga xuất phát). Ở chế độ nhiều chuyến, mỗi ga trừ ga
 xuất phát là một nút; ga mà chuỗi tuyến giữa các ga kề không tới được bị khóa kèm chữ
 "Thiếu tuyến giữa đường" (`NextLegOptions.chainReach`, tính ở
 `TrainScheduleService.nextLegOptions`). Chọn ga cuối thì sang bước 2 có hai thẻ nhịp chạy
-(`role="radio"`): "Mỗi ngày một chặng" (đi 08:00, nghỉ đêm ở mỗi ga) và "Chạy liên tục"
-(nghỉ 30 phút ở mỗi ga), cùng dải ngày và ô giờ đi của chặng đầu (cùng luật giờ sớm nhất với
-chế độ một chặng). Bấm "Tiếp tục" gọi `GET /api/admin/trains/{id}/plan` (`planLegs`, cùng API
+(`role="radio"`): "Mỗi ngày một chuyến" (đi 08:00, nghỉ đêm ở mỗi ga) và "Chạy liên tục"
+(nghỉ 30 phút ở mỗi ga), cùng dải ngày và ô giờ đi của chuyến đầu (cùng luật giờ sớm nhất với
+chế độ một chuyến). Bấm "Tiếp tục" gọi `GET /api/admin/trains/{id}/plan` (`planLegs`, cùng API
 với "Điền nhanh" của View Bảng tính); đổi ga cuối, nhịp hoặc giờ đi thì kế hoạch và giá đã
-sửa được tính lại. Bước 3 là bảng Chặng (hai ga, km), Khởi hành, Giá cơ bản (sửa được, báo lỗi
-ngay dưới ô khi giá lẻ hoặc trống). Bước 4 liệt kê mọi chặng, tổng km và nút "Thêm N chuyến"
+sửa được tính lại. Bước 3 là bảng Chuyến (hai ga, km), Khởi hành, Giá cơ bản (sửa được, báo lỗi
+ngay dưới ô khi giá lẻ hoặc trống). Bước 4 liệt kê mọi chuyến, tổng km và nút "Thêm N chuyến"
 gửi cả lô tới `POST /api/admin/trains/{id}/trips`; lỗi `legs[i].basePrice` hiện dưới dòng thứ
 i của bảng giá, lỗi giờ hoặc ga đưa admin về bước chứa chúng. Xong hiện "Đã thêm N chuyến cho
-SE1" và nút "Nối tiếp từ [ga cuối]". Cột xem trước liệt kê từng chặng đã lập từ bước 3.
+SE1" và nút "Nối tiếp từ [ga cuối]". Cột xem trước liệt kê từng chuyến đã lập từ bước 3.
 
-Trong mục gập "N ga chưa có tuyến từ [ga]" (chế độ một chặng), nút "Tạo tuyến và chọn" tạo
+Trong mục gập "N ga chưa có tuyến từ [ga]" (chế độ một chuyến), nút "Tạo tuyến và chọn" tạo
 tuyến từ ga đang đứng tới ga đó qua `POST /api/admin/routes/batch` (km theo lý trình), chọn
 ga đó làm ga đến và sang bước 2, kèm toast "Hoàn tác" xóa đúng tuyến vừa tạo
 (`DELETE /api/admin/routes/batch?ids=`) rồi tải lại lựa chọn.
@@ -297,8 +304,8 @@ là danh sách mọi chuyến để tra cứu (#29):
 - bấm một dòng mở ngăn chi tiết chuyến (dưới đây).
 
 Form thêm chuyến gồm: tuyến, ngày giờ khởi hành, ngày giờ đến, giá cơ bản. Tàu là
-tàu của trang đang mở. Luật nối chặng (`docs/product/domain-model.md`, mục "Lịch
-của tàu và luật nối chặng"):
+tàu của trang đang mở. Luật nối chuyến (`docs/product/domain-model.md`, mục "Lịch
+của tàu và luật nối chuyến"):
 
 - Tàu chưa có chuyến nào chưa hủy: chọn tuyến bất kỳ.
 - Tàu đã có chuyến: ga đi bị khóa bằng ga đến của chuyến cuối, nên chỉ chọn được
@@ -381,7 +388,7 @@ Người dùng nằm trong `app/src/main/resources/db/migration/V2__seed_demo_da
 `V3__seed_more_demo_data.sql` (1 admin, 11 khách). Từ ngày 20/10/2026, ga, tuyến,
 tàu, chuyến và booking nằm trong `V5__north_south_line.sql` (V5 xóa dữ liệu cũ của
 V2, V3): 8 ga trên trục Bắc - Nam, 16 tuyến, 3 tàu `SE1`, `SE2`, `SE3`, 18 chuyến
-của `SE1` chạy nối chặng, 8 booking. Các màn hình admin còn lại và trang chủ đọc
+của `SE1` chạy nối chuyến, 8 booking. Các màn hình admin còn lại và trang chủ đọc
 thẳng từ các bảng này, không còn danh sách viết cứng trong service. Tài khoản và
 cách làm mới dữ liệu: `docs/RUNBOOK.md`.
 

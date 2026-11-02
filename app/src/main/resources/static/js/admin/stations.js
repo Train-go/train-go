@@ -195,9 +195,6 @@
 			const [from, to] = pairOf(target.dataset.make);
 			const back = TG.stationLine.routeOf(network, to, from);
 			create([[from, to, back.distanceKm]], `Đã tạo tuyến ${label(from, to)}.`);
-		} else if ((target = hit('data-gap'))) {
-			const [a, b] = target.dataset.gap.split('-').map(Number);
-			select({ type: 'gap', a, b });
 		} else if ((target = hit('data-station'))) {
 			select({ type: 'station', id: Number(target.dataset.station) });
 		} else if ((target = hit('data-clear-search'))) {

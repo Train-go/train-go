@@ -447,11 +447,19 @@ textarea.form-control { padding-block: 8px; }
 .trip-sheet-section { display: grid; gap: 12px; }
 
 .coach-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-xs); }
-.coach-tabs button { display: grid; min-height: 44px; text-align: left; padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface); color: var(--color-fg); cursor: pointer; transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
-.coach-tabs button b { font-size: 0.875rem; }
-.coach-tabs button small { color: var(--muted); font-size: 0.75rem; font-weight: 400; }
-.coach-tabs button:hover { border-color: var(--accent); }
-.coach-tabs button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+/* One coach card, shared by the train page's "Sơ đồ toa" (fragments/coach-card.html) and the trip sheet's tabs (TG.coachCard). */
+.coach-card { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; min-height: 3.5rem; margin: 0; padding: var(--space-xs) var(--space-md); border-radius: var(--radius-sm); border: 1px solid var(--line); background: var(--surface); color: var(--color-fg); text-align: left; list-style: none; }
+.coach-card .bi { flex: none; color: var(--accent); font-size: 20px; }
+.coach-card > span { display: grid; min-width: 0; }
+.coach-card b { color: var(--color-heading); font-size: 0.875rem; }
+.coach-card small { color: var(--muted); font-size: 0.75rem; font-weight: 400; }
+.coach-card.is-bed { background: var(--color-bg); }
+button.coach-card { cursor: pointer; transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease); }
+button.coach-card:hover { border-color: var(--accent); }
+button.coach-card[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+/* Four tabs side by side in a phone-width sheet leave no room for the icon. */
+@media (max-width: 575px) { .coach-tabs .coach-card { padding-inline: var(--space-sm); } .coach-tabs .coach-card .bi { display: none; } }
+
 /* Seat coaches: eight seats a row. Sleeper coaches: four cabins of four beds. */
 .seats { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: var(--space-xs); }
 .seats.cabins { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-sm); }
@@ -558,7 +566,8 @@ textarea.form-control { padding-block: 8px; }
 }
 
 @media (max-width: 720px) {
-	.btn { min-height: 42px; }
+	/* Fields grow with the buttons, so a toolbar of both keeps one height. */
+	.btn, .form-control, .form-select { min-height: 42px; }
 	.btn.admin-logout { min-height: 36px; }
 	.offcanvas-footer { padding: 12px 16px; }
 	.offcanvas-footer .btn:not(.btn-link) { flex: 1 1 auto; }

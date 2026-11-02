@@ -37,7 +37,7 @@ import com.voyagego.traingo.repository.TripSeatRepository;
 public class TripCreationService {
 
 	private static final String[] SHORT_WEEKDAYS = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
-	private static final DateTimeFormatter DAY_TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
+	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
 	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 
 	private final TrainRepository trainRepository;
@@ -141,7 +141,7 @@ public class TripCreationService {
 	/** Why the departure is too early: the turnaround after the last arrival, or simply the present. */
 	private static String earliestMessage(LocalDateTime floor, Route route, LocalDateTime lastArrival) {
 		if (lastArrival == null) {
-			return "Giờ khởi hành phải từ " + dayTime(floor) + " trở đi.";
+			return "Giờ đi phải từ " + dayTime(floor) + " trở đi.";
 		}
 		return "Sớm nhất " + dayTime(floor) + ": tàu đến " + route.getOriginStation().getName() + " lúc "
 				+ lastArrival.format(TIME) + " và cần " + TrainScheduleService.TURNAROUND.toMinutes()
@@ -149,7 +149,7 @@ public class TripCreationService {
 	}
 
 	private static String dayTime(LocalDateTime time) {
-		return SHORT_WEEKDAYS[time.getDayOfWeek().getValue() - 1] + " " + time.format(DAY_TIME);
+		return time.format(TIME) + " " + SHORT_WEEKDAYS[time.getDayOfWeek().getValue() - 1] + ", " + time.format(DAY_MONTH);
 	}
 
 }

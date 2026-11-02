@@ -393,7 +393,28 @@
 
 	/* ---------- start ---------- */
 
+	/*
+	 * The coach card of fragments/coach-card.html, built in JS for the trip sheet's
+	 * tabs. tag is "button" for a tab and "li" for a plain card.
+	 */
+	function coachCard(tag, number, typeLabel, info, sleeper) {
+		const card = document.createElement(tag);
+		card.className = 'coach-card' + (sleeper ? ' is-bed' : '');
+		const icon = document.createElement('i');
+		icon.className = 'bi ' + (sleeper ? 'bi-moon-stars' : 'bi-person-workspace');
+		icon.setAttribute('aria-hidden', 'true');
+		const text = document.createElement('span');
+		const name = document.createElement('b');
+		name.textContent = 'Toa ' + number;
+		const detail = document.createElement('small');
+		detail.textContent = typeLabel + ' · ' + info;
+		text.append(name, detail);
+		card.append(icon, text);
+		return card;
+	}
+
 	window.TG = {
+		coachCard: coachCard,
 		sheet: sheet,
 		confirm: confirm,
 		toast: toast,

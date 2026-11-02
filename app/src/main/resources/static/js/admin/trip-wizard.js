@@ -10,7 +10,7 @@
  * when the leg is added (docs/decisions/0011-chuyen-tao-tu-tau-noi-chang.md),
  * and a message for legs[0].x takes the admin back to the step holding x.
  *
- * Two things sit on top of that (#40). "Nhiều chặng tới một ga" plans one leg
+ * Two things sit on top of that (#40). "Nhiều chuyến tới một ga" plans one leg
  * per pair of neighbouring stations through GET .../plan, lets the admin edit
  * the price of each and adds them all in one request. "Tạo tuyến và chọn" in
  * the list of stations without a route creates the missing route through
@@ -86,7 +86,7 @@
 	}
 
 	function dayTime(d) {
-		return D.dayLabel(d) + ' ' + D.fmtTime(d);
+		return D.fmtTime(d) + ' ' + D.dayLabel(d).replace(' ', ', ');
 	}
 
 	/** "8", "845", "8:45", "8h45" or "8.45" to "08:45"; null when it is no time of day. */
@@ -159,7 +159,7 @@
 		}
 		if (many) {
 			if (draft.legs.some(legPriceError)) {
-				errors.price = 'Sửa giá các chặng báo lỗi.';
+				errors.price = 'Sửa giá các chuyến báo lỗi.';
 			}
 			Object.keys(serverErrors).forEach(function (slot) {
 				errors[slot] = errors[slot] || serverErrors[slot];
@@ -199,7 +199,7 @@
 			return 'Sớm nhất ' + D.fmtDayTime(earliest) + ': tàu đến ' + options.origin.name + ' lúc '
 					+ D.fmtTime(last) + ' và cần ' + D.TURNAROUND_MIN + ' phút quay đầu.';
 		}
-		return 'Giờ khởi hành phải từ ' + D.fmtDayTime(earliest) + ' trở đi.';
+		return 'Giờ đi phải từ ' + D.fmtDayTime(earliest) + ' trở đi.';
 	}
 
 	function shows(slot) {
@@ -540,13 +540,13 @@
 		const v = derive();
 		if (v.many) {
 			q('[data-question]').textContent = options.origin.name + ' → ' + v.last.name
-					+ ': chạy theo nhịp nào, và chặng đầu khởi hành lúc nào?';
+					+ ': chạy theo nhịp nào, và chuyến đầu đi lúc nào?';
 			q('[data-pace-field]').hidden = false;
 			body.querySelectorAll('[data-one-only]').forEach(function (node) {
 				node.hidden = true;
 			});
-			q('[data-day-label]').textContent = 'Ngày đi chặng đầu';
-			q('[data-dep-label]').textContent = 'Giờ đi chặng đầu';
+			q('[data-day-label]').textContent = 'Ngày đi chuyến đầu';
+			q('[data-dep-label]').textContent = 'Giờ đi chuyến đầu';
 			q('[data-paces]').addEventListener('click', function (event) {
 				const card = event.target.closest('[data-pace]');
 				if (card) {
@@ -555,7 +555,7 @@
 				}
 			});
 		} else {
-			q('[data-question]').textContent = options.origin.name + ' → ' + v.dest.name + ' khởi hành lúc nào?';
+			q('[data-question]').textContent = options.origin.name + ' → ' + v.dest.name + ' đi lúc nào?';
 		}
 		q('[data-day-prev]').addEventListener('click', function () {
 			draft.page = 0;
@@ -676,9 +676,9 @@
 			const button = el('button');
 			button.type = 'button';
 			button.dataset.day = D.toIso(day);
-			button.setAttribute('aria-label', WEEKDAYS[day.getDay()] + ' ' + D.fmtDayTime(day).slice(0, 5));
+			button.setAttribute('aria-label', WEEKDAYS[day.getDay()] + ' ' + D.fmtDay(day));
 			button.append(el('small', null, sameDay(day, today) ? 'Hôm nay' : SHORT_WEEKDAYS[day.getDay()]),
-					el('b', null, D.fmtDayTime(day).slice(0, 5)));
+					el('b', null, D.fmtDay(day)));
 			button.addEventListener('click', function () {
 				draft.day = day;
 				edited('dep');
@@ -1012,10 +1012,10 @@
 					const index = Number(match[1]);
 					if (many && slot === 'price') {
 						draft.legErrors[index] = error.fields[key];
-						serverErrors.price = 'Sửa giá các chặng báo lỗi.';
+						serverErrors.price = 'Sửa giá các chuyến báo lỗi.';
 					} else {
 						// Only the first leg of a plan has a time the admin typed.
-						serverErrors[slot] = (many && index > 0 ? 'Chặng ' + (index + 1) + ': ' : '') + error.fields[key];
+						serverErrors[slot] = (many && index > 0 ? 'Chuyến ' + (index + 1) + ': ' : '') + error.fields[key];
 					}
 					const owner = STEP_ERRORS.findIndex(function (slots) {
 						return slots.indexOf(slot) >= 0;

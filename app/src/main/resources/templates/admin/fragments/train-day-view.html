@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <!--
-	The train page, view "Theo ngày": four facts, then a row per day with the
-	hours across, each leg a bar as long as it runs. Included by train.html when
-	the train exists and view is not "bang". TrainHoursView carries every position
-	and label ready to print. Legs and days that have run carry .past and stay
-	hidden until train.js adds .show-past to the chart.
+	The train page, view "Theo ngày": four facts, then the trips on a calendar
+	(FullCalendar, static/js/admin/train-timeline.js) with a date field and a
+	Ngày / Tuần / Tháng select; a block for each trip as long as it runs. The
+	calendar fetches its trips from /api/admin/trains/{id}/timeline. Included by
+	train.html when the train exists and view is not "bang". Trips that have run
+	and cancelled trips stay hidden until the calendar's own toggles ask for them.
 -->
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<div class="tr-stack" th:fragment="day" th:with="hours=${schedule.hours}, end=${schedule.chainEnd}">
+<div class="tr-stack" th:fragment="day" th:with="hours=${schedule.hours}">
 	<section class="dc-card tr-top" th:attr="aria-label=|Tình trạng ${train.code}|">
 		<dl class="tr-facts">
 			<div class="tr-fact" th:each="fact : ${hours.facts}" th:classappend="${fact.running} ? 'is-run'">
@@ -28,11 +29,7 @@
 		<header class="tb-head">
 			<h2 id="tr-schedule-h">Lịch theo giờ</h2>
 			<div class="tb-actions">
-				<button type="button" class="btn btn-link btn-sm tr-past" th:if="${schedule.pastCount > 0}"
-					data-past-toggle th:data-count="${schedule.pastCount}" aria-expanded="false" aria-controls="hour-chart">
-					<i class="bi bi-clock-history" aria-hidden="true"></i>
-					<span th:text="|Hiện ${schedule.pastCount} chặng đã chạy|">Hiện 3 chặng đã chạy</span>
-				</button>
+				<span class="tb-toggles" data-tl-toggles></span>
 				<button type="button" class="btn btn-outline-secondary" data-train-edit
 					th:data-id="${train.id}" th:data-code="${train.code}" th:data-name="${train.name}"
 					th:data-has-trips="${hasTrips}">
@@ -40,51 +37,37 @@
 				</button>
 				<a class="btn btn-primary" th:href="@{/admin/trains/{id}/trips/new(id=${train.id})}">
 					<i class="bi bi-plus-lg" aria-hidden="true"></i>
-					<span th:text="${end != null} ? 'Thêm chuyến' : 'Thêm chuyến đầu tiên'">Thêm chuyến</span>
+					<span th:text="${schedule.chainEnd != null} ? 'Thêm chuyến' : 'Thêm chuyến đầu tiên'">Thêm chuyến</span>
 				</a>
 			</div>
 		</header>
 
 		<th:block th:if="${schedule.hasTrips()}">
-			<div class="dc-scroll tb-scroll">
-				<div class="tb-chart" id="hour-chart">
-					<div class="tb-row tb-axis" aria-hidden="true">
-						<div class="tb-day"></div>
-						<div class="tb-hours">
-							<span th:each="h : ${#numbers.sequence(0, 21, 3)}" th:style="|--x:${h * 100.0 / 24}%|" th:text="|${#numbers.formatInteger(h, 2)}:00|">00:00</span>
-							<span class="tb-now-chip" th:if="${hours.nowPercent != null}" th:style="|--x:${hours.nowPercent}%|" th:text="|Bây giờ ${hours.nowLabel}|">Bây giờ 08:00</span>
-						</div>
-						<div class="tb-night">Cuối ngày ở</div>
+			<div class="tl" id="hour-chart"
+				th:data-url="@{/api/admin/trains/{id}/timeline(id=${train.id})}"
+				th:data-new-url="@{/admin/trains/{id}/trips/new(id=${train.id})}">
+				<div class="tl-bar">
+					<div class="btn-group btn-group-sm" role="group" aria-label="Chuyển khoảng ngày">
+						<button type="button" class="btn btn-outline-secondary" data-tl-prev aria-label="Khoảng trước"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+						<button type="button" class="btn btn-outline-secondary" data-tl-today>Hôm nay</button>
+						<button type="button" class="btn btn-outline-secondary" data-tl-next aria-label="Khoảng sau"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
 					</div>
-					<div class="tb-row" th:each="row : ${hours.rows}" th:classappend="${(row.today ? 'is-today ' : '') + (row.past ? 'past' : '')}">
-						<div class="tb-day"><b th:text="${row.title}">Hôm nay</b><span th:text="${row.dateLabel}">30/10</span></div>
-						<ul class="tb-track" th:attr="aria-label=|${row.title} ${row.dateLabel}|">
-							<li class="tb-leg" th:each="leg : ${row.legs}" th:classappend="${leg.css + (leg.past ? ' past' : '')}"
-								th:style="|--x:${leg.x}%;--w:${leg.width}%;--room:${leg.room}%|">
-								<span class="tb-bar" aria-hidden="true"><i class="tb-fill" th:if="${leg.fill != null}" th:style="|--p:${leg.fill}%|"></i></span>
-								<button class="tb-belt" type="button" th:data-trip-id="${leg.tripId}" th:attr="aria-label=${leg.aria}">
-									<b th:text="${leg.time}">08:00</b>
-									<th:block th:unless="${leg.continued}">
-										<span class="tb-long" th:text="${leg.longText}">Ga Hà Nội → Ga Huế</span>
-										<span class="tb-short" aria-hidden="true" th:text="${leg.shortText}">tới Ga Huế</span>
-									</th:block>
-									<span th:if="${leg.continued}" th:text="${leg.longText}">Ga Huế</span>
-								</button>
-							</li>
-							<li class="tb-wait" th:each="wait : ${row.waits}" th:style="|--x:${wait.x}%|" aria-hidden="true" th:text="${wait.text}">chờ 3 giờ</li>
-							<li th:if="${row.slotPercent != null}">
-								<a class="tb-slot" th:href="@{/admin/trains/{id}/trips/new(id=${train.id})}" th:style="|--x:${row.slotPercent}%|" th:attr="aria-label=${row.slotAria}">
-									<i class="bi bi-plus-lg" aria-hidden="true"></i><span th:text="${row.slotLabel}">Chặng mới 08:00</span>
-								</a>
-							</li>
-							<li class="tb-now" th:if="${row.nowPercent != null}" th:style="|--x:${row.nowPercent}%|" aria-hidden="true"></li>
-						</ul>
-						<div class="tb-night" th:classappend="${row.nightRunning} ? 'is-run'">
-							<span class="tb-night-label" th:unless="${row.nightRunning or row.nightText == ''}">Cuối ngày ở </span><b th:text="${row.nightText}">Ga Huế</b>
-						</div>
-						<p class="tb-alert" th:if="${row.alert != null}"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i><span th:text="${row.alert}"></span></p>
+					<div class="tl-pick">
+						<button type="button" class="btn btn-outline-secondary" data-tl-pick>
+							<span data-tl-title></span>
+							<i class="bi bi-chevron-down" aria-hidden="true"></i>
+						</button>
+						<input type="date" class="tl-date" data-tl-date tabindex="-1" aria-hidden="true">
 					</div>
+					<select class="form-select form-select-sm tl-mode" data-tl-mode aria-label="Xem theo">
+						<option value="day">Ngày</option>
+						<option value="week">Tuần</option>
+						<option value="month">Tháng</option>
+					</select>
 				</div>
+				<div class="tl-canvas" data-tl-canvas></div>
+				<p class="tl-error" data-tl-error role="alert" hidden>Không tải được lịch theo giờ.</p>
+				<ul class="tl-alerts" data-tl-alerts></ul>
 			</div>
 			<p class="tb-key">
 				<span><i class="tb-swatch is-up" aria-hidden="true"></i>Sắp chạy</span>
@@ -92,7 +75,7 @@
 				<span><i class="tb-swatch is-done" aria-hidden="true"></i>Đã chạy</span>
 				<span><i class="tb-swatch is-off" aria-hidden="true"></i>Đã hủy</span>
 				<span><i class="tb-swatch is-break" aria-hidden="true"></i>Chuỗi bị ngắt</span>
-				<span><i class="tb-swatch is-slot" aria-hidden="true"></i>Chặng mới</span>
+				<span><i class="tb-swatch is-slot" aria-hidden="true"></i>Chuyến mới</span>
 			</p>
 		</th:block>
 
@@ -105,12 +88,15 @@
 		<header class="dc-head2"><h2 id="tr-consist-h">Sơ đồ toa</h2><p class="tr-sub">96 chỗ</p></header>
 		<ol class="tr-cars" aria-label="Đoàn tàu, 96 chỗ">
 			<li class="tr-loco"><span>Đầu tàu</span></li>
-			<li class="tr-car"><i class="bi bi-person-workspace" aria-hidden="true"></i><span><b>Toa 1</b><small>Ghế ngồi, 32 chỗ</small></span></li>
-			<li class="tr-car"><i class="bi bi-person-workspace" aria-hidden="true"></i><span><b>Toa 2</b><small>Ghế ngồi, 32 chỗ</small></span></li>
-			<li class="tr-car is-bed"><i class="bi bi-moon-stars" aria-hidden="true"></i><span><b>Toa 3</b><small>Giường nằm, 16 chỗ</small></span></li>
-			<li class="tr-car is-bed"><i class="bi bi-moon-stars" aria-hidden="true"></i><span><b>Toa 4</b><small>Giường nằm, 16 chỗ</small></span></li>
+			<th:block th:replace="~{admin/fragments/coach-card :: card(1, 'Ghế ngồi', '32 chỗ', false)}"></th:block>
+			<th:block th:replace="~{admin/fragments/coach-card :: card(2, 'Ghế ngồi', '32 chỗ', false)}"></th:block>
+			<th:block th:replace="~{admin/fragments/coach-card :: card(3, 'Giường nằm', '16 chỗ', true)}"></th:block>
+			<th:block th:replace="~{admin/fragments/coach-card :: card(4, 'Giường nằm', '16 chỗ', true)}"></th:block>
 		</ol>
 	</section>
+
+	<script th:src="@{/vendor/fullcalendar/index.global.min.js}" defer></script>
+	<script th:src="@{/js/admin/train-timeline.js}" defer></script>
 </div>
 
 </body>

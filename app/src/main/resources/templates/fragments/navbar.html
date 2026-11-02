@@ -8,7 +8,7 @@
 	/my-trips), so nested pages such as /booking/12/seats keep their mark.
 
 	On the homepage it floats over the photo (overPhoto, landing.js adds the glass
-	once the page scrolls). On a phone "Chọn chuyến" folds away: the homepage and
+	once the page scrolls). On a phone "Đặt vé ngay" folds away: the homepage and
 	the steps already lead there.
 -->
 <header th:fragment="navbar" class="site-header" id="header"
@@ -20,7 +20,7 @@
 			TrainGo
 		</a>
 		<nav class="nav" aria-label="Chính">
-			<a class="nav-hide-sm" th:href="@{/trips}" th:attr="aria-current=${activeNav == 'search'} ? 'page' : null">Chọn chuyến</a>
+			<a class="nav-hide-sm" th:href="@{/trips}" th:attr="aria-current=${activeNav == 'search'} ? 'page' : null">Đặt vé ngay</a>
 			<a th:href="@{/my-trips}" th:attr="aria-current=${activeNav == 'my-trips'} ? 'page' : null">Vé của tôi</a>
 		</nav>
 		<div class="header-actions">

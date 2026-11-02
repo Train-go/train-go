@@ -309,13 +309,13 @@ public class OverviewService {
 							+ PopularRoute.placeName(trip.getRoute().getDestinationStation().getName());
 					String href = "/admin/trains/" + trip.getTrain().getId();
 					String title = trip.getTrain().getCode() + " " + route;
-					String start = "Khởi hành " + when(trip.getDepartureAt());
+					String start = "Giờ đi " + when(trip.getDepartureAt());
 					if (fill < LOW_FILL_PERCENT) {
 						low.add(new Alert("warning", "bi-graph-down-arrow", title + (count == 0 ? " chưa bán được vé" : " bán chậm"),
-								start + (count == 0 ? "." : ", đã bán " + count + "/" + seats + " chỗ."), href));
+								start + (count == 0 ? "." : ", đã bán " + count + "/" + seats + "."), href));
 					} else if (fill >= FULL_FILL_PERCENT) {
 						full.add(new Alert("info", "bi-graph-up-arrow", title + " sắp hết chỗ",
-								start + ", đã bán " + count + "/" + seats + " chỗ.", href));
+								start + ", đã bán " + count + "/" + seats + ".", href));
 					}
 				});
 		List<Alert> result = new ArrayList<>(low.stream().limit(5).toList());

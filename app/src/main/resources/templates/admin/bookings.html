@@ -52,7 +52,7 @@
 			<section class="dc-card bm-trip" th:attr="aria-label=|${trip.trainCode} ${trip.route}, ${trip.time} ${trip.dayDate}|">
 				<header class="bm-head">
 					<button class="bm-time" type="button" th:data-trip-id="${trip.tripId}"><b th:text="${trip.time}">08:00</b><span th:text="${trip.trainCode}">SE1</span></button>
-					<div class="bm-route"><b th:text="${trip.route}">Ga Hà Nội → Ga Huế</b><small th:text="${trip.summary}">12/96 chỗ đã bán</small></div>
+					<div class="bm-route"><b th:text="${trip.route}">Ga Hà Nội → Ga Huế</b><small th:text="${trip.summary}">12/96</small></div>
 					<th:block th:if="${trip.coaches != null}"><span th:replace="~{admin/fragments/coach-bar :: bar(${trip.coaches})}"></span></th:block>
 				</header>
 				<ul class="bm-list">
@@ -99,7 +99,7 @@
 				<dt>Khách</dt><dd data-field="customer"></dd>
 				<dt>Chuyến</dt>
 				<dd><button type="button" class="btn btn-link btn-sm" data-field="trip"></button></dd>
-				<dt>Khởi hành</dt><dd data-field="departure"></dd>
+				<dt>Giờ đi</dt><dd data-field="departure"></dd>
 				<dt>Thanh toán</dt><dd data-field="payment"></dd>
 			</dl>
 			<div class="table-responsive">

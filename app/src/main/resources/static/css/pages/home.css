@@ -51,8 +51,8 @@
 /* Value props: their own band under the banner */
 .props-band { margin-top: 30px; }
 /* Held to the container width, framed like the other cards on the page. */
-.props-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; padding: var(--space-md) var(--space-lg); background: var(--color-card); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
-.prop { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-xs) var(--space-lg); }
+.props-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; padding: var(--space-lg); background: var(--color-card); border: 1px solid var(--color-border); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); }
+.prop { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-sm) var(--space-lg); }
 .prop + .prop { border-left: 1px solid var(--color-border); }
 .props-grid > .prop:first-child { padding-left: 0; }
 .props-grid > .prop:last-child { padding-right: 0; }
@@ -71,14 +71,14 @@
 	.prop { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: var(--space-sm); padding-inline: var(--space-md); }
 }
 
-/* Short laptop screens: tighten the banner and the band so both stay on the first screen. */
+/* Short laptop screens: tighten the banner and the band so both stay on the first screen; the band keeps room to breathe. */
 @media (max-height: 820px) and (min-width: 641px) {
 	.hero { padding-top: calc(var(--header-h) + var(--space-lg)); padding-bottom: var(--space-lg); }
 	.hero-lead { margin-top: var(--space-sm); font-size: 1rem; }
 	.search { margin-top: var(--space-lg); padding: var(--space-md) var(--space-lg); }
 	.quick { margin-top: var(--space-sm); }
-	.props-grid { padding-block: var(--space-xs); }
-	.prop { padding-block: 0; }
+	.props-grid { padding-block: var(--space-md); }
+	.prop { padding-block: var(--space-xs); }
 	.prop-icon { width: 40px; height: 40px; }
 	.prop p { font-size: 0.875rem; }
 }

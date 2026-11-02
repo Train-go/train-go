@@ -31,7 +31,7 @@
 	<button type="button" class="btn btn-link btn-sm past-toggle" th:if="${schedule.pastCount > 0}"
 		data-past-toggle th:data-count="${schedule.pastCount}" aria-expanded="false" aria-controls="sched-grid">
 		<i class="bi bi-clock-history" aria-hidden="true"></i>
-		<span th:text="|Hiện ${schedule.pastCount} chặng đã chạy|">Hiện 3 chặng đã chạy</span>
+		<span th:text="|Hiện ${schedule.pastCount} chuyến đã chạy|">Hiện 3 chuyến đã chạy</span>
 	</button>
 
 	<div class="panel table-responsive">
@@ -69,14 +69,14 @@
 				</th:block>
 				<tr th:unless="${schedule.hasTrips()}">
 					<td colspan="9" class="empty-cell"
-						th:text="|${train.code} chưa có chuyến nào. Nhập chặng đầu tiên ở dòng nháp bên dưới, ga đi chọn tùy ý.|">SE2 chưa có chuyến nào. Nhập chặng đầu tiên ở dòng nháp bên dưới, ga đi chọn tùy ý.</td>
+						th:text="|${train.code} chưa có chuyến nào. Nhập chuyến đầu tiên ở dòng nháp bên dưới, ga đi chọn tùy ý.|">SE2 chưa có chuyến nào. Nhập chuyến đầu tiên ở dòng nháp bên dưới, ga đi chọn tùy ý.</td>
 				</tr>
 			</tbody>
-			<tbody class="drafts" id="draft-rows" aria-label="Chặng mới">
+			<tbody class="drafts" id="draft-rows" aria-label="Chuyến mới">
 				<tr class="drafts-h">
 					<td colspan="9">
 						<i class="bi bi-pencil-square" aria-hidden="true"></i>
-						<span th:text="${end != null} ? |Chặng mới · đi từ ${end.route.destinationStation.name}, sớm nhất ${schedule.earliestDepartureLabel}| : 'Chặng mới · đi từ ga tùy chọn'">Chặng mới · đi từ Ga Sài Gòn, sớm nhất 04/11 10:15</span>
+						<span th:text="${end != null} ? |Chuyến mới · đi từ ${end.route.destinationStation.name}, sớm nhất ${schedule.earliestDepartureLabel}| : 'Chuyến mới · đi từ ga tùy chọn'">Chuyến mới · đi từ Ga Sài Gòn, sớm nhất 04/11 10:15</span>
 					</td>
 				</tr>
 			</tbody>
@@ -94,7 +94,7 @@
 			</select>
 			<label class="visually-hidden" for="fill-pace">Nhịp chạy</label>
 			<select id="fill-pace" class="form-select form-select-sm" data-fill-pace>
-				<option value="DAILY">mỗi ngày một chặng, 08:00</option>
+				<option value="DAILY">mỗi ngày một chuyến, 08:00</option>
 				<option value="NONSTOP">chạy liên tục, nghỉ 30 phút</option>
 			</select>
 			<button type="button" class="btn btn-outline-secondary btn-sm" data-fill disabled>Điền</button>
@@ -113,7 +113,7 @@
 			<td><input class="form-control form-control-sm mono" data-f="time" maxlength="5" inputmode="numeric"
 				placeholder="08:00" autocomplete="off" aria-label="Giờ đi"></td>
 			<td>
-				<span class="locked-cell" data-f="origin" title="Ga đi là ga mà chặng trước đến"></span>
+				<span class="locked-cell" data-f="origin" title="Ga đi là ga mà chuyến trước đến"></span>
 				<select class="form-select form-select-sm" data-f="origin-select" aria-label="Ga đi" hidden></select>
 			</td>
 			<td><select class="form-select form-select-sm" data-f="to" aria-label="Ga đến"></select></td>

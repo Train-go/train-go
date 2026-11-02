@@ -15,18 +15,22 @@
 		return network.routes.find(route => route.originId === a.id && route.destinationId === b.id) || null;
 	}
 
+	/*
+	 * Between two stations: a plain connector when both directions exist (the
+	 * stations already carry their km), a row with the warning and "Tạo tuyến"
+	 * when one is missing.
+	 */
 	function segRow(network, a, b) {
 		const ab = routeOf(network, a, b);
 		const ba = routeOf(network, b, a);
-		const km = Math.abs(b.kmMark - a.kmMark);
-		const state = ab && ba ? 'ok' : ab || ba ? 'partial' : 'missing';
+		if (ab && ba) return '<li class="link-seg is-ok" aria-hidden="true"></li>';
+		const state = ab || ba ? 'partial' : 'missing';
 		const way = ab ? `${b.name} → ${a.name}` : `${a.name} → ${b.name}`;
-		const text = state === 'ok' ? `<span class="ok-mark">${icon('check-lg')}Hai chiều</span>`
-			: state === 'partial' ? `<span class="miss-mark">${icon('exclamation-triangle')}Thiếu chiều ${esc(way)}</span>`
-				: `<span class="miss-mark">${icon('exclamation-triangle')}Chưa có tuyến</span>`;
-		const make = state === 'ok' ? '' : `<button class="btn btn-outline-secondary btn-sm" type="button" data-fill="${a.id}-${b.id}" aria-label="Tạo tuyến ${esc(a.name)} ⇄ ${esc(b.name)}">${icon('plus-lg')}Tạo tuyến</button>`;
-		return `<li class="link-seg is-${state}"><span class="link-seg-info"><button class="link-seg-km" type="button" data-pair="${a.id}-${b.id}" aria-label="Xem cặp ${esc(a.name)} ⇄ ${esc(b.name)}">${count(km)} km</button>${text}</span>
-			<span class="link-seg-act"><button class="btn btn-link btn-sm" type="button" data-gap="${a.id}-${b.id}" aria-label="Chèn ga giữa ${esc(a.name)} và ${esc(b.name)}">${icon('plus-circle')}Chèn ga</button>${make}</span></li>`;
+		const text = state === 'partial' ? `<span class="miss-mark">${icon('exclamation-triangle')}Thiếu chiều ${esc(way)}</span>`
+			: `<span class="miss-mark">${icon('exclamation-triangle')}Chưa có tuyến</span>`;
+		const make = `<button class="btn btn-outline-secondary btn-sm" type="button" data-fill="${a.id}-${b.id}" aria-label="Tạo tuyến ${esc(a.name)} ⇄ ${esc(b.name)}">${icon('plus-lg')}Tạo tuyến</button>`;
+		return `<li class="link-seg is-${state}"><span class="link-seg-info">${text}</span>
+			<span class="link-seg-act">${make}</span></li>`;
 	}
 
 	function stopRow(station) {
@@ -34,7 +38,7 @@
 		return `<li><button class="stop-btn" type="button" data-station="${station.id}" aria-label="Xem ${esc(station.name)}">
 			<span class="stop-dot" aria-hidden="true"></span>
 			<span class="stop-name">${esc(station.name)}<small><code class="code">${esc(station.code)}</code>${place}</small></span>
-			<span class="stop-km">km ${count(station.kmMark)}</span>
+			<span class="stop-km">${count(station.kmMark)} km</span>
 		</button></li>`;
 	}
 

@@ -75,8 +75,8 @@ public class BookingAdminService {
 	private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm");
 	private static final String[] SHORT_WEEKDAYS = { "T2", "T3", "T4", "T5", "T6", "T7", "CN" };
-	private static final DateTimeFormatter DAY_TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
-	private static final DateTimeFormatter FULL = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+	private static final DateTimeFormatter DAY_MONTH = DateTimeFormatter.ofPattern("dd/MM");
+	private static final DateTimeFormatter FULL = DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy");
 
 	private final BookingRepository bookingRepository;
 	private final TicketRepository ticketRepository;
@@ -144,7 +144,7 @@ public class BookingAdminService {
 			Trip trip = books.get(0).getTrip();
 			LocalDate day = trip.getDepartureAt().toLocalDate();
 			long soldSeats = sold.getOrDefault(trip.getId(), 0L);
-			String count = soldSeats + "/" + seats + " chỗ đã bán";
+			String count = soldSeats + "/" + seats;
 			String summary = open == Group.CANCELLED ? books.size() + " booking đã hủy"
 					: searching ? books.size() + " booking khớp tìm kiếm, " + count : count;
 			boolean bar = open != Group.CANCELLED && !trip.isCancelled();
@@ -236,9 +236,9 @@ public class BookingAdminService {
 		return trip.getRoute().getOriginStation().getName() + " → " + trip.getRoute().getDestinationStation().getName();
 	}
 
-	/** "T5, 22/10 08:00". */
+	/** "08:00 T5, 22/10". */
 	private static String weekdayLabel(LocalDateTime time) {
-		return SHORT_WEEKDAYS[time.getDayOfWeek().getValue() - 1] + ", " + time.format(DAY_TIME);
+		return time.format(TIME) + " " + SHORT_WEEKDAYS[time.getDayOfWeek().getValue() - 1] + ", " + time.format(DAY_MONTH);
 	}
 
 	/** A cancelled booking reads as cancelled whatever its payment status says. */

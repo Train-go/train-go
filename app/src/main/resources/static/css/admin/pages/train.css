@@ -6,7 +6,7 @@
 .tr-tabs { display: flex; gap: var(--space-xs); margin-bottom: var(--space-lg); overflow-x: auto; scrollbar-width: none; }
 .tr-tabs::-webkit-scrollbar { display: none; }
 .tr-tabs a {
-	display: inline-flex; align-items: baseline; gap: var(--space-sm); min-height: 44px; padding: var(--space-sm) var(--space-md);
+	display: inline-flex; align-items: center; gap: var(--space-sm); min-height: 44px; padding: calc(var(--space-sm) - 1px) var(--space-md) calc(var(--space-sm) + 1px); /* 1px up: the font's capitals sit low in the line box */
 	border: 1px solid var(--color-border); border-radius: var(--radius-pill); background: var(--color-card); color: var(--color-muted-fg);
 	white-space: nowrap; text-decoration: none; transition: background-color var(--dur) var(--ease), border-color var(--dur) var(--ease), color var(--dur) var(--ease);
 }
@@ -37,12 +37,7 @@
 .tr-sub { color: var(--color-muted-fg); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
 .tr-cars { display: grid; grid-template-columns: 5.5rem repeat(4, minmax(0, 1fr)); gap: var(--space-xs); margin: 0; padding: 0; list-style: none; }
 .tr-loco { display: grid; place-items: center; min-height: 4.5rem; border-radius: var(--radius-xl) var(--radius-sm) var(--radius-sm) var(--radius-xl); background: var(--color-primary); color: var(--color-on-primary); font-size: 0.875rem; font-weight: 700; }
-.tr-car { display: flex; align-items: center; gap: var(--space-sm); min-width: 0; min-height: 4.5rem; padding: var(--space-sm) var(--space-md); border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm); background: var(--color-card); }
-.tr-car .bi { flex: none; color: var(--color-primary); font-size: 20px; }
-.tr-car span { display: grid; min-width: 0; }
-.tr-car b { color: var(--color-heading); }
-.tr-car small { color: var(--color-muted-fg); font-size: 0.875rem; }
-.tr-car.is-bed { background: var(--color-bg); }
+.tr-cars .coach-card { min-height: 4.5rem; }
 
 /* ---------- Theo ngày: a day per row, the hours across ---------- */
 
@@ -51,73 +46,98 @@
 .tb-head h2 { text-wrap: balance; }
 .tb-head .tr-past { margin: 0; }
 .tb-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); }
-.tb-scroll { position: relative; }
-.tb-chart { min-width: 52rem; padding: 0 var(--space-lg) var(--space-sm); }
-.tb-row { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) 10rem; align-items: stretch; border-bottom: 1px solid var(--color-border); }
-.tb-axis { border-bottom-color: var(--color-border-strong); }
-.tb-day { display: grid; align-content: center; padding: var(--space-sm) var(--space-sm) var(--space-sm) 0; }
-.tb-day b { color: var(--color-heading); font-size: 0.9375rem; }
-.tb-day span { color: var(--color-muted-fg); font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
-.tb-row.is-today .tb-day b { color: var(--color-primary); }
-.tb-hours { position: relative; height: 2.75rem; }
-.tb-hours span { position: absolute; bottom: var(--space-xs); left: var(--x); transform: translateX(-50%); color: var(--color-muted-fg); font-size: 0.75rem; font-variant-numeric: tabular-nums; }
-.tb-hours span:first-child { transform: none; }
-.tb-track {
-	position: relative; min-height: 4.5rem; margin: 0; padding: 0; list-style: none;
-	background: repeating-linear-gradient(to right, var(--color-border) 0 1px, transparent 1px calc(100% / 8));
+.tb-toggles { display: inline-flex; flex-wrap: wrap; align-items: center; gap: var(--space-xs) var(--space-sm); }
+
+/* ---------- Lịch theo giờ: FullCalendar week grid, themed with the page's tokens ---------- */
+.tl {
+	--fc-border-color: var(--color-border);
+	--fc-page-bg-color: var(--color-card);
+	--fc-neutral-bg-color: var(--color-bg);
+	--fc-today-bg-color: color-mix(in srgb, var(--color-primary-soft) 45%, transparent);
+	--fc-now-indicator-color: var(--color-warning);
+	--fc-list-event-hover-bg-color: var(--color-bg);
+	padding: 0 var(--space-lg) var(--space-sm);
 }
-.tb-row.is-today .tb-track { background-color: var(--color-primary-soft); }
-/* The bar is as long as the leg runs; the button over it carries the words and the click. */
-.tb-bar {
-	position: absolute; top: var(--space-sm); bottom: var(--space-sm); left: var(--x); width: max(var(--w), 3px); z-index: 1;
-	overflow: hidden; border: 1px solid; border-radius: var(--radius-sm); pointer-events: none; transition: box-shadow var(--dur) var(--ease);
+.tl-bar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm); }
+/* The range button opens the hidden native date field under it (showPicker); a browser without showPicker shows the field. */
+.tl-pick { position: relative; }
+.tl-pick .btn { display: inline-flex; align-items: center; gap: var(--space-sm); color: var(--color-heading); font-weight: 600; font-variant-numeric: tabular-nums; }
+.tl-pick .btn .bi-chevron-down { color: var(--color-muted-fg); font-size: 0.75rem; }
+.tl-date { position: absolute; left: 0; bottom: 0; width: 100%; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }
+.tl-pick.is-plain .tl-date { position: static; height: auto; padding: var(--space-xs) var(--space-sm); border: 1px solid var(--color-border); border-radius: var(--radius-sm); opacity: 1; pointer-events: auto; }
+.tl-pick.is-plain .btn { display: none; }
+.tl-mode { width: auto; }
+.tl .fc { color: var(--color-muted-fg); font-size: 0.8125rem; }
+.tl .fc .fc-scrollgrid, .tl .fc .fc-list { border-radius: var(--radius-sm); overflow: hidden; }
+.tl .fc .fc-col-header-cell-cushion { display: block; padding: var(--space-xs); color: var(--color-heading); text-decoration: none; }
+.tl-dayhead { display: inline-flex; align-items: baseline; gap: var(--space-xs); color: var(--color-heading); font-variant-numeric: tabular-nums; }
+.tl-dayhead small { color: var(--color-muted-fg); font-size: 0.75rem; font-weight: 600; }
+.tl-dayhead b { font-weight: 600; }
+.tl .fc .fc-day-today .tl-dayhead, .tl .fc .fc-day-today .tl-dayhead small { color: var(--color-primary); }
+/* An hour is 3rem tall, so a 30-minute trip still holds a line of text. */
+.tl .fc .fc-timegrid-slot { height: 3rem; }
+.tl .fc .fc-timegrid-slot-label-cushion { color: var(--color-muted-fg); font-variant-numeric: tabular-nums; }
+.tl .fc .fc-timegrid-col-events { margin: 0 3px; }
+/* A trip: as long as it runs, coloured by where it stands. */
+.tl-canvas .fc-event { border-radius: var(--radius-sm); cursor: pointer; transition: box-shadow var(--dur) var(--ease); }
+.tl-canvas .fc-v-event { box-shadow: none; }
+.tl-canvas .fc-event:hover { box-shadow: var(--shadow-md); z-index: 2; }
+.tl-canvas .fc-event:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; z-index: 3; }
+.tl-canvas .fc-v-event .fc-event-main { padding: 0; }
+.tl-canvas .fc-event.is-up { --fc-event-bg-color: var(--color-primary-soft); --fc-event-border-color: var(--color-primary); --fc-event-text-color: var(--color-primary); }
+.tl-canvas .fc-event.is-run { --fc-event-bg-color: var(--color-warning-soft); --fc-event-border-color: var(--color-warning); --fc-event-text-color: var(--color-warning); }
+.tl-canvas .fc-event.is-done { --fc-event-bg-color: var(--color-bg); --fc-event-border-color: var(--color-border-strong); --fc-event-text-color: var(--color-muted-fg); }
+.tl-canvas .fc-event.is-off { --fc-event-bg-color: var(--color-destructive-soft); --fc-event-border-color: var(--color-destructive); --fc-event-text-color: var(--color-destructive); border-style: dashed; }
+.tl-canvas .fc-event.is-off .tl-ev b, .tl-canvas .fc-event.is-off .tl-ev span { text-decoration: line-through; text-decoration-thickness: 1px; }
+.tl-canvas .fc-v-event.is-break { box-shadow: inset 4px 0 0 var(--color-destructive); }
+.tl-canvas .fc-event.is-slot { --fc-event-bg-color: var(--color-card); --fc-event-border-color: var(--color-primary); --fc-event-text-color: var(--color-primary); border-style: dashed; font-weight: 600; }
+.tl-canvas .fc-v-event.is-slot:hover { --fc-event-bg-color: var(--color-primary-soft); }
+.tl-ev { position: relative; display: flex; flex-direction: column; gap: 1px; height: 100%; min-width: 0; padding: 3px 6px 6px; overflow: hidden; line-height: 1.25; }
+.tl-ev > * { flex: none; }
+.tl-ev b { overflow: hidden; font-weight: 600; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.tl-ev .tl-route { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow-wrap: anywhere; }
+.tl-ev small { font-size: 0.75rem; font-variant-numeric: tabular-nums; opacity: 0.85; white-space: nowrap; }
+.tl-fill { position: absolute; inset: auto 0 0 0; height: 3px; background: linear-gradient(to right, currentColor var(--p), color-mix(in srgb, currentColor 15%, transparent) var(--p)); opacity: 0.8; }
+/* A block under about 90 minutes has room for the hours and one line of route, no more. */
+.tl-canvas .fc-timegrid-event { container-type: size; }
+@container (max-height: 74px) {
+	.tl-ev .tl-route { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.tl-ev small { display: none; }
 }
-.tb-belt {
-	position: absolute; top: var(--space-sm); bottom: var(--space-sm); left: var(--x); width: max(var(--w), min(10.5rem, var(--room) - 4px)); z-index: 2;
-	display: grid; align-content: center; gap: 1px; padding: var(--space-xs) var(--space-sm); overflow: hidden; container-type: inline-size;
-	border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--color-heading); text-align: left; cursor: pointer;
+/* A column under 120px drops the arrival clock so the departure stays whole. */
+@container (max-width: 120px) {
+	.tl-until { display: none; }
 }
-.tb-belt b { font-size: 0.875rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
-.tb-belt span { overflow: hidden; font-size: 0.8125rem; line-height: 1.2; white-space: nowrap; text-overflow: ellipsis; }
-.tb-belt .tb-short { display: none; }
-@container (max-width: 10rem) { .tb-belt .tb-long { display: none; } .tb-belt .tb-short { display: block; } }
-@container (max-width: 5.5rem) { .tb-belt span, .tb-belt .tb-short { display: none; } }
-@container (max-width: 2.75rem) { .tb-belt b { display: none; } }
-.tb-leg:hover .tb-bar { box-shadow: var(--shadow-md); }
-.tb-belt:active { transform: translateY(1px); }
-.tb-belt:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; z-index: 3; }
-.tb-leg.is-up .tb-bar { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary); }
-.tb-leg.is-run .tb-bar { border-color: var(--color-warning); background: var(--color-warning-soft); color: var(--color-warning); }
-.tb-leg.is-run .tb-belt { color: var(--color-warning); }
-.tb-leg.is-done .tb-bar { border-color: var(--color-border-strong); background: var(--color-bg); color: var(--color-muted-fg); }
-.tb-leg.is-done .tb-belt { color: var(--color-muted-fg); }
-.tb-leg.is-off .tb-bar { border-style: dashed; border-color: var(--color-destructive); background: var(--color-destructive-soft); }
-.tb-leg.is-off .tb-belt { color: var(--color-destructive); }
-.tb-leg.is-off .tb-belt span, .tb-leg.is-off .tb-belt b { text-decoration: line-through; text-decoration-thickness: 1px; }
-.tb-leg.is-break .tb-bar { box-shadow: inset 4px 0 0 var(--color-destructive); }
-.tb-leg.is-new .tb-bar { background: var(--color-success-soft); }
-.tb-leg.is-cont .tb-bar { border-left-style: dashed; border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.tb-leg.is-on .tb-bar { border-right-style: dashed; border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.tb-fill { position: absolute; inset: auto 0 0 0; height: 4px; background: linear-gradient(to right, currentColor var(--p), transparent var(--p)); opacity: 0.8; }
-.tb-wait { position: absolute; top: 50%; left: var(--x); transform: translate(-50%, -50%); padding: 0 var(--space-xs); border-radius: var(--radius-sm); background: var(--color-card); color: var(--color-muted-fg); font-size: 0.8125rem; white-space: nowrap; pointer-events: none; }
-.tb-slot {
-	position: absolute; top: var(--space-sm); bottom: var(--space-sm); left: min(var(--x), calc(100% - 8.5rem)); width: 8.5rem; z-index: 2;
-	display: inline-flex; align-items: center; gap: var(--space-xs); padding: 0 var(--space-sm); border: 1px dashed var(--color-primary); border-radius: var(--radius-sm);
-	background: var(--color-card); color: var(--color-primary); font-size: 0.8125rem; font-weight: 600; text-align: left; cursor: pointer; transition: background-color var(--dur) var(--ease);
-}
-.tb-slot span { overflow: hidden; line-height: 1.25; }
-.tb-slot .bi { flex: none; }
-.tb-slot:hover { background: var(--color-primary-soft); }
-.tb-slot:active { transform: translateY(1px); }
-.tb-slot:focus-visible { outline: 2px solid var(--color-ring); outline-offset: 2px; }
-.tb-now { position: absolute; top: 0; bottom: 0; left: var(--x); z-index: 0; border-left: 2px dashed var(--color-warning); pointer-events: none; }
-.tb-hours .tb-now-chip { top: 0; bottom: auto; padding: 0 var(--space-xs); border-radius: var(--radius-sm); background: var(--color-warning); color: var(--color-white); font-weight: 700; white-space: nowrap; }
-.tb-alert { grid-column: 1 / -1; display: flex; align-items: center; gap: var(--space-sm); margin: 0 0 var(--space-sm); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); background: var(--color-destructive-soft); color: var(--color-destructive); font-size: 0.875rem; font-weight: 600; }
-.tb-alert .bi { flex: none; }
-.tb-night { display: flex; align-items: center; padding: var(--space-sm) 0 var(--space-sm) var(--space-md); color: var(--color-heading); font-size: 0.875rem; font-weight: 600; }
-.tb-axis .tb-night { align-items: flex-end; padding-bottom: var(--space-xs); color: var(--color-muted-fg); font-size: 0.75rem; font-weight: 600; }
-.tb-night.is-run { color: var(--color-warning); }
-.tb-night-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* A short trip keeps one line: the hours, then as much of the route as fits. */
+.tl-canvas .fc-timegrid-event-short .tl-ev { flex-direction: row; align-items: center; gap: var(--space-xs); padding-block: 2px; white-space: nowrap; }
+.tl-canvas .fc-timegrid-event-short .tl-ev b { flex: none; }
+.tl-canvas .fc-timegrid-event-short .tl-ev .tl-route { display: block; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; overflow-wrap: normal; }
+.tl-canvas .fc-timegrid-event-short .tl-ev small { display: none; }
+.tl-ev.tl-slot { flex-direction: row; align-items: center; gap: var(--space-xs); }
+.tl-slot .bi { flex: none; }
+/* Tháng: a cell per day, its first trips as one-line chips, then "+N chuyến". */
+.tl .fc .fc-daygrid-day-number { color: var(--color-heading); font-variant-numeric: tabular-nums; text-decoration: none; }
+.tl .fc .fc-day-today .fc-daygrid-day-number { color: var(--color-primary); font-weight: 600; }
+.tl .fc .fc-daygrid-day-frame { min-height: 6.5rem; }
+.tl .fc .fc-daygrid-event { margin-top: 2px; }
+.tl .fc .fc-daygrid-event .tl-ev { height: auto; padding: 1px 4px; }
+.tl-canvas .fc-h-event.is-break { box-shadow: inset 3px 0 0 var(--color-destructive); }
+.tl-ev.tl-line { flex-direction: row; align-items: baseline; gap: var(--space-xs); white-space: nowrap; }
+.tl-ev.tl-line span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tl .fc .fc-daygrid-more-link { color: var(--color-primary); font-weight: 600; }
+.tl .fc .fc-col-header-cell-cushion:hover { text-decoration: none; }
+/* The list that replaces the grid on a phone. */
+.tl .fc .fc-list-day-cushion { padding: var(--space-xs) var(--space-sm); color: var(--color-heading); font-weight: 600; }
+.tl .fc .fc-list-event td { padding: var(--space-sm); }
+.tl .fc .fc-list-event .tl-ev { gap: 2px; height: auto; padding: 0; overflow: visible; color: var(--color-heading); }
+.tl .fc .fc-list-event.is-done .tl-ev { color: var(--color-muted-fg); }
+.tl .fc .fc-list-event.is-off .tl-ev, .tl .fc .fc-list-event.is-slot .tl-ev { color: var(--fc-event-text-color); }
+.tl .fc .fc-list-empty { background: var(--color-card); }
+.tl-error { margin: 0; padding: var(--space-sm); border-radius: var(--radius-sm); background: var(--color-destructive-soft); color: var(--color-destructive); font-size: 0.875rem; }
+.tl-alerts { display: grid; gap: var(--space-xs); margin: var(--space-sm) 0 0; padding: 0; list-style: none; }
+.tl-alerts:empty { display: none; }
+.tl-alerts li { display: flex; align-items: center; gap: var(--space-sm); padding: var(--space-xs) var(--space-sm); border-radius: var(--radius-sm); background: var(--color-destructive-soft); color: var(--color-destructive); font-size: 0.875rem; font-weight: 600; }
+.tl-alerts .bi { flex: none; }
 .tb-key { display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-lg); margin: 0; padding: var(--space-sm) var(--space-lg) var(--space-lg); color: var(--color-muted-fg); font-size: 0.8125rem; }
 .tb-key span { display: inline-flex; align-items: center; gap: var(--space-xs); }
 .tb-swatch { display: inline-block; width: 1.25rem; height: 0.75rem; border: 1px solid; border-radius: 3px; }
@@ -195,20 +215,14 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 	.tr-tabs a span { display: none; }
 	.tr-submit { margin-left: 0; }
 
-	/* The day label and where the train ends the day sit over a full-width track; no sideways scroll. */
-	.tb-chart { min-width: 0; padding: 0 var(--space-md) var(--space-sm); }
-	.tb-row { grid-template-columns: minmax(0, 1fr) auto; }
-	.tb-day { display: flex; gap: var(--space-sm); align-items: baseline; padding-bottom: var(--space-xs); }
-	.tb-track, .tb-hours { grid-column: 1 / -1; grid-row: 2; }
-	.tb-night { grid-column: 2; grid-row: 1; padding: var(--space-sm) 0 var(--space-xs); font-weight: 400; color: var(--color-muted-fg); }
-	.tb-axis .tb-day, .tb-axis .tb-night { display: none; }
-	.tb-night-label { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: pre; }
-	.tb-night b { color: var(--color-heading); font-weight: 600; }
-	.tb-night.is-run b { color: var(--color-warning); }
-	.tb-hours span:not(.tb-now-chip):nth-child(even) { display: none; }
-	.tb-track { margin-bottom: var(--space-sm); }
-	.tb-belt b { font-size: 0.8125rem; }
-	.tb-alert { margin-top: calc(-1 * var(--space-xs)); }
+	.tl { padding-inline: var(--space-md); }
+}
+/* A phone: the arrows on the first line, the range button and the span side by side on the second. */
+@media (max-width: 640px) {
+	.tl-bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+	.tl-bar > .btn-group { grid-column: 1 / -1; justify-self: start; }
+	.tl-pick .btn { width: 100%; }
+	.tl-pick .btn .bi-chevron-down { margin-left: auto; }
 }
 @media (max-width: 640px) {
 	.tr-facts { grid-template-columns: minmax(0, 1fr); }
@@ -227,7 +241,5 @@ tr.draft [data-f="price"] { width: 118px; text-align: right; }
 .dc-date { margin-top: var(--space-xs); color: var(--color-muted-fg); font-size: 0.9375rem; }
 .sheet-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm); }
 /* Legs and days that have run, until "Hiện N chặng đã chạy". */
-.tb-chart:not(.show-past) .past { display: none; }
-.tb-slot:hover { text-decoration: none; }
 .tr-tabs a:hover { text-decoration: none; }
 .past-toggle { justify-self: start; }

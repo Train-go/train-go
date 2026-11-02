@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<!--
+	One coach as a card: icon, "Toa 1", then its type and a count. The one look
+	for a coach everywhere: the train page's "Sơ đồ toa" uses this fragment, and
+	the trip sheet's coach tabs build the same markup with TG.coachCard (admin.js),
+	so a change to the card is made in both places and in .coach-card (admin.css).
+-->
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<li th:fragment="card(number, typeLabel, info, sleeper)" class="coach-card" th:classappend="${sleeper} ? 'is-bed'">
+	<i class="bi" th:classappend="${sleeper} ? 'bi-moon-stars' : 'bi-person-workspace'" aria-hidden="true"></i>
+	<span><b th:text="|Toa ${number}|">Toa 1</b><small th:text="|${typeLabel} · ${info}|">Ghế ngồi · 32 chỗ</small></span>
+</li>
+</body>
+</html>

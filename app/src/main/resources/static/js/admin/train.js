@@ -1,6 +1,6 @@
 /*
  * The train page (templates/admin/train.html): the remembered view, the
- * "Hiện N chặng đã chạy" toggle, the add/edit sheet and soft delete. Saving
+ * "Hiện N chuyến đã chạy" toggle, the add/edit sheet and soft delete. Saving
  * and deleting go through TG.api to /api/admin/trains; on success the browser
  * opens the right train page and TG.toastAfterReload shows the confirmation
  * there. Restoring a deleted train lives on the history page (history.js).
@@ -65,7 +65,7 @@
 			pastTarget.classList.toggle('show-past', show);
 			pastToggle.setAttribute('aria-expanded', show ? 'true' : 'false');
 			icon.className = show ? 'bi bi-chevron-up' : 'bi bi-clock-history';
-			label.textContent = (show ? 'Ẩn ' : 'Hiện ') + count + ' chặng đã chạy';
+			label.textContent = (show ? 'Ẩn ' : 'Hiện ') + count + ' chuyến đã chạy';
 		});
 	}
 
@@ -155,7 +155,7 @@
 	async function confirmDelete(train) {
 		const yes = await TG.confirm({
 			title: 'Xóa tàu ' + train.code + '?',
-			body: 'Có thể khôi phục lại trong Lịch sử.',
+			body: 'Bạn có thể khôi phục tàu này ở trang Lịch sử.',
 			confirmLabel: 'Xóa tàu',
 			danger: true
 		});

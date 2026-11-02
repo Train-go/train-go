@@ -28,10 +28,12 @@
 
 .link-seg { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: var(--space-sm); min-height: 44px; padding: 0 var(--space-sm); }
 .link-seg::before { content: ""; justify-self: center; width: 3px; height: 100%; min-height: 44px; border-radius: 2px; background: var(--color-primary); }
+/* Connector only: both directions exist, so no row of text between the stations. */
+.link-seg.is-ok { min-height: 24px; }
+.link-seg.is-ok::before { min-height: 24px; }
 .link-seg.is-partial::before { background: repeating-linear-gradient(180deg, var(--color-primary) 0 6px, transparent 6px 10px); }
 .link-seg.is-missing::before { background: repeating-linear-gradient(180deg, var(--color-border-strong) 0 4px, transparent 4px 8px); }
 .link-seg-info { display: flex; flex-wrap: wrap; align-items: center; gap: 2px var(--space-md); min-width: 0; font-size: 0.875rem; }
-.link-seg-km { color: var(--color-muted-fg); }
 .link-seg .btn { white-space: nowrap; }
 .link-seg-info .miss-mark { display: inline; white-space: normal; }
 .link-seg-info .miss-mark .bi { margin-right: var(--space-xs); }
@@ -43,7 +45,9 @@
 .route-table th, .route-table td { padding-inline: var(--space-sm); }
 .route-table th:first-child, .route-table td:first-child { padding-left: var(--space-md); }
 .route-table th:last-child, .route-table td:last-child { padding-right: var(--space-md); }
-.route-table th:not(:first-child), .route-table td:not(:first-child) { width: 1%; }
+/* The three right-hand columns share one width and centre under their heads, so the table does not crowd to the right. */
+.route-table { table-layout: fixed; }
+.route-table th:not(:first-child), .route-table td:not(:first-child) { width: 7.25rem; text-align: center; }
 .route-table td:nth-child(2), .route-table td:nth-child(4) { white-space: nowrap; }
 .route-table th:last-child { min-width: 5.5rem; white-space: normal; }
 /* Beside the line the table is narrow and the last head may wrap; on its own, under 1200px, it has room. */
@@ -69,12 +73,7 @@
 .route-table tr[data-pair] { cursor: pointer; }
 .route-table tr[data-pair]:hover { background: var(--color-bg); }
 .stop-name small .code { padding: 0; background: none; font-size: inherit; font-weight: 400; color: inherit; }
-.link-seg-km { padding: 0; border: 0; background: transparent; color: var(--color-muted-fg); font: inherit; cursor: pointer; }
-.link-seg-km:hover { color: var(--color-primary); text-decoration: underline; }
 .link-seg-act { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-xs); }
-.link-seg-act .btn-link { --bs-btn-color: var(--color-muted-fg); opacity: 0; }
-.link-seg:hover .btn-link, .link-seg .btn-link:focus-visible { opacity: 1; }
-@media (hover: none) { .link-seg-act .btn-link { opacity: 1; } }
 #net-sheet .net-panel { min-width: 0; overflow-wrap: anywhere; }
 #net-sheet .panel-body { padding: 0; }
 #net-sheet .offcanvas-header { padding-bottom: 0; border-bottom: 0; }
@@ -89,7 +88,6 @@
 	.route-unit { display: inline; }
 	.link-seg { grid-template-columns: 20px minmax(0, 1fr); }
 	.link-seg-act { grid-column: 2; justify-content: flex-start; }
-	.link-seg-act .btn-link { opacity: 1; }
 }
 
 /* Component display rules must not override hidden on panels, alerts or controls. */
