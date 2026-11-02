@@ -433,8 +433,9 @@ gộp #20 vào `main` trước thì pull request #21 không còn conflict. Workt
 - [x] Commit (`19c5f77`, `bb7ae24`, `53bd952`) và merge `feat/admin-shell` (`6e8d265`).
 - [ ] Thử 500 bằng cách dừng MySQL (cần quyền Administrator); đã thử 500 bằng
       controller ném exception tạm.
-- [ ] Xác nhận nguồn và quyền dùng ảnh hero `hero-sa-pa.jpg` (Phi gửi, chưa có tác giả,
-      giấy phép), rồi thêm dòng ghi nguồn ở footer hoặc đổi ảnh.
+- [x] Xác nhận nguồn và quyền dùng ảnh hero `hero-sa-pa.jpg` (Phi gửi, chưa có tác giả,
+      giấy phép), rồi thêm dòng ghi nguồn ở footer hoặc đổi ảnh: đã đổi sang `hero-hai-van.jpg`
+      (02/11/2026), nguồn ghi ở ADR 0015.
 - [x] Push `feat/client-shell-errors`.
 - [x] Gộp `main` sau khi #20 (PR #45) và #22 vào: giải `SecurityConfig` theo ADR 0013,
       exception mới của `main` theo quy ước #21. AC4 phần "khách vào `/admin` ra 403"

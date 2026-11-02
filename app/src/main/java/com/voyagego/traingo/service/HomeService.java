@@ -37,21 +37,28 @@ public class HomeService {
 	/**
 	 * One photo per station, by station code. Keyed by code rather than name so
 	 * renaming a station in the admin keeps its photo. A station added later
-	 * simply has no photo until one is added here.
+	 * shows StationPhoto.DEFAULT until one is added here. PLY, NDI, DHA and NTH are
+	 * stations inserted through the admin, not by a migration.
 	 */
-	private static final Map<String, StationPhoto> PHOTOS = Map.of(
-			"HNI", new StationPhoto("tuyen-hni.jpg", "Cầu Long Biên, Hà Nội"),
-			"THA", new StationPhoto("tuyen-tha.jpg", "Bãi biển Sầm Sơn, Thanh Hóa"),
-			"VIN", new StationPhoto("tuyen-vin.jpg", "Biển Cửa Lò về đêm, Nghệ An"),
-			"DHO", new StationPhoto("tuyen-dho.jpg", "Hang động Phong Nha, Quảng Bình"),
-			"HUE", new StationPhoto("tuyen-hue.jpg", "Cổng Đại Nội Huế"),
-			"DNG", new StationPhoto("tuyen-dng.jpg", "Cầu Rồng Đà Nẵng"),
-			"NTR", new StationPhoto("tuyen-ntr.jpg", "Hòn Nội, vịnh Nha Trang"),
-			"SGN", new StationPhoto("tuyen-sgn.jpg", "Sài Gòn về đêm"));
+	private static final Map<String, StationPhoto> PHOTOS = Map.ofEntries(
+			Map.entry("HNI", StationPhoto.of("tuyen-hni.jpg", "Cầu Long Biên, Hà Nội")),
+			Map.entry("PLY", StationPhoto.of("tuyen-ply.jpg", "Chùa giữa núi đá vôi, Ninh Bình")),
+			Map.entry("NDI", StationPhoto.of("tuyen-ndi.jpg", "Cột cờ Nam Định")),
+			Map.entry("THA", StationPhoto.of("tuyen-tha.jpg", "Ruộng bậc thang Pù Luông, Thanh Hóa")),
+			Map.entry("VIN", StationPhoto.of("tuyen-vin.jpg", "Đảo chè Thanh Chương, Nghệ An")),
+			Map.entry("DHO", StationPhoto.of("tuyen-dho.jpg", "Hang động Phong Nha, Quảng Trị")),
+			Map.entry("DHA", StationPhoto.of("tuyen-dha.jpg", "Tháp cổ giữa đồng lúa, Quảng Trị")),
+			Map.entry("HUE", StationPhoto.of("tuyen-hue.jpg", "Cổng Đại Nội Huế")),
+			Map.entry("DNG", StationPhoto.of("tuyen-dng.jpg", "Cầu Rồng Đà Nẵng")),
+			Map.entry("NTR", StationPhoto.of("tuyen-ntr.jpg", "Hòn Nội, vịnh Nha Trang")),
+			Map.entry("NTH", StationPhoto.of("tuyen-nth.jpg", "Vịnh Vĩnh Hy, Ninh Thuận")),
+			Map.entry("SGN", StationPhoto.of("tuyen-sgn.jpg", "Sài Gòn về đêm")));
 
 	/** The region of a destination, by station code, for the chips of the journeys block. */
-	private static final Map<String, String> REGIONS = Map.of("HNI", "bac", "THA", "bac", "VIN", "trung", "DHO", "trung",
-			"HUE", "trung", "DNG", "trung", "NTR", "trung", "SGN", "nam");
+	private static final Map<String, String> REGIONS = Map.ofEntries(Map.entry("HNI", "bac"), Map.entry("PLY", "bac"),
+			Map.entry("NDI", "bac"), Map.entry("THA", "bac"), Map.entry("VIN", "trung"), Map.entry("DHO", "trung"),
+			Map.entry("DHA", "trung"), Map.entry("HUE", "trung"), Map.entry("DNG", "trung"), Map.entry("NTR", "trung"),
+			Map.entry("NTH", "trung"), Map.entry("SGN", "nam"));
 	private static final Map<String, String> REGION_NAMES = new LinkedHashMap<>();
 	static {
 		REGION_NAMES.put("bac", "Miền Bắc");
@@ -123,7 +130,8 @@ public class HomeService {
 		long price = trips.stream().mapToLong(Trip::getBasePrice).min().orElse(next.getBasePrice());
 		return new PopularRoute(route.getOriginStation().getCode(), route.getOriginStation().getName(),
 				route.getDestinationStation().getCode(), route.getDestinationStation().getName(),
-				route.getDistanceKm() + " km", PHOTOS.get(route.getDestinationStation().getCode()),
+				route.getDistanceKm() + " km",
+				PHOTOS.getOrDefault(route.getDestinationStation().getCode(), StationPhoto.DEFAULT),
 				TripAdminService.duration(next), nextLabel(next.getDepartureAt(), now.toLocalDate()), price);
 	}
 

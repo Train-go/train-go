@@ -27,7 +27,7 @@
 				<ul id="footer-routes">
 					<li th:each="route : ${popular.footerRoutes}">
 						<a class="footer-route" th:href="@{/trips(from=${route.originCode}, to=${route.destinationCode})}">
-							<img class="footer-thumb" th:if="${route.photo != null}" th:src="@{${route.photo.path}}" width="56" height="40" alt="" loading="lazy">
+							<img class="footer-thumb" th:src="@{${route.photo.smallPath}}" width="56" height="40" alt="" loading="lazy">
 							<span><th:block th:text="${route.originPlace}">Hà Nội</th:block> <i class="bi bi-arrow-right" aria-hidden="true"></i><span class="visually-hidden">đến</span> <th:block th:text="${route.destinationPlace}">Sài Gòn</th:block></span>
 						</a>
 					</li>

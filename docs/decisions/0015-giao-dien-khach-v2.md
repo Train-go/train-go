@@ -26,6 +26,16 @@ CSS theo từng trang (30/10/2026).
 ## Consequences
 
 - Trang khách mới phải có file CSS riêng và thẻ `<link>` trong `<head>`.
-- Ảnh lấy nguyên từ prototype, footer không ghi nguồn ảnh vì app chỉ chạy ở localhost (Phi, 31/10/2026).
-  Trước khi công khai phải ghi lại nguồn: 8 ảnh tuyến có link gốc trong `images/tuyen/NGUON-ANH.md` của
-  prototype, còn `hero-sa-pa.jpg` và `footer-duong-ray.jpg` chưa rõ nguồn nên cần thay hoặc tra lại.
+- Footer không ghi nguồn ảnh vì app chỉ chạy ở localhost (Phi, 31/10/2026). Ngày 02/11/2026 ảnh prototype
+  bị vỡ trên màn hình mật độ cao nên đã thay bằng ảnh đủ điểm ảnh: ảnh đầu trang, đăng nhập, đăng ký và 8
+  ảnh tuyến lấy từ Pexels (`pexels.com/photo/<id>`), riêng Hòn Nội giữ ảnh cũ ở bản gốc 6000px trên
+  Wikimedia Commons. Trước khi công khai phải ghi lại nguồn từng ảnh: đầu trang 6136132 (đèo Hải Vân),
+  đăng nhập 2162471, đăng ký 36605975, tuyến HNI 30262557, THA 34902075, VIN 5041981, DHO 26762053, HUE
+  34861581, DNG 20346283, SGN 32755075, và bốn ga thêm qua admin PLY 38093102, NDI 33758103, DHA
+  31465683, NTH 5323717 (Pexels); NTR "Hòn Nội, Nha Trang Bay, Vietnam.jpg" (Commons,
+  public domain). Ảnh chân trang `footer-duong-ray.jpg` giữ ảnh prototype theo ý Phi, vẫn chưa rõ nguồn.
+- Ảnh ô hành trình có hai bản, gốc 2800px và `-800`, chọn bằng `srcset` (`StationPhoto`); ảnh đầu trang có
+  bản cắt dọc `hero-hai-van-doc.jpg` cho màn hình rộng tới 640px. Ảnh mới phải đủ để hệ số phóng không quá
+  1 ở 1440px với DPR 2 và 390px với DPR 3.
+- Ga chưa có ảnh riêng trong `HomeService` (ví dụ ga mới thêm qua admin) dùng `StationPhoto.DEFAULT`, tức ảnh
+  đầu trang `hero-hai-van.jpg`, nên ô hành trình và ảnh nhỏ ở chân trang không bao giờ để trống.
