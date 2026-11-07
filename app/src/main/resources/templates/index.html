@@ -51,7 +51,9 @@
 					<label class="field-label" for="search-date">Ngày khởi hành</label>
 					<div class="control">
 						<i class="bi bi-calendar3" aria-hidden="true"></i>
-						<input id="search-date" name="date" type="date" th:value="${today}" th:min="${today}" required>
+						<!-- The native date field shows month/day/year in some browsers, so it sits invisibly over the control and a dd/MM/yyyy label shows its value. -->
+						<span class="date-text" id="search-date-text" th:text="${#temporals.format(today, 'dd/MM/yyyy')}">07/11/2026</span>
+						<input id="search-date" name="date" type="date" th:value="${today}" th:min="${today}" required aria-describedby="search-date-text">
 					</div>
 				</div>
 				<button class="btn btn-cta" type="submit"><i class="bi bi-search" aria-hidden="true"></i>Tìm chuyến</button>
