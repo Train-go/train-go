@@ -62,6 +62,13 @@ Get-Process -Id <PID>
 Không dừng tiến trình chưa xác định chủ sở hữu. Cổng ứng dụng khai trong
 `app/src/main/resources/application.properties`.
 
+## Chuyến demo luôn có sẵn
+
+Mỗi lần khởi động, `DemoTripSeeder` bổ sung chuyến cho 14 ngày tới của SE1, SE2, SE3
+nếu chưa có (ADR 0017), nên trang tìm chuyến không trống khi database cũ đã hết
+chuyến. Log ghi `Demo trips: added N trips` khi có chuyến mới. Tắt bằng
+`traingo.demo-trips.enabled=false` trong `application.properties`.
+
 ## Flyway và bảo toàn dữ liệu
 
 Migration nằm ở `app/src/main/resources/db/migration/`. Trên database trống,

@@ -29,6 +29,9 @@ import jakarta.persistence.LockModeType;
 public interface TripRepository extends JpaRepository<Trip, Long> {
 	long countByRouteId(Long routeId);
 
+	/** True when the train already has a trip on this route leaving at exactly this time. */
+	boolean existsByTrainIdAndRouteIdAndDepartureAt(Long trainId, Long routeId, LocalDateTime departureAt);
+
 	/** Trips that are not cancelled, past ones included (the overview's "Chuyến"). */
 	long countByStatusNot(TripStatus status);
 

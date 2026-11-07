@@ -62,6 +62,23 @@
 		box(field).focus();
 	}
 
+	// The native date field is invisible; its value is shown as dd/MM/yyyy beside the icon.
+	var dateText = document.getElementById('search-date-text');
+	function showDate() {
+		var parts = date.value.split('-');
+		dateText.textContent = parts.length === 3 ? parts[2] + '/' + parts[1] + '/' + parts[0] : 'Chọn ngày';
+	}
+	date.addEventListener('change', showDate);
+	date.addEventListener('input', showDate);
+	date.addEventListener('click', function () {
+		try {
+			date.showPicker();
+		} catch (e) {
+			// Browsers without showPicker() open the calendar on their own.
+		}
+	});
+	showDate();
+
 	document.getElementById('search-swap').addEventListener('click', function () {
 		var origin = from.value;
 		from.value = to.value;

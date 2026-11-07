@@ -26,6 +26,8 @@ public interface TrainRepository extends JpaRepository<Train, Long> {
 
 	Optional<Train> findByIdAndDeletedTrue(Long id);
 
+	Optional<Train> findByCodeAndDeletedFalse(String code);
+
 	boolean existsByCodeAndDeletedFalse(String code);
 
 	boolean existsByCodeAndDeletedFalseAndIdNot(String code, Long id);
